@@ -2211,3 +2211,9 @@ kbd {
   padding: 2px 6px;
   color: var(--muted);
 }
+
+/* 0.23: أزرار إيداع الخزنة السرية */
+.vault-grid {
+  flex-wrap: wrap;
+  justify-content: center;
+}

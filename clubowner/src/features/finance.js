@@ -18,6 +18,7 @@ import {
 import { ownerCountry } from "../services/sponsors.js";
 import { addDays } from "../core/utils.js";
 const cats = {
+  vault: "الخزنة السرية",
   wages: "مرتبات",
   operations: "تشغيل",
   sponsorship: "رعاية",

@@ -125,7 +125,7 @@ import {
   negotiateSponsor,
   answerSponsorDeal,
 } from "./services/sponsors.js";
-import { takeLoan, wages } from "./services/finance.js";
+import { takeLoan, wages, secretDeposit } from "./services/finance.js";
 import { setupView } from "./features/setup.js";
 import { shell, NAV, NAV_GROUPS, NAV_BY_ID } from "./components/shell.js";
 import { dashboardView } from "./features/dashboard.js";
@@ -499,6 +499,19 @@ function authModalContent(activeTab = "login", error = "") {
 }
 
 const actions = {
+  // خزنة المالك السرية: الزر المخفي هو رقم الإصدار أسفل القائمة الجانبية.
+  "secret-vault": () =>
+    openModal(
+      `<h2>${tr("خزنة المالك السرية 🤫", "The owner's secret vault 🤫", "Le coffre secret du propriétaire 🤫")}</h2><p class="muted">${tr("إيداع فوري بفلوس تجريبية لمن يعرف المكان. يُسجَّل في الدفاتر مثل أي تدفق نقدية فتبقى الإدارة المالية صادقة.", "An instant injection of play money for those who know the spot. It is posted to the ledger like any cash flow, so the books stay honest.", "Une injection instantanée d’argent fictif pour qui connaît l’endroit. Inscrite au registre comme tout flux, la comptabilité reste honnête.")}</p><div class="modal-actions vault-grid">${button(`${money(10000000)} ${cur()}`, "vault-deposit", "10000000", "soft")}${button(`${money(100000000)} ${cur()}`, "vault-deposit", "100000000", "secondary")}${button(`${money(1000000000)} ${cur()}`, "vault-deposit", "1000000000", "primary")}</div><div class="modal-actions">${button(tr("إغلاق الخزنة", "Close the vault", "Fermer le coffre"), "modal-close", "", "ghost")}</div>`,
+    ),
+  "vault-deposit": async (el) => {
+    const amount = Number(el.dataset.id);
+    await apply((s) => secretDeposit(s, amount));
+    toast(
+      `${tr("تم إيداع", "Deposited", "Déposé")} ${money(amount)} ${cur()} ${tr("في خزينة النادي 🤫", "into the club treasury 🤫", "dans la trésorerie du club 🤫")}`,
+    );
+  },
+  "modal-close": () => closeModal(),
   "business-open": async (el) => apply((s) => businessOpen(s, el.dataset.id)),
   "sell-subscriptions": async () => apply((s) => sellSubscriptions(s)),
   "commercial-friendly": async () => apply((s) => friendly(s)),

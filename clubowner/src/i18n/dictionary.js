@@ -1076,4 +1076,15 @@ export const DICTIONARY = {
     "Approve a 21-day course for",
     "Approuver un stage de 21 jours pour",
   ],
+  // 0.23 — خزنة المالك السرية
+  "مبلغ الإيداع غير صالح": [
+    "Invalid deposit amount.",
+    "Montant de dépôt invalide.",
+  ],
+  "خزنة المالك السرية": [
+    "The owner's secret vault",
+    "Le coffre secret du propriétaire",
+  ],
+  "تعذر تنفيذ الإيداع": ["Could not complete the deposit.", "Impossible d’effectuer le dépôt."],
+  "الخزنة السرية": ["The secret vault", "Le coffre secret"],
 };

@@ -16,6 +16,23 @@ export function post(s, amount, category, description, key) {
   });
   return true;
 }
+// 0.23: خزنة المالك السرية — زر غش مخفي لمن يعرف مكانه. الإيداع يمر عبر
+// post() فيُسجَّل في الدفاتر ويحترم المحرك مثل أي تدفق نقدية حقيقي.
+export function secretDeposit(s, amount) {
+  assert(
+    Number.isSafeInteger(amount) && amount > 0 && amount <= 1000000000,
+    "مبلغ الإيداع غير صالح.",
+  );
+  const ok = post(
+    s,
+    amount,
+    "vault",
+    "خزنة المالك السرية",
+    uid(s, "vault"),
+  );
+  assert(ok, "تعذر تنفيذ الإيداع.");
+  return s.finance.cash;
+}
 export function obligation(
   s,
   { amount, due, category, description, key, ref = null },

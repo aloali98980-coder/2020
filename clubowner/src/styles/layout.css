@@ -123,6 +123,18 @@
   margin-right: auto;
   font-family: Arial;
 }
+.sidebar-bottom .version-badge {
+  margin-right: auto;
+  font-family: Arial;
+  background: none;
+  border: 0;
+  padding: 0;
+  color: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  cursor: default;
+  -webkit-tap-highlight-color: transparent;
+}
 .online-dot,
 .save-indicator i,
 .version-pill i {

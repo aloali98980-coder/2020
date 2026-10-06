@@ -104,4 +104,5 @@ export const category = (c) =>
     matches: "المباريات",
     careers: "الجهاز الفني والمسيرة",
     events: "أحداث النادي",
+    vault: "الخزنة السرية",
   })[c] || c;
