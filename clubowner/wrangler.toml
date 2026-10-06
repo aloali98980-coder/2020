@@ -1,8 +1,18 @@
+# Cloudflare Workers config — النشر بالواجهة الجديدة (Workers Builds)
+# يعمل مع: npx wrangler deploy  (بعد npm run build)
+# الملفات الثابتة تُخدم من dist/، و /api/* تُوجه إلى worker/index.js
 name = "club-owner"
-compatibility_date = "2024-01-01"
-pages_build_output_dir = "dist"
+compatibility_date = "2024-09-23"
+main = "worker/index.js"
 
-# Optional: Add Cloudflare KV for permanent Cloud Sync persistence
+[assets]
+directory = "./dist"
+not_found_handling = "single-page-application"
+
+# اختياري: تخزين دائم للمزامنة السحابية والحسابات على KV
+# 1) أنشئ namespace من لوحة Cloudflare (Workers & Pages > KV)
+# 2) ألغِ التعليق وضع معرّفه هنا — أو اربطه من Dashboard:
+#    Worker > Settings > Bindings > Add > KV > Variable name: CLOUD_DB
 # [[kv_namespaces]]
 # binding = "CLOUD_DB"
 # id = "<your-kv-namespace-id>"

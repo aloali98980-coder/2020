@@ -13,25 +13,44 @@ _Cloudflare Pages & Edge Functions Deployment Guide_
 
 ## ٢. طريقة النشر الأولى: الربط المباشر مع GitHub (الموصى بها) ⚡
 
-هذه الطريقة تجعل أي تحديث في الكود يُنشر تلقائياً خلال ثوانٍ.
+> **ملاحظة مهمة عن الواجهة الجديدة (2025+):** لوحة Cloudflare الحالية تدمج
+> النشر في مسار **Workers** موحّد. بعد اختيار المستودع **لن تظهر** الحقول
+> القديمة (Framework preset / Build output directory) — بل شاشة إعداد فيها
+> **Deploy command** و **Root directory**. المشروع مهيأ للعمل مع هذا المسار
+> تمامًا عبر `wrangler.toml` (ملفات ثابتة من `dist/` + `worker/index.js`
+> لتوجيه `/api/*` لنفس دالة المزامنة).
 
 ### الخطوات:
-1. ارفع المشروع إلى حسابك على GitHub (كما هو موضح في القسم ٥ أدناه).
-2. ادخل إلى لوحة تحكم [Cloudflare Dashboard](https://dash.cloudflare.com).
-3. من القائمة الجانبية، اضغط على **Workers & Pages** ثم اختر **Create application**.
-4. اختر تبويب **Pages** ثم اضغط على **Connect to Git**.
-5. اختر مستودعك على GitHub (`club-owner`).
-6. في صفحة إعدادات البناء (Build settings)، أدخل ما يلي:
-   - **Framework preset**: `None` (أو `Vite`)
-   - **Build command**: `npm run build`
-   - **Build output directory**: `dist`
-   - **Root directory**: `clubowner` ← **إلزامي في هذا المستودع** (الكود داخل مجلد فرعي؛ لو تركته فارغًا سيفشل البناء بخطأ "Could not detect a directory containing static files")
+1. ادخل إلى لوحة تحكم [Cloudflare Dashboard](https://dash.cloudflare.com).
+2. من القائمة الجانبية، اضغط **Workers & Pages** ثم **Create** (أو **Create application**).
+3. اختر **Import a repository** (أو **Connect to Git** في الواجهات الأحدث) وسجّل الدخول بـ GitHub.
+4. اختر المستودع — تأكد أن الفرع المختار يحتوي على الكود (اسأل مطورك أي فرع هو الأحدث).
+5. في شاشة الإعداد **الجديدة (Workers)** املأ ما يلي:
 
-> ⚠️ **تنبيه مهم:** أنشئ المشروع من تبويب **Pages** وليس Workers. مشروعات Workers تستخدم `npx wrangler deploy` وهي طريقة لا تناسب هذا المشروع (ستتجاهل مجلد `functions/` الخاص بالمزامنة السحابية وستفشل في العثور على الملفات الثابتة).
-7. اضغط **Save and Deploy**.
+| الحقل | القيمة |
+| --- | --- |
+| **Project name** | `club-owner` (سيحدد رابطك: `club-owner.<account>.workers.dev`) |
+| **Branch** | الفرع الذي يحتوي على الكود |
+| **Deploy command** | `npm install && npm run build && npx wrangler deploy` |
+| **Root directory** (ضمن Advanced) | `clubowner` ← **إلزامي في هذا المستودع** (الكود داخل مجلد فرعي) |
 
-خلال دقيقة واحدة ستكون لعبتك حية على رابط مثل:
-`https://club-owner.pages.dev` 🎉
+6. اضغط **Save and Deploy** — خلال دقيقتين ستكون اللعبة حية، وكل Push جديد على الفرع يُنشر تلقائيًا.
+
+### إصلاح مشروع فشل من قبل (بدون إنشاء مشروع جديد):
+لو كان لديك مشروع يعطي خطأ مثل
+`Could not detect a directory containing static files`:
+1. افتح المشروع من **Workers & Pages**.
+2. **Settings** → **Build** (أو **Builds**).
+3. عدّل **Root directory** إلى `clubowner` و **Deploy command** إلى
+   `npm install && npm run build && npx wrangler deploy`.
+4. احفظ، ثم من تبويب **Deployments** أعد محاولة آخر نشر (**Retry**)
+   — أو ادفع أي commit جديد وسينطلق النشر تلقائيًا.
+
+### واجهة Pages الكلاسيكية (إن ظهرت لك):
+إذا كانت واجهتك تعرض حقول **Framework preset** و **Build output directory**
+فاستخدم: Preset = `None`، Build command = `npm run build`،
+Output = `dist`، و **Root directory = `clubowner`** أيضًا —
+ودالة المزامنة ستعمل من مجلد `functions/` كما هي.
 
 ---
 
@@ -44,6 +63,11 @@ _Cloudflare Pages & Edge Functions Deployment Guide_
    - **Variable name**: `CLOUD_DB`
    - **KV namespace**: اختر `clubowner_kv`
 5. اضغط **Save**. (الآن أصبحت السحابة تحفظ وتسترجع عالمياً في أجزاء من الثانية!).
+
+> **في مسار Workers الجديد:** من صفحة الـWorker → **Settings** → **Bindings** →
+> **Add** → **KV Namespace** → Variable name: `CLOUD_DB` واختر الـnamespace.
+> (أو أضف `[[kv_namespaces]]` في `wrangler.toml` كما في التعليق الجاهز فيه).
+> بدون هذا الربط تعمل المزامنة بذاكرة مؤقتة فقط (تُفقد عند إعادة النشر).
 
 ---
 
