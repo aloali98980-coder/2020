@@ -6,6 +6,7 @@ import { tr } from "../i18n/index.js";
 import { DIFFICULTIES } from "../models/difficulty.js";
 import { getLanguage } from "../i18n/index.js";
 import { CLUBS, LEAGUES } from "../data/catalog.js";
+import { APP_VERSION } from "../data/version.js";
 import { brand } from "../components/shell.js";
 import { stadiumArt } from "../components/stadium.js";
 import { crest, badge } from "../components/shared.js";
@@ -18,7 +19,7 @@ export function setupView(
   config = { difficulty: "normal", database: "world" },
 ) {
   const club = extendedClub(selected) || extendedClub("ahly");
-  return `<div class="setup-page"><header class="setup-header">${brand()}<select id="setup-language" class="language-select" aria-label="لغة الواجهة"><option value="ar" ${getLanguage() === "ar" ? "selected" : ""}>العربية</option><option value="en" ${getLanguage() === "en" ? "selected" : ""}>English</option><option value="fr" ${getLanguage() === "fr" ? "selected" : ""}>Français</option></select><span class="version-pill"><i></i> نسخة تجريبية قابلة للعب <b>ALPHA 0.22</b></span></header><div class="setup-layout"><section class="setup-form"><div class="eyebrow"><span class="line"></span> مشروعك الكروي يبدأ هنا</div><h1>مش مجرد فريق.<br>دي <span>مؤسستك.</span></h1><p class="setup-intro">من أول صفقة لآخر مقعد في المدرجات.<br>اختار ناديك، ابني مشروعك، وسيب بصمتك.</p><div class="step-heading"><span>01</span><div><h3>اختار النادي اللي هتكتب حكايته</h3><small>${config.expanded ? "اختر البلد والدرجة والنادي أدناه" : "٤ أندية في النمط القديم"}</small></div></div>${expandedSetup(selected, config)}<div class="club-grid">${(config.expanded
+  return `<div class="setup-page"><header class="setup-header">${brand()}<select id="setup-language" class="language-select" aria-label="لغة الواجهة"><option value="ar" ${getLanguage() === "ar" ? "selected" : ""}>العربية</option><option value="en" ${getLanguage() === "en" ? "selected" : ""}>English</option><option value="fr" ${getLanguage() === "fr" ? "selected" : ""}>Français</option></select><span class="version-pill"><i></i> نسخة تجريبية قابلة للعب <b>ALPHA ${APP_VERSION}</b></span></header><div class="setup-layout"><section class="setup-form"><div class="eyebrow"><span class="line"></span> مشروعك الكروي يبدأ هنا</div><h1>مش مجرد فريق.<br>دي <span>مؤسستك.</span></h1><p class="setup-intro">من أول صفقة لآخر مقعد في المدرجات.<br>اختار ناديك، ابني مشروعك، وسيب بصمتك.</p><div class="step-heading"><span>01</span><div><h3>اختار النادي اللي هتكتب حكايته</h3><small>${config.expanded ? "اختر البلد والدرجة والنادي أدناه" : "٤ أندية في النمط القديم"}</small></div></div>${expandedSetup(selected, config)}<div class="club-grid">${(config.expanded
     ? [club]
     : CLUBS
   )

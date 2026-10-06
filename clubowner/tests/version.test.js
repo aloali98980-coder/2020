@@ -20,4 +20,14 @@ test("APP_VERSION متسقة مع package.json وindex.html", () => {
     shell.includes("v${APP_VERSION}"),
     "شارة النسخة في الهيكل يجب أن تستخدم APP_VERSION لا نصًا ثابتًا",
   );
+  const setup = readFileSync(new URL("../src/features/setup.js", import.meta.url), "utf8");
+  assert.ok(
+    setup.includes("ALPHA ${APP_VERSION}"),
+    "شارة النسخة في شاشة البداية يجب أن تستخدم APP_VERSION لا نصًا ثابتًا",
+  );
+  const settings = readFileSync(new URL("../src/features/settings.js", import.meta.url), "utf8");
+  assert.ok(
+    settings.includes("ALPHA ${APP_VERSION}"),
+    "شارة النسخة في «عن اللعبة» يجب أن تستخدم APP_VERSION لا نصًا ثابتًا",
+  );
 });

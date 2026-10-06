@@ -1,4 +1,4 @@
-# دليل النشر النهائي — Club Owner (v0.22.0)
+# دليل النشر النهائي — Club Owner (v0.23.0)
 _Final Production Deployment & Hosting Guide_
 
 ---
