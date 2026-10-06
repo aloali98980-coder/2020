@@ -1,0 +1,38 @@
+{
+  "name": "club-owner",
+  "version": "0.23.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server/index.mjs",
+    "dev": "vite --host 0.0.0.0",
+    "test": "node --test tests/*.test.js",
+    "build": "vite build && node scripts/build-offline.mjs",
+    "preview": "vite preview --host 0.0.0.0",
+    "test:browser": "node tests/browser-check.mjs",
+    "format": "prettier --write src tests index.html vite.config.js",
+    "test:offline": "node tests/offline-check.mjs",
+    "test:update": "node tests/update-browser.mjs",
+    "test:webkit": "node tests/webkit-check.mjs",
+    "test:iphone": "node tests/webkit-iphone.mjs",
+    "test:world": "node tests/world-browser.mjs && node tests/world-save-browser.mjs",
+    "test:expansion": "node tests/expansion-browser.mjs",
+    "test:expansion:offline": "node tests/expansion-offline.mjs",
+    "test:europe": "node tests/europe-browser.mjs",
+    "test:full-season": "node tests/full-world-v05.mjs && node tests/mature-save-browser.mjs",
+    "test:v06": "node --test tests/v06.test.js",
+    "test:v06:browser": "node tests/v06-browser.mjs",
+    "test:v06:seasons": "node tests/full-world-v06.mjs && node tests/v06-multiseason.mjs",
+    "test:talent": "node --test tests/talent.test.js",
+    "test:talent:browser": "node tests/talent-browser.mjs",
+    "test:v07:seasons": "node tests/full-world-v07.mjs",
+    "i18n:coverage": "node scripts/i18n-coverage.mjs",
+    "test:i18n": "node tests/i18n-browser.mjs",
+    "test:i18n:runtime": "node tests/i18n-runtime.mjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.51.0",
+    "prettier": "^3.9.9",
+    "vite": "^6.1.0"
+  }
+}

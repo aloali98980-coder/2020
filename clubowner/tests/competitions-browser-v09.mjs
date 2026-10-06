@@ -1,0 +1,19 @@
+import {chromium,webkit}from'@playwright/test';import assert from'node:assert/strict';import{readFile,writeFile}from'node:fs/promises';import{gunzipSync}from'node:zlib';
+const url=process.env.TEST_URL||'http://127.0.0.1:5174',results=[];
+for(const [engine,type]of Object.entries({chromium,webkit}).filter(([e])=>!process.env.TEST_ENGINE||e===process.env.TEST_ENGINE)){
+ const b=await type.launch();try{
+ const ctx=await b.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true}),p=await ctx.newPage(),errors=[];p.on('pageerror',e=>errors.push(e.message));
+ const nav=async name=>{await p.click('.mobile-nav [data-action=more]');await p.click(`.more-grid [data-nav=${name}]`);};
+ const importFile=async file=>{const chooser=p.waitForEvent('filechooser');await p.click('[data-action=import-save]');await(await chooser).setFiles(file);await p.waitForSelector('[data-action=confirm-import]',{timeout:90000});await p.click('[data-action=confirm-import]');await p.waitForSelector('.hero-card',{timeout:90000});};
+ const exportState=async()=>{await nav('settings');const download=p.waitForEvent('download');await p.click('[data-action=export-save]');const d=await download;return JSON.parse(gunzipSync(await readFile(await d.path())));};
+ await p.goto(url);await p.click('[data-action=markets-egypt]');await p.click('[data-action=start-game]');await p.waitForSelector('.hero-card',{timeout:90000});await nav('world');
+ assert.equal(await p.locator('[data-europe]').count(),3);assert.equal(await p.locator('[data-competition]').count(),10);
+ for(const [kind,n]of [['caf',16],['confed',16],['lib',32],['suda',32]]){const card=p.locator(`[data-competition=${kind}]`);await card.locator(':scope > summary').click();assert.equal(await card.locator('.league-table tbody tr').count(),n);assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);await card.locator(':scope > summary').click();}
+ await nav('settings');await importFile('.arena/competition-v09-mid.json.gz');await p.reload();await p.waitForSelector('.hero-card',{timeout:90000});await nav('world');
+ const suda=p.locator('[data-competition=suda]');await suda.locator(':scope > summary').click();assert.equal(await suda.locator('.league-table tbody tr').count(),32);assert.equal(await suda.locator('.europe-ties article').count(),8);assert((await suda.innerText()).includes('ملحق'));await suda.scrollIntoViewIfNeeded();await p.screenshot({path:`review/v09-${engine}-sudamericana.png`});assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
+ const exported=await exportState(),expected=JSON.parse(gunzipSync(await readFile('.arena/competition-v09-mid.json.gz')));assert.deepEqual(exported,expected);await p.selectOption('#advance-days','1');await p.click('[data-action=advance]');await p.waitForFunction(()=>!document.body.classList.contains('saving-game'));await p.reload();await p.waitForSelector('.hero-card',{timeout:90000});
+ await nav('settings');await importFile('.arena/actual-v08-mid.json.gz');const migrated=await exportState(),old=JSON.parse(gunzipSync(await readFile('.arena/actual-v08-mid.json.gz')));assert.equal(migrated.version,9);assert.equal(migrated.expansion.competitionVersion,0);assert.deepEqual(migrated.expansion.cups,old.expansion.cups);await nav('world');assert.equal(await p.locator('[data-competition]').count(),0);
+ assert.deepEqual(errors,[]);results.push({engine,passed:true,freshGroupsAllFour:true,midSudamericanaPlayoffImportedAndReloaded:true,exportByteContentPreserved:true,timeAdvanceAfterReload:true,actualV08CupResultsPreserved:true,noHorizontalOverflow:true,errors});
+ }finally{await b.close();}
+}
+await writeFile(`review/competitions-browser-v09${process.env.TEST_ENGINE?'-'+process.env.TEST_ENGINE:''}.json`,JSON.stringify(results,null,2));console.log(results);

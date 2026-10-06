@@ -1,0 +1,443 @@
+{
+  "reviewedOn": "2026-09-25",
+  "season": "2026/27",
+  "status": "reported-reconciled-not-certified",
+  "method": "Original factual compilation of club names/group membership from reporting. No source prose, logos, results or fixture lists redistributed. English keys are stable identifiers, not certified official English names. 70 third-tier names after reconciliation; source totals and interim lists conflict. No fourth-tier list inferred.",
+  "sources": [
+    {
+      "url": "https://www.btolat.com/news/405272",
+      "date": "2026-07-09",
+      "use": "Second Division A names; Delta United alias noted, fixture text contains an older Mega Sport label."
+    },
+    {
+      "url": "https://www.vetogate.com/5715553",
+      "date": "2026-08-19",
+      "use": "Division B groups and promotion structure; published total differs from enumerated names."
+    },
+    {
+      "url": "https://www.filgoal.com/articles/536282",
+      "date": "2026-09-02",
+      "use": "Opening fixtures cross-check for groups 1A, 3, 4 and Orange return."
+    },
+    {
+      "url": "https://www.filgoal.com/articles/537356",
+      "date": "2026-09-16",
+      "use": "Current group 2 fixtures cross-check, including G Club and El Elameen."
+    },
+    {
+      "url": "https://www.almasryalyoum.com/news/details/4313526",
+      "date": "2026-07-12",
+      "use": "17 named Group 2 participants, reconciled with September reports."
+    }
+  ],
+  "divisions": [
+    {
+      "id": "eg-2",
+      "country": "eg",
+      "tier": 2,
+      "name": "دوري المحترفين — القسم الثاني أ",
+      "clubs": [
+        {
+          "name": "كهرباء الإسماعيلية",
+          "key": "Ismaily SC Electricity"
+        },
+        {
+          "name": "حرس الحدود",
+          "key": "Haras El Hodoud SC"
+        },
+        {
+          "name": "فاركو",
+          "key": "Pharco FC"
+        },
+        {
+          "name": "الإسماعيلي",
+          "key": "Ismaily SC"
+        },
+        {
+          "name": "مسار",
+          "key": "FC Masar"
+        },
+        {
+          "name": "بروكسي",
+          "key": "Proxy SC"
+        },
+        {
+          "name": "تيم إف سي",
+          "key": "Team FC Cairo"
+        },
+        {
+          "name": "المصرية للاتصالات",
+          "key": "Telecom Egypt SC"
+        },
+        {
+          "name": "السكة الحديد",
+          "key": "El Sekka El Hadid SC"
+        },
+        {
+          "name": "المنصورة",
+          "key": "El Mansoura SC"
+        },
+        {
+          "name": "مالية كفر الزيات",
+          "key": "Maleyat Kafr El Zayat SC"
+        },
+        {
+          "name": "ديروط",
+          "key": "Dayrout SC"
+        },
+        {
+          "name": "الداخلية",
+          "key": "El Dakhleya SC"
+        },
+        {
+          "name": "الترسانة",
+          "key": "Tersana SC"
+        },
+        {
+          "name": "الإنتاج الحربي",
+          "key": "El Entag El Harby SC"
+        },
+        {
+          "name": "طنطا",
+          "key": "Tanta SC"
+        },
+        {
+          "name": "بلدية المحلة",
+          "key": "Baladiyat El Mahalla SC"
+        },
+        {
+          "name": "النصر القاهري",
+          "key": "Al Nasr SC (Egypt)"
+        },
+        {
+          "name": "لافيينا",
+          "key": "La Viena FC"
+        },
+        {
+          "name": "دلتا يونايتد",
+          "key": "Belqas City SC"
+        }
+      ]
+    },
+    {
+      "id": "eg-3-a",
+      "country": "eg",
+      "tier": 3,
+      "name": "القسم الثاني ب — الصعيد أ",
+      "clubs": [
+        {
+          "name": "أسوان",
+          "key": "Aswan SC"
+        },
+        {
+          "name": "النصر للتعدين",
+          "key": "Al Nasr Lel Taa'den SC"
+        },
+        {
+          "name": "كيما أسوان",
+          "key": "KIMA Aswan SC"
+        },
+        {
+          "name": "الأقصر",
+          "key": "Luxor SC"
+        },
+        {
+          "name": "المدينة المنورة",
+          "key": "Al Madina Al Monawara SC"
+        },
+        {
+          "name": "سينزو",
+          "key": "Senzo FC"
+        },
+        {
+          "name": "الألومنيوم",
+          "key": "Al Aluminium SC"
+        },
+        {
+          "name": "شبان قنا",
+          "key": "Muslim Youths SC (Qena)"
+        },
+        {
+          "name": "سوهاج",
+          "key": "Sohag SC"
+        },
+        {
+          "name": "شباب سوهاج",
+          "key": "MS Sohag"
+        },
+        {
+          "name": "طهطا",
+          "key": "Tahta SC"
+        }
+      ]
+    },
+    {
+      "id": "eg-3-b",
+      "country": "eg",
+      "tier": 3,
+      "name": "القسم الثاني ب — الصعيد ب",
+      "clubs": [
+        {
+          "name": "البداري",
+          "key": "Al Badari SC"
+        },
+        {
+          "name": "شبان أسيوط",
+          "key": "Muslim Youths SC (Asyut)"
+        },
+        {
+          "name": "المنيا",
+          "key": "El Minya SC"
+        },
+        {
+          "name": "ناصر الفكرية",
+          "key": "Nasser El Fekria SC"
+        },
+        {
+          "name": "تليفونات بني سويف",
+          "key": "Telephonat Beni Suef SC"
+        },
+        {
+          "name": "نجوم مصر",
+          "key": "Egypt Stars FC"
+        },
+        {
+          "name": "بني سويف",
+          "key": "Beni Suef SC"
+        },
+        {
+          "name": "مصر للمقاصة",
+          "key": "Misr Lel Makkasa SC"
+        },
+        {
+          "name": "سيلا",
+          "key": "Sila SC"
+        },
+        {
+          "name": "جولدن جيت",
+          "key": "Golden Gate FC"
+        }
+      ]
+    },
+    {
+      "id": "eg-3-c",
+      "country": "eg",
+      "tier": 3,
+      "name": "القسم الثاني ب — القاهرة والجيزة",
+      "clubs": [
+        {
+          "name": "كسكادا",
+          "key": "Kaskada FC"
+        },
+        {
+          "name": "جي",
+          "key": "G Club"
+        },
+        {
+          "name": "الإعلاميين",
+          "key": "El Elameen SC"
+        },
+        {
+          "name": "جمهورية شبين",
+          "key": "Gomhoriat Shebin SC"
+        },
+        {
+          "name": "العبور",
+          "key": "Al Obour SC"
+        },
+        {
+          "name": "مصر للتأمين",
+          "key": "Misr Insurance SC"
+        },
+        {
+          "name": "المستقبل سبورت",
+          "key": "Mostaqbal Sport"
+        },
+        {
+          "name": "دياموند",
+          "key": "Diamond FC"
+        },
+        {
+          "name": "النجوم",
+          "key": "Nogoom FC"
+        },
+        {
+          "name": "اتحاد الشرطة",
+          "key": "Ittihad El Shorta SC"
+        },
+        {
+          "name": "الشنواني",
+          "key": "El Shenwany SC"
+        },
+        {
+          "name": "ليفلز",
+          "key": "Levels FC"
+        },
+        {
+          "name": "رع",
+          "key": "Ra FC"
+        },
+        {
+          "name": "أورانج",
+          "key": "Orange FC"
+        },
+        {
+          "name": "بنها",
+          "key": "Benha SC"
+        },
+        {
+          "name": "الجزيرة",
+          "key": "El Gezira SC Cairo"
+        },
+        {
+          "name": "القناطر الخيرية",
+          "key": "El Qanater El Khairia SC"
+        }
+      ]
+    },
+    {
+      "id": "eg-3-d",
+      "country": "eg",
+      "tier": 3,
+      "name": "القسم الثاني ب — القناة والدلتا",
+      "clubs": [
+        {
+          "name": "قرية عامر",
+          "key": "Qaryet Amer Youth Center"
+        },
+        {
+          "name": "بورتو السويس",
+          "key": "Porto Suez SC"
+        },
+        {
+          "name": "النصر بالعريش",
+          "key": "Al Nasr SC Arish"
+        },
+        {
+          "name": "بورفؤاد",
+          "key": "Port Fouad SC"
+        },
+        {
+          "name": "المريخ",
+          "key": "Al Merreikh SC Egypt"
+        },
+        {
+          "name": "الرباط والأنوار",
+          "key": "El Rabat and El Anwar SC"
+        },
+        {
+          "name": "شربين",
+          "key": "Sherbin SC"
+        },
+        {
+          "name": "نبروه",
+          "key": "Ittihad Nabarouh SC"
+        },
+        {
+          "name": "دكرنس",
+          "key": "Dekernes SC"
+        },
+        {
+          "name": "منية النصر",
+          "key": "Meniet El Nasr SC"
+        },
+        {
+          "name": "شباب أجا",
+          "key": "Aga Youth Center"
+        },
+        {
+          "name": "الزرقا",
+          "key": "El Zarqa SC"
+        },
+        {
+          "name": "سمنود",
+          "key": "Samanoud SC"
+        },
+        {
+          "name": "بيلا",
+          "key": "Biyala SC"
+        },
+        {
+          "name": "بلطيم",
+          "key": "Baltim SC"
+        },
+        {
+          "name": "كفر الشيخ",
+          "key": "Kafr El Sheikh SC"
+        }
+      ]
+    },
+    {
+      "id": "eg-3-e",
+      "country": "eg",
+      "tier": 3,
+      "name": "القسم الثاني ب — بحري",
+      "clubs": [
+        {
+          "name": "ألعاب دمنهور",
+          "key": "Ala'ab Damanhour SC"
+        },
+        {
+          "name": "شباب كوم حمادة",
+          "key": "Kom Hamada Youth Center"
+        },
+        {
+          "name": "أبو المطامير",
+          "key": "Abu El Matamir Youth Center"
+        },
+        {
+          "name": "بدر",
+          "key": "Badr SC"
+        },
+        {
+          "name": "راية",
+          "key": "Raya Ghazl Kafr El Dawar SC"
+        },
+        {
+          "name": "نيو سبورتنج",
+          "key": "New Sporting City"
+        },
+        {
+          "name": "الأولمبي",
+          "key": "Olympic Club (Egypt)"
+        },
+        {
+          "name": "سبورتنج",
+          "key": "Sporting Alexandria"
+        },
+        {
+          "name": "طلائع الأسطول",
+          "key": "Talaea El Ostool SC"
+        },
+        {
+          "name": "دلفي",
+          "key": "Delfi SC"
+        },
+        {
+          "name": "المجد السكندري",
+          "key": "El Magd SC"
+        },
+        {
+          "name": "أصحاب الجياد",
+          "key": "Ashab El Jiyad SC"
+        },
+        {
+          "name": "الإسكندرية للبترول",
+          "key": "Alexandria Petroleum SC"
+        },
+        {
+          "name": "الحمام",
+          "key": "El Hammam SC"
+        },
+        {
+          "name": "الجزيرة بمطروح",
+          "key": "Al Jazeera SC"
+        },
+        {
+          "name": "إنتر سيتي",
+          "key": "Inter City FC Egypt"
+        }
+      ]
+    }
+  ]
+}

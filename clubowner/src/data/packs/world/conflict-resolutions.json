@@ -1,0 +1,1008 @@
+{
+  "generatedOn": "2026-09-27",
+  "resolutions": {
+    "Q84725354": {
+      "club": "wiki-854995801571",
+      "method": "article-currentclub",
+      "evidence": "Al Ahly SC"
+    },
+    "Q106823612": {
+      "club": "wiki-3ff57a792a5e",
+      "method": "article-currentclub",
+      "evidence": "Ceramica Cleopatra FC"
+    },
+    "Q18705249": {
+      "club": "wiki-854995801571",
+      "method": "article-currentclub",
+      "evidence": "Al Ahly SC"
+    },
+    "Q53105562": {
+      "club": "wiki-854995801571",
+      "method": "article-over-name-match"
+    },
+    "Q128602781": {
+      "club": "wiki-854995801571",
+      "method": "article-currentclub",
+      "evidence": "Al Ahly SC"
+    },
+    "Youssef El Gohary": {
+      "club": "wiki-3d8dd3a6ae61",
+      "method": "newer-source"
+    },
+    "Ahmed El Shimi": {
+      "club": "wiki-c5d26d4afca9",
+      "method": "newer-source"
+    },
+    "Ahmed El Arabi": {
+      "club": "wiki-f20d98a94a69",
+      "method": "newer-source"
+    },
+    "Q55759608": {
+      "club": "wiki-2cb12c23b680",
+      "method": "newer-source"
+    },
+    "Mohamed Gharib": {
+      "club": "wiki-8bacb4af6b28",
+      "method": "newer-source"
+    },
+    "Q55603765": {
+      "club": "wiki-54d6dfb188b2",
+      "method": "newer-source"
+    },
+    "Q54861007": {
+      "club": "wiki-38a69bfe5503",
+      "method": "article-currentclub",
+      "evidence": "Churchill Brothers FC"
+    },
+    "Ahmed Fawzi": {
+      "club": "wiki-77e0b0e856c3",
+      "method": "newer-source"
+    },
+    "Q128210256": {
+      "club": "wiki-77e0b0e856c3",
+      "method": "article-currentclub",
+      "evidence": "Pyramids FC"
+    },
+    "Karim Emad": {
+      "distinct": true,
+      "method": "distinct-namesakes"
+    },
+    "Islam Reisha": {
+      "distinct": true,
+      "method": "distinct-namesakes"
+    },
+    "Mohab Samy": {
+      "distinct": true,
+      "method": "distinct-namesakes"
+    },
+    "Mody Naser": {
+      "distinct": true,
+      "method": "distinct-namesakes"
+    },
+    "Salah Zayed": {
+      "distinct": true,
+      "method": "distinct-namesakes"
+    },
+    "Ahmed Castelo": {
+      "distinct": true,
+      "method": "distinct-namesakes"
+    },
+    "Hazem Abosena": {
+      "distinct": true,
+      "method": "distinct-namesakes"
+    },
+    "Q115869292": {
+      "club": "wiki-0dae148754df",
+      "method": "article-currentclub",
+      "evidence": "CR Belouizdad"
+    },
+    "Hossam Greisha": {
+      "distinct": true,
+      "method": "distinct-namesakes"
+    },
+    "Osama El Nagar": {
+      "distinct": true,
+      "method": "distinct-namesakes"
+    },
+    "Hafiz Ibrahim": {
+      "distinct": true,
+      "method": "distinct-namesakes"
+    },
+    "Ahmed El Sayed": {
+      "distinct": true,
+      "method": "distinct-namesakes"
+    },
+    "Abdellah Ziani": {
+      "distinct": true,
+      "method": "distinct-namesakes"
+    },
+    "Q39161023": {
+      "club": "wiki-54d6dfb188b2",
+      "method": "article-over-name-match"
+    },
+    "Rasheed Ahmed": {
+      "club": "wiki-12066e890dce",
+      "method": "newer-source"
+    },
+    "Qobolwakhe Sibande": {
+      "distinct": true,
+      "method": "distinct-namesakes"
+    },
+    "Ahmed Tarek": {
+      "distinct": true,
+      "method": "distinct-namesakes"
+    },
+    "Q106171073": {
+      "club": "wiki-3ffede89dad2",
+      "method": "article-currentclub",
+      "evidence": "Manchester United F.C."
+    },
+    "Q98431212": {
+      "club": "wiki-5644ed18e6f4",
+      "method": "article-currentclub",
+      "evidence": "AFC Bournemouth"
+    },
+    "Q134493925": {
+      "club": "wiki-39c7cc6eee03",
+      "method": "article-over-name-match"
+    },
+    "Jefferson Ramos": {
+      "club": "wiki-b3b71d53f6d5",
+      "method": "newer-source"
+    },
+    "Q110372317": {
+      "club": "wiki-043896641739",
+      "method": "newer-source"
+    },
+    "Q55613051": {
+      "club": "wiki-0e2648edf565",
+      "method": "article-over-name-match"
+    },
+    "Q22082627": {
+      "club": "wiki-8f1cbe307798",
+      "method": "article-currentclub",
+      "evidence": "Al Qadsiah FC"
+    },
+    "Q28973866": {
+      "club": "wiki-eab4d1f245a9",
+      "method": "article-currentclub",
+      "evidence": "Real Madrid CF"
+    },
+    "Q132413182": {
+      "club": "wiki-4a6590f2979d",
+      "method": "article-currentclub",
+      "evidence": "RB Leipzig"
+    },
+    "Q58011140": {
+      "club": "wiki-1b8f6a23fdaa",
+      "method": "article-currentclub",
+      "evidence": "RC Celta de Vigo"
+    },
+    "Q125271014": {
+      "club": "wiki-9244d2b4dca4",
+      "method": "article-currentclub",
+      "evidence": "Levante UD"
+    },
+    "Q131905115": {
+      "club": "wiki-b533749b5ef5",
+      "method": "article-currentclub",
+      "evidence": "Racing de Santander"
+    },
+    "Q114060630": {
+      "club": "wiki-b533749b5ef5",
+      "method": "article-currentclub",
+      "evidence": "Racing de Santander"
+    },
+    "Q45935395": {
+      "club": "wiki-40cb2eff5f46",
+      "method": "article-over-name-match"
+    },
+    "Q105811295": {
+      "club": "wiki-fedf7b3d8e9d",
+      "method": "article-currentclub",
+      "evidence": "FC Cincinnati"
+    },
+    "Q107671130": {
+      "club": "wiki-e1598464e212",
+      "method": "article-currentclub",
+      "evidence": "SV Elversberg"
+    },
+    "Q28531111": {
+      "club": "wiki-e5916f0d10c9",
+      "method": "article-currentclub",
+      "evidence": "FC Bayern Munich"
+    },
+    "Q135854952": {
+      "club": "wiki-bc3cce6a8ff4",
+      "method": "article-currentclub",
+      "evidence": "Parma Calcio 1913"
+    },
+    "Q118358829": {
+      "club": "wiki-7e88423826a9",
+      "method": "article-currentclub",
+      "evidence": "RC Strasbourg Alsace"
+    },
+    "Q18763924": {
+      "club": "wiki-524f1e51d5d6",
+      "method": "article-over-name-match"
+    },
+    "Q124258490": {
+      "club": "wiki-45dea86df668",
+      "method": "article-currentclub",
+      "evidence": "C.F. Estrela da Amadora"
+    },
+    "Q121463453": {
+      "club": "wiki-3887f8e97cc9",
+      "method": "article-currentclub",
+      "evidence": "C.D. Nacional"
+    },
+    "Q17496664": {
+      "club": "wiki-7e3440e542be",
+      "method": "article-currentclub",
+      "evidence": "SK Beveren"
+    },
+    "Q101247266": {
+      "club": "wiki-b31b0a8ae825",
+      "method": "article-currentclub",
+      "evidence": "CR Flamengo"
+    },
+    "Q140968243": {
+      "club": "wiki-e836ba580ced",
+      "method": "newer-source"
+    },
+    "Q120243936": {
+      "club": "wiki-d9ef5178a8cd",
+      "method": "article-currentclub",
+      "evidence": "Royal Charleroi SC"
+    },
+    "Q125694499": {
+      "club": "wiki-a017db94090c",
+      "method": "article-currentclub",
+      "evidence": "KRC Genk"
+    },
+    "Q107119635": {
+      "club": "wiki-8cb619c81c37",
+      "method": "article-currentclub",
+      "evidence": "FC UTA Arad"
+    },
+    "Q120359865": {
+      "club": "wiki-c88b3744b60e",
+      "method": "article-currentclub",
+      "evidence": "New England Revolution"
+    },
+    "Q61642000": {
+      "club": "wiki-268f78f08551",
+      "method": "article-currentclub",
+      "evidence": "Kalamata F.C."
+    },
+    "Q23887828": {
+      "club": "wiki-6b8212d3db33",
+      "method": "article-currentclub",
+      "evidence": "PAOK FC"
+    },
+    "Q131408212": {
+      "club": "wiki-8c5664190f1d",
+      "method": "newer-source"
+    },
+    "Q121592857": {
+      "club": "wiki-008db4f5934c",
+      "method": "article-currentclub",
+      "evidence": "F.C. Copenhagen"
+    },
+    "Q42401793": {
+      "club": "wiki-5a748045d102",
+      "method": "article-currentclub",
+      "evidence": "IF Brommapojkarna"
+    },
+    "Q118696710": {
+      "club": "wiki-10cb31a137b5",
+      "method": "article-currentclub",
+      "evidence": "Legia Warsaw"
+    },
+    "Q18817905": {
+      "club": "wiki-2aa347164987",
+      "method": "article-currentclub",
+      "evidence": "Red Star Belgrade"
+    },
+    "Q116889139": {
+      "club": "wiki-24cafbd18bb7",
+      "method": "article-currentclub",
+      "evidence": "FK Radnički 1923"
+    },
+    "Q111906308": {
+      "club": "wiki-b33e82c53290",
+      "method": "article-currentclub",
+      "evidence": "CFR Cluj"
+    },
+    "David Avram": {
+      "distinct": true,
+      "method": "distinct-namesakes"
+    },
+    "Q125018274": {
+      "club": "wiki-e33b70a8379c",
+      "method": "article-currentclub",
+      "evidence": "FC Chornomorets Odesa"
+    },
+    "Valentyn Morhun": {
+      "distinct": true,
+      "method": "distinct-namesakes"
+    },
+    "Carlos Rojas": {
+      "distinct": true,
+      "method": "distinct-namesakes"
+    },
+    "Q133238733": {
+      "club": "wiki-1f6c2f32d677",
+      "method": "newer-source"
+    },
+    "Q209847": {
+      "club": "wiki-1f6c2f32d677",
+      "method": "article-currentclub",
+      "evidence": "FC Krasnodar"
+    },
+    "Q1140321": {
+      "club": "wiki-ce3e9b029336",
+      "method": "article-currentclub",
+      "evidence": "FC Lokomotiv Moscow"
+    },
+    "Csaba Máté": {
+      "distinct": true,
+      "method": "distinct-namesakes"
+    },
+    "Q104839644": {
+      "club": "wiki-efec340ab8c8",
+      "method": "article-over-name-match"
+    },
+    "Q39079181": {
+      "club": "wiki-d20676937025",
+      "method": "article-currentclub",
+      "evidence": "SE Palmeiras"
+    },
+    "João Pedro": {
+      "distinct": true,
+      "method": "distinct-namesakes"
+    },
+    "Q1279869": {
+      "club": "wiki-4e8eecc57d04",
+      "method": "article-currentclub",
+      "evidence": "Club Atlético Aldosivi"
+    },
+    "Q60734780": {
+      "club": "wiki-4e8eecc57d04",
+      "method": "article-currentclub",
+      "evidence": "Club Atlético Aldosivi"
+    },
+    "Q2642101": {
+      "club": "wiki-c7f88f550c8c",
+      "method": "article-currentclub",
+      "evidence": "Club Atlético Belgrano"
+    },
+    "Q17619668": {
+      "club": "wiki-78e975b5c969",
+      "method": "article-currentclub",
+      "evidence": "Defensa y Justicia"
+    },
+    "Q124844796": {
+      "club": "wiki-3b8914168500",
+      "method": "article-currentclub",
+      "evidence": "Argentinos Juniors"
+    },
+    "Q65161971": {
+      "club": "wiki-9fb6f4762d1f",
+      "method": "article-currentclub",
+      "evidence": "Newell's Old Boys"
+    },
+    "Q64010154": {
+      "club": "wiki-6347aaeb619b",
+      "method": "article-currentclub",
+      "evidence": "Club Atlético Banfield"
+    },
+    "Q93275357": {
+      "club": "wiki-c45de1a8631d",
+      "method": "article-currentclub",
+      "evidence": "Central Córdoba de Santiago del Estero"
+    },
+    "Q124378292": {
+      "club": "wiki-c45de1a8631d",
+      "method": "article-currentclub",
+      "evidence": "Central Córdoba de Santiago del Estero"
+    },
+    "Javier Vallejos": {
+      "distinct": true,
+      "method": "distinct-namesakes"
+    },
+    "Ezequiel Burdín": {
+      "distinct": true,
+      "method": "distinct-namesakes"
+    },
+    "Q66901802": {
+      "club": "wiki-78e975b5c969",
+      "method": "article-currentclub",
+      "evidence": "Defensa y Justicia"
+    },
+    "Q103876447": {
+      "club": "wiki-0a7b0e5fe007",
+      "method": "article-currentclub",
+      "evidence": "Deportivo Riestra"
+    },
+    "Q30899504": {
+      "club": "wiki-0a7b0e5fe007",
+      "method": "article-currentclub",
+      "evidence": "Deportivo Riestra"
+    },
+    "Q113009337": {
+      "club": "wiki-0a7b0e5fe007",
+      "method": "newer-source"
+    },
+    "Q42891233": {
+      "club": "wiki-0a7b0e5fe007",
+      "method": "article-currentclub",
+      "evidence": "Deportivo Riestra"
+    },
+    "Q24006157": {
+      "club": "wiki-e67b99e4cf60",
+      "method": "article-currentclub",
+      "evidence": "Minnesota United FC"
+    },
+    "Q62108433": {
+      "club": "wiki-b376752d0f26",
+      "method": "article-currentclub",
+      "evidence": "Estudiantes de Río Cuarto"
+    },
+    "Gonzalo González": {
+      "distinct": true,
+      "method": "distinct-namesakes"
+    },
+    "Q108796990": {
+      "club": "wiki-3d0640186b7f",
+      "method": "article-currentclub",
+      "evidence": "Club de Gimnasia y Esgrima La Plata"
+    },
+    "Q37327515": {
+      "club": "wiki-9fb6f4762d1f",
+      "method": "article-currentclub",
+      "evidence": "Newell's Old Boys"
+    },
+    "Q15960512": {
+      "club": "wiki-d44cb2fae38c",
+      "method": "article-currentclub",
+      "evidence": "Club Atlético Huracán"
+    },
+    "Q27786411": {
+      "club": "wiki-5b7bf110d000",
+      "method": "article-currentclub",
+      "evidence": "Club Atlético Lanús"
+    },
+    "Q116287458": {
+      "club": "wiki-5b7bf110d000",
+      "method": "article-currentclub",
+      "evidence": "Club Atlético Lanús"
+    },
+    "Sebastián Zaracho": {
+      "distinct": true,
+      "method": "distinct-namesakes"
+    },
+    "Jhon Rentería": {
+      "distinct": true,
+      "method": "distinct-namesakes"
+    },
+    "Q125357410": {
+      "club": "wiki-47a835283d2c",
+      "method": "newer-source"
+    },
+    "Q101132565": {
+      "club": "wiki-dc958a0e8dae",
+      "method": "article-currentclub",
+      "evidence": "Club Atlético Tigre"
+    },
+    "Q140443090": {
+      "club": "wiki-e5ede7508901",
+      "method": "article-currentclub",
+      "evidence": "Club Universidad de Chile"
+    },
+    "Q122173489": {
+      "club": "wiki-146fe9425824",
+      "method": "article-currentclub",
+      "evidence": "Juventud de Las Piedras"
+    },
+    "Q112617367": {
+      "club": "wiki-bf44026f7e5d",
+      "method": "article-over-name-match"
+    },
+    "Q18617055": {
+      "club": "wiki-7e6d558d0170",
+      "method": "article-currentclub",
+      "evidence": "Peñarol"
+    },
+    "Q99258711": {
+      "club": "wiki-502119f230ce",
+      "method": "article-currentclub",
+      "evidence": "Racing Club de Montevideo"
+    },
+    "Sebastián Rodríguez": {
+      "distinct": true,
+      "method": "distinct-namesakes"
+    },
+    "Q16585144": {
+      "club": "wiki-bb3cde9d53dc",
+      "method": "article-currentclub",
+      "evidence": "Independiente Santa Fe"
+    },
+    "Q112155207": {
+      "club": "wiki-b7471d98827a",
+      "method": "article-currentclub",
+      "evidence": "Atlético Nacional"
+    },
+    "Sebastián Viveros": {
+      "club": "wiki-1710cb40bdc1",
+      "method": "newer-source"
+    },
+    "Marlon Carabalí": {
+      "club": "wiki-0e48b77c2c65",
+      "method": "newer-source"
+    },
+    "Q24685576": {
+      "club": "wiki-f57cf56071ae",
+      "method": "newer-source"
+    },
+    "Q116255506": {
+      "club": "wiki-38c11bd07f97",
+      "method": "article-currentclub",
+      "evidence": "Colorado Rapids"
+    },
+    "John Méndez": {
+      "distinct": true,
+      "method": "distinct-namesakes"
+    },
+    "Nicolás Rengifo": {
+      "distinct": true,
+      "method": "distinct-namesakes"
+    },
+    "Matías López": {
+      "distinct": true,
+      "method": "distinct-namesakes"
+    },
+    "Q20016288": {
+      "club": "wiki-bb3cde9d53dc",
+      "method": "article-currentclub",
+      "evidence": "Independiente Santa Fe"
+    },
+    "Q107644401": {
+      "club": "wiki-afaf068aa8d9",
+      "method": "newer-source"
+    },
+    "Luis Jiménez": {
+      "distinct": true,
+      "method": "distinct-namesakes"
+    },
+    "Joel Contreras": {
+      "distinct": true,
+      "method": "distinct-namesakes"
+    },
+    "Jesús Camargo": {
+      "club": "wiki-8894e693ac41",
+      "method": "newer-source"
+    },
+    "Q60840381": {
+      "club": "wiki-eee74b1a7346",
+      "method": "article-currentclub",
+      "evidence": "Deportes Concepción (Chile)"
+    },
+    "Q18729811": {
+      "club": "wiki-eee74b1a7346",
+      "method": "article-currentclub",
+      "evidence": "Deportes Concepción (Chile)"
+    },
+    "Q113639436": {
+      "club": "wiki-eee74b1a7346",
+      "method": "article-currentclub",
+      "evidence": "Deportes Concepción (Chile)"
+    },
+    "Q99485576": {
+      "club": "wiki-2bfd574619d6",
+      "method": "article-currentclub",
+      "evidence": "Huachipato FC"
+    },
+    "Q23771469": {
+      "club": "wiki-b2285f62fa4f",
+      "method": "article-currentclub",
+      "evidence": "Club Bolívar"
+    },
+    "Q109766338": {
+      "club": "wiki-4f4b0a46c13b",
+      "method": "newer-source"
+    },
+    "José Cárdenas": {
+      "club": "wiki-ebafac139ca7",
+      "method": "newer-source"
+    },
+    "Q86878740": {
+      "club": "wiki-3e1f89020d7d",
+      "method": "article-currentclub",
+      "evidence": "LDU Quito"
+    },
+    "Q100243356": {
+      "club": "wiki-f86fd79b2714",
+      "method": "article-currentclub",
+      "evidence": "Sportivo Luqueño"
+    },
+    "Q16580314": {
+      "club": "wiki-2951909d6a6f",
+      "method": "article-currentclub",
+      "evidence": "Club Libertad"
+    },
+    "Q50225387": {
+      "club": "wiki-411e1625e899",
+      "method": "article-currentclub",
+      "evidence": "Club Guaraní"
+    },
+    "Q114656337": {
+      "club": "wiki-411e1625e899",
+      "method": "article-currentclub",
+      "evidence": "Club Guaraní"
+    },
+    "Pedro Zarza": {
+      "distinct": true,
+      "method": "distinct-namesakes"
+    },
+    "Q3180331": {
+      "club": "wiki-f86fd79b2714",
+      "method": "article-currentclub",
+      "evidence": "Sportivo Luqueño"
+    },
+    "Maximiliano García": {
+      "distinct": true,
+      "method": "distinct-namesakes"
+    },
+    "Q17632888": {
+      "club": "wiki-f86fd79b2714",
+      "method": "article-currentclub",
+      "evidence": "Sportivo Luqueño"
+    },
+    "Q10948555": {
+      "club": "wiki-f86fd79b2714",
+      "method": "article-currentclub",
+      "evidence": "Sportivo Luqueño"
+    },
+    "Q18924051": {
+      "club": "wiki-cddc82a1cf23",
+      "method": "article-currentclub",
+      "evidence": "Asociación Deportiva Tarma"
+    },
+    "Orlando Núñez": {
+      "club": "wiki-cddc82a1cf23",
+      "method": "newer-source"
+    },
+    "Williams Guzmán": {
+      "club": "wiki-99acbf1cf732",
+      "method": "newer-source"
+    },
+    "Q110321491": {
+      "club": "wiki-9656e5d38a0c",
+      "method": "article-over-name-match"
+    },
+    "Q7121663": {
+      "club": "wiki-2727ba7ee56a",
+      "method": "article-over-name-match"
+    },
+    "Gabriel Alfaro": {
+      "club": "wiki-2727ba7ee56a",
+      "method": "newer-source"
+    },
+    "Keyvin Paico": {
+      "distinct": true,
+      "method": "distinct-namesakes"
+    },
+    "Q99398049": {
+      "club": "wiki-4e36ada4b39a",
+      "method": "article-currentclub",
+      "evidence": "Comerciantes Unidos"
+    },
+    "Q122419819": {
+      "club": "wiki-4f5fe0240074",
+      "method": "newer-source"
+    },
+    "Ricardo Chipao": {
+      "distinct": true,
+      "method": "distinct-namesakes"
+    },
+    "Gilmar Paredes": {
+      "distinct": true,
+      "method": "distinct-namesakes"
+    },
+    "Jhosep Núñez": {
+      "distinct": true,
+      "method": "distinct-namesakes"
+    },
+    "Q61749385": {
+      "club": "wiki-ee5dff3fdca5",
+      "method": "article-over-name-match"
+    },
+    "Q140135645": {
+      "club": "wiki-b2e96dc97c93",
+      "method": "newer-source"
+    },
+    "Q64008958": {
+      "club": "wiki-b2e96dc97c93",
+      "method": "article-currentclub",
+      "evidence": "Sport Boys"
+    },
+    "Q648744": {
+      "club": "wiki-b2e96dc97c93",
+      "method": "article-currentclub",
+      "evidence": "Sport Boys"
+    },
+    "Q64748390": {
+      "club": "wiki-f40b49f1356a",
+      "method": "article-currentclub",
+      "evidence": "Universidad Central de Venezuela F.C."
+    },
+    "Layonel Figueroa": {
+      "club": "wiki-8e5dc1157aee",
+      "method": "newer-source"
+    },
+    "Q111429585": {
+      "club": "wiki-c2827bf72b11",
+      "method": "newer-source"
+    },
+    "Rai Lima": {
+      "club": "wiki-8e5dc1157aee",
+      "method": "newer-source"
+    },
+    "Q43984451": {
+      "club": "wiki-1bf1a3c94d4d",
+      "method": "newer-source"
+    },
+    "Q110818375": {
+      "club": "wiki-10f8c5e5befc",
+      "method": "article-currentclub",
+      "evidence": "Oriente Petrolero"
+    },
+    "Gonzalo Vaca": {
+      "club": "wiki-8e5dc1157aee",
+      "method": "newer-source"
+    },
+    "Q23641990": {
+      "club": "wiki-8e5dc1157aee",
+      "method": "newer-source"
+    },
+    "Germán Arauz": {
+      "club": "wiki-8e5dc1157aee",
+      "method": "newer-source"
+    },
+    "Q136027905": {
+      "club": "wiki-fa31527fd75b",
+      "method": "newer-source"
+    },
+    "Fernando Aguilar": {
+      "club": "wiki-8e5dc1157aee",
+      "method": "newer-source"
+    },
+    "Q6122306": {
+      "club": "wiki-1bf1a3c94d4d",
+      "method": "article-currentclub",
+      "evidence": "C.A. Nacional Potosí"
+    },
+    "Q132124689": {
+      "club": "wiki-6d41b9c74dd3",
+      "method": "newer-source"
+    },
+    "Q21503385": {
+      "club": "wiki-6d41b9c74dd3",
+      "method": "article-currentclub",
+      "evidence": "Club Independiente Petrolero"
+    },
+    "Lázaro Crescencio": {
+      "club": "wiki-8e5dc1157aee",
+      "method": "newer-source"
+    },
+    "Q28816040": {
+      "club": "wiki-fa31527fd75b",
+      "method": "newer-source"
+    },
+    "Q4716629": {
+      "club": "wiki-8e5dc1157aee",
+      "method": "article-over-name-match"
+    },
+    "Rivaldo Méndez": {
+      "distinct": true,
+      "method": "distinct-namesakes"
+    },
+    "Q20164438": {
+      "club": "wiki-8e5dc1157aee",
+      "method": "article-over-name-match"
+    },
+    "Q122216826": {
+      "club": "wiki-bd6647682ebb",
+      "method": "article-currentclub",
+      "evidence": "Academia Puerto Cabello"
+    },
+    "Q20735473": {
+      "club": "wiki-131496323363",
+      "method": "article-currentclub",
+      "evidence": "Anzoátegui F.C."
+    },
+    "Q136988503": {
+      "club": "wiki-a91ee0f40b1c",
+      "method": "article-currentclub",
+      "evidence": "Chicago Fire FC"
+    },
+    "Q18991202": {
+      "club": "wiki-0e050857e79e",
+      "method": "article-currentclub",
+      "evidence": "Kashima Antlers"
+    },
+    "Q110962957": {
+      "club": "wiki-144a6114a4d0",
+      "method": "article-currentclub",
+      "evidence": "Mito HollyHock"
+    },
+    "Q58277598": {
+      "club": "wiki-bb0187468fee",
+      "method": "article-currentclub",
+      "evidence": "Kashiwa Reysol"
+    },
+    "Q7688283": {
+      "club": "wiki-174541ac0416",
+      "method": "article-currentclub",
+      "evidence": "Macarthur FC"
+    },
+    "Q52884545": {
+      "club": "wiki-d36ba5992cd0",
+      "method": "article-currentclub",
+      "evidence": "Al Ahli SC (Doha)"
+    },
+    "Q115802847": {
+      "club": "wiki-2b85f13a92ae",
+      "method": "article-currentclub",
+      "evidence": "Al-Rayyan SC"
+    },
+    "Q24088843": {
+      "club": "wiki-7396ce9672d7",
+      "method": "article-over-name-match"
+    },
+    "Soulaimane El Bouchqali": {
+      "distinct": true,
+      "method": "distinct-namesakes"
+    },
+    "Salaheddine Errahouli": {
+      "distinct": true,
+      "method": "distinct-namesakes"
+    },
+    "Q121890281": {
+      "club": "wiki-ee66bd8ae01a",
+      "method": "article-currentclub",
+      "evidence": "AS FAR"
+    },
+    "Badreddine Abyir": {
+      "distinct": true,
+      "method": "distinct-namesakes"
+    },
+    "Q112117501": {
+      "club": "wiki-d1e9fba1b38b",
+      "method": "article-currentclub",
+      "evidence": "RS Berkane"
+    },
+    "Youness Dahmani": {
+      "club": "wiki-ce317e1ed834",
+      "method": "newer-source"
+    },
+    "Abdelhay Forsy": {
+      "distinct": true,
+      "method": "distinct-namesakes"
+    },
+    "Abdeljalil Jbira": {
+      "distinct": true,
+      "method": "distinct-namesakes"
+    },
+    "Mohamed Amine Essahel": {
+      "club": "wiki-d1e9fba1b38b",
+      "method": "newer-source"
+    },
+    "Q85873925": {
+      "club": "wiki-b2fcec542767",
+      "method": "newer-source"
+    },
+    "Q135299465": {
+      "club": "wiki-0ae7c6c9c9eb",
+      "method": "newer-source"
+    },
+    "Q141442304": {
+      "club": "wiki-b2fcec542767",
+      "method": "article-currentclub",
+      "evidence": "CS Sfaxien"
+    },
+    "Mohamed Amine Ammar": {
+      "club": "wiki-851e17f2ecdd",
+      "method": "newer-source"
+    },
+    "Q104839638": {
+      "club": "wiki-9b9434b4f411",
+      "method": "article-currentclub",
+      "evidence": "TS Galaxy F.C."
+    },
+    "Q67175860": {
+      "club": "wiki-c7d5cd791dcc",
+      "method": "article-currentclub",
+      "evidence": "Marumo Gallants F.C."
+    },
+    "Eroine Agnikoi": {
+      "distinct": true,
+      "method": "distinct-namesakes"
+    },
+    "Q138847878": {
+      "club": "wiki-1db7fe5df03b",
+      "method": "newer-source"
+    },
+    "Q33083442": {
+      "club": "wiki-1db7fe5df03b",
+      "method": "article-currentclub",
+      "evidence": "Kaizer Chiefs F.C."
+    },
+    "Q137299823": {
+      "club": "wiki-df4b6a897eea",
+      "method": "article-over-name-match"
+    },
+    "Q127324870": {
+      "club": "wiki-7a86e7c55760",
+      "method": "article-currentclub",
+      "evidence": "Polokwane City F.C."
+    },
+    "Q137625992": {
+      "club": "wiki-61442c0d119b",
+      "method": "article-currentclub",
+      "evidence": "Orlando Pirates F.C."
+    },
+    "Nkosikhona Ndaba": {
+      "distinct": true,
+      "method": "distinct-namesakes"
+    },
+    "Tlakusani Mthethwa": {
+      "distinct": true,
+      "method": "distinct-namesakes"
+    },
+    "Q2363599": {
+      "club": "wiki-8ff6c46bbefd",
+      "method": "newer-source"
+    },
+    "Dippendu Biswas": {
+      "club": "wiki-51130a8ae8d4",
+      "method": "newer-source"
+    },
+    "Q29446100": {
+      "club": "wiki-b41648741a03",
+      "method": "article-currentclub",
+      "evidence": "Odisha FC"
+    },
+    "Q85696199": {
+      "club": "wiki-10a87ec5e9bc",
+      "method": "article-currentclub",
+      "evidence": "East Bengal FC"
+    },
+    "Q14856961": {
+      "club": "wiki-aa99abd6e38f",
+      "method": "article-currentclub",
+      "evidence": "Ayutthaya United F.C."
+    },
+    "Kritsada Nontharat": {
+      "distinct": true,
+      "method": "distinct-namesakes"
+    },
+    "Q83753519": {
+      "club": "wiki-b68c6283e3cc",
+      "method": "article-currentclub",
+      "evidence": "Chonburi F.C."
+    },
+    "Somkaet Kunmee": {
+      "distinct": true,
+      "method": "distinct-namesakes"
+    }
+  },
+  "stats": {
+    "article-currentclub": 112,
+    "article-over-name-match": 15,
+    "newer-source": 47,
+    "distinct-namesakes": 47,
+    "unresolved": 57
+  }
+}

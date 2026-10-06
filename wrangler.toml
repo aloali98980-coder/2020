@@ -1,0 +1,15 @@
+# Cloudflare Workers config — نسخة الجذر (تعمل إذا نفّذ Cloudflare الأمر
+# في جذر المستودع بدل مجلد clubowner/). نسخة مطابقة موجودة داخل clubowner/
+# لمن ضُبط Root directory = clubowner.
+name = "club-owner"
+compatibility_date = "2024-09-23"
+main = "clubowner/worker/index.js"
+
+[assets]
+directory = "./clubowner/dist"
+not_found_handling = "single-page-application"
+
+# اختياري: تخزين دائم للمزامنة السحابية على KV
+# [[kv_namespaces]]
+# binding = "CLOUD_DB"
+# id = "<your-kv-namespace-id>"

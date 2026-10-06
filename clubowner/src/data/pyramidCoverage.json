@@ -1,0 +1,452 @@
+[
+  {
+    "country": "eg",
+    "nameAr": "مصر",
+    "targetTier": 3,
+    "status": "modeled",
+    "note": "الأولى ثم الثانية أ ثم خمس مجموعات الثانية ب؛ ملاحق الصعود المجمعة محفوظة. ليست الدرجة الثالثة المسماة (المستوى الرابع).",
+    "lowerCompetitions": 6,
+    "lowerClubs": 90
+  },
+  {
+    "country": "en",
+    "nameAr": "إنجلترا",
+    "targetTier": 3,
+    "status": "modeled",
+    "note": "الصعود والتقويم محاكاة مبسطة؛ ليست كل الملاحق ولوائح الترخيص الرسمية مطبقة.",
+    "lowerCompetitions": 2,
+    "lowerClubs": 48
+  },
+  {
+    "country": "sa",
+    "nameAr": "السعودية",
+    "targetTier": 2,
+    "status": "modeled",
+    "note": "الصعود والتقويم محاكاة مبسطة؛ ليست كل الملاحق ولوائح الترخيص الرسمية مطبقة.",
+    "lowerCompetitions": 1,
+    "lowerClubs": 18
+  },
+  {
+    "country": "es",
+    "nameAr": "إسبانيا",
+    "targetTier": 3,
+    "status": "modeled",
+    "note": "الصعود والتقويم محاكاة مبسطة؛ ليست كل الملاحق ولوائح الترخيص الرسمية مطبقة.",
+    "lowerCompetitions": 3,
+    "lowerClubs": 62
+  },
+  {
+    "country": "de",
+    "nameAr": "ألمانيا",
+    "targetTier": 3,
+    "status": "modeled",
+    "note": "الصعود والتقويم محاكاة مبسطة؛ ليست كل الملاحق ولوائح الترخيص الرسمية مطبقة.",
+    "lowerCompetitions": 2,
+    "lowerClubs": 38
+  },
+  {
+    "country": "it",
+    "nameAr": "إيطاليا",
+    "targetTier": 3,
+    "status": "modeled",
+    "note": "الصعود والتقويم محاكاة مبسطة؛ ليست كل الملاحق ولوائح الترخيص الرسمية مطبقة.",
+    "lowerCompetitions": 4,
+    "lowerClubs": 80
+  },
+  {
+    "country": "fr",
+    "nameAr": "فرنسا",
+    "targetTier": 3,
+    "status": "modeled",
+    "note": "الصعود والتقويم محاكاة مبسطة؛ ليست كل الملاحق ولوائح الترخيص الرسمية مطبقة.",
+    "lowerCompetitions": 2,
+    "lowerClubs": 36
+  },
+  {
+    "country": "pt",
+    "nameAr": "البرتغال",
+    "targetTier": 2,
+    "status": "modeled",
+    "note": "الصعود والتقويم محاكاة مبسطة؛ ليست كل الملاحق ولوائح الترخيص الرسمية مطبقة.",
+    "lowerCompetitions": 1,
+    "lowerClubs": 18
+  },
+  {
+    "country": "nl",
+    "nameAr": "هولندا",
+    "targetTier": 2,
+    "status": "modeled",
+    "note": "الصعود والتقويم محاكاة مبسطة؛ ليست كل الملاحق ولوائح الترخيص الرسمية مطبقة.",
+    "lowerCompetitions": 1,
+    "lowerClubs": 20
+  },
+  {
+    "country": "be",
+    "nameAr": "بلجيكا",
+    "targetTier": 2,
+    "status": "modeled",
+    "note": "الصعود والتقويم محاكاة مبسطة؛ ليست كل الملاحق ولوائح الترخيص الرسمية مطبقة.",
+    "lowerCompetitions": 1,
+    "lowerClubs": 15
+  },
+  {
+    "country": "tr",
+    "nameAr": "تركيا",
+    "targetTier": 2,
+    "status": "modeled",
+    "note": "الصعود والتقويم محاكاة مبسطة؛ ليست كل الملاحق ولوائح الترخيص الرسمية مطبقة.",
+    "lowerCompetitions": 1,
+    "lowerClubs": 20
+  },
+  {
+    "country": "sc",
+    "nameAr": "اسكتلندا",
+    "targetTier": 2,
+    "status": "modeled",
+    "note": "الصعود والتقويم محاكاة مبسطة؛ ليست كل الملاحق ولوائح الترخيص الرسمية مطبقة.",
+    "lowerCompetitions": 1,
+    "lowerClubs": 10
+  },
+  {
+    "country": "gr",
+    "nameAr": "اليونان",
+    "targetTier": 2,
+    "status": "modeled",
+    "note": "الصعود والتقويم محاكاة مبسطة؛ ليست كل الملاحق ولوائح الترخيص الرسمية مطبقة.",
+    "lowerCompetitions": 1,
+    "lowerClubs": 16
+  },
+  {
+    "country": "at",
+    "nameAr": "النمسا",
+    "targetTier": 2,
+    "status": "modeled",
+    "note": "الصعود والتقويم محاكاة مبسطة؛ ليست كل الملاحق ولوائح الترخيص الرسمية مطبقة.",
+    "lowerCompetitions": 1,
+    "lowerClubs": 16
+  },
+  {
+    "country": "ch",
+    "nameAr": "سويسرا",
+    "targetTier": 2,
+    "status": "modeled",
+    "note": "الصعود والتقويم محاكاة مبسطة؛ ليست كل الملاحق ولوائح الترخيص الرسمية مطبقة.",
+    "lowerCompetitions": 1,
+    "lowerClubs": 10
+  },
+  {
+    "country": "dk",
+    "nameAr": "الدنمارك",
+    "targetTier": 2,
+    "status": "modeled",
+    "note": "الصعود والتقويم محاكاة مبسطة؛ ليست كل الملاحق ولوائح الترخيص الرسمية مطبقة.",
+    "lowerCompetitions": 1,
+    "lowerClubs": 12
+  },
+  {
+    "country": "se",
+    "nameAr": "السويد",
+    "targetTier": 2,
+    "status": "modeled",
+    "note": "الصعود والتقويم محاكاة مبسطة؛ ليست كل الملاحق ولوائح الترخيص الرسمية مطبقة.",
+    "lowerCompetitions": 1,
+    "lowerClubs": 16
+  },
+  {
+    "country": "no",
+    "nameAr": "النرويج",
+    "targetTier": 2,
+    "status": "modeled",
+    "note": "الصعود والتقويم محاكاة مبسطة؛ ليست كل الملاحق ولوائح الترخيص الرسمية مطبقة.",
+    "lowerCompetitions": 1,
+    "lowerClubs": 16
+  },
+  {
+    "country": "pl",
+    "nameAr": "بولندا",
+    "targetTier": 2,
+    "status": "modeled",
+    "note": "الصعود والتقويم محاكاة مبسطة؛ ليست كل الملاحق ولوائح الترخيص الرسمية مطبقة.",
+    "lowerCompetitions": 1,
+    "lowerClubs": 18
+  },
+  {
+    "country": "cz",
+    "nameAr": "التشيك",
+    "targetTier": 2,
+    "status": "modeled",
+    "note": "الصعود والتقويم محاكاة مبسطة؛ ليست كل الملاحق ولوائح الترخيص الرسمية مطبقة.",
+    "lowerCompetitions": 1,
+    "lowerClubs": 16
+  },
+  {
+    "country": "hr",
+    "nameAr": "كرواتيا",
+    "targetTier": 2,
+    "status": "modeled",
+    "note": "الصعود والتقويم محاكاة مبسطة؛ ليست كل الملاحق ولوائح الترخيص الرسمية مطبقة.",
+    "lowerCompetitions": 1,
+    "lowerClubs": 16
+  },
+  {
+    "country": "rs",
+    "nameAr": "صربيا",
+    "targetTier": 2,
+    "status": "modeled",
+    "note": "الصعود والتقويم محاكاة مبسطة؛ ليست كل الملاحق ولوائح الترخيص الرسمية مطبقة.",
+    "lowerCompetitions": 1,
+    "lowerClubs": 16
+  },
+  {
+    "country": "ro",
+    "nameAr": "رومانيا",
+    "targetTier": 2,
+    "status": "modeled",
+    "note": "الصعود والتقويم محاكاة مبسطة؛ ليست كل الملاحق ولوائح الترخيص الرسمية مطبقة.",
+    "lowerCompetitions": 1,
+    "lowerClubs": 22
+  },
+  {
+    "country": "ua",
+    "nameAr": "أوكرانيا",
+    "targetTier": 2,
+    "status": "modeled",
+    "note": "الصعود والتقويم محاكاة مبسطة؛ ليست كل الملاحق ولوائح الترخيص الرسمية مطبقة.",
+    "lowerCompetitions": 1,
+    "lowerClubs": 16
+  },
+  {
+    "country": "ru",
+    "nameAr": "روسيا",
+    "targetTier": 2,
+    "status": "modeled",
+    "note": "الصعود والتقويم محاكاة مبسطة؛ ليست كل الملاحق ولوائح الترخيص الرسمية مطبقة.",
+    "lowerCompetitions": 1,
+    "lowerClubs": 18
+  },
+  {
+    "country": "hu",
+    "nameAr": "المجر",
+    "targetTier": 2,
+    "status": "modeled",
+    "note": "الصعود والتقويم محاكاة مبسطة؛ ليست كل الملاحق ولوائح الترخيص الرسمية مطبقة.",
+    "lowerCompetitions": 1,
+    "lowerClubs": 16
+  },
+  {
+    "country": "br",
+    "nameAr": "البرازيل",
+    "targetTier": 2,
+    "status": "modeled",
+    "note": "الصعود والتقويم محاكاة مبسطة؛ ليست كل الملاحق ولوائح الترخيص الرسمية مطبقة.",
+    "lowerCompetitions": 1,
+    "lowerClubs": 20
+  },
+  {
+    "country": "ar",
+    "nameAr": "الأرجنتين",
+    "targetTier": 2,
+    "status": "modeled",
+    "note": "الصعود والتقويم محاكاة مبسطة؛ ليست كل الملاحق ولوائح الترخيص الرسمية مطبقة.",
+    "lowerCompetitions": 2,
+    "lowerClubs": 36
+  },
+  {
+    "country": "uy",
+    "nameAr": "أوروغواي",
+    "targetTier": 2,
+    "status": "modeled",
+    "note": "الصعود والتقويم محاكاة مبسطة؛ ليست كل الملاحق ولوائح الترخيص الرسمية مطبقة.",
+    "lowerCompetitions": 1,
+    "lowerClubs": 14
+  },
+  {
+    "country": "co",
+    "nameAr": "كولومبيا",
+    "targetTier": 2,
+    "status": "modeled",
+    "note": "الصعود والتقويم محاكاة مبسطة؛ ليست كل الملاحق ولوائح الترخيص الرسمية مطبقة.",
+    "lowerCompetitions": 1,
+    "lowerClubs": 16
+  },
+  {
+    "country": "cl",
+    "nameAr": "تشيلي",
+    "targetTier": 2,
+    "status": "modeled",
+    "note": "الصعود والتقويم محاكاة مبسطة؛ ليست كل الملاحق ولوائح الترخيص الرسمية مطبقة.",
+    "lowerCompetitions": 1,
+    "lowerClubs": 16
+  },
+  {
+    "country": "ec",
+    "nameAr": "الإكوادور",
+    "targetTier": 2,
+    "status": "modeled",
+    "note": "الصعود والتقويم محاكاة مبسطة؛ ليست كل الملاحق ولوائح الترخيص الرسمية مطبقة.",
+    "lowerCompetitions": 1,
+    "lowerClubs": 12
+  },
+  {
+    "country": "py",
+    "nameAr": "باراغواي",
+    "targetTier": 2,
+    "status": "modeled",
+    "note": "الصعود والتقويم محاكاة مبسطة؛ ليست كل الملاحق ولوائح الترخيص الرسمية مطبقة.",
+    "lowerCompetitions": 1,
+    "lowerClubs": 16
+  },
+  {
+    "country": "pe",
+    "nameAr": "بيرو",
+    "targetTier": 2,
+    "status": "modeled",
+    "note": "الصعود والتقويم محاكاة مبسطة؛ ليست كل الملاحق ولوائح الترخيص الرسمية مطبقة.",
+    "lowerCompetitions": 2,
+    "lowerClubs": 18
+  },
+  {
+    "country": "bo",
+    "nameAr": "بوليفيا",
+    "targetTier": 1,
+    "status": "top-only-agreed",
+    "note": "الدوري الأعلى فقط باتفاق النطاق؛ إضافة الدرجة الثانية مستبعدة وليست عملًا متبقيًا.",
+    "lowerCompetitions": 0,
+    "lowerClubs": 0
+  },
+  {
+    "country": "ve",
+    "nameAr": "فنزويلا",
+    "targetTier": 2,
+    "status": "modeled",
+    "note": "الصعود والتقويم محاكاة مبسطة؛ ليست كل الملاحق ولوائح الترخيص الرسمية مطبقة.",
+    "lowerCompetitions": 2,
+    "lowerClubs": 15
+  },
+  {
+    "country": "us",
+    "nameAr": "الولايات المتحدة وكندا",
+    "targetTier": 2,
+    "status": "modeled",
+    "note": "USL Championship مسار ثانٍ مستقل؛ لا صعود تلقائي إلى MLS. المؤتمران موجودان، دون محاكاة ملحق البطل الرسمي.",
+    "lowerCompetitions": 2,
+    "lowerClubs": 25
+  },
+  {
+    "country": "mx",
+    "nameAr": "المكسيك",
+    "targetTier": 2,
+    "status": "modeled",
+    "note": "Liga de Expansión MX موجودة؛ الصعود التلقائي إلى Liga MX مغلق في السيناريو إلى حين تنفيذ أهلية وترخيص الاتحاد.",
+    "lowerCompetitions": 1,
+    "lowerClubs": 16
+  },
+  {
+    "country": "jp",
+    "nameAr": "اليابان",
+    "targetTier": 2,
+    "status": "modeled",
+    "note": "الصعود والتقويم محاكاة مبسطة؛ ليست كل الملاحق ولوائح الترخيص الرسمية مطبقة.",
+    "lowerCompetitions": 1,
+    "lowerClubs": 20
+  },
+  {
+    "country": "kr",
+    "nameAr": "كوريا الجنوبية",
+    "targetTier": 2,
+    "status": "modeled",
+    "note": "الصعود والتقويم محاكاة مبسطة؛ ليست كل الملاحق ولوائح الترخيص الرسمية مطبقة.",
+    "lowerCompetitions": 1,
+    "lowerClubs": 17
+  },
+  {
+    "country": "cn",
+    "nameAr": "الصين",
+    "targetTier": 2,
+    "status": "modeled",
+    "note": "الصعود والتقويم محاكاة مبسطة؛ ليست كل الملاحق ولوائح الترخيص الرسمية مطبقة.",
+    "lowerCompetitions": 1,
+    "lowerClubs": 16
+  },
+  {
+    "country": "au",
+    "nameAr": "أستراليا",
+    "targetTier": 2,
+    "status": "modeled",
+    "note": "Australian Championship بطولة وطنية من 16 فريقًا في مرجع 2026، ممثلة بجدول دوري مبسط؛ لا صعود تلقائي إلى A-League.",
+    "lowerCompetitions": 1,
+    "lowerClubs": 16
+  },
+  {
+    "country": "qa",
+    "nameAr": "قطر",
+    "targetTier": 1,
+    "status": "top-only-agreed",
+    "note": "الدوري الأعلى فقط باتفاق النطاق؛ إضافة الدرجة الثانية مستبعدة وليست عملًا متبقيًا.",
+    "lowerCompetitions": 0,
+    "lowerClubs": 0
+  },
+  {
+    "country": "ae",
+    "nameAr": "الإمارات",
+    "targetTier": 2,
+    "status": "modeled",
+    "note": "الصعود والتقويم محاكاة مبسطة؛ ليست كل الملاحق ولوائح الترخيص الرسمية مطبقة.",
+    "lowerCompetitions": 1,
+    "lowerClubs": 15
+  },
+  {
+    "country": "ma",
+    "nameAr": "المغرب",
+    "targetTier": 1,
+    "status": "top-only-agreed",
+    "note": "الدوري الأعلى فقط باتفاق النطاق؛ إضافة الدرجة الثانية مستبعدة وليست عملًا متبقيًا.",
+    "lowerCompetitions": 0,
+    "lowerClubs": 0
+  },
+  {
+    "country": "tn",
+    "nameAr": "تونس",
+    "targetTier": 2,
+    "status": "modeled",
+    "note": "الصعود والتقويم محاكاة مبسطة؛ ليست كل الملاحق ولوائح الترخيص الرسمية مطبقة.",
+    "lowerCompetitions": 2,
+    "lowerClubs": 28
+  },
+  {
+    "country": "dz",
+    "nameAr": "الجزائر",
+    "targetTier": 2,
+    "status": "modeled",
+    "note": "الصعود والتقويم محاكاة مبسطة؛ ليست كل الملاحق ولوائح الترخيص الرسمية مطبقة.",
+    "lowerCompetitions": 2,
+    "lowerClubs": 32
+  },
+  {
+    "country": "za",
+    "nameAr": "جنوب أفريقيا",
+    "targetTier": 2,
+    "status": "modeled",
+    "note": "الصعود والتقويم محاكاة مبسطة؛ ليست كل الملاحق ولوائح الترخيص الرسمية مطبقة.",
+    "lowerCompetitions": 1,
+    "lowerClubs": 16
+  },
+  {
+    "country": "in",
+    "nameAr": "الهند",
+    "targetTier": 2,
+    "status": "modeled",
+    "note": "الصعود والتقويم محاكاة مبسطة؛ ليست كل الملاحق ولوائح الترخيص الرسمية مطبقة.",
+    "lowerCompetitions": 1,
+    "lowerClubs": 11
+  },
+  {
+    "country": "th",
+    "nameAr": "تايلاند",
+    "targetTier": 2,
+    "status": "modeled",
+    "note": "الصعود والتقويم محاكاة مبسطة؛ ليست كل الملاحق ولوائح الترخيص الرسمية مطبقة.",
+    "lowerCompetitions": 1,
+    "lowerClubs": 18
+  }
+]

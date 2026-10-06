@@ -1,0 +1,462 @@
+import { validateTalent } from "./talentValidation.js";
+import { validateLegends } from "./legendsValidation.js";
+import { extendedClub } from "../data/expandedCatalog.js";
+import { validateExpansion } from "./expansionValidation.js";
+import { ALL_MARKETS } from "../data/worldMarkets.js";
+import { EVENT_CATALOG } from "../data/eventCatalog.js";
+import { CLUBS, FACILITIES, ASSETS } from "../data/catalog.js";
+import { resolveSponsor } from "../services/sponsors.js";
+import { SAVE_VERSION } from "./game.js";
+import { isoDate } from "./isoDate.js";
+
+// A save is untrusted input. Validate structure and relationships before replacing it.
+const id = (value) =>
+  typeof value === "string" && /^[a-zA-Z0-9_-]{1,100}$/.test(value);
+const amount = (value) => Number.isSafeInteger(value) && value >= 0;
+const text = (value) => typeof value === "string" && value.length <= 5000;
+const check = (condition, explanation) => {
+  if (!condition) throw new Error(explanation);
+};
+const unique = (items) =>
+  new Set(items.map((item) => item.id)).size === items.length;
+
+export function validateSave(s) {
+  check(s && s.version === SAVE_VERSION, "صيغة الحفظ غير مدعومة.");
+  check(
+    (s.expansion
+      ? !!extendedClub(s.clubId)
+      : CLUBS.some((c) => c.id === s.clubId && c.cash)) &&
+      isoDate(s.date) &&
+      isoDate(s.startDate),
+    "بيانات النادي أو التاريخ غير سليمة.",
+  );
+  check(
+    text(s.owner) && s.owner.length > 0 && s.owner.length <= 35,
+    "اسم المالك غير صالح.",
+  );
+  check(
+    amount(s.nextId) &&
+      amount(s.seed) &&
+      amount(s.remainingDays) &&
+      s.remainingDays <= 30,
+    "حالة المحاكاة غير سليمة.",
+  );
+  check(
+    amount(s.capacity) &&
+      amount(s.ticketPrice) &&
+      Number.isFinite(s.fanSupport) &&
+      Number.isFinite(s.reputation) &&
+      amount(s.academyCount),
+    "مؤشرات النادي غير سليمة.",
+  );
+  for (const k of [
+    "players",
+    "facilities",
+    "inbox",
+    "events",
+    "fixtures",
+    "table",
+    "sponsors",
+    "negotiations",
+    "leagues",
+  ])
+    check(Array.isArray(s[k]), "ملف الحفظ ناقص: " + k);
+  check(
+    s.players.length <= 50000 && s.inbox.length <= 100000,
+    "ملف الحفظ أكبر من حدود النسخة.",
+  );
+  // 0.20: retirees live in a compact archive (see services/retired.js).
+  check(
+    Array.isArray(s.retired) &&
+      s.retired.length <= 20000 &&
+      s.retired.every(
+        (r) =>
+          id(r.id) &&
+          text(r.name) &&
+          r.status === "retired" &&
+          r.clubId === "retired" &&
+          isoDate(r.retiredOn) &&
+          Array.isArray(r.careerHistory) &&
+          r.attributes &&
+          Number.isFinite(r.rating),
+      ),
+    "أرشيف المعتزلين غير سليم.",
+  );
+  const personIds = new Set(s.players.map((p) => p.id));
+  let duplicateRetiree = false;
+  for (const r of s.retired) {
+    if (personIds.has(r.id)) duplicateRetiree = true;
+    personIds.add(r.id);
+  }
+  check(!duplicateRetiree, "أرشيف المعتزلين يكرر سجل لاعب.");
+  check(
+    s.leagues.includes("eg") && s.leagues.every((l) => ALL_MARKETS.includes(l)),
+    "أسواق غير مدعومة.",
+  );
+  check(
+    s.preferences && typeof s.preferences.pauseMatches === "boolean",
+    "إعدادات المحاكاة ناقصة.",
+  );
+  const f = s.finance;
+  check(
+    f &&
+      Number.isSafeInteger(f.cash) &&
+      amount(f.initialCash) &&
+      amount(f.wageBudget) &&
+      Array.isArray(f.ledger) &&
+      Array.isArray(f.obligations) &&
+      Array.isArray(f.loans),
+    "بيانات مالية غير سليمة.",
+  );
+  check(
+    f.ledger.every(
+      (e) =>
+        id(e.id) &&
+        text(e.key) &&
+        text(e.description) &&
+        isoDate(e.date) &&
+        Number.isSafeInteger(e.amount),
+    ),
+    "قيود مالية غير صالحة.",
+  );
+  check(
+    f.initialCash + f.ledger.reduce((n, e) => n + e.amount, 0) === f.cash,
+    "كشف الحساب لا يطابق الرصيد.",
+  );
+  check(
+    new Set(f.ledger.map((e) => e.key)).size === f.ledger.length,
+    "حركات مالية مكررة.",
+  );
+  check(
+    f.obligations.every(
+      (o) =>
+        id(o.id) &&
+        amount(o.amount) &&
+        text(o.description) &&
+        isoDate(o.due) &&
+        ["paid", "pending"].includes(o.status),
+    ),
+    "جدول الالتزامات غير سليم.",
+  );
+  check(
+    new Set(f.obligations.map((o) => o.key)).size === f.obligations.length,
+    "التزامات مالية مكررة.",
+  );
+  const positions = [
+    "GK",
+    "CB",
+    "RB",
+    "LB",
+    "DM",
+    "CM",
+    "AM",
+    "RW",
+    "LW",
+    "ST",
+  ];
+  const roles = ["أساسي", "مداورة", "بديل", "مشروع للمستقبل"];
+  check(
+    unique(s.players) &&
+      s.players.every(
+        (p) =>
+          id(p.id) &&
+          text(p.name) &&
+          text(p.nationality) &&
+          text(p.clubId) &&
+          amount(p.salary) &&
+          amount(p.value) &&
+          amount(p.age) &&
+          isoDate(p.contractEnd) &&
+          positions.includes(p.position) &&
+          roles.includes(p.role) &&
+          ["يسرى", "يمنى"].includes(p.foot) &&
+          Number.isFinite(p.rating) &&
+          p.rating >= 0 &&
+          p.rating <= 100 &&
+          Number.isFinite(p.potential) &&
+          Number.isFinite(p.fitness) &&
+          p.fitness >= 0 &&
+          p.fitness <= 100 &&
+          Number.isFinite(p.morale) &&
+          amount(p.appearances) &&
+          amount(p.goals) &&
+          p.attributes &&
+          [
+            "pace",
+            "passing",
+            "shooting",
+            "defending",
+            "stamina",
+            "decisions",
+          ].every(
+            (k) =>
+              Number.isFinite(p.attributes[k]) &&
+              p.attributes[k] >= 0 &&
+              p.attributes[k] <= 100,
+          ),
+      ),
+    "بيانات اللاعبين غير سليمة أو متكررة.",
+  );
+  check(
+    s.facilities.length === FACILITIES.length &&
+      unique(s.facilities) &&
+      s.facilities.every(
+        (f) =>
+          FACILITIES.some((d) => d.id === f.id && d.name === f.name) &&
+          amount(f.level) &&
+          f.level >= 1 &&
+          f.level <= 4 &&
+          amount(f.monthlyCost) &&
+          amount(f.staffCost) &&
+          typeof f.staff === "boolean" &&
+          (!f.project ||
+            (id(f.project.id) &&
+              isoDate(f.project.start) &&
+              isoDate(f.project.end) &&
+              f.project.end >= f.project.start &&
+              amount(f.project.cost) &&
+              amount(f.project.days) &&
+              f.project.days > 0 &&
+              amount(f.project.upkeep))),
+      ),
+    "بيانات المنشآت غير سليمة.",
+  );
+  check(
+    unique(s.negotiations) &&
+      s.negotiations.every(
+        (n) =>
+          id(n.id) &&
+          s.players.some((p) => p.id === n.playerId) &&
+          amount(n.fee) &&
+          [40, 60, 100].includes(n.upfrontPercent) &&
+          ["waiting", "club-reply", "personal", "signed", "rejected"].includes(
+            n.stage,
+          ),
+      ),
+    "علاقات التعاقدات غير سليمة.",
+  );
+  check(
+    unique(s.sponsors) &&
+      s.sponsors.every(
+        (c) =>
+          id(c.id) &&
+          ASSETS.some((a) => a.id === c.assetId) &&
+          resolveSponsor(c.sponsorId) &&
+          amount(c.amount) &&
+          isoDate(c.start) &&
+          isoDate(c.end) &&
+          ["active", "expired"].includes(c.status),
+      ),
+    "عقود الرعاية غير سليمة.",
+  );
+  const active = s.sponsors.filter((c) => c.status === "active");
+  check(
+    new Set(active.map((c) => c.assetId)).size === active.length,
+    "مساحة رعاية محجوزة مرتين.",
+  );
+  check(
+    unique(s.inbox) &&
+      s.inbox.every(
+        (m) =>
+          id(m.id) &&
+          text(m.title) &&
+          text(m.body) &&
+          isoDate(m.date) &&
+          (!m.deadline || isoDate(m.deadline)) &&
+          ["open", "resolved"].includes(m.status) &&
+          typeof m.required === "boolean",
+      ),
+    "رسائل البريد غير سليمة.",
+  );
+  for (const m of s.inbox.filter((m) => m.required && m.status === "open")) {
+    if (["transfer", "personal"].includes(m.kind))
+      check(
+        s.negotiations.some((n) => n.id === m.ref),
+        "مرجع تفاوض مفقود في البريد.",
+      );
+    if (m.kind === "renewal")
+      check(
+        s.players.some((p) => p.id === m.ref),
+        "مرجع لاعب مفقود في البريد.",
+      );
+  }
+  check(
+    unique(s.events) &&
+      s.events.every(
+        (e) =>
+          id(e.id) &&
+          isoDate(e.date) &&
+          ["transfer-reply", "sponsor", "renewal"].includes(e.type) &&
+          typeof e.done === "boolean",
+      ),
+    "قائمة الأحداث غير سليمة.",
+  );
+  check(
+    unique(s.fixtures) &&
+      s.fixtures.every(
+        (f) =>
+          id(f.id) &&
+          isoDate(f.date) &&
+          (s.expansion
+            ? !!extendedClub(f.home)
+            : CLUBS.some((c) => c.id === f.home)) &&
+          (s.expansion
+            ? !!extendedClub(f.away)
+            : CLUBS.some((c) => c.id === f.away)) &&
+          f.home !== f.away &&
+          typeof f.played === "boolean" &&
+          (!f.played || (amount(f.homeGoals) && amount(f.awayGoals))),
+      ),
+    "جدول المباريات غير سليم.",
+  );
+  check(
+    (s.expansion
+      ? s.table.length >= 4 && s.table.length <= 40
+      : s.table.length === 8) &&
+      new Set(s.table.map((t) => t.clubId)).size === s.table.length &&
+      s.table.every(
+        (t) =>
+          (s.expansion
+            ? !!extendedClub(t.clubId)
+            : CLUBS.some((c) => c.id === t.clubId)) &&
+          ["played", "wins", "draws", "losses", "gf", "ga", "points"].every(
+            (k) => amount(t[k]),
+          ),
+      ),
+    "جدول الترتيب غير سليم.",
+  );
+  check(
+    ["beginner", "easy", "normal", "hard"].includes(s.difficulty),
+    "مستوى صعوبة غير صالح.",
+  );
+  check(["ar", "en", "fr"].includes(s.preferences.language), "لغة غير مدعومة.");
+  check(
+    Array.isArray(s.staff) &&
+      Array.isArray(s.scoutAssignments) &&
+      Array.isArray(s.clubDecisions) &&
+      Array.isArray(s.seasonHistory) &&
+      amount(s.seasonNumber) &&
+      isoDate(s.nextSeasonDate) &&
+      isoDate(s.nextClubEventDate),
+    "بيانات الحياة المهنية والأحداث ناقصة.",
+  );
+  check(
+    s.players.every(
+      (p) =>
+        ["active", "retired"].includes(p.status) &&
+        amount(p.ageReference) &&
+        isoDate(p.ageReferenceDate) &&
+        Number.isFinite(p.naturalFitness) &&
+        Array.isArray(p.careerHistory),
+    ),
+    "حالة المسيرة غير صالحة.",
+  );
+  check(
+    unique(s.staff) &&
+      s.staff.every(
+        (p) =>
+          id(p.id) &&
+          personIds.has(p.personId) &&
+          ["available", "employed"].includes(p.status) &&
+          amount(p.salary) &&
+          p.skills &&
+          ["coaching", "scouting", "youth"].every((k) =>
+            Number.isFinite(p.skills[k]),
+          ),
+      ),
+    "بيانات الموظفين غير سليمة.",
+  );
+  check(
+    s.players.every(
+      (p) =>
+        (!p.sourceUrl ||
+          (typeof p.sourceUrl === "string" &&
+            /^https:\/\//.test(p.sourceUrl))) &&
+        (!p.nameLatin || text(p.nameLatin)) &&
+        (!p.retirementPlan ||
+          (isoDate(p.retirementPlan.date) &&
+            isoDate(p.retirementPlan.announced))) &&
+        p.contractTerms &&
+        [
+          "appearanceBonus",
+          "goalBonus",
+          "annualRaisePct",
+          "releaseClause",
+        ].every((k) => amount(p.contractTerms[k])) &&
+        p.contractTerms.annualRaisePct <= 15 &&
+        isoDate(p.contractTerms.signedOn),
+    ),
+    "بنود عقد أو مرجع مصدر غير صالح.",
+  );
+  check(
+    s.staff.every(
+      (p) =>
+        text(p.name) &&
+        ["available", "employed"].includes(p.status) &&
+        (!p.role || ["coach", "scout", "academy"].includes(p.role)) &&
+        (p.status !== "employed" || isoDate(p.contractEnd)) &&
+        (!p.course || isoDate(p.course.end)) &&
+        Object.values(p.skills).every((n) => n >= 0 && n <= 100),
+    ),
+    "عقد مهني غير سليم.",
+  );
+  check(
+    unique(s.clubDecisions) &&
+      s.clubDecisions.every(
+        (e) =>
+          id(e.id) &&
+          EVENT_CATALOG.some((d) => d.id === e.type) &&
+          isoDate(e.date) &&
+          ["open", "resolved"].includes(e.status),
+      ),
+    "أحداث القرارات غير سليمة.",
+  );
+  check(
+    unique(s.scoutAssignments) &&
+      s.scoutAssignments.every(
+        (a) =>
+          id(a.id) &&
+          s.staff.some((p) => p.id === a.staffId) &&
+          s.players.some((p) => p.id === a.playerId) &&
+          isoDate(a.end) &&
+          typeof a.done === "boolean",
+      ),
+    "مهمة كشف غير سليمة.",
+  );
+  for (const m of s.inbox.filter((m) => m.required && m.status === "open")) {
+    if (m.kind === "club-decision")
+      check(
+        s.clubDecisions.some((e) => e.id === m.ref && e.status === "open"),
+        "مرجع قرار مفقود.",
+      );
+    if (m.kind === "retirement")
+      check(
+        s.players.some((p) => p.id === m.ref && p.retirementPlan),
+        "مرجع اعتزال مفقود.",
+      );
+    if (m.kind === "career-offer")
+      check(
+        s.staff.some((p) => p.id === m.ref),
+        "مرجع موظف مفقود.",
+      );
+  }
+  check(!s.squadLimit || [30, 45].includes(s.squadLimit), "حد قائمة غير صالح.");
+  check(
+    s.players.every(
+      (p) =>
+        (!p.biographyUrl ||
+          (typeof p.biographyUrl === "string" &&
+            p.biographyUrl.startsWith("https://"))) &&
+        (!p.birthDate || isoDate(p.birthDate)) &&
+        (!p.abilityVersion ||
+          [p.professionalism, p.developmentRate, p.injurySusceptibility].every(
+            Number.isFinite,
+          )),
+    ),
+    "بيانات القدرات أو مصادر الميلاد غير سليمة.",
+  );
+  validateExpansion(s);
+  validateTalent(s);
+  validateLegends(s);
+  return s;
+}
