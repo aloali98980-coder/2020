@@ -6,6 +6,7 @@ import { date, num } from "../ui/format.js";
 import { getSession, isAuthenticated } from "../services/auth.js";
 import { getDisplayCurrency, DISPLAY_CURRENCIES } from "../ui/format.js";
 import { CURRENCIES } from "../data/currencies.js";
+import { APP_VERSION } from "../data/version.js";
 import { listSlots, MAX_SAVE_SLOTS } from "../services/slots.js";
 
 const themePref = () => {
@@ -205,7 +206,7 @@ export function settingsView(s) {
     <section class="panel settings-panel about-panel">
       <div class="panel-head">
         <h3>${icon("info")} ${tr("عن اللعبة", "About the game", "À propos du jeu")}</h3>
-        ${badge("ALPHA 0.22")}
+        ${badge(`ALPHA ${APP_VERSION}`)}
       </div>
       <div class="about-author">
         <span class="about-avatar" data-no-translate>A</span>

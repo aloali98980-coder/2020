@@ -772,10 +772,6 @@ export const DICTIONARY = {
   مؤهل: ["Qualified", "Qualifié"],
   "مرشح متاح": ["Available candidate", "Candidat disponible"],
   "اعتماد التعيين": ["Confirm appointment", "Confirmer le recrutement"],
-  "تأهيل لمسار مهني — ٦٠ ألف ج.م": [
-    "Career preparation — EGP 60,000",
-    "Préparation professionnelle — 60 000 EGP",
-  ],
   "طلب تأجيل الاعتزال": [
     "Ask to postpone retirement",
     "Demander de reporter la retraite",
@@ -1012,10 +1008,6 @@ export const DICTIONARY = {
     "Contrat de légende résilié.",
   ],
   // 0.23 — شظايا عبارات بعد استبدال "ج.م" برمز العملة الديناميكي
-  "بدء مهمة ٧ أيام مقابل ٤٠ ألف": [
-    "Start a 7-day assignment for 40k",
-    "Lancer une mission de 7 jours pour 40k",
-  ],
   "ربح تشغيلي": ["Operating profit", "Résultat d’exploitation"],
   "بعد تكلفة القمصان المباعة. لا يشمل استثمار التأسيس": [
     "After cost of shirts sold. Excludes the setup investment",
@@ -1059,23 +1051,29 @@ export const DICTIONARY = {
     "Un niveau plus élevé augmente le versement, l’entraîneur des jeunes affine l’estimation, et la célébrité n’est pas garantie",
   ],
   "سقف قيمة اللاعب": ["Player value cap", "Plafond de valeur du joueur"],
-  "الموافقة على دورة ٢١ يومًا مقابل ١٠٠ ألف": [
-    "Approve a 21-day course for 100k",
-    "Approuver un stage de 21 jours pour 100k",
-  ],
   "تشمل مكافآت أداء موحدة تُصرف تلقائيًا": [
     "Includes uniform performance bonuses paid automatically",
     "Inclut des primes de performance uniformes versées automatiquement",
   ],
   "٥ ملايين": ["5 million", "5 millions"],
-  "ناشئ مولّد: مرتب ٢٥ ألف": [
-    "Generated prospect: salary of 25k",
-    "Jeune généré : salaire de 25k",
-  ],
   "شهريًا، عقد سنتين؛ يحتاج مكانًا بالقائمة": [
     "monthly, two-year contract; requires a squad slot",
     "par mois, contrat de deux ans ; place requise dans l’effectif",
   ],
   "٥٫٤ مليون": ["5.4 million", "5,4 millions"],
   "المستعير يدفع": ["The borrower pays", "L’emprunteur paie"],
+  // 0.23 — شظايا بعد تحويل المبالغ النصية إلى money()
+  "بدء مهمة ٧ أيام مقابل": [
+    "Start a 7-day assignment for",
+    "Lancer une mission de 7 jours pour",
+  ],
+  "ناشئ مولّد: مرتب": ["Generated prospect: salary", "Jeune généré : salaire"],
+  "تكلفة": ["Cost", "Coût"],
+  "دخل متوقع": ["expected income", "recette prévue"],
+  "تأهيل لمسار مهني": ["Career-path qualification", "Qualification pour une carrière"],
+  "21 يومًا": ["21 days", "21 jours"],
+  "الموافقة على دورة ٢١ يومًا مقابل": [
+    "Approve a 21-day course for",
+    "Approuver un stage de 21 jours pour",
+  ],
 };

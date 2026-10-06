@@ -621,7 +621,7 @@ const actions = {
     openModal(hireStaffForm(getState(), el.dataset.id)),
   "staff-course": async (el) =>
     openModal(
-      `<h2>دورة تطوير</h2><p>${tr("٦ نقاط للمهارة الأساسية حتى حد ٩٥. لا تضمن الدورة زيادة المرتب.", "Adds 6 points to the main skill, up to 95. Salary is unchanged.", "Ajoute 6 points à la compétence principale, jusqu’à 95. Salaire inchangé.")}</p><div class="modal-actions">${button(`الموافقة على دورة ٢١ يومًا مقابل ١٠٠ ألف ${cur()}`, "confirm-staff-course", el.dataset.id, "primary")}</div>`,
+      `<h2>دورة تطوير</h2><p>${tr("٦ نقاط للمهارة الأساسية حتى حد ٩٥. لا تضمن الدورة زيادة المرتب.", "Adds 6 points to the main skill, up to 95. Salary is unchanged.", "Ajoute 6 points à la compétence principale, jusqu’à 95. Salaire inchangé.")}</p><div class="modal-actions">${button(`الموافقة على دورة ٢١ يومًا مقابل ${money(100000)} ${cur()}`, "confirm-staff-course", el.dataset.id, "primary")}</div>`,
     ),
   "confirm-staff-course": async (el) => {
     await apply((s) => trainStaff(s, el.dataset.id));

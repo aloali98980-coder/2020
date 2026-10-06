@@ -44,7 +44,7 @@ export function messageDetail(s, m) {
     if (m.kind === "retirement")
       actions =
         button(
-          "تأهيل لمسار مهني — ٦٠ ألف ج.م",
+          `تأهيل لمسار مهني — ${money(60000)} ${cur()}`,
           "retire-prepare",
           m.ref,
           "primary",
