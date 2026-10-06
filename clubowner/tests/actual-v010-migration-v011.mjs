@@ -1,0 +1,9 @@
+import assert from 'node:assert/strict';import {writeFile} from 'node:fs/promises';import {gzipSync} from 'node:zlib';
+import {createGame as oldGame} from '../.arena/v010-original/FootballClubManager/src/core/game.js';import {advanceTime as oldAdvance} from '../.arena/v010-original/FootballClubManager/src/services/time.js';
+import {advanceTime} from '../src/services/time.js';import {migrateSave} from '../src/core/migrations.js';import {validateSave} from '../src/core/validation.js';
+const s=oldGame({database:'world',expanded:true,leagues:['eg'],difficulty:'easy'});const tick=(s,f)=>{for(const m of s.inbox)if(m.required)m.status='resolved';f(s,1);};for(let i=0;i<80;i++)tick(s,oldAdvance);
+await writeFile('.arena/asia/actual-v010-mid.json.gz',gzipSync(JSON.stringify(s)));
+const next=migrateSave(s);assert.equal(next.version,11);assert.equal(next.expansion.asiaVersion,0);assert.deepEqual(next.expansion.cups,s.expansion.cups);validateSave(next);
+const old=structuredClone(s),n=structuredClone(next);for(let i=0;i<10;i++){tick(old,oldAdvance);tick(n,advanceTime);}const compare=structuredClone(n);compare.version=10;delete compare.expansion.asiaVersion;delete compare.migrationNote;assert.deepEqual(compare,old);
+const ids=new Set(n.players.map(p=>p.id));for(let i=0;i<450&&n.seasonNumber===1;i++)tick(n,advanceTime);assert.equal(n.seasonNumber,2);validateSave(n);assert.equal(n.expansion.asiaVersion,1);assert.equal(n.expansion.cups.filter(c=>c.engine==='asia-v1').length,3);assert([...ids].every(id=>n.players.some(p=>p.id===id)));assert(n.expansion.history[0].cups.some(c=>c.name==='AFC Champions League Elite'&&c.winner));
+const result={passed:true,authenticSourceVersion:'0.10.0',oldEngineDays:80,identicalComparisonDays:10,currentCupsUnchanged:true,activationAtRollover:true,playersAndHistoryRetained:true};await writeFile('review/actual-v010-migration-v011.json',JSON.stringify(result,null,2));console.log(result);

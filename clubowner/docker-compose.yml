@@ -1,0 +1,15 @@
+version: '3.8'
+services:
+  clubowner:
+    build: .
+    ports:
+      - "5173:5173"
+    environment:
+      - PORT=5173
+      - CLOUD_DB_PATH=/app/data/cloud-data.json
+    volumes:
+      - clubowner-data:/app/data
+    restart: unless-stopped
+
+volumes:
+  clubowner-data:

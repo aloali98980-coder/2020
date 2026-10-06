@@ -1,0 +1,279 @@
+{
+  "id": "world-wikipedia-20260924-v2",
+  "asOf": "2026-09-24",
+  "license": "CC-BY-SA-4.0",
+  "biographyLicense": "CC0-1.0",
+  "biographySource": "Wikidata + openfootball/players",
+  "biographyCommit": "125d20f7cc06cac7e758b40df535a7695632680a",
+  "players": 23463,
+  "clubs": 824,
+  "markets": 50,
+  "populatedMarkets": 50,
+  "sourceComplete": false,
+  "verifiedCurrentRegistration": false,
+  "wikidataIdentityMatches": 17937,
+  "unknownBirthDates": 4272,
+  "duplicateConflictsExcluded": 57,
+  "note": "Published senior squad snapshots, not verified complete 2026/27 registration lists. Markets are transfer pools, not simulated leagues. Wikidata matches use exact Wikipedia article identity and day-precision DOB; CC0 openfootball is a unique-name fallback. Ambiguous DOB stays unknown.",
+  "supplementedOn": "2026-09-27",
+  "supplementedClubs": [
+    {
+      "club": "Smouha SC",
+      "lang": "ar",
+      "rows": 21
+    },
+    {
+      "club": "O'Higgins F.C.",
+      "lang": "es",
+      "rows": 33
+    },
+    {
+      "club": "Recoleta FC",
+      "lang": "es",
+      "rows": 37
+    },
+    {
+      "club": "Club Sportivo San Lorenzo",
+      "lang": "es",
+      "rows": 33
+    },
+    {
+      "club": "FC Cajamarca",
+      "lang": "es",
+      "rows": 28
+    },
+    {
+      "club": "ADC Juan Pablo II College",
+      "lang": "es",
+      "rows": 30
+    },
+    {
+      "club": "CDT Real Oruro",
+      "lang": "es",
+      "rows": 33
+    },
+    {
+      "club": "Anzoátegui F.C.",
+      "lang": "es",
+      "rows": 29
+    },
+    {
+      "club": "COD Meknès",
+      "lang": "fr",
+      "rows": 31
+    },
+    {
+      "club": "RCA Zemamra",
+      "lang": "it",
+      "rows": 37
+    },
+    {
+      "club": "KAC Marrakech",
+      "lang": "it",
+      "rows": 23
+    },
+    {
+      "club": "PS Sakiet Eddaïer",
+      "lang": "es",
+      "rows": 29
+    },
+    {
+      "club": "Richards Bay F.C.",
+      "lang": "es",
+      "rows": 29
+    },
+    {
+      "club": "Siwelele F.C.",
+      "lang": "it",
+      "rows": 27
+    }
+  ],
+  "identityMethods": {
+    "none": 5506,
+    "article": 15440,
+    "redirect": 164,
+    "nationality-name": 1908,
+    "arwiki-name": 23,
+    "nationality-name-loose": 3,
+    "arwiki-number": 3,
+    "club-name": 21,
+    "eswiki-number": 13,
+    "eswiki-name": 315,
+    "eswiki-fuzzy": 1,
+    "arwiki-fuzzy": 4,
+    "frwiki-name": 33,
+    "frwiki-fuzzy": 4,
+    "frwiki-number": 5,
+    "name-transliterated": 20
+  },
+  "birthMethods": {
+    "unknown": 4272,
+    "article": 14867,
+    "redirect": 154,
+    "openfootball-name": 291,
+    "nationality-name": 1812,
+    "arwiki-name": 22,
+    "nationality-name-loose": 3,
+    "arwiki-number": 2,
+    "club-name": 15,
+    "eswiki-name": 1482,
+    "eswiki-number": 62,
+    "eswiki-sitelink": 82,
+    "eswiki-item": 23,
+    "eswiki-fuzzy": 3,
+    "arwiki-fuzzy": 3,
+    "frwiki-fuzzy": 7,
+    "frwiki-name": 307,
+    "frwiki-sitelink": 17,
+    "frwiki-item": 20,
+    "frwiki-number": 19
+  },
+  "conflictsResolved": {
+    "article-currentclub": 112,
+    "name-match-dropped": 73,
+    "article-over-name-match": 15,
+    "newer-source": 47,
+    "distinct": 47
+  },
+  "clubsWithoutPlayers": 5,
+  "note2": "0.18: red-link/renamed titles resolved to Wikidata items; unlinked names matched to living footballers of the same nationality or club by unique folded label (method recorded per row, not independent certification); squads for clubs without an English squad table adapted from another Wikipedia language edition; same-name conflicts resolved by article infobox or open club membership, otherwise kept as distinct people or excluded.",
+  "squadTablePages": 262,
+  "tableBirthdays": 2049,
+  "tableDatesCopied": 1819,
+  "tableRuns": [
+    {
+      "lang": "fr",
+      "leagues": [
+        "tn",
+        "ma",
+        "dz"
+      ],
+      "on": "2026-09-27",
+      "stats": {
+        "no-table": 16,
+        "birthday": 372,
+        "frwiki-fuzzy": 7,
+        "frwiki-name": 311,
+        "identity": 43,
+        "frwiki-sitelink": 18,
+        "frwiki-item": 20,
+        "frwiki-number": 20,
+        "number-name-unlike": 2,
+        "dob-mismatch": 3
+      }
+    },
+    {
+      "lang": "ar",
+      "leagues": [
+        "eg",
+        "sa",
+        "qa",
+        "ae",
+        "tn",
+        "ma",
+        "dz"
+      ],
+      "on": "2026-09-27",
+      "stats": {
+        "no-table": 39,
+        "birthday": 28,
+        "arwiki-name": 29,
+        "identity": 27,
+        "number-name-unlike": 141
+      }
+    },
+    {
+      "lang": "es",
+      "leagues": [
+        "co",
+        "bo",
+        "uy",
+        "ar",
+        "ve",
+        "pe",
+        "cl",
+        "py",
+        "ec"
+      ],
+      "on": "2026-09-27",
+      "stats": {
+        "birthday": 1505,
+        "eswiki-name": 1368,
+        "identity": 304,
+        "eswiki-number": 59,
+        "no-table": 12,
+        "eswiki-sitelink": 81,
+        "dob-mismatch": 100,
+        "number-name-unlike": 44,
+        "item-mismatch": 14,
+        "eswiki-item": 23,
+        "eswiki-fuzzy": 3
+      }
+    },
+    {
+      "lang": "ar",
+      "leagues": [
+        "eg",
+        "sa",
+        "qa",
+        "ae",
+        "tn",
+        "ma",
+        "dz"
+      ],
+      "on": "2026-09-27",
+      "stats": {
+        "no-table": 39,
+        "number-name-unlike": 137,
+        "identity": 9,
+        "birthday": 7,
+        "arwiki-number": 5,
+        "arwiki-fuzzy": 4,
+        "item-mismatch": 1
+      }
+    },
+    {
+      "lang": "es",
+      "leagues": [
+        "co",
+        "bo",
+        "uy",
+        "ar",
+        "ve",
+        "pe",
+        "cl",
+        "py",
+        "ec"
+      ],
+      "on": "2026-09-27",
+      "stats": {
+        "birthday": 124,
+        "eswiki-name": 165,
+        "birthday-replaces-openfootball": 46,
+        "eswiki-sitelink": 4,
+        "identity": 39,
+        "item-mismatch": 17,
+        "number-name-unlike": 48,
+        "eswiki-number": 6,
+        "no-table": 1
+      }
+    },
+    {
+      "lang": "fr",
+      "leagues": [
+        "tn",
+        "ma",
+        "dz"
+      ],
+      "on": "2026-09-27",
+      "stats": {
+        "no-table": 16,
+        "number-name-unlike": 3,
+        "birthday-replaces-openfootball": 1,
+        "frwiki-name": 1
+      }
+    }
+  ],
+  "note3": "0.18b: for rows still without an item or birthday, the same club's squad table on ar/fr/es Wikipedia was read (squad-tables.py); French and Spanish rows carry the birthday, Arabic rows link items. Matching: English sitelink, same item, equal folded name, same shirt number+position on a 2026/27 table, or near-identical spelling — always unique on both sides, one table row per player, Wikidata's single day-precision date wins, contradictions dropped. Method per row in identityMethod/biographyMethod (prefix arwiki-/frwiki-/eswiki-).",
+  "note4": "0.19: 21 Smouha SC rows imported from arwiki with Arabic-only names received an editorial Latin transliteration (name) while nameAr keeps the Arabic form (identityMethod name-transliterated where no method existed); 20 nameAr values cleaned of wiki-title underscores/trailing dots. No identity or birthday change."
+}

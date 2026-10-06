@@ -1,0 +1,18 @@
+{
+  "id": "/",
+  "name": "صاحب النادي | Club Owner",
+  "short_name": "صاحب النادي",
+  "description": "لعبة إدارة وملكية نادي كرة قدم — نسخة تجريبية",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0b141e",
+  "theme_color": "#0a141e",
+  "icons": [
+    {"src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
+    {"src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
+    {"src": "/icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+  ]
+}

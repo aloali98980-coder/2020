@@ -1,0 +1,12 @@
+node_modules/
+dist/
+review/
+server/cloud-data.json
+server/cloud-data.json.tmp
+data/cloud-db.json
+data/*.tmp
+shots*/
+.env
+.env.*
+*.log
+.DS_Store

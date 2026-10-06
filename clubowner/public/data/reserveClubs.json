@@ -1,0 +1,236 @@
+[
+  {
+    "wiki": "Athletic Bilbao B",
+    "parent": "Athletic Bilbao",
+    "ceilingTier": 2,
+    "ruleStatus": "modeled-reserve-restriction; licensing and age rules not implemented"
+  },
+  {
+    "wiki": "Deportivo Fabril",
+    "parent": "Deportivo de A Coruña",
+    "ceilingTier": 2,
+    "ruleStatus": "modeled-reserve-restriction; licensing and age rules not implemented"
+  },
+  {
+    "wiki": "Atlético Madrileño",
+    "parent": "Atlético Madrid",
+    "ceilingTier": 2,
+    "ruleStatus": "modeled-reserve-restriction; licensing and age rules not implemented"
+  },
+  {
+    "wiki": "Real Madrid Castilla",
+    "parent": "Real Madrid CF",
+    "ceilingTier": 2,
+    "ruleStatus": "modeled-reserve-restriction; licensing and age rules not implemented"
+  },
+  {
+    "wiki": "Villarreal CF B",
+    "parent": "Villarreal CF",
+    "ceilingTier": 2,
+    "ruleStatus": "modeled-reserve-restriction; licensing and age rules not implemented"
+  },
+  {
+    "wiki": "Real Sociedad B",
+    "parent": "Real Sociedad",
+    "ceilingTier": 2,
+    "ruleStatus": "modeled-reserve-restriction; licensing and age rules not implemented"
+  },
+  {
+    "wiki": "RC Celta Fortuna",
+    "parent": "RC Celta de Vigo",
+    "ceilingTier": 2,
+    "ruleStatus": "modeled-reserve-restriction; licensing and age rules not implemented"
+  },
+  {
+    "wiki": "Juventus Next Gen",
+    "parent": "Juventus FC",
+    "ceilingTier": 2,
+    "ruleStatus": "modeled-reserve-restriction; licensing and age rules not implemented"
+  },
+  {
+    "wiki": "Atalanta Under 23",
+    "parent": "Atalanta BC",
+    "ceilingTier": 2,
+    "ruleStatus": "modeled-reserve-restriction; licensing and age rules not implemented"
+  },
+  {
+    "wiki": "Inter Milan Under-23",
+    "parent": "Inter Milan",
+    "ceilingTier": 2,
+    "ruleStatus": "modeled-reserve-restriction; licensing and age rules not implemented"
+  },
+  {
+    "wiki": "Club NXT",
+    "parent": "Club Brugge KV",
+    "ceilingTier": 2,
+    "ruleStatus": "modeled-reserve-restriction; licensing and age rules not implemented"
+  },
+  {
+    "wiki": "Jong Genk U23",
+    "parent": "KRC Genk",
+    "ceilingTier": 2,
+    "ruleStatus": "modeled-reserve-restriction; licensing and age rules not implemented"
+  },
+  {
+    "wiki": "Jong KAA Gent U23",
+    "parent": "KAA Gent",
+    "ceilingTier": 2,
+    "ruleStatus": "modeled-reserve-restriction; licensing and age rules not implemented"
+  },
+  {
+    "wiki": "RSCA Futures",
+    "parent": "RSC Anderlecht",
+    "ceilingTier": 2,
+    "ruleStatus": "modeled-reserve-restriction; licensing and age rules not implemented"
+  },
+  {
+    "wiki": "Asteras Tripolis B",
+    "parent": "Asteras Tripolis F.C.",
+    "ceilingTier": 2,
+    "ruleStatus": "modeled-reserve-restriction; licensing and age rules not implemented"
+  },
+  {
+    "wiki": "Olympiacos F.C. B",
+    "parent": "Olympiacos F.C.",
+    "ceilingTier": 2,
+    "ruleStatus": "modeled-reserve-restriction; licensing and age rules not implemented"
+  },
+  {
+    "wiki": "PAOK B",
+    "parent": "PAOK FC",
+    "ceilingTier": 2,
+    "ruleStatus": "modeled-reserve-restriction; licensing and age rules not implemented"
+  },
+  {
+    "wiki": "Austria Wien II",
+    "parent": "FK Austria Wien",
+    "ceilingTier": 2,
+    "ruleStatus": "modeled-reserve-restriction; licensing and age rules not implemented"
+  },
+  {
+    "wiki": "FC Liefering",
+    "parent": "FC Red Bull Salzburg",
+    "ceilingTier": 2,
+    "ruleStatus": "modeled-reserve-restriction; licensing and age rules not implemented"
+  },
+  {
+    "wiki": "SK Rapid II",
+    "parent": "SK Rapid Vienna",
+    "ceilingTier": 2,
+    "ruleStatus": "modeled-reserve-restriction; licensing and age rules not implemented"
+  },
+  {
+    "wiki": "Sturm Graz II",
+    "parent": "SK Sturm Graz",
+    "ceilingTier": 2,
+    "ruleStatus": "modeled-reserve-restriction; licensing and age rules not implemented"
+  },
+  {
+    "wiki": "FC Baník Ostrava B",
+    "parent": "FC Baník Ostrava",
+    "ceilingTier": 2,
+    "ruleStatus": "modeled-reserve-restriction; licensing and age rules not implemented"
+  },
+  {
+    "wiki": "SK Slavia Prague B",
+    "parent": "SK Slavia Prague",
+    "ceilingTier": 2,
+    "ruleStatus": "modeled-reserve-restriction; licensing and age rules not implemented"
+  },
+  {
+    "wiki": "Dinamo Zagreb II",
+    "parent": "GNK Dinamo Zagreb",
+    "ceilingTier": 2,
+    "ruleStatus": "modeled-reserve-restriction; licensing and age rules not implemented"
+  },
+  {
+    "wiki": "Polissya-2 Zhytomyr",
+    "parent": "FC Polissya Zhytomyr",
+    "ceilingTier": 2,
+    "ruleStatus": "modeled-reserve-restriction; licensing and age rules not implemented"
+  },
+  {
+    "wiki": "Kolos-2 Kovalivka",
+    "parent": "FC Kolos Kovalivka",
+    "ceilingTier": 2,
+    "ruleStatus": "modeled-reserve-restriction; licensing and age rules not implemented"
+  },
+  {
+    "wiki": "Sport Huancayo II",
+    "parent": "Sport Huancayo",
+    "ceilingTier": 2,
+    "ruleStatus": "modeled-reserve-restriction; licensing and age rules not implemented"
+  },
+  {
+    "wiki": "TSG 1899 Hoffenheim II",
+    "parent": "TSG 1899 Hoffenheim",
+    "ceilingTier": 3,
+    "ruleStatus": "modeled-reserve-restriction; licensing and age rules not implemented"
+  },
+  {
+    "wiki": "VfB Stuttgart II",
+    "parent": "VfB Stuttgart",
+    "ceilingTier": 3,
+    "ruleStatus": "modeled-reserve-restriction; licensing and age rules not implemented"
+  },
+  {
+    "wiki": "S.L. Benfica B",
+    "parent": "S.L. Benfica",
+    "ceilingTier": 2,
+    "ruleStatus": "modeled-reserve-restriction; licensing and age rules not implemented"
+  },
+  {
+    "wiki": "FC Porto B",
+    "parent": "FC Porto",
+    "ceilingTier": 2,
+    "ruleStatus": "modeled-reserve-restriction; licensing and age rules not implemented"
+  },
+  {
+    "wiki": "Sporting CP B",
+    "parent": "Sporting CP",
+    "ceilingTier": 2,
+    "ruleStatus": "modeled-reserve-restriction; licensing and age rules not implemented"
+  },
+  {
+    "wiki": "Jong Ajax",
+    "parent": "AFC Ajax",
+    "ceilingTier": 2,
+    "ruleStatus": "modeled-reserve-restriction; licensing and age rules not implemented"
+  },
+  {
+    "wiki": "Jong AZ",
+    "parent": "AZ Alkmaar",
+    "ceilingTier": 2,
+    "ruleStatus": "modeled-reserve-restriction; licensing and age rules not implemented"
+  },
+  {
+    "wiki": "Jong PSV",
+    "parent": "PSV Eindhoven",
+    "ceilingTier": 2,
+    "ruleStatus": "modeled-reserve-restriction; licensing and age rules not implemented"
+  },
+  {
+    "wiki": "Jong FC Utrecht",
+    "parent": "FC Utrecht",
+    "ceilingTier": 2,
+    "ruleStatus": "modeled-reserve-restriction; licensing and age rules not implemented"
+  },
+  {
+    "wiki": "Monagas SC B",
+    "parent": "Monagas S.C.",
+    "ceilingTier": 2,
+    "ruleStatus": "modeled-reserve-restriction; licensing and age rules not implemented"
+  },
+  {
+    "wiki": "Academia Puerto Cabello B",
+    "parent": "Academia Puerto Cabello",
+    "ceilingTier": 2,
+    "ruleStatus": "modeled-reserve-restriction; licensing and age rules not implemented"
+  },
+  {
+    "wiki": "Zamora FC B",
+    "parent": "Zamora F.C.",
+    "ceilingTier": 2,
+    "ruleStatus": "modeled-reserve-restriction; licensing and age rules not implemented"
+  }
+]

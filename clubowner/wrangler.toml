@@ -1,0 +1,8 @@
+name = "club-owner"
+compatibility_date = "2024-01-01"
+pages_build_output_dir = "dist"
+
+# Optional: Add Cloudflare KV for permanent Cloud Sync persistence
+# [[kv_namespaces]]
+# binding = "CLOUD_DB"
+# id = "<your-kv-namespace-id>"
