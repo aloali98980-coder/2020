@@ -1,4 +1,4 @@
-# دليل النشر على Cloudflare — Club Owner (v0.22.0)
+# دليل النشر على Cloudflare — Club Owner (v0.23.0)
 _Cloudflare Pages & Edge Functions Deployment Guide_
 
 ---
@@ -25,7 +25,9 @@ _Cloudflare Pages & Edge Functions Deployment Guide_
    - **Framework preset**: `None` (أو `Vite`)
    - **Build command**: `npm run build`
    - **Build output directory**: `dist`
-   - **Root directory**: (اتركه فارغاً إلا إذا وضعت الكود داخل مجلد فرعي)
+   - **Root directory**: `clubowner` ← **إلزامي في هذا المستودع** (الكود داخل مجلد فرعي؛ لو تركته فارغًا سيفشل البناء بخطأ "Could not detect a directory containing static files")
+
+> ⚠️ **تنبيه مهم:** أنشئ المشروع من تبويب **Pages** وليس Workers. مشروعات Workers تستخدم `npx wrangler deploy` وهي طريقة لا تناسب هذا المشروع (ستتجاهل مجلد `functions/` الخاص بالمزامنة السحابية وستفشل في العثور على الملفات الثابتة).
 7. اضغط **Save and Deploy**.
 
 خلال دقيقة واحدة ستكون لعبتك حية على رابط مثل:
@@ -48,11 +50,11 @@ _Cloudflare Pages & Edge Functions Deployment Guide_
 ## ٤. طريقة النشر الثانية: السحب والإفلات المباشر (Drag & Drop) بدون Git 🚀
 
 إذا كنت لا تريد استخدام Git وتريد رفع اللعبة الآن فوراً:
-1. حمل مجلد `dist` الموجود في المشروع (أو من داخل الحزمة `ClubOwner-v0.22.0-src.zip`).
+1. حمل مجلد `dist` الموجود في المشروع (أو من داخل الحزمة `clubowner-deploy-dist-0.23.zip` — فك ضغطها واسحب محتواها).
 2. ادخل على **Workers & Pages** في Cloudflare.
 3. اختر **Pages** > **Upload assets**.
 4. حدد اسم المشروع (مثلاً: `clubowner`).
-5. اسحب مجلد `dist` وأفلته في المربع المخصص، ثم اضغط **Deploy site**.
+5. اسحب **محتوى** مجلد `dist` (ملف `index.html` وما حوله — وليس ملف ZIP) وأفلته في المربع المخصص، ثم اضغط **Deploy site**.
 6. مبروك! الموقع يعمل فوراً وبأعلى سرعة ممكنة.
 
 ---
