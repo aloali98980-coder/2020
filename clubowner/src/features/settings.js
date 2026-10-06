@@ -1,9 +1,17 @@
-import { getLanguage } from "../i18n/index.js";
+import { getLanguage, tr } from "../i18n/index.js";
 import { DIFFICULTIES } from "../models/difficulty.js";
 import { heading, button, badge, infoNote } from "../components/shared.js";
 import { icon } from "../components/icons.js";
 import { date, num } from "../ui/format.js";
 import { getSession, isAuthenticated } from "../services/auth.js";
+import { listSlots, MAX_SAVE_SLOTS } from "../services/slots.js";
+
+const mb = (size) => (size / 1048576).toFixed(1) + " MB";
+function slotsPanel() {
+  const slots = listSlots();
+  return `<section class="panel settings-panel"><div class="panel-head"><h3>${icon("shield")} ${tr("خانات الحفظ", "Save slots", "Emplacements")}</h3>${badge(num(slots.length) + " / " + num(MAX_SAVE_SLOTS), slots.length ? "green" : "")}</div><p>${tr("لقطات كاملة من مشوارك بمعزل عن الحفظة النشطة: احفظ وضعك الحالي في خانة، وارجع إليه لاحقًا من هذا المتصفح. تحميل خانة يستبدل الحفظة النشطة بعد تأكيد.", "Full snapshots of your career kept apart from the active save: store your current position in a slot and return to it later on this browser. Loading a slot replaces the active save after confirmation.", "Instantanés complets de votre carrière, indépendants de la sauvegarde active : stockez votre position et y revenir plus tard. Charger un emplacement remplace la sauvegarde active après confirmation.")}</p><div class="slot-create"><input id="slot-name" maxlength="40" placeholder="${tr("اسم الخانة (اختياري)", "Slot name (optional)", "Nom (facultatif)")}" aria-label="${tr("اسم الخانة", "Slot name", "Nom de l'emplacement")}">${button(tr("احفظ الحالية في خانة", "Snapshot current save", "Sauvegarder dans un emplacement"), "slot-save", "", "primary")}</div><div class="slots-list">${slots.length ? slots.map((x) => `<div class="slot-row"><div class="slot-info"><strong>${x.name}</strong><small>${x.clubName} · ${tr("الموسم", "Season", "Saison")} ${num(x.season)} · ${date(x.date)} · ${num(x.players)} ${tr("لاعبًا", "players", "joueurs")} · ${mb(x.size)}${x.database === "world" ? " · " + tr("عالم موسع", "World DB", "Base monde") : ""}</small></div><div class="slot-actions">${button(tr("تحميل", "Load", "Charger"), "slot-load", x.id, "secondary small")}${button(tr("حذف", "Delete", "Supprimer"), "slot-delete", x.id, "danger small")}</div></div>`).join("") : `<div class="slot-empty">${tr("لا خانات بعد. أول لقطة تبدأ من هنا.", "No slots yet. Your first snapshot starts here.", "Aucun emplacement. Votre premier instantané commence ici.")}</div>`}</div></section>`;
+}
+
 
 function cloudPanel(s) {
   const session = getSession();
@@ -99,6 +107,7 @@ export function settingsView(s) {
         ${button(icon("upload", 17) + " استيراد ملف", "import-save", "", "secondary")}
       </div>
     </section>
+    ${slotsPanel()}
     <section class="panel settings-panel">
       <div class="panel-head">
         <h3>${icon("clock")} إيقاع المحاكاة</h3>

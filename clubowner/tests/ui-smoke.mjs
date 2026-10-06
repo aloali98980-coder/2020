@@ -23,6 +23,13 @@ import { careersView } from "../src/features/careers.js";
 import { legendsView, DEFAULT_LEGEND_FILTERS } from "../src/features/legends.js";
 import { settingsView } from "../src/features/settings.js";
 import { setLanguage } from "../src/i18n/index.js";
+import { paletteItems } from "../src/features/palette.js";
+import { onboardingView, markStep, ONBOARDING_STEPS } from "../src/features/onboarding.js";
+import {
+  buildMatchReport,
+  playedOwnFixtures,
+} from "../src/services/matchReport.js";
+import { advanceTime } from "../src/services/time.js";
 
 const s = createGame({
   clubId: "ahly",
@@ -119,6 +126,48 @@ check("NAV_BY_ID يغطي كل الأقسام", () => {
     const l = NAV_BY_ID[n.id];
     if (!l?.name || !l?.icon) throw Error(`بيانات ناقصة للقسم ${n.id}`);
   }
+});
+
+check("البحث السريع: شاشات بلا استعلام ولاعبون باستعلام", () => {
+  const screens = paletteItems(s, "");
+  if (!screens.some((x) => x.type === "screen" && x.id === "dashboard"))
+    throw Error("الشاشات لا تظهر بلا استعلام");
+  const squadName = s.players.find((p) => p.clubId === s.clubId).name;
+  const byName = paletteItems(s, squadName.split(" ")[0]);
+  if (!byName.some((x) => x.type === "player" && x.id))
+    throw Error("اللاعبون لا يظهرون بالبحث بالاسم");
+});
+
+check("الإرشاد: الكارت يظهر ويكتمل ويُخفى", () => {
+  if (!onboardingView(s).includes("onboarding-card"))
+    throw Error("كارت الخطوات لا يظهر لحفظة جديدة");
+  for (const step of ONBOARDING_STEPS) markStep(s, step.key);
+  if (onboardingView(s) !== "")
+    throw Error("الكارت لا يختفي بعد اكتمال كل الخطوات");
+});
+
+check("تقرير مباراة: يُبنى لكل مباريات ناديك الملعوبة ويقبل الرندر", () => {
+  let guard = 0;
+  while (!playedOwnFixtures(s).length && guard++ < 40) {
+    // تجاوز القرارات الإلزامية كي تصل المحاكاة لأول مباراة (فحص عرض فقط).
+    s.inbox.forEach((m) => {
+      m.read = true;
+      if (m.required) m.status = "done";
+    });
+    advanceTime(s, 1);
+  }
+  const played = playedOwnFixtures(s);
+  if (!played.length) throw Error("لم تُلعب أي مباراة خلال 40 يومًا");
+  const report = buildMatchReport(s, played[0]);
+  if (
+    report.ratings.length < 9 ||
+    !report.events.length ||
+    typeof report.stats.possession !== "number"
+  )
+    throw Error("التقرير ناقص العناصر");
+  const again = buildMatchReport(s, played[0]);
+  if (JSON.stringify(again) !== JSON.stringify(report))
+    throw Error("التقرير غير حتمي");
 });
 
 if (failures) {

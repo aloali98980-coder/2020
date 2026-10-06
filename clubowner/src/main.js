@@ -97,6 +97,19 @@ import {
 
 import { advanceTime } from "./services/time.js";
 import { pendingActions, resolveInfo } from "./services/inbox.js";
+import { matchReportModal } from "./features/matchReport.js";
+import { paletteItems, paletteOverlay } from "./features/palette.js";
+import { markStep, hideOnboarding } from "./features/onboarding.js";
+import {
+  writeSlot,
+  readSlot,
+  deleteSlot,
+  listSlots,
+} from "./services/slots.js";
+import {
+  playedOwnFixtures,
+  reportFor,
+} from "./services/matchReport.js";
 import {
   submitOffer,
   acceptClub,
@@ -173,6 +186,7 @@ const ui = {
   worldTab: "table",
   legendFilters: { ...DEFAULT_LEGEND_FILTERS },
   legendOffer: {},
+  palette: { open: false, q: "", sel: 0, items: [] },
 };
 let pendingImport = null;
 let actionBusy = false;
@@ -225,11 +239,58 @@ function render() {
 }
 function navigate(route) {
   closeModal();
+  closePalette();
   ui.route = route;
   if (["squad", "transfers"].includes(route))
     ui.playerFilters = { search: "", pos: "all", league: "all" };
   render();
   window.scrollTo({ top: 0, behavior: "instant" });
+}
+// البحث السريع: طبقة مستقلة فوق التطبيق، تُحدَّث وحدها دون إعادة رندر الشاشة الحالية.
+function renderPalette() {
+  const root = document.getElementById("palette-root");
+  if (!root) return;
+  const s = getState();
+  if (!ui.palette.open || !s) {
+    root.innerHTML = "";
+    return;
+  }
+  root.innerHTML = paletteOverlay(s, ui.palette);
+  const input = root.querySelector("#palette-input");
+  input?.focus();
+  if (input) input.setSelectionRange(input.value.length, input.value.length);
+}
+function openPalette() {
+  if (!getState()) return;
+  ui.palette = { open: true, q: "", sel: 0, items: paletteItems(getState(), "") };
+  renderPalette();
+}
+function closePalette() {
+  if (!ui.palette.open) return;
+  ui.palette.open = false;
+  renderPalette();
+}
+function paletteQuery(q) {
+  ui.palette.q = q;
+  ui.palette.sel = 0;
+  ui.palette.items = paletteItems(getState(), q);
+  renderPalette();
+}
+function paletteMove(d) {
+  const n = ui.palette.items.length;
+  if (!n) return;
+  ui.palette.sel = (ui.palette.sel + d + n) % n;
+  renderPalette();
+  document
+    .querySelector(".palette-item.sel")
+    ?.scrollIntoView({ block: "nearest" });
+}
+function paletteActivate(i) {
+  const item = ui.palette.items[i];
+  if (!item) return;
+  closePalette();
+  if (item.type === "screen") navigate(item.id);
+  else showPlayer(item.id);
 }
 async function apply(operation, text) {
   document.body.classList.add("saving-game");
@@ -253,7 +314,22 @@ async function runTime(resume = false) {
   const days = resume
     ? null
     : Number(document.getElementById("advance-days")?.value || 7);
-  const r = await apply((s) => advanceTime(s, days));
+  const stateBefore = getState(),
+    playedBefore = new Set(
+      stateBefore ? playedOwnFixtures(stateBefore).map((f) => f.id) : [],
+    );
+  const r = await apply((s) => {
+    const result = advanceTime(s, days);
+    if (result.advanced) markStep(s, "week");
+    return result;
+  });
+  // تقرير آخر مباراة جديدة يُفتح تلقائيًا بعد أي تقدم أظهر مباراة لناديك.
+  const s = getState();
+  if (s) {
+    const fresh = playedOwnFixtures(s).filter((f) => !playedBefore.has(f.id));
+    if (fresh.length)
+      openModal(matchReportModal(s, reportFor(s, fresh[fresh.length - 1])));
+  }
   if (r.blocked) {
     ui.route = "inbox";
     ui.inboxFilter = "required";
@@ -558,6 +634,67 @@ const actions = {
   },
   advance: async () => runTime(false),
   resume: async () => runTime(true),
+  "match-report": async (el) => {
+    const s = getState();
+    const f = playedOwnFixtures(s).find((x) => x.id === el.dataset.id);
+    if (f) openModal(matchReportModal(s, reportFor(s, f)));
+  },
+  "palette-open": () => openPalette(),
+  "palette-close": () => closePalette(),
+  "palette-select": (el) => paletteActivate(Number(el.dataset.idx) || 0),
+  "onboarding-dismiss": () => {
+    hideOnboarding(getState());
+    render();
+  },
+  "slot-save": async () => {
+    const s = getState();
+    if (!s) return;
+    const name = document.getElementById("slot-name")?.value || "";
+    document.body.classList.add("saving-game");
+    try {
+      await writeSlot(s, name);
+      toast("تم حفظ الخانة بمعزل عن الحفظة النشطة.");
+    } catch (e) {
+      showError(e.message);
+    } finally {
+      document.body.classList.remove("saving-game");
+    }
+    render();
+  },
+  "slot-load": async (el) => {
+    const meta = listSlots().find((x) => x.id === el.dataset.id);
+    if (!meta) return;
+    openModal(
+      `<h2>${tr(`تحميل خانة «${meta.name}»؟`, `Load slot “${meta.name}”?`, `Charger l'emplacement « ${meta.name} » ?`)}</h2><p class="muted">${tr(`سيتم استبدال الحفظة النشطة بهذه اللقطة (${meta.clubName} · ${meta.date}).`, `The active save will be replaced by this snapshot (${meta.clubName} · ${meta.date}).`, `La sauvegarde active sera remplacée par cet instantané (${meta.clubName} · ${meta.date}).`)} ${tr("صدّر الحالية أولًا إن أردت الاحتفاظ بنسخة خارجية.", "Export the current one first if you want an external copy.", "Exportez d'abord la sauvegarde actuelle pour une copie externe.")}</p><div class="modal-actions">${button(tr("تحميل واستبدال", "Load and replace", "Charger et remplacer"), "slot-load-confirm", meta.id, "primary")}${button(tr("إلغاء", "Cancel", "Annuler"), "close-modal", "", "secondary")}</div>`,
+    );
+  },
+  "slot-load-confirm": async (el) => {
+    document.body.classList.add("saving-game");
+    let state = null;
+    try {
+      state = await readSlot(el.dataset.id);
+      await saveGame(state);
+    } catch (e) {
+      document.body.classList.remove("saving-game");
+      showError(e.message);
+      return;
+    }
+    document.body.classList.remove("saving-game");
+    setState(state);
+    setLanguage(state.preferences?.language || getLanguage());
+    closeModal();
+    // ذاكرة الحفظات الكبيرة: إعادة تحميل نظيفة بعد استبدال الحفظة النشطة.
+    location.reload();
+  },
+  "slot-delete": async (el) => {
+    try {
+      await deleteSlot(el.dataset.id);
+      toast("حُذفت الخانة.");
+    } catch (e) {
+      showError(e.message);
+    }
+    render();
+  },
   "open-message": async (el) => {
     await apply((s) => {
       const m = s.inbox.find((m) => m.id === el.dataset.id);
@@ -640,6 +777,7 @@ const actions = {
         (o) => o.sponsorId === el.dataset.id,
       );
       signSponsor(s, offer);
+      markStep(s, "sponsor");
     }, "تم توقيع الرعاية وإيداع المقدم في الخزينة.");
     closeModal();
   },
@@ -956,11 +1094,14 @@ document.addEventListener("submit", async (e) => {
     }
     if (form.id === "offer-form") {
       await apply(
-        (s) =>
-          submitOffer(s, form.dataset.player, {
+        (s) => {
+          const r = submitOffer(s, form.dataset.player, {
             fee: Number(form.elements.fee.value),
             upfrontPercent: Number(form.elements.upfront.value),
-          }),
+          });
+          markStep(s, "offer");
+          return r;
+        },
         "العرض اتبعت. مرّر يومًا عشان يوصلك الرد.",
       );
       closeModal();
@@ -1031,12 +1172,15 @@ document.addEventListener("submit", async (e) => {
     }
     if (form.id === "project-form") {
       await apply(
-        (s) =>
-          startProject(
+        (s) => {
+          const r = startProject(
             s,
             form.dataset.id,
             form.elements.speed.value === "fast",
-          ),
+          );
+          markStep(s, "facility");
+          return r;
+        },
         "المشروع بدأ. موعد الاستلام واتفاق الدفع في البريد.",
       );
       closeModal();
@@ -1061,6 +1205,10 @@ document.addEventListener("submit", async (e) => {
 });
 document.addEventListener("input", (e) => {
   if (e.target.closest("#offer-form,#contract-form")) updateCalculations();
+  if (e.target.id === "palette-input") {
+    paletteQuery(e.target.value);
+    return;
+  }
   if (e.target.id === "player-search") {
     const value = e.target.value,
       pos = e.target.selectionStart;
@@ -1070,6 +1218,26 @@ document.addEventListener("input", (e) => {
     const input = document.getElementById("player-search");
     input.focus();
     input.setSelectionRange(pos, pos);
+  }
+});
+// اختصارات البحث السريع: Ctrl/⌘+K للفتح والإغلاق، والأسهم وEnter للتنقل داخل النتائج.
+document.addEventListener("keydown", (e) => {
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+    e.preventDefault();
+    ui.palette.open ? closePalette() : openPalette();
+    return;
+  }
+  if (!ui.palette.open) return;
+  if (e.key === "Escape") closePalette();
+  else if (e.key === "ArrowDown") {
+    e.preventDefault();
+    paletteMove(1);
+  } else if (e.key === "ArrowUp") {
+    e.preventDefault();
+    paletteMove(-1);
+  } else if (e.key === "Enter") {
+    e.preventDefault();
+    paletteActivate(ui.palette.sel);
   }
 });
 document.addEventListener("change", async (e) => {
