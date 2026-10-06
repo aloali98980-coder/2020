@@ -6,8 +6,8 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, viewport-fit=cover"
     />
-    <meta name="theme-color" content="#0a141e" />
-    <meta name="club-owner-app" content="0.22.0" />
+    <meta name="theme-color" content="#0a1322" />
+    <meta name="club-owner-app" content="0.23.0" />
     <meta name="robots" content="noindex, nofollow" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta
@@ -24,6 +24,25 @@
     <meta name="copyright" content="© 2026 Ahmed S. Abodooh. All rights reserved." />
     <title>صاحب النادي | Club Owner</title>
     <link rel="icon" type="image/svg+xml" href="/crest.svg" />
+    <script>
+      // تطبيق الثيم وحجم الخط قبل أول طلاء كي لا يومض الواجهة.
+      try {
+        var pref = localStorage.getItem("clubowner.theme") || "dark";
+        var theme =
+          pref === "system"
+            ? matchMedia("(prefers-color-scheme: light)").matches
+              ? "light"
+              : "dark"
+            : pref;
+        document.documentElement.dataset.theme = theme;
+        document.documentElement.dataset.fontsize =
+          localStorage.getItem("clubowner.fontsize") === "large"
+            ? "large"
+            : "normal";
+        var meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) meta.setAttribute("content", theme === "light" ? "#f2f6fb" : "#0a1322");
+      } catch (e) {}
+    </script>
   </head>
   <body>
     <div id="app"></div>

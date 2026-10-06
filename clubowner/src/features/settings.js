@@ -4,8 +4,28 @@ import { heading, button, badge, infoNote } from "../components/shared.js";
 import { icon } from "../components/icons.js";
 import { date, num } from "../ui/format.js";
 import { getSession, isAuthenticated } from "../services/auth.js";
+import { getDisplayCurrency, DISPLAY_CURRENCIES } from "../ui/format.js";
+import { CURRENCIES } from "../data/currencies.js";
 import { listSlots, MAX_SAVE_SLOTS } from "../services/slots.js";
 
+const themePref = () => {
+  try {
+    return localStorage.getItem("clubowner.theme") || "dark";
+  } catch {
+    return "dark";
+  }
+};
+const fontPref = () => {
+  try {
+    return localStorage.getItem("clubowner.fontsize") || "normal";
+  } catch {
+    return "normal";
+  }
+};
+const currencyName = (code) => {
+  const c = CURRENCIES.find((x) => x.code === code);
+  return c ? `${c.name} (${c.symbol})` : code;
+};
 const mb = (size) => (size / 1048576).toFixed(1) + " MB";
 function slotsPanel() {
   const slots = listSlots();
@@ -110,7 +130,28 @@ export function settingsView(s) {
     ${slotsPanel()}
     <section class="panel settings-panel">
       <div class="panel-head">
-        <h3>${icon("settings")} ${tr("العرض والواجهة", "Display & interface", "Affichage et interface")}</h3>
+        <h3>${icon("settings")} ${tr("المظهر والواجهة", "Appearance & interface", "Apparence et interface")}</h3>
+      </div>
+      <div class="preference-row">
+        <div>
+          <strong>${tr("الثيم", "Theme", "Thème")}</strong>
+          <small>${tr("أزرق ملكي داكن، أو فاتح، أو حسب نظام جهازك", "Royal dark, light, or follow your system", "Sombre royal, clair, ou selon votre système")}</small>
+        </div>
+        <label class="field slim"><select id="theme-select" aria-label="${tr("الثيم", "Theme", "Thème")}"><option value="dark" ${themePref() === "dark" ? "selected" : ""}>${tr("داكن", "Dark", "Sombre")}</option><option value="light" ${themePref() === "light" ? "selected" : ""}>${tr("فاتح", "Light", "Clair")}</option><option value="system" ${themePref() === "system" ? "selected" : ""}>${tr("حسب النظام", "System", "Système")}</option></select></label>
+      </div>
+      <div class="preference-row">
+        <div>
+          <strong>${tr("حجم الخط", "Text size", "Taille du texte")}</strong>
+          <small>${tr("عادي، أو كبير للراحة والتابلت", "Normal, or large for comfort and tablets", "Normal ou grand pour le confort et les tablettes")}</small>
+        </div>
+        <label class="field slim"><select id="font-size" aria-label="${tr("حجم الخط", "Text size", "Taille du texte")}"><option value="normal" ${fontPref() !== "large" ? "selected" : ""}>${tr("عادي", "Normal", "Normal")}</option><option value="large" ${fontPref() === "large" ? "selected" : ""}>${tr("كبير", "Large", "Grand")}</option></select></label>
+      </div>
+      <div class="preference-row">
+        <div>
+          <strong>${tr("عملة العرض", "Display currency", "Devise d'affichage")}</strong>
+          <small>${tr("الأسعار نموذجية ثابتة للعرض؛ كل الحسابات تتم بالجنيه", "Fixed modeled rates for display; all accounting stays in EGP", "Taux fixes pour l'affichage ; la comptabilité reste en EGP")}</small>
+        </div>
+        <label class="field slim"><select id="display-currency" aria-label="${tr("عملة العرض", "Display currency", "Devise d'affichage")}">${DISPLAY_CURRENCIES.map((c) => `<option value="${c}" ${getDisplayCurrency() === c ? "selected" : ""}>${currencyName(c)}</option>`).join("")}</select></label>
       </div>
       <div class="preference-row">
         <div>

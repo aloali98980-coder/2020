@@ -2,7 +2,7 @@ import { excerpt } from "../i18n/index.js";
 import { eventDecisionView } from "./events.js";
 import { heading, badge, empty, button } from "../components/shared.js";
 import { icon } from "../components/icons.js";
-import { num, date, esc, category, money } from "../ui/format.js";
+import { num, date, esc, category, money , cur} from "../ui/format.js";
 export function inboxView(s, filter = "all", selected = null) {
   const list = s.inbox.filter((m) =>
     filter === "all" || filter === "required"
@@ -62,7 +62,7 @@ export function messageDetail(s, m) {
     if (m.kind === "transfer") {
       const n = s.negotiations.find((n) => n.id === m.ref);
       actions =
-        `<div class="decision-amount"><small>قيمة الانتقال المطلوبة</small><strong>${money(n.counter)} ج.م</strong></div>` +
+        `<div class="decision-amount"><small>قيمة الانتقال المطلوبة</small><strong>${money(n.counter)} ${cur()}</strong></div>` +
         button("موافقة والتفاوض مع اللاعب", "accept-club", m.ref, "primary") +
         button("إنهاء التفاوض", "reject-transfer", m.ref, "ghost");
     }

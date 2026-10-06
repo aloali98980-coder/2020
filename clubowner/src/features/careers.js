@@ -9,7 +9,7 @@ import {
   progress,
 } from "../components/shared.js";
 import { icon } from "../components/icons.js";
-import { money, num, esc, date } from "../ui/format.js";
+import { money, num, esc, date , cur} from "../ui/format.js";
 import { STAFF_ROLES, staffSalary } from "../services/staff.js";
 import { tr } from "../i18n/index.js";
 import { retiredCount } from "../services/retired.js";
@@ -35,7 +35,7 @@ function staffCard(s, p) {
     )
     .join(
       "",
-    )}</div><p class="muted qualification">${p.qualification === "qualified" ? "مؤهل" : p.qualification === "basic" ? "تأهيل أساسي" : "مبتدئ مهنيًا"}</p>${hired ? `<div class="staff-contract"><strong>${money(p.salary)} ج.م / شهر</strong><small>${date(p.contractEnd)}</small></div><div class="staff-actions">${p.role === "scout" ? button("مهمة كشف", "scout-task", p.id, "soft small") : ""}${button(p.course ? date(p.course.end) : "دورة تطوير", "staff-course", p.id, "secondary small", p.course ? "disabled" : "")}${button("إنهاء العقد", "staff-dismiss", p.id, "ghost small")}</div>` : button("اختيار الدور والتعيين", "hire-staff", p.id, "soft full")}</article>`;
+    )}</div><p class="muted qualification">${p.qualification === "qualified" ? "مؤهل" : p.qualification === "basic" ? "تأهيل أساسي" : "مبتدئ مهنيًا"}</p>${hired ? `<div class="staff-contract"><strong>${money(p.salary)} ${cur()} / شهر</strong><small>${date(p.contractEnd)}</small></div><div class="staff-actions">${p.role === "scout" ? button("مهمة كشف", "scout-task", p.id, "soft small") : ""}${button(p.course ? date(p.course.end) : "دورة تطوير", "staff-course", p.id, "secondary small", p.course ? "disabled" : "")}${button("إنهاء العقد", "staff-dismiss", p.id, "ghost small")}</div>` : button("اختيار الدور والتعيين", "hire-staff", p.id, "soft full")}</article>`;
 }
 export function hireStaffForm(s, id) {
   const p = s.staff.find((p) => p.id === id);
@@ -44,7 +44,7 @@ export function hireStaffForm(s, id) {
   )
     .map(
       ([key, v], i) =>
-        `<label><input type="radio" name="staffRole" value="${key}" ${i === 0 ? "checked" : ""}><div><strong>${v.name} · ${num(p.skills[v.skill])}/100</strong><span>${money(staffSalary(p, key))} ج.م / شهر</span></div></label>`,
+        `<label><input type="radio" name="staffRole" value="${key}" ${i === 0 ? "checked" : ""}><div><strong>${v.name} · ${num(p.skills[v.skill])}/100</strong><span>${money(staffSalary(p, key))} ${cur()} / شهر</span></div></label>`,
     )
     .join(
       "",
@@ -54,5 +54,5 @@ export function scoutTaskForm(s, id) {
   const targets = s.players.filter(
     (p) => p.clubId !== s.clubId && p.status !== "retired",
   );
-  return `<h2>مهمة كشف</h2><form id="scout-task-form" data-id="${id}"><label class="field"><span>اللاعب</span><select name="playerId">${targets.map((p) => `<option value="${p.id}">${esc(p.name)} · ${num(p.age)}</option>`).join("")}</select></label><p class="muted">${tr("المهمة تضيق نطاق تقدير الإمكانات ولا تغير قدرات اللاعب.", "Scouting narrows the potential estimate; it does not change player abilities.", "Le rapport affine l’estimation du potentiel sans changer les qualités du joueur.")}</p><div class="modal-actions"><button class="btn primary" type="submit">بدء مهمة ٧ أيام مقابل ٤٠ ألف ج.م</button></div></form>`;
+  return `<h2>مهمة كشف</h2><form id="scout-task-form" data-id="${id}"><label class="field"><span>اللاعب</span><select name="playerId">${targets.map((p) => `<option value="${p.id}">${esc(p.name)} · ${num(p.age)}</option>`).join("")}</select></label><p class="muted">${tr("المهمة تضيق نطاق تقدير الإمكانات ولا تغير قدرات اللاعب.", "Scouting narrows the potential estimate; it does not change player abilities.", "Le rapport affine l’estimation du potentiel sans changer les qualités du joueur.")}</p><div class="modal-actions"><button class="btn primary" type="submit">بدء مهمة ٧ أيام مقابل ٤٠ ألف ${cur()}</button></div></form>`;
 }

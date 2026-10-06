@@ -1011,4 +1011,71 @@ export const DICTIONARY = {
     "Legend contract terminated.",
     "Contrat de légende résilié.",
   ],
+  // 0.23 — شظايا عبارات بعد استبدال "ج.م" برمز العملة الديناميكي
+  "بدء مهمة ٧ أيام مقابل ٤٠ ألف": [
+    "Start a 7-day assignment for 40k",
+    "Lancer une mission de 7 jours pour 40k",
+  ],
+  "ربح تشغيلي": ["Operating profit", "Résultat d’exploitation"],
+  "بعد تكلفة القمصان المباعة. لا يشمل استثمار التأسيس": [
+    "After cost of shirts sold. Excludes the setup investment",
+    "Après coût des maillots vendus. hors investissement initial",
+  ],
+  "تُخصم فورًا": ["Deducted immediately", "Déduit immédiatement"],
+  "فسخ السابق + توقيع شهر": [
+    "Previous contract terminated + one-month signing",
+    "Résiliation du précédent + un mois de signature",
+  ],
+  "شهريًا · ثقة": ["monthly · confidence", "par mois · confiance"],
+  "شهريًا": ["per month", "par mois"],
+  "مقدم مدفوع": ["Upfront paid", "Acompte versé"],
+  "رواتب الأساطير شهريًا": ["Legends salaries monthly", "Salaires des légendes par mois"],
+  "مقابل الراتب، مع سمعة +٠٫١٥ وجماهير +١ شهريًا": [
+    "on top of the salary, with reputation +0.15 and fans +1 monthly",
+    "en plus du salaire, avec réputation +0,15 et fans +1 par mois",
+  ],
+  "المستعير": ["Borrowing club", "Club emprunteur"],
+  "/ شهر. يتطلب الرد والموافقة؛ لا خصم عند إرسال العرض": [
+    "/ month. Requires a reply and approval; nothing is deducted when the offer is sent",
+    "/ mois. nécessite réponse et accord ; aucun débit lors de l’envoi de l’offre",
+  ],
+  "الرسوم": ["Fee", "Frais"],
+  "خيار الشراء": ["Buy option", "Option d’achat"],
+  "صفر لإلغائه": ["Zero to disable it", "Zéro pour l’annuler"],
+  "النادي قد يطلب عرضًا مضادًا": [
+    "The club may request a counter-offer",
+    "Le club peut demander une contre-offre",
+  ],
+  "مكافأة التوقيع": ["Signing bonus", "Prime à la signature"],
+  "مكافأة المشاركة": ["Appearance bonus", "Prime de match"],
+  "مكافأة الهدف": ["Goal bonus", "Prime de but"],
+  "شرط جزائي": ["Release clause", "Clause libératoire"],
+  "صفر = لا يوجد": ["Zero = none", "Zéro = aucun"],
+  "إجمالي قيمة العقود": ["Total contracts value", "Valeur totale des contrats"],
+  "قيمة استرشادية": ["Indicative value", "Valeur indicative"],
+  "سمعة ناديك": ["Your club’s reputation", "La réputation de votre club"],
+  "المستوى الأعلى يزيد حجم الدفعة، ومدرب الناشئين يحسن التقدير، ولا يضمن النجومية": [
+    "A higher level increases the payment, the youth coach improves the estimate, and stardom is not guaranteed",
+    "Un niveau plus élevé augmente le versement, l’entraîneur des jeunes affine l’estimation, et la célébrité n’est pas garantie",
+  ],
+  "سقف قيمة اللاعب": ["Player value cap", "Plafond de valeur du joueur"],
+  "الموافقة على دورة ٢١ يومًا مقابل ١٠٠ ألف": [
+    "Approve a 21-day course for 100k",
+    "Approuver un stage de 21 jours pour 100k",
+  ],
+  "تشمل مكافآت أداء موحدة تُصرف تلقائيًا": [
+    "Includes uniform performance bonuses paid automatically",
+    "Inclut des primes de performance uniformes versées automatiquement",
+  ],
+  "٥ ملايين": ["5 million", "5 millions"],
+  "ناشئ مولّد: مرتب ٢٥ ألف": [
+    "Generated prospect: salary of 25k",
+    "Jeune généré : salaire de 25k",
+  ],
+  "شهريًا، عقد سنتين؛ يحتاج مكانًا بالقائمة": [
+    "monthly, two-year contract; requires a squad slot",
+    "par mois, contrat de deux ans ; place requise dans l’effectif",
+  ],
+  "٥٫٤ مليون": ["5.4 million", "5,4 millions"],
+  "المستعير يدفع": ["The borrower pays", "L’emprunteur paie"],
 };

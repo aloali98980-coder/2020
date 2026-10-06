@@ -20,17 +20,8 @@ input[type="submit"],
 input[type="button"] {
   touch-action: manipulation;
 }
+/* الألوان والهوية كلها في tokens.css (نظام الثيمات) — لا تُعرَّف هنا. */
 :root {
-  --bg: #0b141e;
-  --panel: #111e2a;
-  --panel2: #152330;
-  --line: #25323d;
-  --muted: #8a9aa9;
-  --text: #e7eef3;
-  --green: #b5ee78;
-  --green-dark: #182d27;
-  --gold: #ddbe78;
-  --red: #ef8688;
   --radius: 14px;
   font-family: ClubArabic, Tahoma, Arial, sans-serif;
   color: var(--text);
@@ -122,9 +113,9 @@ b {
 }
 input,
 select {
-  background: #0e1924;
+  background: var(--panel);
   color: var(--text);
-  border: 1px solid #30404c;
+  border: 1px solid var(--line-strong);
   border-radius: 8px;
   padding: 10px 12px;
   min-height: 44px;
@@ -132,7 +123,7 @@ select {
   transition: border-color 0.15s;
 }
 input::placeholder {
-  color: #718291;
+  color: var(--muted);
 }
 input[type="number"] {
   direction: ltr;
@@ -163,14 +154,14 @@ button:hover {
   filter: brightness(1.08);
 }
 ::selection {
-  background: #b5ee7840;
+  background: var(--accent-line);
 }
 ::-webkit-scrollbar {
   height: 6px;
   width: 6px;
 }
 ::-webkit-scrollbar-thumb {
-  background: #354551;
+  background: var(--line-strong);
   border-radius: 9px;
 }
 .btn {
@@ -189,19 +180,19 @@ button:hover {
 }
 .btn.primary {
   background: var(--green);
-  color: #172619;
+  color: var(--accent-ink);
 }
 .btn.primary:hover {
-  background: #c7fa98;
+  background: color-mix(in srgb, var(--accent) 88%, white);
 }
 .btn.secondary {
-  border-color: #334450;
-  background: #192735;
+  border-color: var(--line-strong);
+  background: var(--panel-2);
 }
 .btn.soft {
-  background: #b5ee7810;
+  background: var(--accent-soft);
   color: var(--green);
-  border-color: #b5ee7835;
+  border-color: var(--accent)35;
 }
 .btn.ghost {
   border-color: var(--line);
@@ -209,13 +200,13 @@ button:hover {
   color: var(--muted);
 }
 .btn.light {
-  background: #e8f0e2;
-  color: #1e2c23;
+  background: var(--accent);
+  color: var(--accent-ink);
 }
 .btn.danger {
-  background: #ef868812;
+  background: var(--red)12;
   color: var(--red);
-  border-color: #ef868840;
+  border-color: var(--red-line);
 }
 .btn.small {
   padding: 6px 12px;
@@ -269,21 +260,21 @@ button:hover {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  border: 1px solid #ffffff0c;
-  background: #8a9aa912;
-  color: #a0afbd;
+  border: 1px solid var(--line);
+  background: var(--muted)12;
+  color: var(--muted);
   padding: 3px 9px;
   border-radius: 5px;
   font-size: 11.5px;
   white-space: nowrap;
 }
 .badge.green {
-  background: #b5ee7810;
-  border-color: #b5ee7825;
+  background: var(--accent-soft);
+  border-color: var(--accent-line);
 }
 .badge.gold {
-  background: #ddbe7812;
-  border-color: #ddbe7825;
+  background: var(--gold-soft);
+  border-color: var(--gold)25;
 }
 .badge.outline {
   background: none;
@@ -319,7 +310,7 @@ button:hover {
   font-size: 11.5px;
   border-radius: 5px;
   padding: 1px 7px;
-  background: #ddbe7815;
+  background: var(--gold)15;
 }
 .page-heading {
   display: flex;
@@ -334,7 +325,7 @@ button:hover {
 }
 .progress {
   height: 5px;
-  background: #273846;
+  background: var(--panel-3);
   border-radius: 20px;
   overflow: hidden;
 }
@@ -352,7 +343,7 @@ button:hover {
 }
 .field > span {
   font-size: 13.5px;
-  color: #c6d3de;
+  color: var(--muted);
 }
 .form-grid {
   display: grid;
@@ -367,11 +358,11 @@ button:hover {
   align-items: flex-start;
   gap: 9px;
   background: #17273680;
-  border: 1px solid #2a3b48;
+  border: 1px solid var(--line);
   padding: 13px 16px;
   border-radius: 9px;
   font-size: 12.5px;
-  color: #9bb0c1;
+  color: var(--muted);
   line-height: 1.9;
   margin-top: 18px;
 }
@@ -388,7 +379,7 @@ button:hover {
   margin-bottom: 12px;
 }
 .empty-state h3 {
-  color: #bbcad5;
+  color: var(--muted);
   margin-bottom: 8px;
 }
 .empty-state p {
@@ -449,14 +440,14 @@ button:hover {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  color: #a9b7c3;
+  color: var(--muted);
   font-size: 12.5px;
   gap: 5px;
 }
 .stat-icon {
   display: grid;
   place-items: center;
-  color: #9bb0c5;
+  color: var(--muted);
 }
 .stat-icon svg {
   width: 18px;
@@ -507,20 +498,20 @@ th {
   padding: 13px 17px;
   border-top: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
-  background: #0d1924;
+  background: var(--panel);
 }
 td {
   padding: 15px 17px;
-  border-bottom: 1px solid #25323d99;
+  border-bottom: 1px solid var(--line)99;
 }
 tbody tr:last-child td {
   border-bottom: 0;
 }
 tbody tr:hover {
-  background: #a6c5db04;
+  background: var(--wash);
 }
 .own {
-  background: #b5ee7808 !important;
+  background: var(--accent)08 !important;
 }
 .money-cell {
   font-variant-numeric: tabular-nums;
@@ -567,7 +558,7 @@ td small {
 }
 .level-bars i {
   height: 4px;
-  background: #2b3c47;
+  background: var(--panel-3);
   flex: 1;
   border-radius: 5px;
 }

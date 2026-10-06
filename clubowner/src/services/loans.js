@@ -1,3 +1,4 @@
+import { cur } from "../ui/format.js";
 import {
   assert,
   uid,
@@ -193,7 +194,7 @@ function respond(s, o) {
     o.expires = addDays(s.date, 7);
     message(s, {
       title: "رد الإعارة: " + p.name,
-      body: `رسوم ${t.fee} ج.م · المستعير يدفع ${t.wageShare}٪ من الراتب · ${t.days} يومًا. راجع التفاصيل قبل الموافقة، وخيار الشراء يلزم المالك إذا فعّله المستعير.`,
+      body: `رسوم ${t.fee} ${cur()} · المستعير يدفع ${t.wageShare}٪ من الراتب · ${t.days} يومًا. راجع التفاصيل قبل الموافقة، وخيار الشراء يلزم المالك إذا فعّله المستعير.`,
       category: "transfers",
       required: true,
       kind: "loan-offer",

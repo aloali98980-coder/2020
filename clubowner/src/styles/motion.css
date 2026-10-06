@@ -138,7 +138,7 @@ body.saving-game::before {
   content: "";
   position: fixed;
   inset: 0;
-  background: rgba(8, 16, 24, 0.28);
+  background: color-mix(in srgb, var(--bg-deep) 32%, transparent);
   z-index: calc(var(--z-busy) - 1);
   animation: fade-in 160ms var(--ease-out) both;
 }
@@ -149,7 +149,7 @@ body.saving-game::after {
   left: 0;
   width: 38%;
   height: 3px;
-  background: linear-gradient(90deg, var(--accent), #e4ffb0);
+  background: linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 55%, white));
   z-index: var(--z-busy);
   animation: busy-slide 1.15s var(--ease-in-out) infinite;
 }

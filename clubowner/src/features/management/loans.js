@@ -2,10 +2,10 @@ import { loanDestinations } from "../../services/loans.js";
 import { marketOpen } from "../../services/market.js";
 import { extendedClub } from "../../data/expandedCatalog.js";
 import { button } from "../../components/shared.js";
-import { esc, money, date } from "../../ui/format.js";
+import { esc, money, date , cur} from "../../ui/format.js";
 const club = (id) => esc(extendedClub(id)?.name || id);
 export function loanTerms(t) {
-  return `${t.days} يومًا · رسوم ${money(t.fee)} ج.م · المستعير ${t.wageShare}٪ من الراتب · ${t.role === "starter" ? "أساسي" : "مداورة"} · ${t.recallAllowed ? "استدعاء مسموح بعد 60 يومًا" : "لا استدعاء مبكر"} · ${t.buyOption ? "خيار شراء " + money(t.buyOption) + " ج.م" : "بلا خيار شراء"}`;
+  return `${t.days} يومًا · رسوم ${money(t.fee)} ${cur()} · المستعير ${t.wageShare}٪ من الراتب · ${t.role === "starter" ? "أساسي" : "مداورة"} · ${t.recallAllowed ? "استدعاء مسموح بعد 60 يومًا" : "لا استدعاء مبكر"} · ${t.buyOption ? "خيار شراء " + money(t.buyOption) + " " + cur() : "بلا خيار شراء"}`;
 }
 export function loanReview(s, id) {
   const o = s.management.loanOffers.find((o) => o.id === id);
@@ -17,7 +17,7 @@ export function loanForm(s, id) {
   const p = s.players.find((p) => p.id === id);
   if (!p) throw Error("اختر لاعبًا.");
   const out = p.clubId === s.clubId;
-  return `<h2>${out ? "عرض للإعارة" : "طلب إعارة"}: ${esc(p.name)}</h2><p>العقد حتى ${date(p.contractEnd)} · الراتب ${money(p.salary)} ج.م / شهر. يتطلب الرد والموافقة؛ لا خصم عند إرسال العرض.</p><form id="loan-offer-form" data-player="${esc(id)}"><div class="form-grid">${
+  return `<h2>${out ? "عرض للإعارة" : "طلب إعارة"}: ${esc(p.name)}</h2><p>العقد حتى ${date(p.contractEnd)} · الراتب ${money(p.salary)} ${cur()} / شهر. يتطلب الرد والموافقة؛ لا خصم عند إرسال العرض.</p><form id="loan-offer-form" data-player="${esc(id)}"><div class="form-grid">${
     out
       ? `<label class="field">النادي المستعير<select name="borrower" required>${loanDestinations(
           s,
@@ -26,7 +26,7 @@ export function loanForm(s, id) {
           .map((id) => `<option value="${esc(id)}">${club(id)}</option>`)
           .join("")}</select></label>`
       : ""
-  }<label class="field">مدة الإعارة<select name="days"><option value="90">90 يومًا</option><option value="180" selected>180 يومًا</option><option value="365">365 يومًا</option></select></label><label class="field">الرسوم ج.م<input name="fee" type="number" min="0" max="10000000000" value="${Math.round(p.value * 0.04)}" required></label><label class="field">نسبة راتب المستعير ٪<input name="wageShare" type="number" min="0" max="100" value="80" required></label><label class="field">خيار الشراء ج.م — صفر لإلغائه<input name="buyOption" type="number" min="0" max="10000000000" value="0" required></label><label class="field">وعد المشاركة<select name="role"><option value="rotation">مداورة</option><option value="starter">أساسي</option></select></label><label><input name="recallAllowed" type="checkbox" checked> السماح للمالك بالاستدعاء بعد 60 يومًا</label></div><p>النادي الآخر قد يعدّل الشروط أو يرفض. الرسوم لا ترد. مكافآت المباريات على المستعير. خيار الشراء ينقل العقد الحالي دون تمديد أو تفاوض تلقائي.</p><button class="btn primary">إرسال العرض</button></form>`;
+  }<label class="field">مدة الإعارة<select name="days"><option value="90">90 يومًا</option><option value="180" selected>180 يومًا</option><option value="365">365 يومًا</option></select></label><label class="field">الرسوم ${cur()}<input name="fee" type="number" min="0" max="10000000000" value="${Math.round(p.value * 0.04)}" required></label><label class="field">نسبة راتب المستعير ٪<input name="wageShare" type="number" min="0" max="100" value="80" required></label><label class="field">خيار الشراء ${cur()} — صفر لإلغائه<input name="buyOption" type="number" min="0" max="10000000000" value="0" required></label><label class="field">وعد المشاركة<select name="role"><option value="rotation">مداورة</option><option value="starter">أساسي</option></select></label><label><input name="recallAllowed" type="checkbox" checked> السماح للمالك بالاستدعاء بعد 60 يومًا</label></div><p>النادي الآخر قد يعدّل الشروط أو يرفض. الرسوم لا ترد. مكافآت المباريات على المستعير. خيار الشراء ينقل العقد الحالي دون تمديد أو تفاوض تلقائي.</p><button class="btn primary">إرسال العرض</button></form>`;
 }
 export function loansPanel(s) {
   const m = s.management,

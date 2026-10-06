@@ -169,7 +169,7 @@ import {
 } from "./ui/modal.js";
 import { icon } from "./components/icons.js";
 import { badge, button, infoNote } from "./components/shared.js";
-import { money, num, esc, date, setDigitsMode } from "./ui/format.js";
+import { money, num, esc, date, setDigitsMode, setDisplayCurrency, cur } from "./ui/format.js";
 import { ASSETS } from "./data/catalog.js";
 import { findPerson } from "./services/retired.js";
 const app = document.getElementById("app");
@@ -191,6 +191,31 @@ const ui = {
 let pendingImport = null;
 let actionBusy = false;
 let lastRenderedRoute = null;
+// الثيم: تفضيل متصفح (مثل اللغة) يُطبق فورًا ويُحفظ خارج الحفظة.
+const resolveTheme = (pref) =>
+  pref === "light"
+    ? "light"
+    : pref === "system"
+      ? matchMedia("(prefers-color-scheme: light)").matches
+        ? "light"
+        : "dark"
+      : "dark";
+function applyThemePref(pref) {
+  try {
+    localStorage.setItem("clubowner.theme", pref);
+  } catch {}
+  const theme = resolveTheme(pref);
+  document.documentElement.dataset.theme = theme;
+  document
+    .querySelector('meta[name="theme-color"]')
+    ?.setAttribute("content", theme === "light" ? "#f2f6fb" : "#0a1322");
+}
+matchMedia("(prefers-color-scheme: light)").addEventListener?.("change", () => {
+  try {
+    if ((localStorage.getItem("clubowner.theme") || "dark") === "system")
+      document.documentElement.dataset.theme = resolveTheme("system");
+  } catch {}
+});
 function render() {
   const s = getState();
   if (s) {
@@ -392,7 +417,7 @@ function updateCalculations() {
     const fee = Number(offer.elements.fee.value),
       percent = Number(offer.elements.upfront.value);
     document.getElementById("offer-summary").innerHTML =
-      `<div><span>المقدم عند التوقيع</span><strong>${money(Math.round((fee * percent) / 100))} ج.م</strong></div><div><span>باقي قيمة الانتقال</span><strong>${money(fee - Math.round((fee * percent) / 100))} ج.م</strong></div><small>لم يتم الخصم. لا يشمل المبلغ عقد اللاعب أو الوكيل.</small>`;
+      `<div><span>المقدم عند التوقيع</span><strong>${money(Math.round((fee * percent) / 100))} ${cur()}</strong></div><div><span>باقي قيمة الانتقال</span><strong>${money(fee - Math.round((fee * percent) / 100))} ${cur()}</strong></div><small>لم يتم الخصم. لا يشمل المبلغ عقد اللاعب أو الوكيل.</small>`;
   }
   if (contract) {
     const salary = Number(contract.elements.salary.value),
@@ -415,7 +440,7 @@ function updateCalculations() {
           Number(contract.elements.annualRaisePct.value),
         );
     document.getElementById("contract-summary").innerHTML =
-      `<div><span>المطلوب من الخزينة الآن</span><strong class="${now > s.finance.cash ? "red" : "green"}">${money(now)} ج.م</strong></div><div><span>إجمالي الالتزام خلال العقد</span><strong>${money(total)} ج.م</strong></div>${n ? `<div><span>عمولة الوكيل (٣٪)</span><b>${money(agent)} ج.م</b></div>` : ""}<small>يشمل ${renew ? "العقد الجديد والمكافأة" : "رسوم الانتقال والمرتب والمكافأة والوكيل"}. الرصيد المتاح ${money(s.finance.cash)} ج.م.</small>`;
+      `<div><span>المطلوب من الخزينة الآن</span><strong class="${now > s.finance.cash ? "red" : "green"}">${money(now)} ${cur()}</strong></div><div><span>إجمالي الالتزام خلال العقد</span><strong>${money(total)} ${cur()}</strong></div>${n ? `<div><span>عمولة الوكيل (٣٪)</span><b>${money(agent)} ${cur()}</b></div>` : ""}<small>يشمل ${renew ? "العقد الجديد والمكافأة" : "رسوم الانتقال والمرتب والمكافأة والوكيل"}. الرصيد المتاح ${money(s.finance.cash)} ${cur()}.</small>`;
   }
   if (offer) translateDOM(document.getElementById("offer-summary"));
   if (contract) {
@@ -596,7 +621,7 @@ const actions = {
     openModal(hireStaffForm(getState(), el.dataset.id)),
   "staff-course": async (el) =>
     openModal(
-      `<h2>دورة تطوير</h2><p>${tr("٦ نقاط للمهارة الأساسية حتى حد ٩٥. لا تضمن الدورة زيادة المرتب.", "Adds 6 points to the main skill, up to 95. Salary is unchanged.", "Ajoute 6 points à la compétence principale, jusqu’à 95. Salaire inchangé.")}</p><div class="modal-actions">${button("الموافقة على دورة ٢١ يومًا مقابل ١٠٠ ألف ج.م", "confirm-staff-course", el.dataset.id, "primary")}</div>`,
+      `<h2>دورة تطوير</h2><p>${tr("٦ نقاط للمهارة الأساسية حتى حد ٩٥. لا تضمن الدورة زيادة المرتب.", "Adds 6 points to the main skill, up to 95. Salary is unchanged.", "Ajoute 6 points à la compétence principale, jusqu’à 95. Salaire inchangé.")}</p><div class="modal-actions">${button(`الموافقة على دورة ٢١ يومًا مقابل ١٠٠ ألف ${cur()}`, "confirm-staff-course", el.dataset.id, "primary")}</div>`,
     ),
   "confirm-staff-course": async (el) => {
     await apply((s) => trainStaff(s, el.dataset.id));
@@ -604,7 +629,7 @@ const actions = {
   },
   "staff-dismiss": async (el) =>
     openModal(
-      `<h2>إنهاء العقد</h2><p>تعويض الإنهاء: شهران من المرتب.</p><strong>${money(getState().staff.find((p) => p.id === el.dataset.id).salary * 2)} ج.م</strong><div class="modal-actions">${button("إنهاء العقد", "confirm-staff-dismiss", el.dataset.id, "primary")}</div>`,
+      `<h2>إنهاء العقد</h2><p>تعويض الإنهاء: شهران من المرتب.</p><strong>${money(getState().staff.find((p) => p.id === el.dataset.id).salary * 2)} ${cur()}</strong><div class="modal-actions">${button("إنهاء العقد", "confirm-staff-dismiss", el.dataset.id, "primary")}</div>`,
     ),
   "confirm-staff-dismiss": async (el) => {
     await apply((s) => dismissStaff(s, el.dataset.id));
@@ -817,7 +842,7 @@ const actions = {
       sp = resolveSponsor(offer.sponsorId),
       asset = ASSETS.find((x) => x.id === offer.assetId);
     openModal(
-      `<span class="eyebrow">قبل الالتزام</span><h2>${sp.name} × ${asset.name}</h2><p class="muted">عقد ٣٦٠ يومًا بقيمة ${money(offer.amount)} ج.م، ومقدم ${money(Math.floor(offer.amount * 0.25))} ج.م. تشمل مكافآت أداء موحدة تُصرف تلقائيًا.</p><div class="effect-card"><h4>الحقوق والالتزامات</h4><p>سيتم حجز ${asset.name} طوال مدة العقد. ${offer.exclusive ? "العقد حصري لقطاع " + sp.sector + "؛ يمنع التعاقد مع منافس في نفس القطاع." : "بدون حصرية قطاع؛ مساحة الإعلان نفسها محجوزة لهذا الشريك فقط."}</p><small>الباقي على ١١ دفعة متساوية تقريبًا كل ٣٠ يومًا. الفسخ المبكر غير متاح في هذه النسخة.</small></div><div class="modal-actions"><button class="btn primary" data-action="sign-sponsor" data-id="${sp.id}" data-asset="${asset.id}">توقيع العقد واستلام المقدم ${icon("check", 17)}</button></div>`,
+      `<span class="eyebrow">قبل الالتزام</span><h2>${sp.name} × ${asset.name}</h2><p class="muted">عقد ٣٦٠ يومًا بقيمة ${money(offer.amount)} ${cur()}، ومقدم ${money(Math.floor(offer.amount * 0.25))} ${cur()}. تشمل مكافآت أداء موحدة تُصرف تلقائيًا.</p><div class="effect-card"><h4>الحقوق والالتزامات</h4><p>سيتم حجز ${asset.name} طوال مدة العقد. ${offer.exclusive ? "العقد حصري لقطاع " + sp.sector + "؛ يمنع التعاقد مع منافس في نفس القطاع." : "بدون حصرية قطاع؛ مساحة الإعلان نفسها محجوزة لهذا الشريك فقط."}</p><small>الباقي على ١١ دفعة متساوية تقريبًا كل ٣٠ يومًا. الفسخ المبكر غير متاح في هذه النسخة.</small></div><div class="modal-actions"><button class="btn primary" data-action="sign-sponsor" data-id="${sp.id}" data-asset="${asset.id}">توقيع العقد واستلام المقدم ${icon("check", 17)}</button></div>`,
     );
   },
   "sign-sponsor": async (el) => {
@@ -861,7 +886,7 @@ const actions = {
   },
   "loan-modal": async () =>
     openModal(
-      `<span class="eyebrow">تمويل تجريبي ثابت</span><h2>مساحة أكبر للسيولة… والتزام جديد</h2><div class="profile-stats"><div><small>المبلغ المستلم</small><strong>٥ ملايين ج.م</strong></div><div><small>إجمالي السداد</small><strong>٥٫٤ مليون ج.م</strong></div><div><small>الدفعة كل ٣٠ يومًا</small><strong>٤٥٠ ألف ج.م</strong></div></div><p class="muted">١٢ دفعة تشمل تكلفة تمويل ثابتة ٤٠٠ ألف جنيه. حد أقصى قرضان خلال الحفظة التجريبية. لا يتضمن نموذج فائدة مركبة أو شروط بنك حقيقي.</p>${infoNote("التمويل مش إيراد تشغيلي. القسط بيتسدد تلقائيًا حتى لو أدى لعجز في السيولة.")}<div class="modal-actions">${button("اعتماد التمويل", "take-loan", "", "primary")}</div>`,
+      `<span class="eyebrow">تمويل تجريبي ثابت</span><h2>مساحة أكبر للسيولة… والتزام جديد</h2><div class="profile-stats"><div><small>المبلغ المستلم</small><strong>٥ ملايين ${cur()}</strong></div><div><small>إجمالي السداد</small><strong>٥٫٤ مليون ${cur()}</strong></div><div><small>الدفعة كل ٣٠ يومًا</small><strong>٤٥٠ ألف ${cur()}</strong></div></div><p class="muted">١٢ دفعة تشمل تكلفة تمويل ثابتة ٤٠٠ ألف جنيه. حد أقصى قرضان خلال الحفظة التجريبية. لا يتضمن نموذج فائدة مركبة أو شروط بنك حقيقي.</p>${infoNote("التمويل مش إيراد تشغيلي. القسط بيتسدد تلقائيًا حتى لو أدى لعجز في السيولة.")}<div class="modal-actions">${button("اعتماد التمويل", "take-loan", "", "primary")}</div>`,
     ),
   "take-loan": async () => {
     await apply(takeLoan, "تم إيداع التمويل وجدولة الأقساط.");
@@ -964,14 +989,14 @@ const actions = {
             <div><span>النادي:</span><b>${diff?.local ? diff.local.clubName : "لا توجد"}</b></div>
             <div><span>الموسم:</span><b>${diff?.local ? diff.local.season : "—"}</b></div>
             <div><span>التاريخ:</span><b>${diff?.local ? date(diff.local.date) : "—"}</b></div>
-            <div><span>السيولة:</span><b>${diff?.local ? money(diff.local.cash) + " ج.م" : "—"}</b></div>
+            <div><span>السيولة:</span><b>${diff?.local ? money(diff.local.cash) + " " + cur() : "—"}</b></div>
           </div>
           <div class="cloud-diff-col">
             <h4>الحفظة على السحابة</h4>
             <div><span>النادي:</span><b>${diff.cloud.clubName}</b></div>
             <div><span>الموسم:</span><b>${diff.cloud.season}</b></div>
             <div><span>التاريخ:</span><b>${date(diff.cloud.date)}</b></div>
-            <div><span>السيولة:</span><b>${money(diff.cloud.cash)} ج.م</b></div>
+            <div><span>السيولة:</span><b>${money(diff.cloud.cash)} ${cur()}</b></div>
             <div><span>الجهاز:</span><b>${diff.cloud.device || "متصفح"}</b></div>
           </div>
         </div>
@@ -1020,7 +1045,7 @@ const actions = {
             <div class="cloud-save-item">
               <div class="cloud-save-info">
                 <strong>${s.metadata.clubName} · الموسم ${s.metadata.seasonNumber}</strong>
-                <small>${date(s.metadata.date)} · السيولة ${money(s.metadata.cash)} ج.م · ${s.metadata.device || "متصفح"}</small>
+                <small>${date(s.metadata.date)} · السيولة ${money(s.metadata.cash)} ${cur()} · ${s.metadata.device || "متصفح"}</small>
                 <small class="muted">المزامنة: ${new Date(s.updatedAt).toLocaleString("ar-EG")}</small>
               </div>
               <div class="settings-actions">
@@ -1439,6 +1464,30 @@ document.addEventListener("change", async (e) => {
         (s) => (s.preferences.pauseMatches = e.target.checked),
         "تم حفظ إعداد المحاكاة.",
       );
+    if (e.target.id === "theme-select") {
+      applyThemePref(e.target.value);
+      return;
+    }
+    if (e.target.id === "font-size") {
+      try {
+        localStorage.setItem("clubowner.fontsize", e.target.value);
+      } catch {}
+      document.documentElement.dataset.fontsize =
+        e.target.value === "large" ? "large" : "normal";
+      return;
+    }
+    if (e.target.id === "display-currency") {
+      setDisplayCurrency(e.target.value);
+      render();
+      toast(
+        tr(
+          "تم تحويل المبالغ المعروضة إلى العملة المختارة.",
+          "Displayed amounts now use the selected currency.",
+          "Les montants affichés utilisent la devise sélectionnée.",
+        ),
+      );
+      return;
+    }
     if (e.target.id === "auto-report")
       await apply(
         (s) => (s.preferences.autoMatchReport = e.target.checked),

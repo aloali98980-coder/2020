@@ -4,7 +4,7 @@ import { FOCUSES } from "../services/talent/training.js";
 import { MARKETS } from "../data/worldMarkets.js";
 import { extendedClub } from "../data/expandedCatalog.js";
 import { button, badge } from "../components/shared.js";
-import { esc, money, num, date } from "../ui/format.js";
+import { esc, money, num, date , cur} from "../ui/format.js";
 const focusName = {
   balanced: "شامل",
   pace: "السرعة",
@@ -36,10 +36,10 @@ export function talentView(s,selectedPlayer) {
       )
       .join("");
   const selected=own.find(p=>p.id===selectedPlayer)||own[0],plan=t.training[selected?.id]||{focus:"balanced",intensity:"normal"};
-  return `<div class="talent-centre"><section class="panel"><span class="eyebrow">مركز المواهب</span><h2>من الاختبار إلى الفريق الأول</h2><p>دفعة واحدة كل موسم، تصل بعد 14 يومًا. عند وصولها لديك 90 يومًا للتقييم. لا مرتبات للفريق الأول قبل التصعيد؛ تكلفة البرنامج ${money(intakeCost(s))} ج.م. المستوى الأعلى يزيد حجم الدفعة، ومدرب الناشئين يحسن التقدير، ولا يضمن النجومية.</p>${a.pending ? badge("الدفعة قيد الاختبار حتى " + date(a.pending.due), "gold") : a.season === s.seasonNumber ? badge("استخدمت دفعة هذا الموسم") : button("بدء اختبارات الأكاديمية", "talent-intake", "", "primary")}<p>مكافأة التصعيد: راتب شهر، وعقد ثلاث سنوات بالراتب الموضح. اللاعب الذي يغادر ينتقل لسوق الأحرار بنفس هويته وتاريخه.</p></section><div class="expansion-grid">${a.candidates
+  return `<div class="talent-centre"><section class="panel"><span class="eyebrow">مركز المواهب</span><h2>من الاختبار إلى الفريق الأول</h2><p>دفعة واحدة كل موسم، تصل بعد 14 يومًا. عند وصولها لديك 90 يومًا للتقييم. لا مرتبات للفريق الأول قبل التصعيد؛ تكلفة البرنامج ${money(intakeCost(s))} ${cur()}. المستوى الأعلى يزيد حجم الدفعة، ومدرب الناشئين يحسن التقدير، ولا يضمن النجومية.</p>${a.pending ? badge("الدفعة قيد الاختبار حتى " + date(a.pending.due), "gold") : a.season === s.seasonNumber ? badge("استخدمت دفعة هذا الموسم") : button("بدء اختبارات الأكاديمية", "talent-intake", "", "primary")}<p>مكافأة التصعيد: راتب شهر، وعقد ثلاث سنوات بالراتب الموضح. اللاعب الذي يغادر ينتقل لسوق الأحرار بنفس هويته وتاريخه.</p></section><div class="expansion-grid">${a.candidates
     .map((c) => {
       const p = c.player;
-      return `<article class="panel"><h3>${esc(p.name)}</h3><p>${esc(p.position)} · ${num(p.age)} سنة · مستوى ${num(Math.round(p.rating))}<br>إمكانات تقديرية ${c.range.join("–")} · راتب ${money(p.salary)} ج.م<br>التقييم حتى ${date(c.expires)}</p>${button("تصعيد وتوقيع", "talent-promote", p.id, "primary")}${button("السماح بالمغادرة", "talent-release", p.id, "ghost")}</article>`;
+      return `<article class="panel"><h3>${esc(p.name)}</h3><p>${esc(p.position)} · ${num(p.age)} سنة · مستوى ${num(Math.round(p.rating))}<br>إمكانات تقديرية ${c.range.join("–")} · راتب ${money(p.salary)} ${cur()}<br>التقييم حتى ${date(c.expires)}</p>${button("تصعيد وتوقيع", "talent-promote", p.id, "primary")}${button("السماح بالمغادرة", "talent-release", p.id, "ghost")}</article>`;
     })
     .join(
       "",
@@ -59,7 +59,7 @@ export function talentView(s,selectedPlayer) {
     .map((m) => `<option value="${m.id}">${esc(m.nameAr)}</option>`)
     .join(
       "",
-    )}</select></label><label class="field">المركز<select name="position">${opts(["all", ...POSITIONS], "all", (v) => (v === "all" ? "كل المراكز" : v))}</select></label><label class="field">أقل عمر<input name="minAge" type="number" min="16" max="40" value="16" required></label><label class="field">أقصى عمر<input name="maxAge" type="number" min="16" max="40" value="23" required></label><label class="field">سقف قيمة اللاعب ج.م<input name="budget" type="number" min="0" max="10000000000" value="5000000" required></label><label class="field">المدة والتكلفة<select name="days"><option value="7">7 أيام — 25 ألف</option><option value="21">21 يومًا — 60 ألف</option></select></label><label class="field">الكشاف<select name="staffId"><option value="external">خدمة كشف خارجية</option>${s.staff
+    )}</select></label><label class="field">المركز<select name="position">${opts(["all", ...POSITIONS], "all", (v) => (v === "all" ? "كل المراكز" : v))}</select></label><label class="field">أقل عمر<input name="minAge" type="number" min="16" max="40" value="16" required></label><label class="field">أقصى عمر<input name="maxAge" type="number" min="16" max="40" value="23" required></label><label class="field">سقف قيمة اللاعب ${cur()}<input name="budget" type="number" min="0" max="10000000000" value="5000000" required></label><label class="field">المدة والتكلفة<select name="days"><option value="7">7 أيام — 25 ألف</option><option value="21">21 يومًا — 60 ألف</option></select></label><label class="field">الكشاف<select name="staffId"><option value="external">خدمة كشف خارجية</option>${s.staff
     .filter((p) => p.status === "employed" && p.role === "scout")
     .map(
       (p) =>

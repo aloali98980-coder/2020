@@ -527,10 +527,10 @@
   .hero-art:after {
     background: linear-gradient(
       270deg,
-      #17302e 7%,
-      #17302e77 25%,
+      var(--hero-a) 7%,
+      color-mix(in srgb, var(--hero-a) 47%, transparent) 25%,
       transparent 53%,
-      #0b1d2250
+      color-mix(in srgb, var(--hero-b) 31%, transparent)
     );
   }
   .hero-bottom {
@@ -729,9 +729,9 @@
     z-index: 40;
     display: flex;
     justify-content: space-around;
-    background: #111f2bf5;
+    background: color-mix(in srgb, var(--panel) 96%, transparent);
     backdrop-filter: blur(14px);
-    border-top: 1px solid #334551;
+    border-top: 1px solid var(--line);
     padding: 8px 5px calc(8px + env(safe-area-inset-bottom));
   }
   .mobile-nav button {
@@ -741,7 +741,7 @@
     gap: 4px;
     background: none;
     border: 0;
-    color: #7d94a6;
+    color: var(--muted);
     font-size: 10px;
     padding: 3px 6px;
     min-width: 58px;
@@ -1384,7 +1384,7 @@
     bottom: -48px;
   }
   .showcase-art:after {
-    background: linear-gradient(270deg, #14272e 0%, #14272e88 40%, transparent);
+    background: linear-gradient(270deg, var(--panel-2) 0%, color-mix(in srgb, var(--panel-2) 53%, transparent) 40%, transparent);
   }
   .floating-tag {
     bottom: 15px;
@@ -1413,7 +1413,7 @@
     order: 1;
     margin-top: 20px;
     padding: 13px;
-    background: #111f2980;
+    background: color-mix(in srgb, var(--panel-2) 50%, transparent);
     border-radius: 8px;
     border: 1px solid var(--line);
   }

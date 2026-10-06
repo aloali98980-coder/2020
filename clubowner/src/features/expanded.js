@@ -16,7 +16,7 @@ import {
 } from "../data/expandedCatalog.js";
 import { MARKETS } from "../data/worldMarkets.js";
 import { heading, infoNote, button, badge } from "../components/shared.js";
-import { money, esc, num, date } from "../ui/format.js";
+import { money, esc, num, date , cur} from "../ui/format.js";
 const clubName = (id) =>
   `<bdi dir="auto">${esc(extendedClub(id)?.name || id)}</bdi>`;
 const disabled = () =>
@@ -36,23 +36,23 @@ export function commerceView(s) {
   if (!s.commerce) return disabled();
   const c = s.commerce,
     f = ticketForecast(s);
-  return `${heading("التجارة والخدمات", "مصادر دخل النادي", "الربح بعد التكلفة، وليس كل إيراد مكسبًا.")}<div class="expansion-grid"><section class="panel"><h3>تذاكر ومتجر</h3><form id="commerce-prices"><label class="field">التذكرة العادية<input name="ticket" type="number" min="20" max="1000" value="${s.ticketPrice}" required></label><label class="field">قميص النادي<input name="shirt" type="number" min="200" max="1500" value="${c.shirtPrice}" required></label><button class="btn primary">اعتماد الأسعار</button></form><p>توقع الحضور: ${num(Math.round(f.attendance * 0.9))}–${num(f.attendance)} · إيراد أساسي متوقع ${money(f.gross)} ج.م.</p><p>المشتركون: ${num(c.seasonTickets)} — يُخصمون من المقاعد المدفوعة بكل مباراة.</p>${button("بيع اشتراكات الموسم (خصم 25٪)", "sell-subscriptions")}<p class="muted">الدوري فقط، دون الكؤوس. حجز حتى 18٪ من السعة مرة واحدة بالموسم؛ لخمسة لقاءات متبقية على الأقل.</p></section><section class="panel"><h3>مخزون المتجر</h3><p>${num(c.inventory)} قميصًا · تكلفة الوحدة ${money(c.shirtCost)} ج.م.</p><form id="shop-stock"><label class="field">كمية الشراء<input name="quantity" type="number" min="10" max="2000" value="100" required></label><button class="btn secondary">شراء المخزون</button></form><hr><h3>ودية تجارية</h3><p>تكلفة 120 ألفًا · دخل متوقع ${money(Math.round(s.capacity * s.ticketPrice * 0.12))} · إجهاد 8 نقاط. مرة كل 30 يومًا وبعيدًا عن موعد رسمي بثلاثة أيام.</p>${button("تنظيم الودية", "commercial-friendly")}</section></div><h2>أنشطة المؤسسة</h2><div class="expansion-grid">${Object.entries(
+  return `${heading("التجارة والخدمات", "مصادر دخل النادي", "الربح بعد التكلفة، وليس كل إيراد مكسبًا.")}<div class="expansion-grid"><section class="panel"><h3>تذاكر ومتجر</h3><form id="commerce-prices"><label class="field">التذكرة العادية<input name="ticket" type="number" min="20" max="1000" value="${s.ticketPrice}" required></label><label class="field">قميص النادي<input name="shirt" type="number" min="200" max="1500" value="${c.shirtPrice}" required></label><button class="btn primary">اعتماد الأسعار</button></form><p>توقع الحضور: ${num(Math.round(f.attendance * 0.9))}–${num(f.attendance)} · إيراد أساسي متوقع ${money(f.gross)} ${cur()}.</p><p>المشتركون: ${num(c.seasonTickets)} — يُخصمون من المقاعد المدفوعة بكل مباراة.</p>${button("بيع اشتراكات الموسم (خصم 25٪)", "sell-subscriptions")}<p class="muted">الدوري فقط، دون الكؤوس. حجز حتى 18٪ من السعة مرة واحدة بالموسم؛ لخمسة لقاءات متبقية على الأقل.</p></section><section class="panel"><h3>مخزون المتجر</h3><p>${num(c.inventory)} قميصًا · تكلفة الوحدة ${money(c.shirtCost)} ${cur()}.</p><form id="shop-stock"><label class="field">كمية الشراء<input name="quantity" type="number" min="10" max="2000" value="100" required></label><button class="btn secondary">شراء المخزون</button></form><hr><h3>ودية تجارية</h3><p>تكلفة 120 ألفًا · دخل متوقع ${money(Math.round(s.capacity * s.ticketPrice * 0.12))} · إجهاد 8 نقاط. مرة كل 30 يومًا وبعيدًا عن موعد رسمي بثلاثة أيام.</p>${button("تنظيم الودية", "commercial-friendly")}</section></div><h2>أنشطة المؤسسة</h2><div class="expansion-grid">${Object.entries(
     BUSINESSES,
   )
     .map(
       ([id, b]) =>
-        `<section class="panel"><h3>${b.name}</h3><p>التأسيس ${money(b.setup)} · التشغيل الشهري ${money(b.cost)} ج.م.</p><p>السمعة المطلوبة ${b.rep} / 100</p>${c.businesses.includes(id) ? badge("يعمل", "green") : button("فتح النشاط", "business-open", id)}</section>`,
+        `<section class="panel"><h3>${b.name}</h3><p>التأسيس ${money(b.setup)} · التشغيل الشهري ${money(b.cost)} ${cur()}.</p><p>السمعة المطلوبة ${b.rep} / 100</p>${c.businesses.includes(id) ? badge("يعمل", "green") : button("فتح النشاط", "business-open", id)}</section>`,
     )
     .join(
       "",
-    )}</div><section class="panel"><h3>التسوية الشهرية للأنشطة</h3>${c.history.map((h) => `<p>${date(h.date)}: تدفق نقدي ${money(h.net)} ج.م. · ربح تشغيلي ${money(h.operatingProfit ?? h.net)} ج.م. بعد تكلفة القمصان المباعة. لا يشمل استثمار التأسيس.</p>`).join("") || "<p>تظهر بعد أول تسوية.</p>"}</section>`;
+    )}</div><section class="panel"><h3>التسوية الشهرية للأنشطة</h3>${c.history.map((h) => `<p>${date(h.date)}: تدفق نقدي ${money(h.net)} ${cur()}. · ربح تشغيلي ${money(h.operatingProfit ?? h.net)} ${cur()}. بعد تكلفة القمصان المباعة. لا يشمل استثمار التأسيس.</p>`).join("") || "<p>تظهر بعد أول تسوية.</p>"}</section>`;
 }
 export function coachContractModal(s, id, mode) {
   const c =
     mode === "renew" ? s.management.coach : COACHES.find((x) => x.id === id);
   const old = s.management.coach;
   const cost = mode === "renew" ? c.salary : (old?.salary || 0) * 2 + c.salary;
-  return `<span class="eyebrow">${mode === "renew" ? "تجديد عقد المدرب" : "تعيين مدرب جديد"}</span><h2>${esc(c.name)} · ${esc(c.style)}</h2><p class="muted">كفاءة ${num(c.skill)} · راتب شهري ${money(c.salary)} ج.م. ${mode === "renew" ? `مكافأة التجديد ${money(c.salary)} ج.م تُخصم فورًا.` : `تكلفة التعيين الآن ${money(cost)} ج.م (فسخ السابق + توقيع شهر).`}</p><form id="coach-form" data-id="${c.id}" data-mode="${mode}"><label class="field"><span>مدة العقد</span><select name="years"><option value="1">سنة واحدة</option><option value="2" selected>سنتان</option><option value="3">٣ سنوات</option></select></label><p class="muted">التعويض عند الإقالة شهران عن كل سنة متبقية. انتهاء العقد دون تجديد يُخلي المنصب تلقائيًا.</p><div class="modal-actions"><button type="submit" class="btn primary">${mode === "renew" ? "اعتماد التجديد" : "اعتماد التعيين"}</button></div></form>`;
+  return `<span class="eyebrow">${mode === "renew" ? "تجديد عقد المدرب" : "تعيين مدرب جديد"}</span><h2>${esc(c.name)} · ${esc(c.style)}</h2><p class="muted">كفاءة ${num(c.skill)} · راتب شهري ${money(c.salary)} ${cur()}. ${mode === "renew" ? `مكافأة التجديد ${money(c.salary)} ${cur()} تُخصم فورًا.` : `تكلفة التعيين الآن ${money(cost)} ${cur()} (فسخ السابق + توقيع شهر).`}</p><form id="coach-form" data-id="${c.id}" data-mode="${mode}"><label class="field"><span>مدة العقد</span><select name="years"><option value="1">سنة واحدة</option><option value="2" selected>سنتان</option><option value="3">٣ سنوات</option></select></label><p class="muted">التعويض عند الإقالة شهران عن كل سنة متبقية. انتهاء العقد دون تجديد يُخلي المنصب تلقائيًا.</p><div class="modal-actions"><button type="submit" class="btn primary">${mode === "renew" ? "اعتماد التجديد" : "اعتماد التعيين"}</button></div></form>`;
 }
 export function managementView(s) {
   if (!s.management) return disabled();
@@ -72,7 +72,7 @@ export function managementView(s) {
           p.contractEnd > s.date,
       )
       .slice(0, 100);
-  return `${heading("المالك مستمر", "مركز الإدارة الرياضية", "اختيار المدرب والتشكيل والصفقات الصادرة. المدربون هنا شخصيات خيالية.")}<section class="panel"><h3>المدرب الحالي: ${esc(m.coach?.name || "دون مدرب")}</h3><p>الأجر ${money(m.coach?.salary || 0)} ج.م. شهريًا · ثقة ${num(m.coach?.confidence || 0)}${m.coach ? ` · العقد حتى ${date(m.coach.contractEnd || s.date)}` : ""}</p>${m.coach ? button(`إقالة — تعويض ${coachYearsLeft(s) * 2} شهرًا`, "dismiss-coach", "", "danger") + button("تجديد العقد", "renew-coach", "", "soft") : ""}<div class="expansion-grid">${COACHES.map((c) => `<div><h4>${esc(c.name)}</h4><p>${c.style} · كفاءة ${c.skill} · راتب ${money(c.salary)}</p>${button("تعيين — توقيع شهر + فسخ السابق", "appoint-coach", c.id)}</div>`).join("")}</div></section>${tacticsPanel(s)}${loansPanel(s)}<section class="panel"><h3>الخطة والتشكيل</h3><p>التشكيل الفارغ يفوّض الأفضل للمدرب. الاختيار اليدوي يؤثر على القوة والمشاركة؛ غير المتاح دوليًا أو للإصابة يُستبعد.</p><select id="team-tactic">${[
+  return `${heading("المالك مستمر", "مركز الإدارة الرياضية", "اختيار المدرب والتشكيل والصفقات الصادرة. المدربون هنا شخصيات خيالية.")}<section class="panel"><h3>المدرب الحالي: ${esc(m.coach?.name || "دون مدرب")}</h3><p>الأجر ${money(m.coach?.salary || 0)} ${cur()}. شهريًا · ثقة ${num(m.coach?.confidence || 0)}${m.coach ? ` · العقد حتى ${date(m.coach.contractEnd || s.date)}` : ""}</p>${m.coach ? button(`إقالة — تعويض ${coachYearsLeft(s) * 2} شهرًا`, "dismiss-coach", "", "danger") + button("تجديد العقد", "renew-coach", "", "soft") : ""}<div class="expansion-grid">${COACHES.map((c) => `<div><h4>${esc(c.name)}</h4><p>${c.style} · كفاءة ${c.skill} · راتب ${money(c.salary)}</p>${button("تعيين — توقيع شهر + فسخ السابق", "appoint-coach", c.id)}</div>`).join("")}</div></section>${tacticsPanel(s)}${loansPanel(s)}<section class="panel"><h3>الخطة والتشكيل</h3><p>التشكيل الفارغ يفوّض الأفضل للمدرب. الاختيار اليدوي يؤثر على القوة والمشاركة؛ غير المتاح دوليًا أو للإصابة يُستبعد.</p><select id="team-tactic">${[
     ["balanced", "متوازن"],
     ["attack", "هجومي"],
     ["defend", "دفاعي"],
@@ -89,7 +89,7 @@ export function managementView(s) {
       .reverse()
       .map(
         (o) =>
-          `<article><p>${esc(s.players.find((p) => p.id === o.playerId)?.name || "")} ← ${clubName(o.buyer)} · ${money(o.fee)} ج.م. · ${esc(o.status)}</p>${o.status === "open" ? button("موافقة", "bid-accept", o.id) + button("رفض", "bid-reject", o.id) : ""}</article>`,
+          `<article><p>${esc(s.players.find((p) => p.id === o.playerId)?.name || "")} ← ${clubName(o.buyer)} · ${money(o.fee)} ${cur()}. · ${esc(o.status)}</p>${o.status === "open" ? button("موافقة", "bid-accept", o.id) + button("رفض", "bid-reject", o.id) : ""}</article>`,
       )
       .join("") || "<p>تصل عروض نموذجية منتصف الشهر. لا بيع دون موافقتك.</p>"
   }</section><section class="panel"><h3>إعارة تطويرية / تقرير كشف</h3><p>اختيار سريع لشباب السوق؛ بقية اللاعبين من ملفاتهم. الإعارة الآن عرض ثم رد وموافقة. التقرير 10 آلاف ويعرض نطاق إمكانات.</p><select id="prospect-id">${foreign.map((p) => `<option value="${p.id}">${esc(p.name)} · ${num(p.age)} · ${num(Math.round(p.rating))}</option>`).join("")}</select>${button("التفاوض على إعارة", "incoming-loan")}${button("شراء تقرير", "prospect-report")}${m.lastScout ? `<p>${esc(m.lastScout.name)}: مستوى ${num(m.lastScout.rating)} · إمكانات تقديرية ${esc(m.lastScout.potentialRange.join("–"))}</p>` : ""}</section>`;
