@@ -169,7 +169,7 @@ import {
 } from "./ui/modal.js";
 import { icon } from "./components/icons.js";
 import { badge, button, infoNote } from "./components/shared.js";
-import { money, num, esc, date } from "./ui/format.js";
+import { money, num, esc, date, setDigitsMode } from "./ui/format.js";
 import { ASSETS } from "./data/catalog.js";
 import { findPerson } from "./services/retired.js";
 const app = document.getElementById("app");
@@ -193,6 +193,14 @@ let actionBusy = false;
 let lastRenderedRoute = null;
 function render() {
   const s = getState();
+  if (s) {
+    // تفضيلات العرض تُطبق قبل بناء الشاشات: نمط الأرقام وتقليل الحركة.
+    setDigitsMode(s.preferences?.digits === "western" ? "western" : "arabic");
+    document.body.classList.toggle(
+      "reduce-motion",
+      !!s.preferences?.reduceMotion,
+    );
+  }
   if (!s) {
     app.innerHTML = setupView(
       ui.setupClub,
@@ -323,9 +331,9 @@ async function runTime(resume = false) {
     if (result.advanced) markStep(s, "week");
     return result;
   });
-  // تقرير آخر مباراة جديدة يُفتح تلقائيًا بعد أي تقدم أظهر مباراة لناديك.
+  // تقرير آخر مباراة جديدة يُفتح تلقائيًا بعد أي تقدم أظهر مباراة لناديك (ما لم أغلقه من الإعدادات).
   const s = getState();
-  if (s) {
+  if (s && s.preferences?.autoMatchReport !== false) {
     const fresh = playedOwnFixtures(s).filter((f) => !playedBefore.has(f.id));
     if (fresh.length)
       openModal(matchReportModal(s, reportFor(s, fresh[fresh.length - 1])));
@@ -642,6 +650,47 @@ const actions = {
   "palette-open": () => openPalette(),
   "palette-close": () => closePalette(),
   "palette-select": (el) => paletteActivate(Number(el.dataset.idx) || 0),
+  "copy-email": async () => {
+    try {
+      await navigator.clipboard.writeText("Madabeh777@gmail.com");
+      toast(
+        tr(
+          "تم نسخ البريد الإلكتروني.",
+          "Email address copied.",
+          "E-mail copié.",
+        ),
+      );
+    } catch {
+      toast("Madabeh777@gmail.com");
+    }
+  },
+  "wipe-data": async () =>
+    openModal(
+      `<h2>${tr("مسح كل البيانات المحلية؟", "Wipe all local data?", "Effacer toutes les données locales ?")}</h2><p class="muted">${tr("سيُحذف من هذا المتصفح نهائيًا: الحفظة النشطة، كل خانات الحفظ، والنسخ الاحتياطية. لا يمكن التراجع عن هذه الخطوة.", "Permanently deleted from this browser: the active save, every save slot, and backups. This cannot be undone.", "Suppression définitive sur ce navigateur : sauvegarde active, tous les emplacements et copies. Irréversible.")}</p><div class="modal-actions">${button(tr("مسح نهائي الآن", "Wipe everything now", "Tout effacer"), "wipe-data-confirm", "", "danger")}${button(tr("إلغاء", "Cancel", "Annuler"), "close-modal", "", "secondary")}</div>`,
+    ),
+  "wipe-data-confirm": async () => {
+    document.body.classList.add("saving-game");
+    try {
+      const dbs = ["clubowner.world.saves", "clubowner.slots"];
+      await Promise.all(
+        dbs.map(
+          (name) =>
+            new Promise((resolve) => {
+              if (!globalThis.indexedDB) return resolve();
+              const r = indexedDB.deleteDatabase(name);
+              r.onsuccess = r.onerror = r.onblocked = () => resolve();
+            }),
+        ),
+      );
+      for (const key of Object.keys(localStorage))
+        if (key.startsWith("clubowner")) localStorage.removeItem(key);
+    } catch (e) {
+      document.body.classList.remove("saving-game");
+      showError(e.message);
+      return;
+    }
+    location.reload();
+  },
   "onboarding-dismiss": () => {
     hideOnboarding(getState());
     render();
@@ -1389,6 +1438,21 @@ document.addEventListener("change", async (e) => {
       await apply(
         (s) => (s.preferences.pauseMatches = e.target.checked),
         "تم حفظ إعداد المحاكاة.",
+      );
+    if (e.target.id === "auto-report")
+      await apply(
+        (s) => (s.preferences.autoMatchReport = e.target.checked),
+        tr("تم حفظ الإعداد.", "Setting saved.", "Réglage enregistré."),
+      );
+    if (e.target.id === "reduce-motion")
+      await apply(
+        (s) => (s.preferences.reduceMotion = e.target.checked),
+        tr("تم حفظ إعداد العرض.", "Display setting saved.", "Réglage d'affichage enregistré."),
+      );
+    if (e.target.id === "num-format")
+      await apply(
+        (s) => (s.preferences.digits = e.target.value),
+        tr("تم حفظ نمط الأرقام.", "Number style saved.", "Style des chiffres enregistré."),
       );
     if (e.target.closest("#offer-form,#contract-form")) updateCalculations();
   } catch (err) {

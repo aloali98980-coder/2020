@@ -1,7 +1,14 @@
 import { getLanguage } from "../i18n/index.js";
 import { currencyFor } from "../data/currencies.js";
-const locale = () =>
-  ({ ar: "ar-EG", en: "en-GB", fr: "fr-FR" })[getLanguage()] || "ar-EG";
+// إعداد العرض: نمط الأرقام (هندية ٣٤٥ أو غربية 345) — فرع عرض فقط في Locale نفسه.
+let digitsMode = "arabic";
+export const setDigitsMode = (mode) => {
+  digitsMode = mode === "western" ? "western" : "arabic";
+};
+const locale = () => {
+  const base = ({ ar: "ar-EG", en: "en-GB", fr: "fr-FR" })[getLanguage()] || "ar-EG";
+  return digitsMode === "western" ? base + "-u-nu-latn" : base;
+};
 export const num = (n) =>
   new Intl.NumberFormat(locale(), { maximumFractionDigits: 1 }).format(n ?? 0);
 export function money(n, compact = true) {

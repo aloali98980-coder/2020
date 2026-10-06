@@ -241,7 +241,7 @@ body.saving-game .save-indicator i {
   }
 }
 
-/* ---------- احترام تقليل الحركة ---------- */
+/* ---------- احترام تقليل الحركة (النظام أو اختيار المستخدم) ---------- */
 @media (prefers-reduced-motion: reduce) {
   .page-enter,
   .page-enter .page-heading,
@@ -267,4 +267,29 @@ body.saving-game .save-indicator i {
   .more-grid button {
     transition: none !important;
   }
+}
+/* نفس الاحترام عند تفعيل المستخدم «تقليل الحركة» من الإعدادات يدويًا */
+body.reduce-motion .page-enter,
+body.reduce-motion .page-enter .page-heading,
+body.reduce-motion .page-enter .panel,
+body.reduce-motion .page-enter .stats-grid > *,
+body.reduce-motion .nav-item b,
+body.reduce-motion .modal,
+body.reduce-motion .modal-backdrop,
+body.reduce-motion #toast.visible,
+body.reduce-motion .skeleton::after,
+body.reduce-motion body.saving-game::after,
+body.reduce-motion .save-indicator i {
+  animation: none !important;
+}
+body.reduce-motion .btn,
+body.reduce-motion .icon-btn,
+body.reduce-motion .text-button,
+body.reduce-motion .desk-item,
+body.reduce-motion .mini-facility,
+body.reduce-motion .stat-card,
+body.reduce-motion .nav-item,
+body.reduce-motion .nav-item > svg,
+body.reduce-motion .more-grid button {
+  transition: none !important;
 }

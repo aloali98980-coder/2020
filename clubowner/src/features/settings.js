@@ -110,6 +110,32 @@ export function settingsView(s) {
     ${slotsPanel()}
     <section class="panel settings-panel">
       <div class="panel-head">
+        <h3>${icon("settings")} ${tr("العرض والواجهة", "Display & interface", "Affichage et interface")}</h3>
+      </div>
+      <div class="preference-row">
+        <div>
+          <strong>${tr("تقليل الحركة", "Reduce motion", "Réduire les animations")}</strong>
+          <small>${tr("إيقاف انتقالات الشاشات والتفاعلات المتحركة", "Stop screen transitions and animated interactions", "Couper les transitions et animations")}</small>
+        </div>
+        <label class="switch"><input type="checkbox" id="reduce-motion" ${s.preferences.reduceMotion ? "checked" : ""}><span></span></label>
+      </div>
+      <div class="preference-row">
+        <div>
+          <strong>${tr("نمط الأرقام", "Number style", "Style des chiffres")}</strong>
+          <small>${tr("هندية ١٢٣ أو غربية 123 في كل الشاشات", "Arabic-Indic ١٢٣ or Western 123 everywhere", "Indo-arabes ١٢٣ ou occidentaux 123")}</small>
+        </div>
+        <label class="field slim"><select id="num-format" aria-label="${tr("نمط الأرقام", "Number style", "Style des chiffres")}"><option value="arabic" ${s.preferences.digits !== "western" ? "selected" : ""}>${tr("هندية ١٢٣", "Arabic-Indic ١٢٣", "Indo-arabes ١٢٣")}</option><option value="western" ${s.preferences.digits === "western" ? "selected" : ""}>${tr("غربية 123", "Western 123", "Occidentaux 123")}</option></select></label>
+      </div>
+      <div class="preference-row">
+        <div>
+          <strong>${tr("اختصارات لوحة المفاتيح", "Keyboard shortcuts", "Raccourcis clavier")}</strong>
+          <small><kbd>Ctrl</kbd> + <kbd>K</kbd> — ${tr("البحث السريع عن شاشة أو لاعب", "Quick search for a screen or player", "Recherche rapide écran ou joueur")}</small>
+        </div>
+        ${badge(tr("لوحة مفاتيح", "Desktop", "Bureau"), "")}
+      </div>
+    </section>
+    <section class="panel settings-panel">
+      <div class="panel-head">
         <h3>${icon("clock")} إيقاع المحاكاة</h3>
       </div>
       <div class="preference-row">
@@ -121,6 +147,13 @@ export function settingsView(s) {
       </div>
       <div class="preference-row">
         <div>
+          <strong>${tr("فتح تقرير المباراة تلقائيًا", "Open match report automatically", "Ouvrir le rapport automatiquement")}</strong>
+          <small>${tr("بعد كل مباراة لناديك مباشرة", "Right after each of your club's matches", "Juste après chaque match de votre club")}</small>
+        </div>
+        <label class="switch"><input type="checkbox" id="auto-report" ${s.preferences.autoMatchReport === false ? "" : "checked"}><span></span></label>
+      </div>
+      <div class="preference-row">
+        <div>
           <strong>التوقف عند القرارات الإلزامية</strong>
           <small>عروض انتقال، رعايات، وتجديد عقود</small>
         </div>
@@ -128,26 +161,45 @@ export function settingsView(s) {
       </div>
       <p class="fine-print">اليوم والأسبوع يتم تمريرهما يومًا بيوم. النظام يحتفظ بالأيام المتبقية عند التوقف.</p>
     </section>
-    <section class="panel settings-panel">
+    <section class="panel settings-panel about-panel">
       <div class="panel-head">
-        <h3>${icon("info")} عن هذه النسخة</h3>
+        <h3>${icon("info")} ${tr("عن اللعبة", "About the game", "À propos du jeu")}</h3>
         ${badge("ALPHA 0.22")}
       </div>
-      <p>نسخة ويب أولية قابلة للعب. الأنظمة منفصلة: محرك الوقت، التعاقدات، المالية، الرعايات، المنشآت، الحفظ، والشاشات.</p>
+      <div class="about-author">
+        <span class="about-avatar" data-no-translate>A</span>
+        <div>
+          <strong data-no-translate>Ahmed S. Abodooh</strong>
+          <small>${tr("تصميم وتطوير اللعبة", "Game design & development", "Conception et développement du jeu")}</small>
+        </div>
+      </div>
+      <p>${tr("«صاحب النادي» — لعبة إدارة وملكية نادي كرة قدم تعمل بالكامل في المتصفح: محرك وقت، تعاقدات، مالية، رعايات، منشآت، بطولات، وحفظ محلي وسحابي.", "“Club Owner” — a football club ownership and management game that runs entirely in the browser: time engine, transfers, finances, sponsors, facilities, competitions, and local plus cloud saves.", "« Club Owner » — un jeu de gestion et de propriété de club de football entièrement dans le navigateur : moteur de temps, transferts, finances, sponsors, installations, compétitions, sauvegardes locales et cloud.")}</p>
       <div class="scope-list">
         <span>${icon("check", 16)} مفاوضات وانتقالات وعقود</span>
         <span>${icon("check", 16)} دفعات ورعايات وحصرية</span>
         <span>${icon("check", 16)} مشروعات وآثار تشغيلية</span>
         <span>${icon("check", 16)} عالم موسّع ومزامنة سحابية</span>
       </div>
+      <div class="contact-box">
+        <div>
+          <strong>${tr("تواصل معنا", "Contact us", "Nous contacter")}</strong>
+          <small>${tr("اقتراحات، مشاكل، أو ملاحظات — يسعدنا سماعك.", "Suggestions, issues, or feedback — we'd love to hear from you.", "Suggestions, problèmes ou remarques — écrivez-nous.")}</small>
+          <a href="mailto:Madabeh777@gmail.com" data-no-translate>Madabeh777@gmail.com</a>
+        </div>
+        ${button(tr("نسخ البريد", "Copy email", "Copier l'e-mail"), "copy-email", "", "secondary small")}
+      </div>
+      <p class="copyright-line">© 2026 <span data-no-translate>Ahmed S. Abodooh</span> — ${tr("جميع الحقوق محفوظة", "All rights reserved", "Tous droits réservés")}</p>
       ${infoNote("الأسماء والأعمار مرجعية؛ القدرات والعقود والاعتزال والأحداث محاكاة وليست حقائق عن الأشخاص.")}
     </section>
     <section class="panel settings-panel danger-panel">
       <div class="panel-head">
-        <h3>بداية جديدة</h3>
+        <h3>${tr("منطقة الخطر", "Danger zone", "Zone sensible")}</h3>
       </div>
-      <p>تقدر تختار ناديًا جديدًا وتبدأ من الصفر. صدّر حفظتك الحالية الأول، لأن النسخة تدعم حفظة نشطة واحدة.</p>
-      ${button("إنشاء حفظة جديدة", "new-game", "", "danger")}
+      <p>${tr("تقدر تختار ناديًا جديدًا وتبدأ من الصفر، أو مسح كل البيانات المحلية نهائيًا (الحفظة النشطة والخانات والنسخ الاحتياطية). صدّر نسختك أولًا إن أردت الاحتفاظ بها خارجيًا.", "Start over with a new club, or wipe all local data for good (active save, slots and backups). Export first if you want to keep an external copy.", "Recommencer avec un nouveau club, ou effacer définitivement toutes les données locales (sauvegarde active, emplacements et copies). Exportez d'abord si besoin.")}</p>
+      <div class="settings-actions">
+        ${button(tr("إنشاء حفظة جديدة", "New career", "Nouvelle carrière"), "new-game", "", "secondary")}
+        ${button(tr("مسح كل البيانات المحلية", "Wipe all local data", "Effacer toutes les données"), "wipe-data", "", "danger")}
+      </div>
     </section>
   </div>`;
 }
