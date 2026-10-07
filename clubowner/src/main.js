@@ -236,8 +236,7 @@ function render() {
     app.firstElementChild?.classList.add("page-enter");
     lastRenderedRoute = "setup";
     translateDOM(app);
-    document.title =
-      getLanguage() === "ar" ? "صاحب النادي | Club Owner" : "Club Owner";
+    document.title = "Empire FC";
     return;
   }
   const views = {
@@ -266,8 +265,7 @@ function render() {
   lastRenderedRoute = ui.route;
   translateDOM(app);
   document.title =
-    (NAV.find((n) => n.id === ui.route)?.name || "صاحب النادي") +
-    " | صاحب النادي";
+    (NAV.find((n) => n.id === ui.route)?.name || "Empire FC") + " | Empire FC";
   document.title = translateText(document.title);
 }
 function navigate(route) {

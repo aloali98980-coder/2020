@@ -1,8 +1,8 @@
 {
   "id": "/",
-  "name": "صاحب النادي | Club Owner",
-  "short_name": "صاحب النادي",
-  "description": "لعبة إدارة وملكية نادي كرة قدم — نسخة تجريبية",
+  "name": "Empire FC — ابنِ إمبراطوريتك",
+  "short_name": "Empire FC",
+  "description": "ابنِ إمبراطوريتك — لعبة ملكية وإدارة نادي كرة قدم في المتصفح",
   "lang": "ar",
   "dir": "rtl",
   "start_url": "/",
