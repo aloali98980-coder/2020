@@ -143,7 +143,7 @@ test("prize review: fifa stays single-leg so per-fixture equals per-tie", () => 
 
 test("qualification review: disjoint continental lists, documented overlaps", () => {
   const s = game();
-  assert.equal(s.version, 18);
+  assert.equal(s.version, 20);
   const cups = s.expansion.cups;
   const ids = (kind) =>
     new Set(cups.find((c) => c.kind === kind)?.entrants || []);
@@ -176,7 +176,7 @@ test("v13 save migrates to 16 with identities and squads intact", () => {
   v13.version = 13;
   delete v13.migrationNote;
   const m = migrateSave(v13);
-  assert.equal(m.version, 18);
+  assert.equal(m.version, 20);
   assert.equal(v13.version, 13);
   assert(m.migrationNote.includes("0.14"));
   assert(m.migrationNote.includes("0.15"));

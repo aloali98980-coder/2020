@@ -12,7 +12,7 @@ import { CLUBS, FACILITIES, PACK, makePlayers } from "../data/catalog.js";
 import { fixtures } from "../services/matches.js";
 import { message } from "../services/inbox.js";
 import { signSponsor } from "../services/sponsors.js";
-export const SAVE_VERSION = 18;
+export const SAVE_VERSION = 20;
 export function createGame({
   clubId = "ahly",
   owner = "مالك النادي",

@@ -301,7 +301,7 @@ test("v1 migration preserves identities, cash and historical dates; invalid clau
   }
   const migrated = migrateSave(original);
   assert.equal(original.version, 1);
-  assert.equal(migrated.version, 18);
+  assert.equal(migrated.version, 20);
   assert.equal(migrated.finance.cash, cash);
   assert.deepEqual(
     migrated.players.map((p) => [p.id, p.name, p.rating]),
