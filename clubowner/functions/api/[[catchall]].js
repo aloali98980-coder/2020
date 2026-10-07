@@ -209,7 +209,8 @@ export async function onRequest(context) {
       return jsonResponse({ ok: false, error: "يجب تسجيل الدخول لاستخدام المزامنة السحابية." }, 401);
     }
 
-        // 5. Cloud: Sync (رفع الحفظة)
+        // 5. Cloud: Sync (رفع الحفظة) — يقبل المسارين POST /api/cloud/saves و POST /api/cloud/sync
+    // (الواجهة ترفع إلى /api/cloud/saves) مع حفظ الميتاداتا كاملة مثل server/cloudStore.js.
     if (
       (path === "/api/cloud/saves" || path === "/api/cloud/sync") &&
       method === "POST"
@@ -220,20 +221,18 @@ export async function onRequest(context) {
         return jsonResponse({ ok: false, error: "بيانات الحفظة غير مكتملة." }, 400);
       }
 
+      const now = new Date().toISOString();
       const save = {
         id: "sav-" + crypto.randomUUID(),
         userId: user.id,
         metadata: {
-          clubId: metadata.clubId,
-          clubName: metadata.clubName,
-          seasonNumber: metadata.seasonNumber,
-          date: metadata.date,
-          cash: metadata.cash,
+          ...metadata,
           device: metadata.device || "Cloudflare",
-          updatedAt: new Date().toISOString(),
+          updatedAt: now,
         },
         payload,
-        updatedAt: new Date().toISOString(),
+        createdAt: now,
+        updatedAt: now,
       };
 
       db.saves.unshift(save);
@@ -247,8 +246,10 @@ export async function onRequest(context) {
 
       return jsonResponse({
         ok: true,
+        success: true,
         saveId: save.id,
         syncedAt: save.updatedAt,
+        metadata: save.metadata,
       });
     }
 
@@ -259,6 +260,7 @@ export async function onRequest(context) {
         .map((s) => ({
           id: s.id,
           metadata: s.metadata,
+          createdAt: s.createdAt,
           updatedAt: s.updatedAt,
         }));
       return jsonResponse({ ok: true, saves: userSaves });
