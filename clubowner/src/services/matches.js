@@ -7,6 +7,8 @@ import { addDays, random, clamp } from "../core/utils.js";
 import { post } from "./finance.js";
 import { message } from "./inbox.js";
 import { legendMatchBonus } from "./legends.js";
+import { recordMatchStats } from "./seasonStats.js";
+import { generateCardDistribution, applyMatchConsequences } from "./matchConsequences.js";
 export function fixtures(date) {
   let order = CLUBS.map((c) => c.id),
     out = [];
@@ -59,7 +61,9 @@ function strength(s, id) {
         p.rating *
           (0.55 + 0.45 * (selected.find((x) => x.p.id === p.id)?.fit || 1)) *
           (0.75 + p.fitness / 400) *
-          (0.9 + p.morale / 1000),
+          (0.9 + p.morale / 1000) +
+        // 0.24: form modifier — small boost/penalty based on recent ratings.
+        (p.form || 0),
       0,
     ) /
       11 +
@@ -231,6 +235,20 @@ export function matchDay(
               f.id + "-goal-" + i,
             );
         }
+      // 0.23+0.24: accumulate season stats + apply match consequences.
+      // Cards are generated once and shared between both systems for determinism.
+      const xi = Array.isArray(f.lineup) && f.lineup.length
+        ? f.lineup.map((x) => s.players.find((y) => y.id === x.playerId)).filter(Boolean)
+        : selectXI(s).filter((x) => x.p.status !== "retired").map((x) => x.p);
+      const cards = generateCardDistribution(xi, () => random(s));
+      recordMatchStats(s, f, () => random(s), our, cards);
+      const { redCardPenalty } = applyMatchConsequences(s, f, cards, () => random(s));
+      // Red card numerical disadvantage: reduce score with probability.
+      if (redCardPenalty > 0 && random(s) < 0.3) {
+        f[our === "homeGoals" ? "homeGoals" : "awayGoals"] = Math.max(0, f[
+          f.home === s.clubId ? "homeGoals" : "awayGoals"
+        ] - 1);
+      }
       message(s, {
         title: `${result} ${our}–${opp} | تقرير المباراة`,
         body: `${extendedClub(f.home).name} ${f.homeGoals} — ${f.awayGoals} ${extendedClub(f.away).name}. ${f.neutral ? "مباراة على ملعب محايد؛ لا إيراد تذاكر ملعب ناديك." : home ? "تم تسجيل التذاكر ومصروفات التنظيم في الحسابات." : "مباراة خارج ملعبك."} ${f.tactics ? `خطة ${f.tactics.formation} · ملاءمة المراكز ${f.tactics.fit}٪ · الضغط والإيقاع يؤثران على الفرص والإجهاد. ` : ""}المحاكاة احتمالية ومبسطة، وليست مباراة مرئية.`,

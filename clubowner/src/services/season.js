@@ -1,14 +1,43 @@
 import { fixtures, sortedTable } from "./matches.js";
 import { CLUBS } from "../data/catalog.js";
 import { message } from "./inbox.js";
+import { SEASON_STAT_KEYS, initSeasonStats } from "./seasonStats.js";
+
+// Save each player's season stats to the history entry before resetting.
+function archiveSeasonStats(s, entry) {
+  const playerStats = {};
+  for (const p of s.players) {
+    const stats = {};
+    let hasNonZero = false;
+    for (const k of SEASON_STAT_KEYS) {
+      stats[k] = p[k] ?? 0;
+      if (stats[k] !== 0) hasNonZero = true;
+    }
+    if (hasNonZero) playerStats[p.id] = stats;
+  }
+  if (Object.keys(playerStats).length > 0) entry.playerStats = playerStats;
+}
+
+function resetSeasonStats(s) {
+  for (const p of s.players) {
+    if (p.status === "retired") continue;
+    for (const k of SEASON_STAT_KEYS) p[k] = 0;
+    // 0.24: reset per-competition card accumulator at season end.
+    p.seasonYellowByComp = 0;
+  }
+}
+
 export function seasonDay(s) {
   if (s.date < s.nextSeasonDate || s.fixtures.some((f) => !f.played)) return;
-  s.seasonHistory.push({
+  const entry = {
     number: s.seasonNumber,
     date: s.date,
     table: structuredClone(sortedTable(s)),
-  });
+  };
+  archiveSeasonStats(s, entry);
+  s.seasonHistory.push(entry);
   s.seasonNumber++;
+  resetSeasonStats(s);
   s.table = CLUBS.map((c) => ({
     clubId: c.id,
     played: 0,

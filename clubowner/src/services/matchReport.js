@@ -90,10 +90,18 @@ export function buildMatchReport(s, f) {
   // أهدافنا: دقائق مرتبة وهدافون بأوزان التقييم؛ أهداف المنافس: بالدقيقة فقط (بلا قوائم لمعظم الأندية).
   for (const min of minutesFor(rng, ours, f.extraTime)) {
     const scorer = xi.length ? weightedScorer(rng, xi) : null;
+    // 0.24: assister — pick a different teammate deterministically.
+    let assisterId = null;
+    if (scorer && xi.length > 1) {
+      let a = xi[Math.floor(rng() * xi.length)];
+      if (a.p.id === scorer.id) a = xi.find((x) => x.p.id !== scorer.id) || a;
+      assisterId = a.p.id;
+    }
     events.push({
       min,
       type: "goal",
       playerId: scorer?.id || null,
+      assistId: assisterId,
       clubId: s.clubId,
     });
   }

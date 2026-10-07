@@ -333,6 +333,58 @@ export const SYSTEM_PHRASES = {
       "Légendes 0.17 : un Panthéon avec de vrais noms et des rôles d’entraîneur par poste ; les anciennes sauvegardes fonctionnent telles quelles, sans contrats de légendes",
     ],
 
+  // 0.23 — per-player season stats (migration note)
+  "إحصائيات الموسم 0.23: عدّادات أهداف وأسيست وبطاقات وتصنيفات ودقائق لكل لاعب تتراكم تلقائيًا وتُحفظ في نهاية الموسم؛ النتائج والعقود والمالية محفوظة كما هي":
+    [
+      "Season stats 0.23: per-player counters for goals, assists, cards, ratings and minutes accumulate automatically and are saved at season end; results, contracts and finances are preserved as they are",
+      "Statistiques saisonnières 0.23 : compteurs par joueur (buts, passes, cartons, notes et minutes) cumulés automatiquement et sauvegardés en fin de saison ; résultats, contrats et finances conservés tels quels",
+    ],
+  "هدف": ["Goal", "But"],
+  "أسيست": ["Assist", "Passe"],
+  "بيانات إحصائيات الموسم غير سليمة": [
+    "Season stats data is invalid",
+    "Données de statistiques saisonnières invalides",
+  ],
+
+  // 0.24 — match consequences (migration note + validation + form labels)
+  "عواقب الملعب 0.24: إصابات أثناء المباريات، وإنذارات متراكمة تؤدي للإيقاف، وفورمة اللاعب تؤثر على الأداء؛ النتائج والعقود والمالية محفوظة كما هي":
+    [
+      "Match consequences 0.24: in-match injuries, accumulated yellow card suspensions, and player form affecting performance; results, contracts and finances are preserved as they are",
+      "Conséquences de match 0.24 : blessures en match, suspensions par cartons jaunes cumulés et forme du joueur affectant la performance ; résultats, contrats et finances conservés tels quels",
+    ],
+  "بيانات عواقب الملعب غير سليمة": [
+    "Match consequence data is invalid",
+    "Données de conséquences de match invalides",
+  ],
+  "متوهج": ["Hot", "En forme"],
+  "عادي": ["Normal", "Normal"],
+  "بارد": ["Cold", "En froid"],
+  "إصابة —": ["Injury —", "Blessure —"],
+  "طرد —": ["Red card —", "Carton rouge —"],
+  "إنذارات متراكمة —": ["Accumulated yellows —", "Cartons jaunes cumulés —"],
+  "التواء الكاحل": ["Ankle sprain", "Entorse de la cheville"],
+  "تمزق عضلي": ["Muscle tear", "Déchirure musculaire"],
+  "إصابة في الركبة": ["Knee injury", "Blessure au genou"],
+  "كدمة قوية": ["Heavy bruise", "Contusion sévère"],
+  "شد في الفخذ": ["Thigh strain", "Clou de la cuisse"],
+  "أسابيع": ["weeks", "semaines"],
+  "أشهر": ["months", "mois"],
+  "إنذارات متراكمة": ["Accumulated yellows", "Cartons jaunes cumulés"],
+  "تلقى": ["received", "a reçu"],
+  "إنذاره الصفراء الرابع هذا الموسم. إيقاف مباراة واحدة حتى": [
+    "his fourth yellow this season. One-match suspension until",
+    "son quatrième jaune de la saison. Suspension d'un match jusqu'au",
+  ],
+  "طرد": ["Red card", "Carton rouge"],
+  "تم طرد": ["was sent off", "a été expulsé"],
+  "من المباراة. إيقاف مباراة واحدة حتى": [
+    "from the match. One-match suspension until",
+    "du match. Suspension d'un match jusqu'au",
+  ],
+  "إصابة": ["Injury", "Blessure"],
+  "لمدّة": ["for", "pour"],
+  "سيعود حوالي": ["will return around", "reviendra vers le"],
+
   // services/competitions/engine.js, domestic.js, presets.js, draw.js, qualification.js
   ناديًا: ["clubs", "clubs"],
   "مجموعات · ذهاب وإياب": ["groups · home and away", "groupes · aller-retour"],

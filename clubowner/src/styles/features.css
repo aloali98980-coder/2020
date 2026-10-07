@@ -2259,3 +2259,211 @@ button.badge.vault-key:focus-visible {
     padding-top: 16px;
   }
 }
+
+/* ── 0.24: شاشة لقطات الماتش (mobile-first + كحلي + ذهبي) ── */
+.hl-backdrop {
+  background: rgba(7, 14, 26, 0.92);
+  animation: fade-in 200ms ease-out both;
+}
+.hl-modal {
+  max-width: 420px;
+  width: 92vw;
+  max-height: 88vh;
+  background: var(--panel, #10203a);
+  border: 1px solid var(--line, #22395f);
+  border-radius: var(--radius-lg, 20px);
+  padding: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.hl-skip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  background: transparent;
+  border: none;
+  color: var(--muted, #8fa5c4);
+  font-size: 0.82rem;
+  cursor: pointer;
+  align-self: flex-end;
+  transition: color 0.15s;
+}
+.hl-skip:hover { color: var(--accent, #5b9dff); }
+
+.hl-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 16px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* ── بطاقة لقطة ── */
+.hl-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm, 8px);
+  background: var(--panel-2, #16294a);
+  border: 1px solid transparent;
+}
+.hl-card.our { border-inline-start: 3px solid var(--accent, #5b9dff); }
+.hl-card.opp { border-inline-start: 3px solid var(--muted-deep, #5e7495); }
+.hl-card.hl-enter {
+  animation: hl-slide-in 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes hl-slide-in {
+  from { opacity: 0; transform: translateY(12px) scale(0.97); }
+  to { opacity: 1; transform: none; }
+}
+
+.hl-min {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--muted, #8fa5c4);
+  min-width: 32px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.hl-icon { font-size: 1.1rem; flex-shrink: 0; }
+.hl-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+.hl-body strong {
+  color: var(--text-strong, #f7faff);
+  font-size: 0.88rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.hl-body small {
+  color: var(--muted, #8fa5c4);
+  font-size: 0.76rem;
+}
+
+/* ── بطاقة البداية ── */
+.hl-kickoff {
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, var(--panel-3, #1b3050), var(--panel-2, #16294a));
+  border: 1px solid var(--line, #22395f);
+  padding: 16px;
+  text-align: center;
+}
+.hl-teams {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: center;
+}
+.hl-team {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.hl-team b { font-size: 0.9rem; color: var(--text-strong, #f7faff); }
+.hl-vs {
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: var(--accent, #5b9dff);
+  background: var(--accent-soft, rgba(91,157,255,0.12));
+  padding: 3px 8px;
+  border-radius: var(--radius-pill, 999px);
+  letter-spacing: 0.05em;
+}
+.hl-meta {
+  color: var(--muted, #8fa5c4);
+  font-size: 0.76rem;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  justify-content: center;
+}
+
+/* ── استراحة الشوطين ── */
+.hl-halftime {
+  justify-content: center;
+  background: linear-gradient(90deg, transparent, var(--accent-soft, rgba(91,157,255,0.12)), transparent);
+  border: 1px dashed var(--accent-line, rgba(91,157,255,0.3));
+  padding: 14px;
+}
+.hl-ht-label {
+  font-weight: 700;
+  font-size: 0.92rem;
+  color: var(--accent, #5b9dff);
+  letter-spacing: 0.03em;
+}
+
+/* ── النتيجة النهائية ── */
+.hl-result {
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 20px 16px;
+  border: 1px solid var(--line, #22395f);
+}
+.hl-win { background: linear-gradient(135deg, rgba(76,175,80,0.12), var(--panel-2, #16294a)); border-color: rgba(76,175,80,0.3); }
+.hl-draw { background: var(--panel-2, #16294a); }
+.hl-loss { background: linear-gradient(135deg, rgba(244,67,54,0.12), var(--panel-2, #16294a)); border-color: rgba(244,67,54,0.3); }
+.hl-final-score {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--text-strong, #f7faff);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+}
+.hl-win .hl-final-score { color: #66bb6a; }
+.hl-loss .hl-final-score { color: #ef5350; }
+.hl-final-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--muted, #8fa5c4);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* ── شريط التقدم + زر التالي ── */
+.hl-bar {
+  padding: 12px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border-top: 1px solid var(--line, #22395f);
+}
+.hl-progress {
+  height: 3px;
+  background: var(--panel-3, #1b3050);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.hl-progress span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent, #5b9dff), #7ab8ff);
+  border-radius: 2px;
+  transition: width 0.3s ease-out;
+}
+.hl-next {
+  width: 100%;
+  text-align: center;
+  font-size: 0.92rem;
+  padding: 12px;
+}
+
+/* ── تقليل الحركة ── */
+@media (prefers-reduced-motion: reduce) {
+  .hl-card.hl-enter { animation: none !important; }
+  .hl-backdrop { animation: none !important; }
+  .hl-progress span { transition: none !important; }
+}
+body.reduce-motion .hl-card.hl-enter { animation: none !important; }
+body.reduce-motion .hl-backdrop { animation: none !important; }
+body.reduce-motion .hl-progress span { transition: none !important; }

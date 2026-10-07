@@ -12,18 +12,20 @@ const playerName = (s, id) => {
 };
 const eventText = (s, e, report) => {
   const our = e.clubId === s.clubId;
-  if (e.type === "goal")
+  if (e.type === "goal") {
+    const assist = e.assistId ? playerName(s, e.assistId) : "";
     return our
       ? tr(
-          `هدف ${playerName(s, e.playerId) || "ناديك"}!`,
-          `Goal ${playerName(s, e.playerId) || "your club"}!`,
-          `But ${playerName(s, e.playerId) || "votre club"} !`,
+          `هدف ${playerName(s, e.playerId) || "ناديك"}!${assist ? ` (أسيست: ${assist})` : ""}`,
+          `Goal ${playerName(s, e.playerId) || "your club"}!${assist ? ` (assist: ${assist})` : ""}`,
+          `But ${playerName(s, e.playerId) || "votre club"} !${assist ? ` (passe: ${assist})` : ""}`,
         )
       : tr(
           `هدف لصالح ${clubBy(e.clubId)?.name || "المنافس"}`,
           `Goal for ${clubBy(e.clubId)?.name || "the opposition"}`,
           `But pour ${clubBy(e.clubId)?.name || "l'adversaire"}`,
         );
+  }
   if (e.type === "yellow")
     return tr(
       `بطاقة صفراء — ${playerName(s, e.playerId)}`,
