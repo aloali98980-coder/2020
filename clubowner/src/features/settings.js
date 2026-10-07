@@ -206,7 +206,7 @@ export function settingsView(s) {
     <section class="panel settings-panel about-panel">
       <div class="panel-head">
         <h3>${icon("info")} ${tr("عن اللعبة", "About the game", "À propos du jeu")}</h3>
-        ${badge(`v${APP_VERSION}`)}
+        <button type="button" class="badge vault-key" data-action="secret-vault">v${APP_VERSION}</button>
       </div>
       <div class="about-author">
         <span class="about-avatar" data-no-translate>A</span>

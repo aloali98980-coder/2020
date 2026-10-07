@@ -2217,3 +2217,45 @@ kbd {
   flex-wrap: wrap;
   justify-content: center;
 }
+
+/* 0.24: مفاتيح خزنة المالك — سطر EMPIRE FC في شيت «المزيد» وشارة «عن اللعبة» */
+.more-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 12px;
+}
+.more-foot > span:first-child {
+  letter-spacing: 0.6px;
+  font-weight: 700;
+}
+button.badge.vault-key {
+  font-family: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+button.badge.vault-key:hover {
+  border-color: var(--line-strong, var(--line));
+  color: var(--text);
+}
+button.badge.vault-key:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: 2px;
+}
+@media (max-width: 760px) {
+  button.badge.vault-key {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 10px 16px;
+    font-size: 13px;
+  }
+  .more-foot {
+    margin-top: 20px;
+    padding-top: 16px;
+  }
+}
