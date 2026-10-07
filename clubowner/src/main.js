@@ -98,6 +98,7 @@ import {
 import { advanceTime } from "./services/time.js";
 import { pendingActions, resolveInfo } from "./services/inbox.js";
 import { matchReportModal } from "./features/matchReport.js";
+import { showHighlightsScreen } from "./features/matchHighlights.js";
 import { paletteItems, paletteOverlay } from "./features/palette.js";
 import { markStep, hideOnboarding } from "./features/onboarding.js";
 import {
@@ -356,12 +357,16 @@ async function runTime(resume = false) {
     if (result.advanced) markStep(s, "week");
     return result;
   });
-  // تقرير آخر مباراة جديدة يُفتح تلقائيًا بعد أي تقدم أظهر مباراة لناديك (ما لم أغلقه من الإعدادات).
+  // 0.24: شاشة لقطات الماتش أولاً، ثم تقرير الماتش الكامل.
   const s = getState();
   if (s && s.preferences?.autoMatchReport !== false) {
     const fresh = playedOwnFixtures(s).filter((f) => !playedBefore.has(f.id));
-    if (fresh.length)
-      openModal(matchReportModal(s, reportFor(s, fresh[fresh.length - 1])));
+    if (fresh.length) {
+      const r = reportFor(s, fresh[fresh.length - 1]);
+      showHighlightsScreen(s, r, () => {
+        openModal(matchReportModal(s, r));
+      });
+    }
   }
   if (r.blocked) {
     ui.route = "inbox";

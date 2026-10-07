@@ -339,6 +339,8 @@ export const SYSTEM_PHRASES = {
       "Season stats 0.23: per-player counters for goals, assists, cards, ratings and minutes accumulate automatically and are saved at season end; results, contracts and finances are preserved as they are",
       "Statistiques saisonnières 0.23 : compteurs par joueur (buts, passes, cartons, notes et minutes) cumulés automatiquement et sauvegardés en fin de saison ; résultats, contrats et finances conservés tels quels",
     ],
+  "هدف": ["Goal", "But"],
+  "أسيست": ["Assist", "Passe"],
   "بيانات إحصائيات الموسم غير سليمة": [
     "Season stats data is invalid",
     "Données de statistiques saisonnières invalides",
