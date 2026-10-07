@@ -173,6 +173,7 @@ import { badge, button, infoNote } from "./components/shared.js";
 import { money, num, esc, date, setDigitsMode, setDisplayCurrency, cur } from "./ui/format.js";
 import { ASSETS } from "./data/catalog.js";
 import { findPerson } from "./services/retired.js";
+import { APP_VERSION } from "./data/version.js";
 const app = document.getElementById("app");
 const ui = {
   route: "dashboard",
@@ -237,8 +238,7 @@ function render() {
     app.firstElementChild?.classList.add("page-enter");
     lastRenderedRoute = "setup";
     translateDOM(app);
-    document.title =
-      getLanguage() === "ar" ? "صاحب النادي | Club Owner" : "Club Owner";
+    document.title = "Empire FC";
     return;
   }
   const views = {
@@ -267,8 +267,7 @@ function render() {
   lastRenderedRoute = ui.route;
   translateDOM(app);
   document.title =
-    (NAV.find((n) => n.id === ui.route)?.name || "صاحب النادي") +
-    " | صاحب النادي";
+    (NAV.find((n) => n.id === ui.route)?.name || "Empire FC") + " | Empire FC";
   document.title = translateText(document.title);
 }
 function navigate(route) {
@@ -504,7 +503,7 @@ function authModalContent(activeTab = "login", error = "") {
 }
 
 const actions = {
-  // خزنة المالك السرية: الزر المخفي هو رقم الإصدار أسفل القائمة الجانبية.
+  // خزنة المالك السرية: مفاتيحها أرقام الإصدار (أسفل القائمة الجانبية + سطر EMPIRE FC في شيت «المزيد» + شارة «عن اللعبة»).
   "secret-vault": () =>
     openModal(
       `<h2>${tr("خزنة المالك السرية 🤫", "The owner's secret vault 🤫", "Le coffre secret du propriétaire 🤫")}</h2><p class="muted">${tr("إيداع فوري بفلوس تجريبية لمن يعرف المكان. يُسجَّل في الدفاتر مثل أي تدفق نقدية فتبقى الإدارة المالية صادقة.", "An instant injection of play money for those who know the spot. It is posted to the ledger like any cash flow, so the books stay honest.", "Une injection instantanée d’argent fictif pour qui connaît l’endroit. Inscrite au registre comme tout flux, la comptabilité reste honnête.")}</p><div class="modal-actions vault-grid">${button(`${money(10000000)} ${cur()}`, "vault-deposit", "10000000", "soft")}${button(`${money(100000000)} ${cur()}`, "vault-deposit", "100000000", "secondary")}${button(`${money(1000000000)} ${cur()}`, "vault-deposit", "1000000000", "primary")}</div><div class="modal-actions">${button(tr("إغلاق الخزنة", "Close the vault", "Fermer le coffre"), "modal-close", "", "ghost")}</div>`,
@@ -954,7 +953,7 @@ const actions = {
                 `<button data-nav="${id}">${icon(NAV_BY_ID[id].icon, 24)}<span>${NAV_BY_ID[id].name}</span></button>`,
             )
             .join("")}</div></div>`,
-      ).join("")}`,
+      ).join("")}<div class="more-foot"><span data-no-translate>EMPIRE FC</span><button type="button" class="badge vault-key" data-action="secret-vault">v${APP_VERSION}</button></div>`,
     ),
     "open-auth-modal": () => openModal(authModalContent("login")),
   "auth-tab-login": () => openModal(authModalContent("login")),
