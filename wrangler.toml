@@ -9,7 +9,7 @@ main = "clubowner/worker/index.js"
 directory = "./clubowner/dist"
 not_found_handling = "single-page-application"
 
-# اختياري: تخزين دائم للمزامنة السحابية على KV
-# [[kv_namespaces]]
-# binding = "CLOUD_DB"
-# id = "<your-kv-namespace-id>"
+
+[[kv_namespaces]]
+binding = "CLOUD_DB"
+id = "21b3c12880da49189f66f89bfba220a2"
