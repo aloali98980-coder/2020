@@ -209,8 +209,11 @@ export async function onRequest(context) {
       return jsonResponse({ ok: false, error: "يجب تسجيل الدخول لاستخدام المزامنة السحابية." }, 401);
     }
 
-    // 5. Cloud: Sync
-    if (path === "/api/cloud/sync" && method === "POST") {
+        // 5. Cloud: Sync (رفع الحفظة)
+    if (
+      (path === "/api/cloud/saves" || path === "/api/cloud/sync") &&
+      method === "POST"
+    ) {
       const body = await request.json().catch(() => ({}));
       const { metadata, payload } = body;
       if (!metadata || !payload) {
