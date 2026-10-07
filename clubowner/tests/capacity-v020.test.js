@@ -157,7 +157,7 @@ test("0.20 ownFixtures matches a filter over allFixtures and clubPowers matches 
 });
 
 test("0.20 new saves are v18 with an empty retiree archive; world-pack players carry no provenance copies", () => {
-  assert.equal(SAVE_VERSION, 18);
+  assert.equal(SAVE_VERSION, 20);
   const s = game();
   assert.deepEqual(s.retired, []);
   validateSave(s);
@@ -173,7 +173,7 @@ test("0.20 new saves are v18 with an empty retiree archive; world-pack players c
   assert.equal(provenance(plain).abilityMethod, "seeded-role-age-estimate");
   assert.ok(pack.every((p) => Number.isInteger(Math.round(p.developmentRate * 1000)) && String(p.developmentRate).length <= 6));
   const bytes = JSON.stringify(s.players).length / s.players.length;
-  assert.ok(bytes < 1150, `bytes per player at creation ${bytes}`);
+  assert.ok(bytes < 1300, `bytes per player at creation ${bytes}`);
   const html = playerDetail(s, plain);
   assert.ok(html.includes(provenance(plain).sourceUrl.replace(/&/g, "&amp;")), "profile still links the source page");
 });
@@ -360,7 +360,7 @@ test("0.20 v17 saves migrate: retirees archived, provenance stripped, history ca
     });
   const size17 = JSON.stringify(v17).length;
   const m = migrateSave(v17);
-  assert.equal(m.version, 18);
+  assert.equal(m.version, 20);
   assert.ok(m.migrationNote.includes("0.20"));
   assert.equal(m.retired.length, 6);
   assert.ok(!m.players.some((p) => p.status === "retired"));

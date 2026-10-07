@@ -1,4 +1,5 @@
 import { daysBetween } from "../core/utils.js";
+import { initSeasonStats } from "../services/seasonStats.js";
 export const activePlayer = (p) => p.status !== "retired";
 export const squad = (s) =>
   s.players.filter((p) => p.clubId === s.clubId && activePlayer(p));
@@ -24,6 +25,13 @@ export function initializeCareer(p, date) {
     signedOn: date,
     lastRaiseYear: date.slice(0, 4),
   };
+  initSeasonStats(p);
+  // 0.24: match consequences — form, suspension, card accumulation, form history.
+  p.form ??= 0;
+  p.suspendedUntil ??= null;
+  p.yellowCardSuspensions ??= 0;
+  p.seasonYellowByComp ??= 0;
+  p.formRatings ??= [];
   return p;
 }
 // 0.20: allocation-free age computation (the daily tick evaluates it for every player).

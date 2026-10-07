@@ -197,6 +197,38 @@ export function validateSave(s) {
       ),
     "بيانات اللاعبين غير سليمة أو متكررة.",
   );
+  // 0.23: season stats fields (initialized by v19 migration for all active players).
+  check(
+    s.players.every(
+      (p) =>
+        amount(p.seasonGoals ?? 0) &&
+        amount(p.seasonAssists ?? 0) &&
+        amount(p.seasonYellow ?? 0) &&
+        amount(p.seasonRed ?? 0) &&
+        amount(p.seasonCleanSheets ?? 0) &&
+        Number.isFinite(p.seasonRatingSum ?? 0) &&
+        (p.seasonRatingSum ?? 0) >= 0 &&
+        amount(p.seasonRatingCount ?? 0) &&
+        amount(p.seasonMinutes ?? 0) &&
+        (p.seasonRatingCount === 0 || p.seasonRatingSum >= p.seasonRatingCount * 4),
+    ),
+    "بيانات إحصائيات الموسم غير سليمة.",
+  );
+  // 0.24: match consequence fields (form, suspension, card accumulation).
+  check(
+    s.players.every(
+      (p) =>
+        Number.isFinite(p.form ?? 0) &&
+        (p.form ?? 0) >= -2 &&
+        (p.form ?? 0) <= 2 &&
+        (!p.suspendedUntil || isoDate(p.suspendedUntil)) &&
+        amount(p.yellowCardSuspensions ?? 0) &&
+        amount(p.seasonYellowByComp ?? 0) &&
+        Array.isArray(p.formRatings ?? []) &&
+        (p.formRatings ?? []).every((r) => Number.isFinite(r)),
+    ),
+    "بيانات عواقب الملعب غير سليمة.",
+  );
   check(
     s.facilities.length === FACILITIES.length &&
       unique(s.facilities) &&

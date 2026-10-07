@@ -10,6 +10,7 @@ import {
   STAFF_POOL_LIMIT,
   STAFF_POOL_MAX_AGE_DAYS,
 } from "../services/careers.js";
+import { initSeasonStats } from "../services/seasonStats.js";
 function migrateToFive(input) {
   if (input?.version === 4) {
     const s = structuredClone(input);
@@ -303,9 +304,52 @@ export function migrateToEighteen(s) {
   return s;
 }
 
+// 0.23 (save v19): per-player season stats. Lightweight counters (goals, assists, cards,
+// clean sheets, rating sum/count, minutes) accumulate during matchDay and reset at season end.
+// The migration initializes all existing active players to zero counters.
+function migrateToNineteen(input) {
+  if (!input || input.version !== 18) return input;
+  const old = migrateToEighteen(input);
+  if (old?.version !== 18) return old;
+  const s = structuredClone(old);
+  s.version = 19;
+  for (const p of s.players) {
+    if (p.status !== "retired") initSeasonStats(p);
+  }
+  s.migrationNote =
+    (s.migrationNote || "") +
+    " إحصائيات الموسم 0.23: عدّادات أهداف وأسيست وبطاقات وتصنيفات ودقائق لكل لاعب تتراكم تلقائيًا وتُحفظ في نهاية الموسم؛ النتائج والعقود والمالية محفوظة كما هي.";
+  return s;
+}
+
+// 0.24 (save v20): match consequences — form, suspension, yellow card accumulation.
+// The migration initializes all existing active players to default consequence fields.
+function migrateToTwenty(input) {
+  if (!input || input.version !== 19) return input;
+  const old = migrateToNineteen(input);
+  if (old?.version !== 19) return old;
+  const s = structuredClone(old);
+  s.version = 20;
+  for (const p of s.players) {
+    if (p.status !== "retired") {
+      p.form ??= 0;
+      p.suspendedUntil ??= null;
+      p.yellowCardSuspensions ??= 0;
+      p.seasonYellowByComp ??= 0;
+      p.formRatings ??= [];
+    }
+  }
+  s.migrationNote =
+    (s.migrationNote || "") +
+    " عواقب الملعب 0.24: إصابات أثناء المباريات، وإنذارات متراكمة تؤدي للإيقاف، وفورمة اللاعب تؤثر على الأداء؛ النتائج والعقود والمالية محفوظة كما هي.";
+  return s;
+}
+
 export function migrateSave(input) {
-  if (!input || input.version === 18) return input;
-  const old = migrateToSeventeen(input);
-  if (old?.version !== 17) return old;
-  return migrateToEighteen(old);
+  if (!input || input.version === 20) return input;
+  const v17 = migrateToSeventeen(input);
+  const v18 = v17?.version === 17 ? migrateToEighteen(v17) : v17;
+  if (v18?.version !== 18) return v18;
+  const v19 = migrateToNineteen(v18);
+  return migrateToTwenty(v19);
 }
