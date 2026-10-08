@@ -12,11 +12,19 @@ import {
   netWorth,
 } from "../services/empire/wealth.js";
 import { palaceStage, owns, totalUpkeep } from "../services/empire/assets.js";
+import { childStage } from "../services/empire/family.js";
 import {
   EMPIRE_ASSETS,
   ASSET_CATEGORIES,
   assetsOfCat,
 } from "../data/empireAssets.js";
+import {
+  BRIDES,
+  WEDDING_TIERS,
+  SCHOOLS,
+  ALLOWANCES,
+} from "../data/empireFamily.js";
+import { GIFTS, familyHappiness } from "../services/empire/family.js";
 import { EMPIRE_TEXTS } from "../data/empireTexts.js";
 
 const cap = (s) => s[0].toUpperCase() + s.slice(1);
@@ -31,6 +39,7 @@ const lang = (o) => (o ? tr(o.ar, o.en, o.fr) : "");
 export const EMPIRE_TABS = [
   { id: "wealth", key: "empireTabWealth", icon: "finance" },
   { id: "assets", key: "empireTabAssets", icon: "stadium" },
+  { id: "family", key: "empireTabFamily", icon: "academy" },
 ];
 
 function wealthTab(s) {
@@ -147,6 +156,119 @@ function assetRow(s, a) {
   </div>`;
 }
 
+function statBar(label, v) {
+  return `<div class="kid-stat"><small>${label}</small><div class="bar"><i style="width:${Math.round(v)}%"></i></div><span>${num(Math.round(v))}</span></div>`;
+}
+
+function familyTab(s) {
+  const fam = s.empire.family;
+  const w = fam.wife;
+  // ── أعزب/مطلق: اختر عروسًا ──
+  if (fam.status === "single" || fam.status === "divorced") {
+    return `<p class="muted">${t("familyTabHint")}</p>
+    <div class="bride-grid">
+      ${Object.entries(BRIDES)
+        .map(
+          ([id, b]) => `
+        <div class="bride-card">
+          <strong>${lang(b.name)}</strong>
+          <small class="muted">${lang(b.desc)}</small>
+          <small class="gold-text">${lang(b.bonus)}</small>
+          <small>💍 ${money(b.ring)}</small>
+          <button class="btn primary" data-action="empire-propose" data-id="${id}">${t("proposeLabel")}</button>
+        </div>`,
+        )
+        .join("")}
+    </div>`;
+  }
+  // ── مخطوب: اختر درجة الفرح ──
+  if (fam.status === "engaged") {
+    const bride = BRIDES[fam.brideId];
+    return `<section class="panel"><div class="panel-head"><h3>💍 ${t("engagedLabel")} — ${lang(bride.name)}</h3></div>
+    <p class="muted">${t("familyTabHint")}</p></section>
+    <div class="bride-grid">
+      ${Object.entries(WEDDING_TIERS)
+        .map(
+          ([id, wt]) => `
+        <div class="bride-card">
+          <strong>${lang(wt.name)}</strong>
+          <small class="muted">${lang(wt.desc)}</small>
+          <small>💰 ${money(wt.cost)}</small>
+          <button class="btn primary" data-action="empire-marry" data-id="${id}">${t("marryLabel")}</button>
+        </div>`,
+        )
+        .join("")}
+    </div>`;
+  }
+  // ── متزوج: الزوجة والأولاد ──
+  return `
+  <section class="panel wife-panel">
+    <div class="panel-head"><h3>💖 ${t("wifeLabel")}: ${w.name}</h3>${badge(t("happinessLabel") + " " + num(w.happiness) + "/100", w.happiness >= 60 ? "gold" : "")}</div>
+    <div class="wife-meta">
+      <span>${t("birthdayLabel")}: <b>${w.birthday}</b></span>
+      <span>${t("anniversaryLabel")}: <b>${w.marriedOn.slice(5, 10)}</b></span>
+      ${w.demandActive ? `<span class="red">⚠️ ${t("demandTitle")}</span>` : ""}
+    </div>
+    <div class="gift-row">
+      ${Object.entries(GIFTS)
+        .map(
+          ([id, g]) =>
+            `<button class="btn secondary" data-action="empire-gift" data-id="${id}">${lang(g.name)} — ${money(g.cost)}</button>`,
+        )
+        .join("")}
+      <button class="btn danger" data-action="empire-divorce">${t("divorceLabel")}</button>
+    </div>
+  </section>
+  <section class="panel">
+    <div class="panel-head"><h3>🧒 ${t("childrenLabel")} (${num(fam.children.length)})</h3></div>
+    ${
+      fam.children.length === 0
+        ? `<p class="muted">${t("noFamilyYet")}</p>`
+        : fam.children
+            .map((c) => {
+              const stage = childStage(c, s.date);
+              const stageKey =
+                stage === "infant"
+                  ? "stageInfant"
+                  : stage === "child"
+                    ? "stageChild"
+                    : "stageTeen";
+              return `<div class="kid-row">
+        <div class="kid-head"><strong>${c.name}</strong> <small>${t(stageKey)}</small></div>
+        <div class="kid-stats">
+          ${statBar(t("disciplineLabel"), c.discipline)}
+          ${statBar(t("talentLabel"), c.talent)}
+          ${statBar(t("ambitionLabel"), c.ambition)}
+        </div>
+        <div class="kid-controls">
+          <label>${t("schoolLabel")}
+            <select data-child="${c.id}" data-kind="school">
+              ${Object.entries(SCHOOLS)
+                .map(
+                  ([id, sc]) =>
+                    `<option value="${id}" ${c.school === id ? "selected" : ""}>${lang(sc.name)}${sc.cost ? ` (${money(sc.cost)})` : ""}</option>`,
+                )
+                .join("")}
+            </select>
+          </label>
+          <label>${t("allowanceLabel")}
+            <select data-child="${c.id}" data-kind="allowance">
+              ${Object.entries(ALLOWANCES)
+                .map(
+                  ([id, al]) =>
+                    `<option value="${id}" ${c.allowance === id ? "selected" : ""}>${lang(al.name)}${al.cost ? ` (${money(al.cost)})` : ""}</option>`,
+                )
+                .join("")}
+            </select>
+          </label>
+        </div>
+      </div>`;
+            })
+            .join("")
+    }
+  </section>`;
+}
+
 function ownedList(s) {
   const rows = (s.empire.assets || []).map((o) => {
     const a = EMPIRE_ASSETS.find((x) => x.id === o.assetId);
@@ -202,7 +324,9 @@ export function empireView(s, tab = "wealth") {
         ? wealthTab(s)
         : active === "assets"
           ? assetsTab(s)
-          : `<div class="empty-state"><p>${t("empireTab" + cap(active))}…</p></div>`
+          : active === "family"
+            ? familyTab(s)
+            : `<div class="empty-state"><p>${t("empireTab" + cap(active))}…</p></div>`
     }</div>
   </div>`;
 }

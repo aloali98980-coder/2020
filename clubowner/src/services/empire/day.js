@@ -10,9 +10,12 @@ import {
   netWorth,
 } from "./wealth.js";
 import "./assets.js";
+import { familyDay } from "./family.js";
 
 export function empireDay(s) {
   const e = ensureEmpire(s);
+  // مناسبات العائلة تُفحص كل يوم (عيد ميلاد، ذكرى سنوية).
+  familyDay(s);
   if (s.date.slice(8, 10) !== "01") return null;
   const mk = monthKey(s.date);
   if (e.lastMonthSettle === mk) return null;

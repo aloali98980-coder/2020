@@ -2,6 +2,13 @@
 // ومعه نصوص كتالوج الأصول والقصر (المرحلة التاسعة).
 import { EMPIRE_TEXTS } from "../data/empireTexts.js";
 import { EMPIRE_ASSETS, ASSET_CATEGORIES, PALACE_TIERS } from "../data/empireAssets.js";
+import {
+  BRIDES,
+  WEDDING_TIERS,
+  SCHOOLS,
+  ALLOWANCES,
+  KID_NAMES,
+} from "../data/empireFamily.js";
 
 const fromTexts = (() => {
   const out = {};
@@ -91,6 +98,25 @@ const EXTRA = {
     "Asset sold and its value added to your fortune.",
     "Actif vendu et sa valeur ajoutée à votre fortune.",
   ],
+  "تمت الخطوبة بنجاح.": [
+    "The engagement is official.",
+    "Les fiançailles sont officielles.",
+  ],
+  "تم الفرح. عقبال المئة سنة.": [
+    "The wedding is done. Here's to a hundred years.",
+    "Le mariage est célébré. À cent ans ensemble.",
+  ],
+  "وصلت الهدية وأسعدت البيت.": [
+    "The gift arrived and brightened the home.",
+    "Le cadeau est arrivé et a illuminé la maison.",
+  ],
+  "تم الطلاق ودُفعت التسوية.": [
+    "The divorce is final and the settlement paid.",
+    "Le divorce est prononcé et le règlement payé.",
+  ],
+  "باقة ورد": ["Flowers", "Bouquet"],
+  "طقم مجوهرات": ["Jewelry set", "Parure de bijoux"],
+  "رحلة خاصة": ["Private trip", "Voyage privé"],
 };
 
 const withBare = (map) => {
@@ -119,6 +145,18 @@ const fromCatalog = (() => {
   }
   for (const c of ASSET_CATEGORIES) put(c.name);
   for (const t of PALACE_TIERS) put(t.name);
+  for (const b of Object.values(BRIDES)) {
+    put(b.name);
+    put(b.desc);
+    put(b.bonus);
+  }
+  for (const w of Object.values(WEDDING_TIERS)) {
+    put(w.name);
+    put(w.desc);
+  }
+  for (const sc of Object.values(SCHOOLS)) put(sc.name);
+  for (const al of Object.values(ALLOWANCES)) put(al.name);
+  for (const k of KID_NAMES) put(k);
   return out;
 })();
 

@@ -1073,6 +1073,22 @@ const actions = {
       "تم بيع الأصل وإضافة قيمته إلى ثروتك.",
     );
   },
+  "empire-propose": async (el) => {
+    const { propose } = await import("./services/empire/family.js");
+    await apply((s) => propose(s, el.dataset.id), "تمت الخطوبة بنجاح.");
+  },
+  "empire-marry": async (el) => {
+    const { marry } = await import("./services/empire/family.js");
+    await apply((s) => marry(s, el.dataset.id), "تم الفرح. عقبال المئة سنة.");
+  },
+  "empire-gift": async (el) => {
+    const { giveGift } = await import("./services/empire/family.js");
+    await apply((s) => giveGift(s, el.dataset.id), "وصلت الهدية وأسعدت البيت.");
+  },
+  "empire-divorce": async (el) => {
+    const { divorce } = await import("./services/empire/family.js");
+    await apply((s) => divorce(s), "تم الطلاق ودُفعت التسوية.");
+  },
   more: async () =>
     openModal(
       `<h2>إدارة النادي</h2>${NAV_GROUPS.map(
@@ -1540,6 +1556,17 @@ document.addEventListener("change", async (e) => {
           "selected",
           label.querySelector("input")?.value === e.target.value,
         );
+      return;
+    }
+    if (e.target.dataset.child) {
+      const { setSchool, setAllowance } = await import(
+        "./services/empire/family.js"
+      );
+      const childId = e.target.dataset.child;
+      const value = e.target.value;
+      if (e.target.dataset.kind === "school")
+        await apply((s) => setSchool(s, childId, value));
+      else await apply((s) => setAllowance(s, childId, value));
       return;
     }
     if (e.target.id === "division-view") {
