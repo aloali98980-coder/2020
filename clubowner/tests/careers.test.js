@@ -37,6 +37,7 @@ import {
 } from "../src/services/contractClauses.js";
 import { matchDay } from "../src/services/matches.js";
 import { seasonDay } from "../src/services/season.js";
+import { SAVE_VERSION } from "../src/core/game.js";
 function retiredCandidate(s) {
   const p = s.players.find((p) => p.clubId === s.clubId);
   p.careerInterest = 0;
@@ -337,7 +338,7 @@ test("v1 migration preserves identities, cash and historical dates; invalid clau
   }
   const migrated = migrateSave(original);
   assert.equal(original.version, 1);
-  assert.equal(migrated.version, 20);
+  assert.equal(migrated.version, SAVE_VERSION);
   assert.equal(migrated.finance.cash, cash);
   assert.deepEqual(
     migrated.players.map((p) => [p.id, p.name, p.rating]),

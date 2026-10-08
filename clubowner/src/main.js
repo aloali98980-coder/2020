@@ -146,6 +146,7 @@ import {
   sponsorDealResult,
 } from "./features/sponsors.js";
 import { financeView } from "./features/finance.js";
+import { boardView } from "./features/board.js";
 import { worldView } from "./features/world.js";
 import { settingsView } from "./features/settings.js";
 import {
@@ -249,6 +250,7 @@ function render() {
     facilities: () => facilitiesView(s),
     sponsors: () => sponsorsView(s),
     finance: () => financeView(s, ui.financeTab),
+    board: () => boardView(s),
     world: () =>
       s.expansion
         ? competitionsView(s, ui.expandedDivision)
@@ -570,6 +572,12 @@ const actions = {
   "go-talent": async () => {
     ui.route = "careers";
     render();
+  },
+  // 0.26: من البريد إلى لائحة الجمعية العمومية، ويُعلَّم بند الأونبوردنج تلقائيًا.
+  "go-board": async () => {
+    const s = getState();
+    if (s) await apply((state) => markStep(state, "board"));
+    navigate("board");
   },
   "loan-open": async (el) => openModal(loanForm(getState(), el.dataset.id)),
   "loan-out-open": async () =>

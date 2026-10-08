@@ -5,7 +5,9 @@ import { normalizeClauses, guaranteedWages } from "./contractClauses.js";
 import { assert, uid, addDays } from "../core/utils.js";
 import { message, closeThread } from "./inbox.js";
 import { post, obligation, wages } from "./finance.js";
+import { assertTransfersAllowed } from "./boardMandate.js";
 export function submitOffer(s, playerId, terms) {
+  assertTransfersAllowed(s);
   const p = s.players.find((p) => p.id === playerId);
   assertMarket(s, p);
   assert(!p?.loan, "اللاعب مُعار؛ لا يمكن شراء عقده في هذا النموذج.");
@@ -112,6 +114,7 @@ export function rejectNegotiation(s, id) {
   closeThread(s, id);
 }
 export function signPlayer(s, id, terms) {
+  assertTransfersAllowed(s);
   const n = s.negotiations.find((x) => x.id === id);
   assert(n && n.stage === "personal", "ابدأ باتفاق مع النادي أولًا.");
   const p = s.players.find((x) => x.id === n.playerId);

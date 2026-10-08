@@ -2467,3 +2467,84 @@ button.badge.vault-key:focus-visible {
 body.reduce-motion .hl-card.hl-enter { animation: none !important; }
 body.reduce-motion .hl-backdrop { animation: none !important; }
 body.reduce-motion .hl-progress span { transition: none !important; }
+
+/* ── 0.26: لائحة الجمعية العمومية ─────────────────────────────────────────── */
+.board-layout {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+.board-axis .panel-head,
+.board-meetings .panel-head,
+.board-history .panel-head {
+  margin-bottom: 10px;
+}
+.board-items {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.board-item {
+  border: 1px solid var(--line, #223046);
+  border-radius: 12px;
+  padding: 10px 12px;
+  background: var(--surface-2, rgba(255, 255, 255, 0.02));
+}
+.board-item.done {
+  border-color: color-mix(in srgb, var(--green, #35c46a) 45%, transparent);
+}
+.board-item-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.board-item-top strong {
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+.board-item-chips {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.board-item-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 6px;
+  opacity: 0.75;
+}
+.board-history-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.board-history-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: var(--surface-2, rgba(255, 255, 255, 0.02));
+}
+.board-history-row small,
+.board-history-effects {
+  display: block;
+  opacity: 0.78;
+  font-size: 0.78rem;
+}
+.board-history-effects {
+  flex: 1;
+  min-width: 160px;
+}
+.board-card .onboarding-progress-track {
+  margin-bottom: 10px;
+}
+.desk-item.static {
+  cursor: default;
+}
