@@ -11,6 +11,7 @@ import { AMBITIONS, AXES, CLUB_SIZES, ITEM_KINDS, MANDATE_SCHEMA as BOARD_SCHEMA
 import { MAX_LADDER_TIER } from "../services/boardMandate.js";
 import { boardTextAr } from "../data/boardTexts.js";
 import { isoDate } from "./isoDate.js";
+import { OWNER_STORIES, LIFESTYLES, TRANSFER_CAP } from "../services/empire/wealth.js";
 
 // A save is untrusted input. Validate structure and relationships before replacing it.
 const id = (value) =>
@@ -492,6 +493,7 @@ export function validateSave(s) {
   );
   validateBoard(s);
   validateBlackFiles(s);
+  validateEmpire(s);
   validateExpansion(s);
   validateTalent(s);
   validateLegends(s);
@@ -623,5 +625,77 @@ function validateBoard(s) {
           amount(x.total),
       ),
     boardTextAr("boardInvalidMeetings"),
+  );
+}
+
+// 0.29: حياة الملياردير. ثروة شخصية منفصلة عن خزينة النادي، معيشة، أصول،
+// عائلة، استثمارات، منافسون، وخير. كل القيم أعداد صحيحة آمنة ومقيدة بسقوف
+// معلنة؛ خزينة النادي نفسها لا تُمسّ هنا (تُفحص في قيود الدفاتر أعلاه).
+function validateEmpire(s) {
+  const e = s.empire;
+  check(e && typeof e === "object" && e.schema === 1, "حالة حياة الملياردير غير سليمة.");
+  check(
+    OWNER_STORIES[e.story] !== undefined &&
+      amount(e.personal) &&
+      amount(e.debt) &&
+      Number.isFinite(e.prestige) && e.prestige >= 0 && e.prestige <= 400 &&
+      Number.isFinite(e.fame) && e.fame >= 0 && e.fame <= 100 &&
+      LIFESTYLES[e.lifestyle] !== undefined,
+    "ثروة المالك الشخصية غير سليمة.",
+  );
+  check(
+    e.transfers && typeof e.transfers === "object" &&
+      typeof e.transfers.month === "string" &&
+      amount(e.transfers.toPersonal) && e.transfers.toPersonal <= TRANSFER_CAP &&
+      amount(e.transfers.toClub) && e.transfers.toClub <= TRANSFER_CAP &&
+      Array.isArray(e.transfers.log) && e.transfers.log.length <= 40,
+    "حدود التحويل بين الخزينتين غير سليمة.",
+  );
+  check(
+    Array.isArray(e.assets) && e.assets.length <= 60 &&
+      e.assets.every((a) => id(a.id) && id(a.assetId) && isoDate(a.boughtOn) && amount(a.price) && amount(a.sellValue)),
+    "أصول المالك غير سليمة.",
+  );
+  const f = e.family;
+  check(
+    f && typeof f === "object" &&
+      ["single", "engaged", "married", "divorced"].includes(f.status) &&
+      (!f.brideId || ["lawyer", "doctor", "artist", "connected"].includes(f.brideId)) &&
+      (!f.engagedOn || isoDate(f.engagedOn)) &&
+      amount(f.divorceCount) && f.divorceCount <= 10 &&
+      Array.isArray(f.children) && f.children.length <= 3 &&
+      f.children.every((c) => id(c.id) && text(c.name) && isoDate(c.born)) &&
+      (!f.wife ||
+        (id(f.wife.id) &&
+          text(f.wife.name) &&
+          Number.isFinite(f.wife.happiness) &&
+          f.wife.happiness >= 0 &&
+          f.wife.happiness <= 100 &&
+          isoDate(f.wife.marriedOn))),
+    "حالة عائلة المالك غير سليمة.",
+  );
+  const p = e.portfolio;
+  check(
+    p && typeof p === "object" &&
+      ["rental", "stocks", "startup", "coin", "deposit"].every((k) => amount(p[k])) &&
+      Array.isArray(p.history) && p.history.length <= 60,
+    "محفظة المالك غير سليمة.",
+  );
+  check(
+    e.rivals && typeof e.rivals === "object" &&
+      Array.isArray(e.rivals.list) && e.rivals.list.length <= 8 &&
+      Array.isArray(e.rivals.history) && e.rivals.history.length <= 24,
+    "قائمة المنافسين المليارديرات غير سليمة.",
+  );
+  check(
+    e.charity && typeof e.charity === "object" &&
+      amount(e.charity.total) && amount(e.charity.personalTotal) &&
+      Array.isArray(e.charity.projects) && e.charity.projects.length <= 20,
+    "سجل الخير غير سليم.",
+  );
+  check(
+    Array.isArray(e.reports) && e.reports.length <= 36 &&
+      Array.isArray(e.log) && e.log.length <= 60,
+    "سجلات حياة الملياردير غير سليمة.",
   );
 }

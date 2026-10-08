@@ -157,7 +157,7 @@ test("0.20 ownFixtures matches a filter over allFixtures and clubPowers matches 
 });
 
 test("0.20 new saves are v18 with an empty retiree archive; world-pack players carry no provenance copies", () => {
-  assert.equal(SAVE_VERSION, 22);
+  assert.equal(SAVE_VERSION, 23);
   const s = game();
   assert.deepEqual(s.retired, []);
   validateSave(s);

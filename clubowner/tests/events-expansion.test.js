@@ -512,6 +512,71 @@ addFixture("blackFormal", () =>
     setCash(s, 50000000);
   }),
 );
+// ── تركيبات «حياة الملياردير» 0.29 ─────────────────────────────────────────
+addFixture("empireRich", () =>
+  variant("classic", (s) => {
+    const e = s.empire;
+    e.story = "heir";
+    e.personal = 1_000_000_000;
+    e.prestige = 60;
+    e.fame = 65;
+    e.lifestyle = "legendary";
+    e.debt = 0;
+    const own = (assetId, price) => ({
+      id: "own-" + assetId,
+      assetId,
+      boughtOn: s.date,
+      price,
+      sellValue: Math.round(price * 0.8),
+      monthlyCost: 0,
+    });
+    e.assets = [
+      own("home-island", 600_000_000),
+      own("home-palace", 120_000_000),
+      own("home-villa", 25_000_000),
+      own("car-limo", 3_000_000),
+      own("yacht-mega", 350_000_000),
+      own("yacht-60", 60_000_000),
+      own("yacht-25", 25_000_000),
+      own("jet-long", 90_000_000),
+      own("jet-light", 30_000_000),
+      own("jet-vip", 70_000_000),
+      own("art-painting", 8_000_000),
+      own("art-collection", 45_000_000),
+    ];
+    e.family.status = "married";
+    e.family.wife = {
+      brideId: "artist",
+      nameAr: "ليلى",
+      happiness: 65,
+      marriedOn: "2025-09-28",
+      birthday: "09-30",
+      giftYear: 2025,
+    };
+    e.family.children = [
+      { id: "k1", nameAr: "آدم", born: "2010-05-01", discipline: 50, talent: 50, ambition: 50, school: "academy", allowance: "standard" },
+      { id: "k2", nameAr: "ليان", born: "2018-04-01", discipline: 50, talent: 50, ambition: 50, school: "standard", allowance: "small" },
+    ];
+    e.portfolio.rental = 10_000_000;
+    e.portfolio.stocks = 10_000_000;
+    e.portfolio.startup = 5_000_000;
+    e.portfolio.coin = 5_000_000;
+    e.portfolio.deposit = 5_000_000;
+    e.charity.personalTotal = 2_000_000;
+    e.charity.total = 2_000_000;
+  }),
+);
+addFixture("empireGambler", () =>
+  variant("classic", (s) => {
+    const e = s.empire;
+    e.story = "gambler";
+    e.personal = 20_000_000;
+    e.debt = 10_000_000;
+    e.prestige = 25;
+    e.portfolio.coin = 4_000_000;
+  }),
+);
+addFixture("gamblerFresh", () => createGame({ clubId: "ahly", database: "demo", ownerStory: "gambler" }));
 
 // ── ١) الحجم والمعرّفات ────────────────────────────────────────────────────
 test("1) الحجم المطلوب: ≥٥٠ حدث قرار و≥١٠٠ خبر نكهة، وكل المعرّفات فريدة وkebab-case", () => {

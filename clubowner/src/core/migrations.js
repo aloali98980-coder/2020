@@ -12,6 +12,8 @@ import {
 } from "../services/careers.js";
 import { initSeasonStats } from "../services/seasonStats.js";
 import { boardTextAr } from "../data/boardTexts.js";
+import { initEmpire, storyForOldSave } from "../services/empire/wealth.js";
+import { empireText } from "../data/empireTexts.js";
 function migrateToFive(input) {
   if (input?.version === 4) {
     const s = structuredClone(input);
@@ -424,16 +426,36 @@ function migrateToTwentyTwo(input) {
   return s;
 }
 
+// 0.29 (save v23): حياة الملياردير — ثروة شخصية منفصلة عن خزينة النادي.
+// الحفظة القديمة تُمنح قصتها تلقائيًا حسب الصعوبة (وريث/عصامي/مقامر)،
+// وخزينة النادي ودفاترها لا تُمسّ.
+function migrateToTwentyThree(input) {
+  if (!input || input.version !== 22) return input;
+  const old = migrateToTwentyTwo(input);
+  if (old?.version !== 22) return old;
+  const s = structuredClone(old);
+  s.version = 23;
+  s.empire ??= initEmpire(null, storyForOldSave(s));
+  s.migrationNote =
+    (s.migrationNote || "") + " " + empireText("storyMigrationNote") + ".";
+  return s;
+}
+
 export function migrateSave(input) {
-  if (!input || input.version === 22) return input;
-  if (input.version === 21) return migrateToTwentyTwo(input);
-  // حفظة 0.25 (النسخة 20) حديثة بالفعل: تُرقّى إلى 22 مباشرة بلا إعادة تشغيل سلسلة أقدم.
-  if (input.version === 20) return migrateToTwentyTwo(migrateToTwentyOne(input));
+  if (!input || input.version === 23) return input;
+  if (input.version === 22) return migrateToTwentyThree(input);
+  if (input.version === 21) return migrateToTwentyThree(migrateToTwentyTwo(input));
+  // حفظة 0.25 (النسخة 20) حديثة بالفعل: تُرقّى مباشرة بلا إعادة تشغيل سلسلة أقدم.
+  if (input.version === 20)
+    return migrateToTwentyThree(
+      migrateToTwentyTwo(migrateToTwentyOne(input)),
+    );
   const v17 = migrateToSeventeen(input);
   const v18 = v17?.version === 17 ? migrateToEighteen(v17) : v17;
   if (v18?.version !== 18) return v18;
   const v19 = migrateToNineteen(v18);
   const v20 = migrateToTwenty(v19);
   const v21 = migrateToTwentyOne(v20);
-  return migrateToTwentyTwo(v21);
+  const v22 = migrateToTwentyTwo(v21);
+  return migrateToTwentyThree(v22);
 }

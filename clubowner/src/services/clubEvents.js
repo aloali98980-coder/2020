@@ -18,6 +18,10 @@ import { message, closeThread } from "./inbox.js";
 import { post, obligation } from "./finance.js";
 import { makePlayer } from "../data/catalog.js";
 import { addSuspicion, reduceSuspicion, ensureBlackFiles } from "./blackFiles.js";
+import {
+  applyEmpireGeneral,
+  applyEmpireSpecial,
+} from "./empire/eventEffects.js";
 
 // 0.25 «نظام الأحداث الموسّع» — طبقتان بإيقاعين مختلفين:
 //
@@ -330,6 +334,12 @@ export function resolveClubEvent(s, id, choiceId) {
       if (choiceId === "convert") reduceSuspicion(s, 8);
     }
   }
+  // 0.29 «حياة الملياردير»: مفاتيح الثروة الشخصية والبرستيج والشهرة وسعادة
+  // الزوجة، والميكانيكات الخاصة لكل حدث.
+  if (data.id.startsWith("empire-")) {
+    applyEmpireGeneral(s, c);
+    applyEmpireSpecial(s, data.id, choiceId);
+  }
   if (c.note)
     message(s, { title: "أثر القرار على النادي", body: c.note, category: "events" });
   ev.status = "resolved";
@@ -385,6 +395,10 @@ export function flavorEventDay(s) {
     if (effect.fans) s.fanSupport = clamp(s.fanSupport + effect.fans, 0, 100);
     if (effect.reputation)
       s.reputation = clamp(s.reputation + effect.reputation, 0, 100);
+    if (effect.personal && s.empire) {
+      const delta = clamp(effect.personal, -FLAVOR_LIMITS.personal, FLAVOR_LIMITS.personal);
+      s.empire.personal = Math.max(0, s.empire.personal + delta);
+    }
     if (effect.morale || effect.fitness)
       for (const p of squad(s)) {
         p.morale = clamp(p.morale + (effect.morale || 0), 0, 100);

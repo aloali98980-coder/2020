@@ -19,9 +19,22 @@ import {
 } from "../components/shared.js";
 import { money, num, shortDate, esc , cur} from "../ui/format.js";
 import { wages, liabilities, forecast } from "../services/finance.js";
+import { netWorth } from "../services/empire/wealth.js";
 import { pendingActions } from "../services/inbox.js";
 import { sortedTable } from "../services/matches.js";
 import { FACILITIES } from "../data/catalog.js";
+function empireCardView(s) {
+  const e = s.empire;
+  if (!e) return "";
+  return `<section class="panel empire-card" data-nav="empire" role="button" tabindex="0" style="cursor:pointer">
+    <div class="panel-head"><h3>🏰 ${tr("حياة الملياردير", "Empire Life", "Vie de milliardaire")}</h3><button class="text-button" data-nav="empire">${tr("افتح القصر", "Open the palace", "Ouvrir le palais")} ${icon("arrow", 14)}</button></div>
+    <div class="empire-card-row">
+      <span>💎 <strong>${money(e.personal)}</strong> <small>${tr("ثروتك الشخصية", "your personal fortune", "votre fortune personnelle")}</small></span>
+      <span>💼 <strong>${money(s.finance.cash)}</strong> <small>${tr("خزينة النادي", "club treasury", "trésorerie du club")}</small></span>
+    </div>
+  </section>`;
+}
+
 export function dashboardView(s) {
   const c = clubBy(s.clubId),
     pending = pendingActions(s),
@@ -43,7 +56,7 @@ export function dashboardView(s) {
       </div>`
     : "";
   const nextDerby = next ? getDerbyInfo(next.home, next.away, s) : { isDerby: false };
-  return `${heading("نظرة من أعلى", "أهلًا بك في مكتبك، <span data-no-translate>" + esc(s.owner) + "</span>", "الصورة الكاملة لناديك. والقرار القادم في إيدك.", `<span class="badge outline">${icon("flag", 14)} الموسم ${num(s.seasonNumber)}</span>`)}${deadlineBanner}<section class="hero-card"><div class="hero-art">${stadiumArt()}</div><div class="hero-copy"><span class="hero-kicker"><i></i> مشروع ${c.name}</span><h2>ابنِ النادي.<br>واصنع <span>التاريخ.</span></h2><p>الفريق يكسب مباراة. المؤسسة تبني إرثًا.</p><button class="btn light" data-nav="facilities">طوّر مشروعك ${icon("arrow", 17)}</button></div><div class="hero-bottom"><span>${icon("shield", 15)} ${esc(c.city)}${s.expansion ? "" : "، مصر"}</span><span>${icon("stadium", 15)} ${num(s.capacity)} مقعد</span><span>${icon("crown", 15)} تحت إدارتك</span></div><span class="hero-watermark">${tr("منذ ٢٠٢٦ · عهدك أنت", "SINCE 2026 · YOUR ERA", "DEPUIS 2026 · VOTRE ÈRE")}</span></section><div class="stats-grid">${statCard("السيولة المتاحة", money(s.finance.cash), cur(), `${icon("up", 14)} ${money(monthly.income)} إيراد تعاقدي خلال ٣٠ يومًا`, "finance", "green")}${statCard("مرتبات الفريق", money(wages(s)), cur() + " / شهر", `${num(Math.round((wages(s) / s.finance.wageBudget) * 100))}٪ من ميزانية المرتبات`, "squad")}${statCard("ثقة الجماهير", num(s.fanSupport), " / ١٠٠", `${icon("up", 14)} تتأثر بالنتائج داخل الملعب`, "shield", "green")}${statCard("التزامات مستقبلية", money(liabilities(s)), cur(), `${s.finance.obligations.filter((o) => o.status === "pending" && o.category !== "sponsor-income").length ? num(s.finance.obligations.filter((o) => o.status === "pending" && o.category !== "sponsor-income").length) + " دفعات مجدولة" : "لا أقساط مستحقة حاليًا"}`, "calendar", "gold")}</div><div class="dashboard-columns"><div class="dashboard-main">${onboardingView(s)}${boardCardView(s)}${blackCardView(s)}<section class="panel"><div class="panel-head"><h3>${icon("inbox")} على مكتبك اليوم ${pending.length ? `<span class="count gold">${num(pending.length)}</span>` : ""}</h3><button class="text-button" data-nav="inbox">كل البريد ${icon("arrow", 14)}</button></div><div class="desk-list">${s.inbox
+  return `${heading("نظرة من أعلى", "أهلًا بك في مكتبك، <span data-no-translate>" + esc(s.owner) + "</span>", "الصورة الكاملة لناديك. والقرار القادم في إيدك.", `<span class="badge outline">${icon("flag", 14)} الموسم ${num(s.seasonNumber)}</span>`)}${deadlineBanner}<section class="hero-card"><div class="hero-art">${stadiumArt()}</div><div class="hero-copy"><span class="hero-kicker"><i></i> مشروع ${c.name}</span><h2>ابنِ النادي.<br>واصنع <span>التاريخ.</span></h2><p>الفريق يكسب مباراة. المؤسسة تبني إرثًا.</p><button class="btn light" data-nav="facilities">طوّر مشروعك ${icon("arrow", 17)}</button></div><div class="hero-bottom"><span>${icon("shield", 15)} ${esc(c.city)}${s.expansion ? "" : "، مصر"}</span><span>${icon("stadium", 15)} ${num(s.capacity)} مقعد</span><span>${icon("crown", 15)} تحت إدارتك</span></div><span class="hero-watermark">${tr("منذ ٢٠٢٦ · عهدك أنت", "SINCE 2026 · YOUR ERA", "DEPUIS 2026 · VOTRE ÈRE")}</span></section><div class="stats-grid">${statCard(tr("خزينة النادي 💼", "Club treasury 💼", "Trésorerie du club 💼"), money(s.finance.cash), cur(), `${icon("up", 14)} ${money(monthly.income)} إيراد تعاقدي خلال ٣٠ يومًا`, "finance", "green")}${statCard(tr("الثروة الشخصية 💎", "Personal fortune 💎", "Fortune personnelle 💎"), money(s.empire?.personal ?? 0), cur(), `${icon("up", 14)} ${tr("صافي الثروة", "Net worth", "Fortune nette")}: ${money(netWorth(s))}`, "crown", "gold")}${statCard("مرتبات الفريق", money(wages(s)), cur() + " / شهر", `${num(Math.round((wages(s) / s.finance.wageBudget) * 100))}٪ من ميزانية المرتبات`, "squad")}${statCard("ثقة الجماهير", num(s.fanSupport), " / ١٠٠", `${icon("up", 14)} تتأثر بالنتائج داخل الملعب`, "shield", "green")}${statCard("التزامات مستقبلية", money(liabilities(s)), cur(), `${s.finance.obligations.filter((o) => o.status === "pending" && o.category !== "sponsor-income").length ? num(s.finance.obligations.filter((o) => o.status === "pending" && o.category !== "sponsor-income").length) + " دفعات مجدولة" : "لا أقساط مستحقة حاليًا"}`, "calendar", "gold")}</div><div class="dashboard-columns"><div class="dashboard-main">${onboardingView(s)}${empireCardView(s)}${boardCardView(s)}${blackCardView(s)}<section class="panel"><div class="panel-head"><h3>${icon("inbox")} على مكتبك اليوم ${pending.length ? `<span class="count gold">${num(pending.length)}</span>` : ""}</h3><button class="text-button" data-nav="inbox">كل البريد ${icon("arrow", 14)}</button></div><div class="desk-list">${s.inbox
     .slice(0, 3)
     .map(
       (m, i) =>

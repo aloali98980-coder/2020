@@ -184,13 +184,25 @@ import { acceptDeadlineBid, declineDeadlineBid } from "./services/deadlineDay.js
 import { blackFilesView } from "./features/blackFiles.js";
 import * as BlackService from "./services/blackFiles.js";
 import * as ReleaseService from "./services/releaseClause.js";
+import { empireView } from "./features/empire.js";
+import {
+  transferToPersonal,
+  transferToClub,
+  setLifestyle,
+  repayDebt,
+} from "./services/empire/wealth.js";
 const requireBlack = () => BlackService;
 const requireRelease = () => ReleaseService;
 const app = document.getElementById("app");
 const ui = {
   route: "dashboard",
   setupClub: "ahly",
-  setupConfig: { difficulty: "normal", database: "world", expanded: true },
+  setupConfig: {
+    difficulty: "normal",
+    database: "world",
+    expanded: true,
+    ownerStory: "selfmade",
+  },
   owner: "",
   leagues: [...ALL_MARKETS],
   inboxFilter: "all",
@@ -200,6 +212,7 @@ const ui = {
   worldTab: "table",
   legendFilters: { ...DEFAULT_LEGEND_FILTERS },
   legendOffer: {},
+  empireTab: "wealth",
   palette: { open: false, q: "", sel: 0, items: [] },
 };
 let pendingImport = null;
@@ -270,6 +283,7 @@ function render() {
     management: () => managementView(s),
     press: () => pressView(s),
     black: () => blackFilesView(s),
+    empire: () => empireView(s, ui.empireTab),
     legends: () => legendsView(s, ui.legendFilters),
     settings: () => settingsView(s),
     database: () => databaseView(),
@@ -771,6 +785,7 @@ const actions = {
       leagues,
       ...ui.setupConfig,
       language: getLanguage(),
+      ownerStory: ui.setupConfig.ownerStory || "selfmade",
     });
     await saveGame(s);
     setState(s);
@@ -1040,6 +1055,66 @@ const actions = {
     window.scrollTo(0, 0);
   },
   "modal-inbox": async () => navigate("inbox"),
+  "empire-tab": async (el) => {
+    ui.empireTab = el.dataset.tab || "wealth";
+    render();
+  },
+  "empire-buy-asset": async (el) => {
+    const { buyAsset } = await import("./services/empire/assets.js");
+    await apply(
+      (s) => buyAsset(s, el.dataset.id),
+      "تم شراء الأصل وإضافته إلى إمبراطوريتك.",
+    );
+  },
+  "empire-sell-asset": async (el) => {
+    const { sellAsset } = await import("./services/empire/assets.js");
+    await apply(
+      (s) => sellAsset(s, el.dataset.id),
+      "تم بيع الأصل وإضافة قيمته إلى ثروتك.",
+    );
+  },
+  "empire-propose": async (el) => {
+    const { propose } = await import("./services/empire/family.js");
+    await apply((s) => propose(s, el.dataset.id), "تمت الخطوبة بنجاح.");
+  },
+  "empire-marry": async (el) => {
+    const { marry } = await import("./services/empire/family.js");
+    await apply((s) => marry(s, el.dataset.id), "تم الفرح. عقبال المئة سنة.");
+  },
+  "empire-gift": async (el) => {
+    const { giveGift } = await import("./services/empire/family.js");
+    await apply((s) => giveGift(s, el.dataset.id), "وصلت الهدية وأسعدت البيت.");
+  },
+  "empire-divorce": async (el) => {
+    const { divorce } = await import("./services/empire/family.js");
+    await apply((s) => divorce(s), "تم الطلاق ودُفعت التسوية.");
+  },
+  "empire-invest": async (el) => {
+    const { invest } = await import("./services/empire/investments.js");
+    const amount = Math.round(
+      Number(document.getElementById("inv-amt-" + el.dataset.id)?.value),
+    );
+    await apply((s) => invest(s, el.dataset.id, amount), "تم استثمار المبلغ.");
+  },
+  "empire-withdraw": async (el) => {
+    const { withdraw } = await import("./services/empire/investments.js");
+    const amount = Math.round(
+      Number(document.getElementById("inv-amt-" + el.dataset.id)?.value),
+    );
+    await apply((s) => withdraw(s, el.dataset.id, amount), "تم سحب المبلغ إلى ثروتك.");
+  },
+  "empire-donate": async () => {
+    const { donatePersonal } = await import("./services/empire/charity.js");
+    const amount = Math.round(Number(document.getElementById("charity-amt")?.value));
+    await apply((s) => donatePersonal(s, amount), "تم التبرع وارتفعت سمعتك.");
+  },
+  "empire-charity-project": async (el) => {
+    const { startCharityProject } = await import("./services/empire/charity.js");
+    await apply(
+      (s) => startCharityProject(s, el.dataset.id),
+      "بدأ العمل في مشروعك الخيري.",
+    );
+  },
   more: async () =>
     openModal(
       `<h2>إدارة النادي</h2>${NAV_GROUPS.map(
@@ -1346,6 +1421,24 @@ document.addEventListener("submit", async (e) => {
         return donateCharity(s, amount);
       }, "تم التبرع الخيري وخفض الشبهات.");
     }
+    if (form.id === "empire-draw-form") {
+      const amount = Math.round(Number(form.elements.amount.value));
+      await apply(
+        (s) => transferToPersonal(s, amount),
+        "تم التحويل من خزينة النادي إلى ثروتك الشخصية.",
+      );
+    }
+    if (form.id === "empire-support-form") {
+      const amount = Math.round(Number(form.elements.amount.value));
+      await apply(
+        (s) => transferToClub(s, amount),
+        "تم دعم خزينة النادي من ثروتك الشخصية.",
+      );
+    }
+    if (form.id === "empire-repay-form") {
+      const amount = Math.round(Number(form.elements.amount.value));
+      await apply((s) => repayDebt(s, amount), "تم سداد جزء من الدين.");
+    }
     if (form.id === "legend-offer-form") {
       const role = form.elements.role.value;
       const years = Number(form.elements.years.value);
@@ -1475,6 +1568,31 @@ document.addEventListener("change", async (e) => {
     if (e.target.id === "team-tactic") {
       const tactic = e.target.value;
       await apply((s) => setTactic(s, tactic));
+      return;
+    }
+    if (e.target.name === "empire-lifestyle") {
+      const tier = e.target.value;
+      await apply((s) => setLifestyle(s, tier));
+      return;
+    }
+    if (e.target.name === "owner-story") {
+      ui.setupConfig.ownerStory = e.target.value;
+      for (const label of document.querySelectorAll(".story-options label"))
+        label.classList.toggle(
+          "selected",
+          label.querySelector("input")?.value === e.target.value,
+        );
+      return;
+    }
+    if (e.target.dataset.child) {
+      const { setSchool, setAllowance } = await import(
+        "./services/empire/family.js"
+      );
+      const childId = e.target.dataset.child;
+      const value = e.target.value;
+      if (e.target.dataset.kind === "school")
+        await apply((s) => setSchool(s, childId, value));
+      else await apply((s) => setAllowance(s, childId, value));
       return;
     }
     if (e.target.id === "division-view") {

@@ -81,7 +81,7 @@ test("Legends catalogue: real retired names, resolvable clubs, editorial flags",
 });
 
 test("New saves ship v17 legends state; classic and expanded both validate", () => {
-  assert.equal(SAVE_VERSION, 22);
+  assert.equal(SAVE_VERSION, 23);
   const s = game();
   assert.deepEqual(s.legends, initLegends());
   assert.equal(s.legends.playerMode, true);
