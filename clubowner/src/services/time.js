@@ -24,6 +24,8 @@ import { sponsorDay } from "./sponsors.js";
 import { transferReply } from "./transfers.js";
 import { matchDay } from "./matches.js";
 import { developmentDay } from "./development.js";
+import { deadlineDayTick } from "./deadlineDay.js";
+import { youthIntakeTick } from "./youthIntake.js";
 function eventsDay(s) {
   for (const e of s.events) {
     if (e.done || e.date > s.date) continue;
@@ -103,6 +105,8 @@ export function advanceTime(s, days = null) {
     managementDay(s);
     legendDay(s);
     aiTransferDay(s);
+    deadlineDayTick(s);
+    youthIntakeTick(s);
     eventsDay(s);
     // النكهة أولًا ثم القرار: القرار (required) يُرسل أخيرًا فيصير على رأس البريد،
     // والخبر القصير لا يوقف الزمن أبدًا لأنه required: false.

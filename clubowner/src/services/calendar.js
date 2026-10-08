@@ -36,13 +36,14 @@ export function cupFixtures(c) {
     : [...c.results, ...(c.pendingMatches || [])];
 }
 export function allFixtures(s) {
-  return s.expansion
+  const base = s.expansion
     ? [
         ...s.expansion.divisions.flatMap((d) => d.fixtures),
         ...s.expansion.cups.flatMap((c) => cupFixtures(c)),
         ...(s.expansion.playoffs || []).flatMap((p) => p.fixtures),
       ]
     : s.fixtures;
+  return Array.isArray(s.friendlies) && s.friendlies.length ? [...base, ...s.friendlies] : base;
 }
 const byDateThenId = (a, b) =>
   a.date < b.date ? -1 : a.date > b.date ? 1 : a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
@@ -64,6 +65,7 @@ export function ownFixtures(s, clubId = s.clubId) {
     for (const c of s.expansion.cups) for (const f of cupFixtures(c)) take(f);
     for (const p of s.expansion.playoffs || []) for (const f of p.fixtures) take(f);
   }
+  if (Array.isArray(s.friendlies)) for (const f of s.friendlies) take(f);
   return out.sort(byDateThenId);
 }
 // Busy-day index keyed by club → set of day numbers (integers), so date scanning in availableDate

@@ -187,6 +187,8 @@ export function buildMatchReport(s, f) {
     extraTime: !!f.extraTime,
     penaltyWinner: f.penaltyWinner || null,
     attendance: f.attendance || null,
+    isDerby: !!f.isDerby,
+    derbyName: f.derbyName || null,
     events,
     stats,
     ratings,

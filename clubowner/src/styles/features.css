@@ -2548,3 +2548,400 @@ body.reduce-motion .hl-progress span { transition: none !important; }
 .desk-item.static {
   cursor: default;
 }
+
+/* ── المرحلة السابعة: لحظات التقويم + أول 60 ثانية ── */
+
+/* 1. أول 60 ثانية — الماتش الودي الفوري */
+.instant-friendly-callout {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 16px;
+  margin-bottom: 16px;
+  background: linear-gradient(135deg, rgba(218, 165, 32, 0.12), rgba(15, 23, 42, 0.6));
+  border: 1px solid rgba(218, 165, 32, 0.35);
+  border-radius: 12px;
+}
+.instant-friendly-copy {
+  flex: 1;
+  min-width: 220px;
+}
+.instant-friendly-copy h4 {
+  margin: 4px 0;
+  font-size: 1.05rem;
+  color: var(--text-strong, #f7faff);
+}
+.instant-friendly-copy .muted {
+  font-size: 0.85rem;
+  margin: 0;
+}
+.instant-friendly-btn {
+  white-space: nowrap;
+  animation: pulse-glow 2.5s infinite;
+}
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(218, 165, 32, 0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(218, 165, 32, 0); }
+}
+
+/* 2. يوم قفل القيد (Deadline Day) */
+.deadline-dashboard-banner,
+.deadline-market-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px 18px;
+  margin-bottom: 18px;
+  background: linear-gradient(135deg, rgba(220, 38, 38, 0.18), rgba(26, 16, 28, 0.85));
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  border-radius: 12px;
+  flex-wrap: wrap;
+}
+.deadline-pulse-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #ef4444;
+  box-shadow: 0 0 10px #ef4444;
+  animation: blink 1s infinite alternate;
+  flex-shrink: 0;
+}
+@keyframes blink {
+  from { opacity: 0.4; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1.15); }
+}
+.deadline-dashboard-copy,
+.deadline-banner-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 220px;
+}
+.deadline-dashboard-copy strong,
+.deadline-banner-info strong {
+  color: #fca5a5;
+  font-size: 0.95rem;
+}
+.deadline-dashboard-copy span,
+.deadline-banner-info span {
+  font-size: 0.82rem;
+  opacity: 0.88;
+}
+
+/* 3. قرعة الكأس */
+.cup-draw-modal {
+  padding: 8px 4px;
+}
+.cup-draw-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.1));
+}
+.cup-draw-trophy {
+  color: var(--accent-gold, #f59e0b);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 54px;
+  height: 54px;
+  border-radius: 14px;
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+}
+.cup-draw-header h2 {
+  margin: 2px 0 6px;
+  font-size: 1.35rem;
+}
+.cup-draw-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.cup-draw-user-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  margin-bottom: 18px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.16), rgba(30, 41, 59, 0.7));
+  border: 1px solid rgba(245, 158, 11, 0.4);
+}
+.cup-draw-user-banner strong {
+  display: block;
+  color: var(--accent-gold, #f59e0b);
+  font-size: 0.92rem;
+}
+.cup-draw-user-banner p {
+  margin: 2px 0 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-strong, #fff);
+}
+.cup-draw-section-title h3 {
+  margin: 0 0 12px;
+  font-size: 0.95rem;
+  opacity: 0.9;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.cup-draw-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.cup-draw-pair {
+  background: var(--surface-2, rgba(255, 255, 255, 0.03));
+  border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.08));
+  border-radius: 12px;
+  padding: 12px 14px;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+.cup-draw-pair.user-pair {
+  border-color: rgba(245, 158, 11, 0.5);
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.08), rgba(255, 255, 255, 0.03));
+}
+.cup-draw-pair-num {
+  font-size: 0.75rem;
+  opacity: 0.65;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.cup-draw-teams {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.cup-draw-team {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 4px;
+}
+.cup-draw-team strong {
+  font-size: 0.88rem;
+  line-height: 1.2;
+}
+.cup-draw-team.is-user strong {
+  color: var(--accent-gold, #f59e0b);
+}
+.cup-draw-vs {
+  font-size: 0.75rem;
+  font-weight: 800;
+  opacity: 0.45;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.05);
+}
+.cup-draw-byes {
+  margin: 16px 0;
+  padding: 12px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
+}
+.cup-draw-byes h4 {
+  margin: 0 0 8px;
+  font-size: 0.85rem;
+  opacity: 0.75;
+}
+.byes-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.bye-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.82rem;
+  background: rgba(255, 255, 255, 0.06);
+}
+.bye-pill.is-user {
+  background: rgba(245, 158, 11, 0.18);
+  color: var(--accent-gold, #f59e0b);
+  border: 1px solid rgba(245, 158, 11, 0.4);
+}
+
+/* 4. يوم تصعيد الناشئين */
+.youth-intake-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 20px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.1));
+}
+.youth-intake-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(16, 185, 129, 0.12);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  flex-shrink: 0;
+}
+.youth-intake-header h2 {
+  margin: 2px 0 6px;
+  font-size: 1.35rem;
+}
+.youth-candidates-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 22px;
+}
+.youth-candidate-card {
+  padding: 16px;
+  border-radius: 12px;
+  background: var(--surface-2, rgba(255, 255, 255, 0.03));
+  border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.09));
+}
+.youth-card-top {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 12px;
+}
+.youth-card-info {
+  flex: 1;
+}
+.youth-card-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+.youth-card-title strong {
+  font-size: 1.05rem;
+}
+.youth-card-metrics {
+  display: flex;
+  gap: 14px;
+  font-size: 0.85rem;
+  opacity: 0.85;
+}
+.youth-card-attrs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+.youth-attr-pill {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  min-width: 50px;
+}
+.youth-attr-pill small {
+  font-size: 0.7rem;
+  opacity: 0.65;
+}
+.youth-attr-pill strong {
+  font-size: 0.88rem;
+}
+.youth-card-actions {
+  padding-top: 10px;
+  border-top: 1px dashed rgba(255, 255, 255, 0.08);
+}
+.actions-label {
+  display: block;
+  font-size: 0.8rem;
+  opacity: 0.7;
+  margin-bottom: 8px;
+}
+.youth-decision-options {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.decision-radio {
+  flex: 1;
+  min-width: 140px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all 0.2s ease;
+}
+.decision-radio:has(input:checked) {
+  border-color: var(--accent, #3b82f6);
+  background: rgba(59, 130, 246, 0.14);
+}
+.decision-radio.promote:has(input:checked) {
+  border-color: #10b981;
+  background: rgba(16, 185, 129, 0.15);
+}
+.decision-radio.loan:has(input:checked) {
+  border-color: #3b82f6;
+  background: rgba(59, 130, 246, 0.15);
+}
+.decision-radio.release:has(input:checked) {
+  border-color: #ef4444;
+  background: rgba(239, 68, 68, 0.12);
+}
+
+/* 5. نكهة الديربي والاحتفالات */
+.mr-derby-banner {
+  padding: 10px 14px;
+  margin: 10px 0 14px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(245, 158, 11, 0.15));
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #fecaca;
+  font-weight: 700;
+  font-size: 0.95rem;
+  text-align: center;
+  animation: pulse-glow 3s infinite;
+}
+.next-derby-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  margin-bottom: 8px;
+  border-radius: 6px;
+  background: rgba(239, 68, 68, 0.2);
+  border: 1px solid rgba(239, 68, 68, 0.45);
+  color: #fca5a5;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+.hl-derby-kickoff {
+  border-inline-start: 3px solid #ef4444 !important;
+}
+.hl-derby-tag {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #f87171;
+  margin-bottom: 6px;
+}
+.hl-derby-win {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(245, 158, 11, 0.15), var(--panel-2, #16294a)) !important;
+  border-color: rgba(245, 158, 11, 0.5) !important;
+}

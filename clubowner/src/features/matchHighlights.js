@@ -57,7 +57,8 @@ function hlCard(s, e) {
 
 function kickoffCard(s, r) {
   const home = r.home === s.clubId;
-  return `<div class="hl-card hl-kickoff">
+  return `<div class="hl-card hl-kickoff ${r.isDerby ? "hl-derby-kickoff" : ""}">
+    ${r.isDerby ? `<div class="hl-derby-tag">🔥 ${tr("مباراة ديربي", "Derby Match", "Match de Derby")}</div>` : ""}
     <div class="hl-teams">
       <span class="hl-team">${crest(r.home, "small")} <b>${esc(clubBy(r.home)?.name || "")}</b></span>
       <span class="hl-vs">VS</span>
@@ -77,9 +78,16 @@ function resultCard(s, r) {
   const home = r.home === s.clubId;
   const ours = home ? r.homeGoals : r.awayGoals;
   const theirs = home ? r.awayGoals : r.homeGoals;
-  const label = ours > theirs ? tr("فوز", "Win", "Victoire") : ours === theirs ? tr("تعادل", "Draw", "Nul") : tr("خسارة", "Defeat", "Défaite");
+  const isDerbyWin = r.isDerby && ours > theirs;
+  const label = isDerbyWin
+    ? "🔥 " + tr("مجد الديربي!", "Derby Glory!", "Gloire du Derby !")
+    : ours > theirs
+      ? tr("فوز", "Win", "Victoire")
+      : ours === theirs
+        ? tr("تعادل", "Draw", "Nul")
+        : tr("خسارة", "Defeat", "Défaite");
   const tone = ours > theirs ? "hl-win" : ours === theirs ? "hl-draw" : "hl-loss";
-  return `<div class="hl-card hl-result ${tone}">
+  return `<div class="hl-card hl-result ${tone} ${isDerbyWin ? "hl-derby-win" : ""}">
     <div class="hl-final-score">${num(r.homeGoals)} – ${num(r.awayGoals)}</div>
     <div class="hl-final-label">${label}</div>
   </div>`;

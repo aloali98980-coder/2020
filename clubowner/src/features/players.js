@@ -16,6 +16,7 @@ import { icon } from "../components/icons.js";
 import { esc, money, num, position, date , cur} from "../ui/format.js";
 import { wages } from "../services/finance.js";
 import { windowStatus } from "../services/market.js";
+import { isDeadlineDay } from "../services/deadlineDay.js";
 export function playersView(s, market = false, filters = {}) {
   let players = s.players.filter(
     (p) =>
@@ -45,7 +46,19 @@ export function playersView(s, market = false, filters = {}) {
       Math.min(Number(filters.page) || 0, Math.ceil(total / 50) - 1),
     );
   const visible = players.slice(page * 50, page * 50 + 50);
-  return `${heading(market ? "العين على الصفقة القادمة" : "قلب مشروعك", market ? "سوق الانتقالات" : "الفريق الأول", market ? "ابحث، فاوض، ووازن تكلفة الصفقة على المدى الطويل." : "كل لاعب له دور. وكل عقد له أثر على مستقبل النادي.", badge(market ? "قوائم ٢٠٢٦/٢٧ — مراجعة أولية" : num(s.players.filter((p) => p.clubId === s.clubId).length) + " / " + num(s.squadLimit || 30) + " لاعبًا"))}${market ? infoNote(windowStatus(s).label) + negotiationsPanel(s) : `<div class="squad-summary"><div>${icon("squad", 25)}<span>متوسط التقييم<strong>${num(Math.round(players.reduce((a, p) => a + p.rating, 0) / Math.max(players.length, 1)))}</strong></span></div><div>${icon("finance", 25)}<span>المرتبات الشهرية<strong>${money(wages(s))} <small>${cur()}</small></strong></span></div><div>${icon("shield", 25)}<span>متوسط الجاهزية<strong>${num(Math.round(players.reduce((a, p) => a + p.fitness, 0) / Math.max(players.length, 1)))}٪</strong></span></div></div>`}<section class="panel"><div class="player-filters"><label class="search-field">${icon("search", 19)}<input id="player-search" placeholder="ابحث باسم اللاعب…" value="${esc(search)}" aria-label="البحث عن لاعب"></label><select id="position-filter" aria-label="تصفية المركز">${[
+  const isDeadline = market && isDeadlineDay(s);
+  const deadlineBanner = isDeadline
+    ? `<div class="deadline-market-banner">
+        <div class="deadline-pulse-dot"></div>
+        <div class="deadline-banner-info">
+          <strong>🚨 ${tr("يوم قفل القيد — أطول ليلة في الموسم", "Deadline Day — The Longest Night of the Season", "Date limite — La plus longue nuit de la saison")}</strong>
+          <span>⏳ ${tr("السوق يغلق الليلة عند منتصف الليل 23:59 بدقة · عروض متسارعة وفرص أخيرة", "Market strictly closes tonight at midnight 23:59 · Accelerated offers & final opportunities", "Fermeture stricte ce soir à minuit 23h59 · Offres accélérées et dernières opportunités")}</span>
+        </div>
+        <span class="badge red">${tr("الساعات الأخيرة", "Final hours", "Dernières heures")}</span>
+      </div>`
+    : "";
+
+  return `${heading(market ? "العين على الصفقة القادمة" : "قلب مشروعك", market ? "سوق الانتقالات" : "الفريق الأول", market ? "ابحث، فاوض، ووازن تكلفة الصفقة على المدى الطويل." : "كل لاعب له دور. وكل عقد له أثر على مستقبل النادي.", badge(market ? "قوائم ٢٠٢٦/٢٧ — مراجعة أولية" : num(s.players.filter((p) => p.clubId === s.clubId).length) + " / " + num(s.squadLimit || 30) + " لاعبًا"))}${deadlineBanner}${market ? infoNote(windowStatus(s).label) + negotiationsPanel(s) : `<div class="squad-summary"><div>${icon("squad", 25)}<span>متوسط التقييم<strong>${num(Math.round(players.reduce((a, p) => a + p.rating, 0) / Math.max(players.length, 1)))}</strong></span></div><div>${icon("finance", 25)}<span>المرتبات الشهرية<strong>${money(wages(s))} <small>${cur()}</small></strong></span></div><div>${icon("shield", 25)}<span>متوسط الجاهزية<strong>${num(Math.round(players.reduce((a, p) => a + p.fitness, 0) / Math.max(players.length, 1)))}٪</strong></span></div></div>`}<section class="panel"><div class="player-filters"><label class="search-field">${icon("search", 19)}<input id="player-search" placeholder="ابحث باسم اللاعب…" value="${esc(search)}" aria-label="البحث عن لاعب"></label><select id="position-filter" aria-label="تصفية المركز">${[
     ["all", "كل المراكز"],
     ["GK", "حراسة المرمى"],
     ["DEF", "الدفاع"],
