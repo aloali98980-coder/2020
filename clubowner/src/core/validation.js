@@ -491,10 +491,38 @@ export function validateSave(s) {
     "بيانات القدرات أو مصادر الميلاد غير سليمة.",
   );
   validateBoard(s);
+  validateBlackFiles(s);
   validateExpansion(s);
   validateTalent(s);
   validateLegends(s);
   return s;
+}
+
+// 0.28: الملفات السوداء — مؤشر شبهات، عمليات، ومنع قيد، وتاريخ فضائح
+function validateBlackFiles(s) {
+  const bf = s.blackFiles;
+  check(
+    bf && typeof bf === "object" &&
+      Number.isFinite(bf.suspicion) && bf.suspicion >= 0 && bf.suspicion <= 100 &&
+      Number.isFinite(bf.permanentRepPenalty) && bf.permanentRepPenalty >= 0 && bf.permanentRepPenalty <= 50 &&
+      amount(bf.scandalCount) && bf.scandalCount <= 100 &&
+      Array.isArray(bf.history) && bf.history.length <= 200 &&
+      typeof bf.active === "object" &&
+      typeof bf.cooldowns === "object" &&
+      (!bf.transferBanUntil || isoDate(bf.transferBanUntil)) &&
+      (!bf.lastOperationDate || isoDate(bf.lastOperationDate)) &&
+      Array.isArray(bf.pendingAiBreaks),
+    "حالة الملفات السوداء غير سليمة.",
+  );
+  check(
+    typeof bf.active.agentOnPayroll === "boolean" &&
+      (!bf.active.agentSince || isoDate(bf.active.agentSince)),
+    "حالة وكيل المرتب غير سليمة.",
+  );
+  check(
+    bf.history.every((h) => isoDate(h.date)),
+    "سجل الملفات السوداء غير سليم.",
+  );
 }
 
 // 0.26: لائحة الجمعية العمومية. الحقول كلها مشتقة أو مسجَّلة، والقيم محدودة

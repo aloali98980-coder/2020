@@ -489,6 +489,21 @@ export const BOARD_TEXTS = {
     en: "Target",
     fr: "Objectif",
   },
+  itemNoScandal: {
+    ar: "لا فضائح — الحفاظ على نظافة الملفات",
+    en: "No scandals — keep files clean",
+    fr: "Pas de scandales — garder les dossiers propres",
+  },
+  itemNoScandalExplain: {
+    ar: "عدم تفجير أي فضيحة كبرى (الشبهات لا تصل 100%)",
+    en: "No major scandal (suspicion must not hit 100%)",
+    fr: "Pas de scandale majeur (la suspicion ne doit pas atteindre 100%)",
+  },
+  boardScandalBadge: {
+    ar: "فضيحة مسجلة هذا الموسم",
+    en: "Scandal recorded this season",
+    fr: "Scandale enregistré cette saison",
+  },
 };
 // يملأ عناصر الاستبدال {v}/{n}/{d} بـ vars. أي مفتاح ناقص يبقى كما هو (ظهور واضح للخلل).
 export const fillBoardText = (template, vars = {}) =>

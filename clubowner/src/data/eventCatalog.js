@@ -20,10 +20,12 @@ import { MARKET_DECISIONS } from "./events/decisions-market.js";
 import { MEDIA_DECISIONS } from "./events/decisions-media.js";
 import { MATCHDAY_DECISIONS } from "./events/decisions-matchday.js";
 import { DRAMA_DECISIONS } from "./events/decisions-drama.js";
+import { BLACK_DECISIONS } from "./events/decisions-black.js";
 import { FLAVOR_A } from "./events/flavor-training-fans-press.js";
 import { FLAVOR_B } from "./events/flavor-weather-former-legends.js";
 import { FLAVOR_C } from "./events/flavor-rivals-refereeing-market.js";
 import { FLAVOR_DRAMA } from "./events/flavor-drama.js";
+import { FLAVOR_BLACK } from "./events/flavor-black.js";
 
 // ── الكتالوج الأصلي (0.18) — محفوظ كما هو لتوافق الحفظات ──────────────────
 export const LEGACY_DECISIONS = [
@@ -162,9 +164,10 @@ export const EVENT_CATALOG = [
   ...MEDIA_DECISIONS,
   ...MATCHDAY_DECISIONS,
   ...DRAMA_DECISIONS,
+  ...BLACK_DECISIONS,
 ];
 
-export const FLAVOR_CATALOG = [...FLAVOR_A, ...FLAVOR_B, ...FLAVOR_C, ...FLAVOR_DRAMA];
+export const FLAVOR_CATALOG = [...FLAVOR_A, ...FLAVOR_B, ...FLAVOR_C, ...FLAVOR_DRAMA, ...FLAVOR_BLACK];
 
 // فئات «تحديث الدراما» 0.25 الستّ التي طلبها صاحب المشروع. كل حدث قرار جديد أو مُوسَّم
 // يحمل `theme` منها، والاختبار يتحقق أن لكل فئة ≥٣ أحداث بخيارات وعواقب مختلفة.

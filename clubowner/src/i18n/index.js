@@ -9,6 +9,7 @@ import { EXTRA_PHRASES } from "./phrases-extra.js";
 import { EVENT_PHRASES } from "./phrases-events.js";
 import { BOARD_PHRASES } from "./phrases-board.js";
 import { DRAMA_MOMENTS_PHRASES } from "./phrases-drama-moments.js";
+import { BLACK_PHRASES } from "./phrases-black.js";
 import egyptPyramid from "../data/egyptPyramid.json" with { type: "json" };
 import { ROSTERS } from "../data/packs/current-2026.js";
 import { worldNameMap } from "../data/packs/world.js";
@@ -30,6 +31,8 @@ for (const extra of [
   BOARD_PHRASES,
   // 0.27: drama moments (cup draw, deadline day, youth intake, derby flavor, instant friendly).
   DRAMA_MOMENTS_PHRASES,
+  // 0.28: black files (suspicion, fixer operations, release clauses)
+  BLACK_PHRASES,
 ])
   for (const [ar, pair] of Object.entries(extra))
     if (!DICTIONARY[ar])
