@@ -11,6 +11,8 @@ import {
 } from "./wealth.js";
 import "./assets.js";
 import { familyDay } from "./family.js";
+// المنافسون قبل الاستثمارات كي يحمل تقرير الشهر ترتيب المليارديرات المحدث.
+import "./rivals.js";
 import "./investments.js";
 
 export function empireDay(s) {

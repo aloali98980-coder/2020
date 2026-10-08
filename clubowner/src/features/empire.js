@@ -2,7 +2,7 @@
 // معيشة، أصول، عائلة، استثمارات، منافسون، وخير.
 import { icon } from "../components/icons.js";
 import { badge } from "../components/shared.js";
-import { money, num, cur } from "../ui/format.js";
+import { money, num, cur, esc } from "../ui/format.js";
 import { tr } from "../i18n/index.js";
 import {
   OWNER_STORIES,
@@ -27,6 +27,13 @@ import {
 import { GIFTS, familyHappiness } from "../services/empire/family.js";
 import { portfolioTotal } from "../services/empire/investments.js";
 import { INVEST_VEHICLES, VEHICLE_ORDER } from "../data/empireInvestments.js";
+import {
+  leaderboard,
+  currentRace,
+  playerRaceScore,
+  ensureRivals,
+} from "../services/empire/rivals.js";
+import { RACE_TYPES } from "../data/empireRivals.js";
 import { EMPIRE_TEXTS } from "../data/empireTexts.js";
 
 const cap = (s) => s[0].toUpperCase() + s.slice(1);
@@ -43,6 +50,7 @@ export const EMPIRE_TABS = [
   { id: "assets", key: "empireTabAssets", icon: "stadium" },
   { id: "family", key: "empireTabFamily", icon: "academy" },
   { id: "invest", key: "empireTabInvest", icon: "transfer" },
+  { id: "rivals", key: "empireTabRivals", icon: "shield" },
 ];
 
 function wealthTab(s) {
@@ -319,6 +327,55 @@ function investTab(s) {
   </section>` : ""}`;
 }
 
+function rivalsTab(s) {
+  ensureRivals(s);
+  const rows = leaderboard(s);
+  const race = currentRace(s);
+  const myScore = playerRaceScore(s, race.id);
+  const raceName = lang(race.name);
+  return `<p class="muted">${t("rivalsTabHint")}</p>
+  <section class="panel">
+    <div class="panel-head"><h3>🏁 ${t("thisMonthRace")}: ${raceName}</h3></div>
+    <p>${t("lifeNetDelta")}: <b>${money(myScore)}</b></p>
+  </section>
+  <section class="panel">
+    <div class="panel-head"><h3>👑 ${t("leaderboardTitle")}</h3></div>
+    <div class="leaderboard">
+      ${rows
+        .map(
+          (r, i) => `
+        <div class="lb-row ${r.you ? "you" : ""}">
+          <span class="lb-rank">${num(i + 1)}</span>
+          <span class="lb-name">${esc(r.you ? r.nameAr : lang({ ar: r.nameAr, en: r.nameEn, fr: r.nameFr }))}</span>
+          <span class="lb-wealth">${money(r.wealth)}</span>
+          ${r.you ? `<span class="badge gold">${t("youLabel")}</span>` : ""}
+        </div>`,
+        )
+        .join("")}
+    </div>
+  </section>
+  ${
+    s.empire.rivals.history.length
+      ? `<section class="panel">
+    <div class="panel-head"><h3>${t("raceHistoryLabel")}</h3></div>
+    <div class="report-list">
+      ${s.empire.rivals.history
+        .slice(0, 12)
+        .map(
+          (h) => `
+        <div class="report-row">
+          <b>${h.month}</b>
+          <span>${lang((RACE_TYPES.find((r) => r.id === h.race) || {}).name)}</span>
+          <span class="${h.won ? "green" : ""}">${h.won ? t("raceWonTitle").replace(/ 🏆?$/, "") : (h.winnerName || "")}</span>
+        </div>`,
+        )
+        .join("")}
+    </div>
+  </section>`
+      : ""
+  }`;
+}
+
 function ownedList(s) {
   const rows = (s.empire.assets || []).map((o) => {
     const a = EMPIRE_ASSETS.find((x) => x.id === o.assetId);
@@ -378,7 +435,9 @@ export function empireView(s, tab = "wealth") {
             ? familyTab(s)
             : active === "invest"
               ? investTab(s)
-              : `<div class="empty-state"><p>${t("empireTab" + cap(active))}…</p></div>`
+              : active === "rivals"
+                ? rivalsTab(s)
+                : `<div class="empty-state"><p>${t("empireTab" + cap(active))}…</p></div>`
     }</div>
   </div>`;
 }

@@ -10,6 +10,7 @@ import {
   KID_NAMES,
 } from "../data/empireFamily.js";
 import { INVEST_VEHICLES } from "../data/empireInvestments.js";
+import { RIVAL_POOL, RACE_TYPES } from "../data/empireRivals.js";
 
 const fromTexts = (() => {
   const out = {};
@@ -165,6 +166,11 @@ const fromCatalog = (() => {
     put(v.desc);
     put(v.risk);
   }
+  for (const r of RIVAL_POOL) {
+    put({ ar: r.nameAr, en: r.nameEn, fr: r.nameFr });
+    put(r.persona);
+  }
+  for (const rt of RACE_TYPES) put(rt.name);
   return out;
 })();
 
