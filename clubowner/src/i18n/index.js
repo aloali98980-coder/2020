@@ -6,6 +6,7 @@ import { SYSTEM_PHRASES } from "./phrases-system.js";
 import { NAME_PHRASES } from "./phrases-names.js";
 import { LEGEND_PHRASES } from "./phrases-legends.js";
 import { EXTRA_PHRASES } from "./phrases-extra.js";
+import { EVENT_PHRASES } from "./phrases-events.js";
 import egyptPyramid from "../data/egyptPyramid.json" with { type: "json" };
 import { ROSTERS } from "../data/packs/current-2026.js";
 import { worldNameMap } from "../data/packs/world.js";
@@ -21,6 +22,8 @@ for (const extra of [
   NAME_PHRASES,
   LEGEND_PHRASES,
   EXTRA_PHRASES,
+  // 0.25: phrases-events comes last so hand-tuned entries in earlier modules always win.
+  EVENT_PHRASES,
 ])
   for (const [ar, pair] of Object.entries(extra))
     if (!DICTIONARY[ar])

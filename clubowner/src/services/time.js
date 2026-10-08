@@ -13,7 +13,7 @@ import { internationalDay } from "./internationals.js";
 import { contractDay } from "./contractClauses.js";
 import { agingDay, retirementDay } from "./careers.js";
 import { staffDay } from "./staff.js";
-import { clubEventDay } from "./clubEvents.js";
+import { clubEventDay, flavorEventDay } from "./clubEvents.js";
 import { seasonDay } from "./season.js";
 import { addDays } from "../core/utils.js";
 import { message, pendingActions } from "./inbox.js";
@@ -102,6 +102,9 @@ export function advanceTime(s, days = null) {
     legendDay(s);
     aiTransferDay(s);
     eventsDay(s);
+    // النكهة أولًا ثم القرار: القرار (required) يُرسل أخيرًا فيصير على رأس البريد،
+    // والخبر القصير لا يوقف الزمن أبدًا لأنه required: false.
+    flavorEventDay(s);
     clubEventDay(s);
     if (pendingActions(s).length) return { advanced, blocked: true };
     if (
