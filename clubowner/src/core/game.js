@@ -13,7 +13,9 @@ import { fixtures } from "../services/matches.js";
 import { message } from "../services/inbox.js";
 import { signSponsor } from "../services/sponsors.js";
 import { initBoard, startSeasonMandate } from "../services/boardMandate.js";
-export const SAVE_VERSION = 21;
+import { initBlackFiles } from "../services/blackFiles.js";
+import { ensureReleaseClause } from "../services/releaseClause.js";
+export const SAVE_VERSION = 22;
 export function createGame({
   clubId = "ahly",
   owner = "مالك النادي",
@@ -166,5 +168,8 @@ export function createGame({
   // 0.26: الجمعية العمومية تصدر لائحة الموسم الأول بعد اكتمال كل الأنظمة المشتقة منها.
   initBoard(s);
   startSeasonMandate(s);
+  // 0.28: الملفات السوداء + الشرط الجزائي
+  initBlackFiles(s);
+  ensureReleaseClause(s);
   return s;
 }

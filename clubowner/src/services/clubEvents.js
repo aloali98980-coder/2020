@@ -17,6 +17,7 @@ import {
 import { message, closeThread } from "./inbox.js";
 import { post, obligation } from "./finance.js";
 import { makePlayer } from "../data/catalog.js";
+import { addSuspicion, reduceSuspicion, ensureBlackFiles } from "./blackFiles.js";
 
 // 0.25 «نظام الأحداث الموسّع» — طبقتان بإيقاعين مختلفين:
 //
@@ -269,6 +270,66 @@ export function resolveClubEvent(s, id, choiceId) {
   }
   if (c.sponsorOffer) scheduleSponsorOffer(s, c.sponsorOffer, ev.id);
   if (c.press) pressRelease(s, data.title, "قرار إداري");
+  // 0.28: آثار الملفات السوداء — parsing من note أو عبر معرفات محددة
+  if (data.id.startsWith("black-")) {
+    const bf = ensureBlackFiles(s);
+    const note = c.note || "";
+    // تحليل الشبهات من النص
+    if (note.includes("+") || note.includes("الشبهات")) {
+      const plusMatch = note.match(/\+(\d+)%/);
+      if (plusMatch) addSuspicion(s, Number(plusMatch[1]));
+      const minusMatch = note.match(/-(\d+)%/);
+      if (minusMatch) reduceSuspicion(s, Number(minusMatch[1]));
+    }
+    // أحداث محددة
+    if (data.id === "black-investigative-journalist") {
+      if (choiceId === "refuse") addSuspicion(s, 5);
+      if (choiceId === "pay-silence") { reduceSuspicion(s, 8); addSuspicion(s, 7); }
+    }
+    if (data.id === "black-former-employee-threat") {
+      if (choiceId === "pay-off") reduceSuspicion(s, 10);
+      if (choiceId === "legal-threat") addSuspicion(s, 8);
+      if (choiceId === "expose-yourself") reduceSuspicion(s, 12);
+    }
+    if (data.id === "black-public-accusation") {
+      if (choiceId === "counter-attack") addSuspicion(s, 6);
+      if (choiceId === "silence") addSuspicion(s, 3);
+    }
+    if (data.id === "black-fixer-demands-more") {
+      if (choiceId === "cut-network") { reduceSuspicion(s, 15); bf.active.agentOnPayroll = false; bf.active.agentSince = null; }
+      if (choiceId === "negotiate") reduceSuspicion(s, 5);
+    }
+    if (data.id === "black-player-witness") {
+      if (choiceId === "bonus-silence") reduceSuspicion(s, 4);
+    }
+    if (data.id === "black-unknown-fixer") {
+      if (choiceId === "accept") addSuspicion(s, 10);
+      if (choiceId === "report") reduceSuspicion(s, 12);
+    }
+    if (data.id === "black-routine-investigation") {
+      if (choiceId === "full-coop") reduceSuspicion(s, 6);
+      if (choiceId === "delay") addSuspicion(s, 5);
+      if (choiceId === "gift") { reduceSuspicion(s, 8); /* +6% later handled as +3 now */ addSuspicion(s, 3); }
+    }
+    if (data.id === "black-worried-sponsor") {
+      if (choiceId === "charity-pr") reduceSuspicion(s, 10);
+    }
+    if (data.id === "black-friendly-ref-stops") {
+      if (choiceId === "threaten") addSuspicion(s, 12);
+      if (choiceId === "accept-stop") { reduceSuspicion(s, 5); bf.active.refereeBias = null; }
+      if (choiceId === "pay-extra" && bf.active.refereeBias) bf.active.refereeBias.until = addDays(bf.active.refereeBias.until, 7);
+    }
+    if (data.id === "black-recording-leak") {
+      if (choiceId === "buy-recording") reduceSuspicion(s, 15);
+      if (choiceId === "deny-fake") addSuspicion(s, 5);
+      if (choiceId === "partial-confess") reduceSuspicion(s, 20);
+    }
+    if (data.id === "black-agent-salary-leak") {
+      if (choiceId === "keep") addSuspicion(s, 3);
+      if (choiceId === "cut") { reduceSuspicion(s, 15); bf.active.agentOnPayroll = false; bf.active.agentSince = null; }
+      if (choiceId === "convert") reduceSuspicion(s, 8);
+    }
+  }
   if (c.note)
     message(s, { title: "أثر القرار على النادي", body: c.note, category: "events" });
   ev.status = "resolved";

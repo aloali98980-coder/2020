@@ -307,3 +307,15 @@ export const longestInjuryDays = (s) =>
 export const hasLongInjury = (days = 45) => (s) => longestInjuryDays(s) >= days;
 export const injuryCount = (s) => scopes.injured(s).length;
 export const hasInjuryCrisis = (s) => injuryCount(s) >= 4;
+
+// ── الملفات السوداء 0.28 ───────────────────────────────────────────────
+export const suspicionAtLeast = (n) => (s) => (s.blackFiles?.suspicion || 0) >= n;
+export const suspicionBelow = (n) => (s) => (s.blackFiles?.suspicion || 0) < n;
+export const hasSuspicion = (s) => (s.blackFiles?.suspicion || 0) > 0;
+export const noSuspicion = (s) => (s.blackFiles?.suspicion || 0) === 0;
+export const hasAgentPayroll = (s) => Boolean(s.blackFiles?.active?.agentOnPayroll);
+export const hasRefBias = (s) => Boolean(s.blackFiles?.active?.refereeBias);
+export const hasMediaWar = (s) => Boolean(s.blackFiles?.active?.mediaWar);
+export const hasBribedOpponent = (s) => Boolean(s.blackFiles?.active?.bribedOpponent);
+export const hasTransferBan = (s) => Boolean(s.blackFiles?.transferBanUntil && s.blackFiles.transferBanUntil >= s.date);
+export const scandalHappened = (s) => (s.blackFiles?.scandalCount || 0) > 0;

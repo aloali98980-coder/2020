@@ -83,6 +83,7 @@ export const ITEM_KINDS = {
   "cup-ties": { axis: "sporting", critical: true, unit: "ties", textKey: "itemCupTies" },
   "continental-stage": { axis: "sporting", critical: false, unit: "ties", textKey: "itemContinentalStage" },
   "continental-qualify": { axis: "sporting", critical: false, unit: "rank", textKey: "itemContinentalQualify" },
+  "no-scandal": { axis: "sporting", critical: true, unit: "count", textKey: "itemNoScandal" },
   "deficit-cap": { axis: "financial", critical: true, unit: "money", textKey: "itemDeficitCap" },
   "min-liquidity": { axis: "financial", critical: true, unit: "money", textKey: "itemMinLiquidity" },
   "player-sale": { axis: "financial", critical: false, unit: "money", textKey: "itemPlayerSale" },
@@ -195,6 +196,16 @@ export function buildMandate(s, { seasonNumber, startDate, endDate, ambition, re
       kind: "continental-qualify",
       target: clamp(Math.round(tableSize / 4), 2, Math.max(2, tableSize - 2)),
       critical: false,
+    });
+  }
+
+  // بند لا فضائح: يظهر في 60% من المواسم، حاسم دائمًا، ويثبت أن الفضيحة تسقط الثقة.
+  if (chance(`${s.clubId}:${seasonNumber}:no-scandal`, 60)) {
+    items.push({
+      id: "no-scandal",
+      kind: "no-scandal",
+      target: 1,
+      critical: true,
     });
   }
 

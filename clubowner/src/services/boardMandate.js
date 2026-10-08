@@ -115,6 +115,11 @@ export function itemProgress(s, item, mandate) {
   const ratio = (current, target, done) =>
     done ? 1 : clamp(target > 0 ? current / target : 1, 0, 1);
   switch (item.kind) {
+    case "no-scandal": {
+      const scandalThisSeason = (s.blackFiles?.history || []).some((h) => h.date >= from);
+      const done = !scandalThisSeason;
+      return { current: scandalThisSeason ? 1 : 0, target: 1, done, ratio: done ? 1 : 0 };
+    }
     case "league-rank":
     case "continental-qualify": {
       const rank = currentRank(s);

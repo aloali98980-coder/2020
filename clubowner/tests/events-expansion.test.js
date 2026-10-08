@@ -479,6 +479,39 @@ addFixture("noKeeper", () =>
     for (const p of squad(s)) if (p.position === "GK") p.status = "released";
   }),
 );
+// ── تركيبات الملفات السوداء 0.28 ────────────────────────────────────────
+addFixture("blackClean", () =>
+  variant("classic", (s) => {
+    s.blackFiles.suspicion = 0;
+    s.blackFiles.active.agentOnPayroll = false;
+    s.blackFiles.active.refereeBias = null;
+    s.blackFiles.active.mediaWar = null;
+    s.blackFiles.active.bribedOpponent = null;
+  }),
+);
+addFixture("blackWhispers", () =>
+  variant("classic", (s) => {
+    s.blackFiles.suspicion = 35;
+    s.finance.cash = 20000000;
+    s.blackFiles.active.refereeBias = { type: "penalty-dubious", until: addDays(s.date, 5), date: s.date };
+    s.blackFiles.active.agentOnPayroll = true;
+    s.blackFiles.active.agentSince = s.date;
+    s.blackFiles.active.mediaWar = { rival: "zamalek", until: addDays(s.date, 10), date: s.date };
+    s.blackFiles.active.bribedOpponent = { fixtureId: s.fixtures[0].id, opponent: "zamalek", until: addDays(s.date, 5), date: s.date };
+  }),
+);
+addFixture("blackLeaks", () =>
+  variant("classic", (s) => {
+    s.blackFiles.suspicion = 65;
+    setCash(s, 50000000);
+  }),
+);
+addFixture("blackFormal", () =>
+  variant("classic", (s) => {
+    s.blackFiles.suspicion = 90;
+    setCash(s, 50000000);
+  }),
+);
 
 // ── ١) الحجم والمعرّفات ────────────────────────────────────────────────────
 test("1) الحجم المطلوب: ≥٥٠ حدث قرار و≥١٠٠ خبر نكهة، وكل المعرّفات فريدة وkebab-case", () => {

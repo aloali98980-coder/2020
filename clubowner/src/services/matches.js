@@ -97,6 +97,11 @@ export function matchDay(
     const owns = [f.home, f.away].includes(s.clubId),
       ourHome = f.home === s.clubId;
 
+    // 0.28: black files active effects
+    const bf = s.blackFiles;
+    const hasRefBias = Boolean(bf?.active?.refereeBias && bf.active.refereeBias.until >= s.date);
+    const hasBribe = Boolean(bf?.active?.bribedOpponent && bf.active.bribedOpponent.fixtureId === f.id);
+
     const derby = getDerbyInfo(f.home, f.away, s);
     if (derby.isDerby) {
       f.isDerby = true;
@@ -114,8 +119,13 @@ export function matchDay(
     const effects = owns
       ? tacticalEffects(s, ourHome ? f.away : f.home)
       : { attack: 0, defence: 0, fatigue: 0 };
-    const hp = strength(s, f.home),
+    let hp = strength(s, f.home),
       ap = strength(s, f.away);
+    // bribed opponent: opponent underperforms
+    if (hasBribe && owns) {
+      if (f.home === s.clubId) ap = ap * 0.75;
+      else hp = hp * 0.75;
+    }
     f.homeGoals = goals(
       s,
       hp + (owns && ourHome ? effects.attack : 0),
@@ -128,6 +138,18 @@ export function matchDay(
       hp + (owns && ourHome ? effects.defence : 0),
       false,
     );
+    // referee bias: extra goal / cancel opponent goal
+    if (hasRefBias && owns) {
+      const biasType = bf.active.refereeBias.type;
+      if (biasType === "penalty-dubious" || biasType === "goal-cancel") {
+        if (f.home === s.clubId) f.homeGoals += 1;
+        else f.awayGoals += 1;
+      }
+      if (biasType === "goal-cancel") {
+        if (f.home === s.clubId) f.awayGoals = Math.max(0, f.awayGoals - 1);
+        else f.homeGoals = Math.max(0, f.homeGoals - 1);
+      }
+    }
     if (owns && s.management?.tactics?.enabled) {
       f.tactics = { ...effects };
       f.lineup = selectXI(s).map((x) => ({

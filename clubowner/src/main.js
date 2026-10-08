@@ -181,6 +181,11 @@ import { cupDrawModal } from "./features/cupDraw.js";
 import { youthIntakeModal } from "./features/youthIntake.js";
 import { executeYouthIntakeDecisions } from "./services/youthIntake.js";
 import { acceptDeadlineBid, declineDeadlineBid } from "./services/deadlineDay.js";
+import { blackFilesView } from "./features/blackFiles.js";
+import * as BlackService from "./services/blackFiles.js";
+import * as ReleaseService from "./services/releaseClause.js";
+const requireBlack = () => BlackService;
+const requireRelease = () => ReleaseService;
 const app = document.getElementById("app");
 const ui = {
   route: "dashboard",
@@ -264,6 +269,7 @@ function render() {
     commerce: () => commerceView(s),
     management: () => managementView(s),
     press: () => pressView(s),
+    black: () => blackFilesView(s),
     legends: () => legendsView(s, ui.legendFilters),
     settings: () => settingsView(s),
     database: () => databaseView(),
@@ -633,6 +639,34 @@ const actions = {
     const s = getState();
     if (s) await apply((state) => markStep(state, "board"));
     navigate("board");
+  },
+  "go-black": async () => {
+    navigate("black");
+  },
+  "black-op": async (el) => {
+    const opId = el.dataset.id;
+    await apply((s) => {
+      const { doOperation } = requireBlack();
+      return doOperation(s, opId);
+    }, "تم تنفيذ العملية عبر الوسيط.");
+  },
+  "black-cut": async () => {
+    await apply((s) => {
+      const { cutMiddlemen } = requireBlack();
+      return cutMiddlemen(s);
+    }, "تم قطع الوسطاء.");
+  },
+  "break-clause": async (el) => {
+    const playerId = el.dataset.id;
+    await apply((s) => {
+      const { breakReleaseClause } = requireRelease();
+      return breakReleaseClause(s, playerId);
+    }, "تم كسر الشرط الجزائي — التفاوض مع اللاعب مباشرة.");
+    showContract(`release-${getState().nextId-1}-${playerId}`.replace(/.*release-/, "release-").includes("release-") ? "" : "", false);
+    // افتح عقد اللاعب عبر التفاوض الأخير
+    const s = getState();
+    const last = [...s.negotiations].reverse().find((n) => n.playerId === playerId && n.stage === "personal");
+    if (last) showContract(last.id, false);
   },
   "loan-open": async (el) => openModal(loanForm(getState(), el.dataset.id)),
   "loan-out-open": async () =>
@@ -1275,6 +1309,16 @@ document.addEventListener("submit", async (e) => {
       closeModal();
     }
     if (form.id === "contract-form") {
+      let releaseClause = Number(form.elements.releaseClause.value);
+      const clauseLevel = form.elements.clauseLevel?.value;
+      if (clauseLevel) {
+        const baseInput = document.getElementById("release-clause-input");
+        // إذا اختار مستوى، نستخدم القيمة المحسوبة من المستوى إن لم يعدلها يدويًا بشكل كبير
+        const selectedOption = form.elements.clauseLevel.selectedOptions[0];
+        const levelClause = Number(selectedOption?.dataset?.clause || 0);
+        if (levelClause === 0) releaseClause = 0;
+        else if (Math.abs(releaseClause - levelClause) < levelClause * 0.5) releaseClause = levelClause;
+      }
       const terms = {
         salary: Number(form.elements.salary.value),
         years: Number(form.elements.years.value),
@@ -1283,7 +1327,8 @@ document.addEventListener("submit", async (e) => {
         appearanceBonus: Number(form.elements.appearanceBonus.value),
         goalBonus: Number(form.elements.goalBonus.value),
         annualRaisePct: Number(form.elements.annualRaisePct.value),
-        releaseClause: Number(form.elements.releaseClause.value),
+        releaseClause,
+        clauseLevel,
       };
       await apply(
         (s) =>
@@ -1293,6 +1338,13 @@ document.addEventListener("submit", async (e) => {
         "تم توقيع العقد وتحديث السجل المالي.",
       );
       closeModal();
+    }
+    if (form.id === "black-charity") {
+      const amount = Number(form.elements.amount.value);
+      await apply((s) => {
+        const { donateCharity } = requireBlack();
+        return donateCharity(s, amount);
+      }, "تم التبرع الخيري وخفض الشبهات.");
     }
     if (form.id === "legend-offer-form") {
       const role = form.elements.role.value;
@@ -1491,6 +1543,21 @@ document.addEventListener("change", async (e) => {
         ui.setupClub = "ahly";
       }
       render();
+    }
+    if (e.target.id === "clause-level") {
+      const opt = e.target.selectedOptions[0];
+      const clauseVal = Number(opt?.dataset?.clause || 0);
+      const salaryFactor = Number(opt?.dataset?.salary || 1);
+      const clauseInput = document.getElementById("release-clause-input");
+      if (clauseInput) clauseInput.value = clauseVal;
+      const salaryInput = e.target.form?.elements?.salary;
+      if (salaryInput && salaryFactor !== 1) {
+        const baseSalary = Number(salaryInput.dataset.base || salaryInput.value);
+        if (!salaryInput.dataset.base) salaryInput.dataset.base = salaryInput.value;
+        salaryInput.value = Math.round(baseSalary * salaryFactor);
+      }
+      updateCalculations();
+      return;
     }
     if (e.target.id === "game-language") {
       const lang = e.target.value;

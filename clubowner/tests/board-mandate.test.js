@@ -578,12 +578,12 @@ test("خمسة مواسم إخفاق متتالية: لا إنهاء للمسي�
 });
 
 // ═══ ٦) الحفظة والترحيل والتحقق ═════════════════════════════════════════════
-test("حفظة 0.25 (النسخة 20) تُرحَّل إلى 21 بحالة مجلس سليمة", () => {
+test("حفظة 0.25 (النسخة 20) تُرحَّل إلى 22 بحالة مجلس وملفات سوداء سليمة", () => {
   const old = demo();
   old.version = 20;
   delete old.board;
   const migrated = migrateSave(old);
-  assert.equal(migrated.version, 21);
+  assert.equal(migrated.version, 22);
   assert.ok(migrated.board && migrated.board.schema === 1);
   assert.equal(migrated.board.confidence, 60);
   assert.equal(migrated.board.mandate, null);
