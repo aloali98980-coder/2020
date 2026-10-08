@@ -34,6 +34,15 @@ export const ONBOARDING_STEPS = [
     ),
   },
   {
+    key: "board",
+    label: tr("اطّلع على لائحة الجمعية العمومية", "Read the assembly mandate", "Lire le mandat de l’assemblée"),
+    hint: tr(
+      "ثلاثة محاور تُقاس طوال الموسم، والتصويت في النهاية",
+      "Three axes measured all season, with a vote at the end",
+      "Trois axes mesurés toute la saison, avec un vote à la fin",
+    ),
+  },
+  {
     key: "week",
     label: tr("مرّر أول أسبوع", "Advance your first week", "Avancez votre première semaine"),
     hint: tr(

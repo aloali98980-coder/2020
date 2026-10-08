@@ -11,6 +11,7 @@ import {
   STAFF_POOL_MAX_AGE_DAYS,
 } from "../services/careers.js";
 import { initSeasonStats } from "../services/seasonStats.js";
+import { boardTextAr } from "../data/boardTexts.js";
 function migrateToFive(input) {
   if (input?.version === 4) {
     const s = structuredClone(input);
@@ -345,11 +346,41 @@ function migrateToTwenty(input) {
   return s;
 }
 
+// 0.26 (save v21): لائحة الجمعية العمومية — حالة المجلس وثقته وسجل المواسم.
+// الحفظة الأقدم تبدأ بثقة محايدة وبلا لائحة، وتُصدر لائحتها مع أول موسم جديد.
+function migrateToTwentyOne(input) {
+  if (!input || input.version !== 20) return input;
+  const old = migrateToTwenty(input);
+  if (old?.version !== 20) return old;
+  const s = structuredClone(old);
+  s.version = 21;
+  s.board ??= {
+    schema: 1,
+    confidence: 60,
+    failureStreak: 0,
+    successStreak: 0,
+    freezeUntil: null,
+    wageFactor: 1,
+    pendingBoost: 0,
+    nextRebuild: false,
+    mandate: null,
+    history: [],
+    meetings: [],
+  };
+  s.migrationNote =
+    (s.migrationNote || "") +
+    " " + boardTextAr("boardMigrationNote") + ".";
+  return s;
+}
+
 export function migrateSave(input) {
-  if (!input || input.version === 20) return input;
+  if (!input || input.version === 21) return input;
+  // حفظة 0.25 (النسخة 20) حديثة بالفعل: تُرقّى إلى 21 مباشرة بلا إعادة تشغيل سلسلة أقدم.
+  if (input.version === 20) return migrateToTwentyOne(input);
   const v17 = migrateToSeventeen(input);
   const v18 = v17?.version === 17 ? migrateToEighteen(v17) : v17;
   if (v18?.version !== 18) return v18;
   const v19 = migrateToNineteen(v18);
-  return migrateToTwenty(v19);
+  const v20 = migrateToTwenty(v19);
+  return migrateToTwentyOne(v20);
 }

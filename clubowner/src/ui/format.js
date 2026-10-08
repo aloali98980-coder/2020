@@ -105,4 +105,5 @@ export const category = (c) =>
     careers: "الجهاز الفني والمسيرة",
     events: "أحداث النادي",
     vault: "الخزنة السرية",
+    board: "الجمعية العمومية",
   })[c] || c;

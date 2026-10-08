@@ -20,6 +20,7 @@ import {
   MAX_SAVE_BYTES,
 } from "../src/services/saveCompression.js";
 import { saveBlob } from "../src/services/saveEncoding.js";
+import { SAVE_VERSION } from "../src/core/game.js";
 const division = (id, tier, clubs, country = "it") => ({
   id,
   country,
@@ -193,7 +194,7 @@ test("schema seven migration retains all values and old membership; current migr
   const p = structuredClone(s.players),
     f = structuredClone(s.finance);
   const next = migrateSave(s);
-  assert.equal(next.version, 20);
+  assert.equal(next.version, SAVE_VERSION);
   assert.equal(s.version, 7);
   assert.deepEqual(next.players, p);
   assert.deepEqual(next.finance, f);

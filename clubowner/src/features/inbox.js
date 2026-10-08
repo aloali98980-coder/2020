@@ -1,4 +1,5 @@
-import { excerpt } from "../i18n/index.js";
+import { excerpt, getLanguage } from "../i18n/index.js";
+import { boardTextFor } from "../data/boardTexts.js";
 import { eventDecisionView } from "./events.js";
 import { heading, badge, empty, button } from "../components/shared.js";
 import { icon } from "../components/icons.js";
@@ -20,6 +21,7 @@ export function inboxView(s, filter = "all", selected = null) {
     ["matches", "المباريات"],
     ["careers", "الجهاز الفني والمسيرة"],
     ["events", "أحداث النادي"],
+    ["board", "الجمعية العمومية"],
   ]
     .map(
       ([id, title]) =>
@@ -31,7 +33,15 @@ export function inboxView(s, filter = "all", selected = null) {
 }
 export function messageDetail(s, m) {
   let actions = "";
+  const isBoard = typeof m.kind === "string" && m.kind.startsWith("board-");
+  // رسائل الجمعية العمومية للعلم: زر واحد يفتح اللائحة كاملة.
+  if (isBoard && !(m.required && m.status === "open"))
+    actions = button(boardTextFor("boardMailOpen", null, getLanguage()), "go-board", "", "primary");
   if (m.required && m.status === "open") {
+    if (isBoard)
+      actions =
+        button(boardTextFor("boardMailOpen", null, getLanguage()), "go-board", "", "primary") +
+        button(boardTextFor("boardMailSeen", null, getLanguage()), "resolve", m.id, "ghost");
     if (m.kind === "academy-review")
       actions =
         button("مراجعة الأكاديمية", "go-talent", m.ref, "primary") +

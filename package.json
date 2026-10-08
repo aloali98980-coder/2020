@@ -1,7 +1,7 @@
 {
   "name": "club-owner-repo-root",
   "private": true,
-  "version": "0.25.0",
+  "version": "0.26.0",
   "description": "جذر يمثل النشر إلى Cloudflare — الكود الفعلي داخل clubowner/. يعمل مع: npm install && npm run build && npx wrangler deploy من الجذر مباشرة.",
   "scripts": {
     "build": "cd clubowner && npm install --ignore-scripts --no-audit --no-fund && npm run build",

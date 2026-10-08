@@ -7,6 +7,9 @@ import { EVENT_CATALOG } from "../data/eventCatalog.js";
 import { CLUBS, FACILITIES, ASSETS } from "../data/catalog.js";
 import { resolveSponsor } from "../services/sponsors.js";
 import { SAVE_VERSION } from "./game.js";
+import { AMBITIONS, AXES, CLUB_SIZES, ITEM_KINDS, MANDATE_SCHEMA as BOARD_SCHEMA } from "../data/boardMandates.js";
+import { MAX_LADDER_TIER } from "../services/boardMandate.js";
+import { boardTextAr } from "../data/boardTexts.js";
 import { isoDate } from "./isoDate.js";
 
 // A save is untrusted input. Validate structure and relationships before replacing it.
@@ -487,8 +490,110 @@ export function validateSave(s) {
     ),
     "بيانات القدرات أو مصادر الميلاد غير سليمة.",
   );
+  validateBoard(s);
   validateExpansion(s);
   validateTalent(s);
   validateLegends(s);
   return s;
+}
+
+// 0.26: لائحة الجمعية العمومية. الحقول كلها مشتقة أو مسجَّلة، والقيم محدودة
+// بسقف سلم العواقب — فلا يمكن لحفظة معدَّلة يدويًا أن تحمل «درجة رابعة» أو ثقة سالبة.
+function validateBoard(s) {
+  const b = s.board;
+  check(
+    b &&
+      typeof b === "object" &&
+      b.schema === BOARD_SCHEMA &&
+      Number.isFinite(b.confidence) &&
+      b.confidence >= 0 &&
+      b.confidence <= 100,
+    boardTextAr("boardInvalidState"),
+  );
+  check(
+    amount(b.failureStreak) &&
+      amount(b.successStreak) &&
+      (!b.freezeUntil || isoDate(b.freezeUntil)) &&
+      Number.isFinite(b.wageFactor) &&
+      b.wageFactor > 0 &&
+      b.wageFactor <= 4 &&
+      typeof b.nextRebuild === "boolean" &&
+      Number.isFinite(b.pendingBoost) &&
+      b.pendingBoost >= 0 &&
+      b.pendingBoost <= 1,
+    boardTextAr("boardInvalidMetrics"),
+  );
+  const validItem = (it) =>
+    id(it.id) &&
+    ITEM_KINDS[it.kind] !== undefined &&
+    AXES.includes(ITEM_KINDS[it.kind].axis) &&
+    it.axis === ITEM_KINDS[it.kind].axis &&
+    typeof it.critical === "boolean" &&
+    amount(it.target) &&
+    it.target > 0;
+  const validReview = (r) =>
+    !r ||
+    (isoDate(r.date) &&
+      typeof r.good === "boolean" &&
+      amount(r.done) &&
+      amount(r.total));
+  const m = b.mandate;
+  check(
+    !m ||
+      (id(m.id) &&
+        amount(m.season) &&
+        isoDate(m.issuedAt) &&
+        isoDate(m.startDate) &&
+        isoDate(m.midDate) &&
+        isoDate(m.endDate) &&
+        m.startDate <= m.midDate &&
+        m.midDate <= m.endDate &&
+        CLUB_SIZES[m.size] !== undefined &&
+        AMBITIONS[m.ambition] !== undefined &&
+        typeof m.rebuild === "boolean" &&
+        Array.isArray(m.items) &&
+        m.items.length >= 3 &&
+        m.items.length <= 12 &&
+        m.items.every(validItem) &&
+        new Set(m.items.map((it) => it.id)).size === m.items.length &&
+        m.baseline &&
+        typeof m.baseline.facilityLevels === "object" &&
+        Array.isArray(m.baseline.youthIds) &&
+        amount(m.baseline.squadSize) &&
+        m.review &&
+        validReview(m.review.mid) &&
+        validReview(m.review.end)),
+    boardTextAr("boardInvalidMandate"),
+  );
+  check(
+    Array.isArray(b.history) &&
+      b.history.length <= 40 &&
+      b.history.every(
+        (h) =>
+          amount(h.season) &&
+          isoDate(h.date) &&
+          ["passed", "partial", "failed"].includes(h.status) &&
+          amount(h.done) &&
+          amount(h.total) &&
+          amount(h.tier) &&
+          h.tier <= MAX_LADDER_TIER &&
+          Array.isArray(h.effects),
+      ),
+    boardTextAr("boardInvalidHistory"),
+  );
+  check(
+    Array.isArray(b.meetings) &&
+      b.meetings.length <= 200 &&
+      b.meetings.every(
+        (x) =>
+          id(x.id) &&
+          ["mid", "end"].includes(x.kind) &&
+          amount(x.season) &&
+          isoDate(x.date) &&
+          ["trust", "warning", "passed", "partial", "failed"].includes(x.status) &&
+          amount(x.done) &&
+          amount(x.total),
+      ),
+    boardTextAr("boardInvalidMeetings"),
+  );
 }

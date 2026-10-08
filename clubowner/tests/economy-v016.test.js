@@ -1,4 +1,5 @@
 import test from "node:test";
+import { SAVE_VERSION } from "../src/core/game.js";
 import assert from "node:assert/strict";
 import { createGame } from "../src/core/game.js";
 import { migrateSave } from "../src/core/migrations.js";
@@ -242,12 +243,12 @@ test("coach renewal extends tenure and expiry vacates the job", () => {
 
 test("v15 save migrates to 16 with economy defaults and history intact", () => {
   const s = game();
-  assert.equal(s.version, 20);
+  assert.equal(s.version, SAVE_VERSION);
   const v15 = structuredClone(s);
   v15.version = 15;
   delete v15.migrationNote;
   const m = migrateSave(v15);
-  assert.equal(m.version, 20);
+  assert.equal(m.version, SAVE_VERSION);
   assert.equal(v15.version, 15);
   assert(m.migrationNote.includes("0.16"));
   assert.deepEqual(m.sponsorDeals, []);
