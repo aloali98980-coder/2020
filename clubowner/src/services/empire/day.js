@@ -1,6 +1,7 @@
 // الإيقاع اليومي لحياة الملياردير 0.29.
 // تُستدعى `empireDay` من تسلسل الأيام في time.js. عند أول يوم في الشهر تُشغَّل
 // تسوية المعيشة ثم الخطافات الشهرية المسجلة في سجل الثروة بترتيب تسجيلها.
+// استيراد وحدات الأنظمة هنا يضمن تسجيل خطافاتها في أي مسار تحميل.
 import {
   ensureEmpire,
   settleWealthMonth,
@@ -8,6 +9,7 @@ import {
   empireMonthHooks,
   netWorth,
 } from "./wealth.js";
+import "./assets.js";
 
 export function empireDay(s) {
   const e = ensureEmpire(s);

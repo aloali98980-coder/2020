@@ -1,8 +1,8 @@
-// شاشة «حياة الملياردير» 0.29 — اللعبة داخل اللعبة: ثروتان منفصلتان 💼💎
-// ومعيشة شهرية وقصة مالك (المرحلة التاسعة من تحديث الدراما).
+// شاشة «حياة الملياردير» 0.29 — اللعبة داخل اللعبة: ثروتان منفصلتان 💼💎،
+// معيشة، أصول، عائلة، استثمارات، منافسون، وخير.
 import { icon } from "../components/icons.js";
 import { badge } from "../components/shared.js";
-import { money, num, cur } from "../ui/format.js";
+import { money, num, cur, esc } from "../ui/format.js";
 import { tr } from "../i18n/index.js";
 import {
   OWNER_STORIES,
@@ -11,6 +11,12 @@ import {
   transferRemaining,
   netWorth,
 } from "../services/empire/wealth.js";
+import { palaceStage, owns, totalUpkeep } from "../services/empire/assets.js";
+import {
+  EMPIRE_ASSETS,
+  ASSET_CATEGORIES,
+  assetsOfCat,
+} from "../data/empireAssets.js";
 import { EMPIRE_TEXTS } from "../data/empireTexts.js";
 
 const cap = (s) => s[0].toUpperCase() + s.slice(1);
@@ -19,9 +25,12 @@ const t = (k) => {
   if (!x) return k;
   return tr(x.ar, x.en, x.fr);
 };
+// يختار لغة حقل {ar,en,fr} في كائنات الكتالوج.
+const lang = (o) => (o ? tr(o.ar, o.en, o.fr) : "");
 
 export const EMPIRE_TABS = [
   { id: "wealth", key: "empireTabWealth", icon: "finance" },
+  { id: "assets", key: "empireTabAssets", icon: "stadium" },
 ];
 
 function wealthTab(s) {
@@ -104,6 +113,75 @@ function wealthTab(s) {
   }`;
 }
 
+function palaceBanner(s) {
+  const stage = palaceStage(s);
+  return `<section class="panel palace-banner">
+    <div class="palace-art">${stage.art}</div>
+    <div class="palace-meta">
+      <small>${t("palaceStageLabel")}</small>
+      <strong>${lang(stage.name)}</strong>
+      <span class="muted">${t("upkeepLabel")}: ${money(totalUpkeep(s))} / ${t("monthLabel")}</span>
+    </div>
+  </section>`;
+}
+
+function assetRow(s, a) {
+  const owned = owns(s, a.assetId);
+  const afford = s.empire.personal >= a.price;
+  return `<div class="asset-row ${owned ? "owned" : ""}">
+    <div class="asset-info">
+      <strong>${lang(a.name)}</strong>
+      <small class="muted">${lang(a.desc)}</small>
+      <div class="asset-nums">
+        <span>💰 ${money(a.price)}</span>
+        <span>🛠 ${money(a.upkeep)}/${t("monthLabel")}</span>
+        <span>↩️ ${money(Math.round(a.price * a.sellPct))}</span>
+        <span>✨ +${num(a.prestige)} ${t("empirePrestige")}</span>
+      </div>
+    </div>
+    ${
+      owned
+        ? `<span class="badge gold">${t("ownedLabel")}</span>`
+        : `<button class="btn ${afford ? "primary" : "secondary"}" data-action="empire-buy-asset" data-id="${a.assetId}" ${afford ? "" : "disabled"}>${t("buyLabel")}</button>`
+    }
+  </div>`;
+}
+
+function ownedList(s) {
+  const rows = (s.empire.assets || []).map((o) => {
+    const a = EMPIRE_ASSETS.find((x) => x.id === o.assetId);
+    if (!a) return "";
+    return `<div class="asset-row owned">
+      <div class="asset-info">
+        <strong>${lang(a.name)}</strong>
+        <small class="muted">${lang(a.desc)}</small>
+        <div class="asset-nums">
+          <span>🛠 ${money(a.upkeep)}/${t("monthLabel")}</span>
+          <span>↩️ ${money(o.sellValue)}</span>
+        </div>
+      </div>
+      <button class="btn secondary" data-action="empire-sell-asset" data-id="${o.id}">${t("sellLabel")}</button>
+    </div>`;
+  });
+  return `<section class="panel">
+    <div class="panel-head"><h3>${t("ownedLabel")} (${num(s.empire.assets.length)})</h3></div>
+    <div class="asset-list">${rows.join("") || `<p class="muted">—</p>`}</div>
+  </section>`;
+}
+
+function assetsTab(s) {
+  return `${palaceBanner(s)}
+  <p class="muted">${t("assetsTabHint")}</p>
+  ${ownedList(s)}
+  ${ASSET_CATEGORIES.map(
+    (cat) => `
+    <section class="panel">
+      <div class="panel-head"><h3>${lang(cat.name)}</h3></div>
+      <div class="asset-list">${assetsOfCat(cat.id).map((a) => assetRow(s, a)).join("")}</div>
+    </section>`,
+  ).join("")}`;
+}
+
 export function empireView(s, tab = "wealth") {
   if (!s.empire)
     return `<div class="empty-state"><h3>${t("empireName")}</h3><p>${t("empireEmptyStory")}</p></div>`;
@@ -122,7 +200,9 @@ export function empireView(s, tab = "wealth") {
     <div class="empire-tab-body">${
       active === "wealth"
         ? wealthTab(s)
-        : `<div class="empty-state"><p>${t("empireTab" + cap(active))}…</p></div>`
+        : active === "assets"
+          ? assetsTab(s)
+          : `<div class="empty-state"><p>${t("empireTab" + cap(active))}…</p></div>`
     }</div>
   </div>`;
 }

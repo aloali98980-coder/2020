@@ -1059,6 +1059,20 @@ const actions = {
     ui.empireTab = el.dataset.tab || "wealth";
     render();
   },
+  "empire-buy-asset": async (el) => {
+    const { buyAsset } = await import("./services/empire/assets.js");
+    await apply(
+      (s) => buyAsset(s, el.dataset.id),
+      "تم شراء الأصل وإضافته إلى إمبراطوريتك.",
+    );
+  },
+  "empire-sell-asset": async (el) => {
+    const { sellAsset } = await import("./services/empire/assets.js");
+    await apply(
+      (s) => sellAsset(s, el.dataset.id),
+      "تم بيع الأصل وإضافة قيمته إلى ثروتك.",
+    );
+  },
   more: async () =>
     openModal(
       `<h2>إدارة النادي</h2>${NAV_GROUPS.map(

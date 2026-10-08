@@ -1,6 +1,7 @@
 // قاموس «حياة الملياردير» 0.29 — مشتق آليًا من src/data/empireTexts.js،
-// ومعه نصوص التحقق والتوستات (المرحلة التاسعة).
+// ومعه نصوص كتالوج الأصول والقصر (المرحلة التاسعة).
 import { EMPIRE_TEXTS } from "../data/empireTexts.js";
+import { EMPIRE_ASSETS, ASSET_CATEGORIES, PALACE_TIERS } from "../data/empireAssets.js";
 
 const fromTexts = (() => {
   const out = {};
@@ -82,6 +83,14 @@ const EXTRA = {
     "Invalid repayment amount.",
     "Montant de remboursement invalide.",
   ],
+  "تم شراء الأصل وإضافته إلى إمبراطوريتك.": [
+    "Asset purchased and added to your empire.",
+    "Actif acheté et ajouté à votre empire.",
+  ],
+  "تم بيع الأصل وإضافة قيمته إلى ثروتك.": [
+    "Asset sold and its value added to your fortune.",
+    "Actif vendu et sa valeur ajoutée à votre fortune.",
+  ],
 };
 
 const withBare = (map) => {
@@ -94,8 +103,28 @@ const withBare = (map) => {
   return out;
 };
 
+// نصوص كتالوج الأصول والفئات ومراحل القصر: كل حقل عربي يدخل القاموس.
+const AR = /[\u0600-\u06FF]/;
+const fromCatalog = (() => {
+  const out = {};
+  const put = (entry) => {
+    if (!entry?.ar || !AR.test(entry.ar)) return;
+    out[entry.ar] = [entry.en, entry.fr];
+    const bare = entry.ar.replace(/[.؛:!؟…،,]+$/, "");
+    if (bare && !out[bare]) out[bare] = [entry.en, entry.fr];
+  };
+  for (const a of EMPIRE_ASSETS) {
+    put(a.name);
+    put(a.desc);
+  }
+  for (const c of ASSET_CATEGORIES) put(c.name);
+  for (const t of PALACE_TIERS) put(t.name);
+  return out;
+})();
+
 export const EMPIRE_PHRASES = {
   ...fromTexts,
+  ...fromCatalog,
   ...withBare(EXTRA),
 };
 export default EMPIRE_PHRASES;
