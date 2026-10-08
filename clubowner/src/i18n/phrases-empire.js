@@ -1,5 +1,5 @@
 // قاموس «حياة الملياردير» 0.29 — مشتق آليًا من src/data/empireTexts.js،
-// ومعه نصوص كتالوج الأصول والقصر (المرحلة التاسعة).
+// ومعه نصوص كتالوج الأصول والقصر وأحداث الإمبراطورية (المرحلة التاسعة).
 import { EMPIRE_TEXTS } from "../data/empireTexts.js";
 import { EMPIRE_ASSETS, ASSET_CATEGORIES, PALACE_TIERS } from "../data/empireAssets.js";
 import {
@@ -11,6 +11,8 @@ import {
 } from "../data/empireFamily.js";
 import { INVEST_VEHICLES } from "../data/empireInvestments.js";
 import { RIVAL_POOL, RACE_TYPES } from "../data/empireRivals.js";
+import { EMPIRE_DECISION_PHRASES } from "../data/events/decisions-empire.js";
+import { FLAVOR_EMPIRE_PHRASES } from "../data/events/flavor-empire.js";
 
 const fromTexts = (() => {
   const out = {};
@@ -121,6 +123,11 @@ const EXTRA = {
   "رحلة خاصة": ["Private trip", "Voyage privé"],
   "تم استثمار المبلغ.": ["Amount invested.", "Montant investi."],
   "تم سحب المبلغ إلى ثروتك.": ["Amount withdrawn to your fortune.", "Montant retiré vers votre fortune."],
+  "تم التبرع وارتفعت سمعتك.": ["Donation made — your reputation rose.", "Don effectué — votre réputation a augmenté."],
+  "بدأ العمل في مشروعك الخيري.": ["Work began on your charity project.", "Les travaux de votre projet caritatif ont commencé."],
+  "مدرسة": ["school", "école"],
+  "مستشفى": ["hospital", "hôpital"],
+  "دار أيتام": ["orphanage", "orphelinat"],
 };
 
 const withBare = (map) => {
@@ -134,6 +141,7 @@ const withBare = (map) => {
 };
 
 // نصوص كتالوج الأصول والفئات ومراحل القصر: كل حقل عربي يدخل القاموس.
+// المفاتيح اللاتينية (مثل «Empire Coin») لا تحتاج ترجمة ولا تدخل القاموس.
 const AR = /[\u0600-\u06FF]/;
 const fromCatalog = (() => {
   const out = {};
@@ -177,6 +185,8 @@ const fromCatalog = (() => {
 export const EMPIRE_PHRASES = {
   ...fromTexts,
   ...fromCatalog,
+  ...EMPIRE_DECISION_PHRASES,
+  ...FLAVOR_EMPIRE_PHRASES,
   ...withBare(EXTRA),
 };
 export default EMPIRE_PHRASES;

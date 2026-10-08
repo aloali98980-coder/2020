@@ -34,6 +34,7 @@ import {
   ensureRivals,
 } from "../services/empire/rivals.js";
 import { RACE_TYPES } from "../data/empireRivals.js";
+import { CHARITY_PROJECTS } from "../services/empire/charity.js";
 import { EMPIRE_TEXTS } from "../data/empireTexts.js";
 
 const cap = (s) => s[0].toUpperCase() + s.slice(1);
@@ -51,6 +52,7 @@ export const EMPIRE_TABS = [
   { id: "family", key: "empireTabFamily", icon: "academy" },
   { id: "invest", key: "empireTabInvest", icon: "transfer" },
   { id: "rivals", key: "empireTabRivals", icon: "shield" },
+  { id: "charity", key: "empireTabCharity", icon: "crown" },
 ];
 
 function wealthTab(s) {
@@ -376,6 +378,53 @@ function rivalsTab(s) {
   }`;
 }
 
+function charityTab(s) {
+  const e = s.empire;
+  const suspicion = s.blackFiles?.suspicion ?? 0;
+  return `<p class="muted">${t("charityTabHint")}</p>
+  <section class="panel">
+    <div class="panel-head"><h3>🤲 ${t("charityTotalLabel")}</h3></div>
+    <p><b>${money(e.charity.personalTotal)}</b> · ${t("suspicionLabel")}: <b>${num(suspicion)}%</b></p>
+    <div class="charity-donate">
+      <input id="charity-amt" type="number" min="500000" max="20000000" step="100000" placeholder="2000000" />
+      <button class="btn primary" data-action="empire-donate">${t("donateLabel")}</button>
+    </div>
+  </section>
+  <section class="panel">
+    <div class="panel-head"><h3>🏗 ${t("projectsLabel")}</h3></div>
+    <div class="vehicle-grid">
+      ${Object.entries(CHARITY_PROJECTS)
+        .map(
+          ([kind, p]) => `
+        <div class="vehicle-card">
+          <h4>${lang(p.name)}</h4>
+          <p class="muted">${money(p.cost)} · ${num(p.days)} ${t("daysLabel")}</p>
+          <button class="btn secondary" data-action="empire-charity-project" data-id="${kind}">${t("startProjectLabel")}</button>
+        </div>`,
+        )
+        .join("")}
+    </div>
+  </section>
+  ${
+    e.charity.projects.length
+      ? `<section class="panel">
+    <div class="panel-head"><h3>${t("projectsLabel")} (${num(e.charity.projects.length)})</h3></div>
+    <div class="report-list">
+      ${e.charity.projects
+        .map(
+          (p) => `
+        <div class="report-row">
+          <b>${lang((CHARITY_PROJECTS[p.kind] || {}).name)}</b>
+          <span>${p.done ? t("openedLabel") : t("completesLabel") + " " + p.completesOn}</span>
+        </div>`,
+        )
+        .join("")}
+    </div>
+  </section>`
+      : ""
+  }`;
+}
+
 function ownedList(s) {
   const rows = (s.empire.assets || []).map((o) => {
     const a = EMPIRE_ASSETS.find((x) => x.id === o.assetId);
@@ -437,7 +486,9 @@ export function empireView(s, tab = "wealth") {
               ? investTab(s)
               : active === "rivals"
                 ? rivalsTab(s)
-                : `<div class="empty-state"><p>${t("empireTab" + cap(active))}…</p></div>`
+                : active === "charity"
+                  ? charityTab(s)
+                  : `<div class="empty-state"><p>${t("empireTab" + cap(active))}…</p></div>`
     }</div>
   </div>`;
 }

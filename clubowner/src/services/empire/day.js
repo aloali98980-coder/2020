@@ -1,7 +1,8 @@
 // الإيقاع اليومي لحياة الملياردير 0.29.
 // تُستدعى `empireDay` من تسلسل الأيام في time.js. عند أول يوم في الشهر تُشغَّل
-// تسوية المعيشة ثم الخطافات الشهرية المسجلة في سجل الثروة بترتيب تسجيلها.
-// استيراد وحدات الأنظمة هنا يضمن تسجيل خطافاتها في أي مسار تحميل.
+// الخطافات الشهرية المسجلة في سجل الثروة (معيشة ← أصول ← عائلة ← استثمارات ←
+// منافسون ← خير) بترتيب تسجيلها. استيراد وحدات الأنظمة هنا يضمن تسجيل
+// خطافاتها في أي مسار تحميل.
 import {
   ensureEmpire,
   settleWealthMonth,
@@ -11,14 +12,16 @@ import {
 } from "./wealth.js";
 import "./assets.js";
 import { familyDay } from "./family.js";
+import { charityDay } from "./charity.js";
 // المنافسون قبل الاستثمارات كي يحمل تقرير الشهر ترتيب المليارديرات المحدث.
 import "./rivals.js";
 import "./investments.js";
 
 export function empireDay(s) {
   const e = ensureEmpire(s);
-  // مناسبات العائلة تُفحص كل يوم (عيد ميلاد، ذكرى سنوية).
+  // مناسبات العائلة وافتتاحات الخير تُفحص كل يوم.
   familyDay(s);
+  charityDay(s);
   if (s.date.slice(8, 10) !== "01") return null;
   const mk = monthKey(s.date);
   if (e.lastMonthSettle === mk) return null;

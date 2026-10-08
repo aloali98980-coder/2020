@@ -1103,6 +1103,18 @@ const actions = {
     );
     await apply((s) => withdraw(s, el.dataset.id, amount), "تم سحب المبلغ إلى ثروتك.");
   },
+  "empire-donate": async () => {
+    const { donatePersonal } = await import("./services/empire/charity.js");
+    const amount = Math.round(Number(document.getElementById("charity-amt")?.value));
+    await apply((s) => donatePersonal(s, amount), "تم التبرع وارتفعت سمعتك.");
+  },
+  "empire-charity-project": async (el) => {
+    const { startCharityProject } = await import("./services/empire/charity.js");
+    await apply(
+      (s) => startCharityProject(s, el.dataset.id),
+      "بدأ العمل في مشروعك الخيري.",
+    );
+  },
   more: async () =>
     openModal(
       `<h2>إدارة النادي</h2>${NAV_GROUPS.map(

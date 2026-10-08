@@ -21,11 +21,13 @@ import { MEDIA_DECISIONS } from "./events/decisions-media.js";
 import { MATCHDAY_DECISIONS } from "./events/decisions-matchday.js";
 import { DRAMA_DECISIONS } from "./events/decisions-drama.js";
 import { BLACK_DECISIONS } from "./events/decisions-black.js";
+import { EMPIRE_DECISIONS } from "./events/decisions-empire.js";
 import { FLAVOR_A } from "./events/flavor-training-fans-press.js";
 import { FLAVOR_B } from "./events/flavor-weather-former-legends.js";
 import { FLAVOR_C } from "./events/flavor-rivals-refereeing-market.js";
 import { FLAVOR_DRAMA } from "./events/flavor-drama.js";
 import { FLAVOR_BLACK } from "./events/flavor-black.js";
+import { FLAVOR_EMPIRE } from "./events/flavor-empire.js";
 
 // ── الكتالوج الأصلي (0.18) — محفوظ كما هو لتوافق الحفظات ──────────────────
 export const LEGACY_DECISIONS = [
@@ -165,9 +167,10 @@ export const EVENT_CATALOG = [
   ...MATCHDAY_DECISIONS,
   ...DRAMA_DECISIONS,
   ...BLACK_DECISIONS,
+  ...EMPIRE_DECISIONS,
 ];
 
-export const FLAVOR_CATALOG = [...FLAVOR_A, ...FLAVOR_B, ...FLAVOR_C, ...FLAVOR_DRAMA, ...FLAVOR_BLACK];
+export const FLAVOR_CATALOG = [...FLAVOR_A, ...FLAVOR_B, ...FLAVOR_C, ...FLAVOR_DRAMA, ...FLAVOR_BLACK, ...FLAVOR_EMPIRE];
 
 // فئات «تحديث الدراما» 0.25 الستّ التي طلبها صاحب المشروع. كل حدث قرار جديد أو مُوسَّم
 // يحمل `theme` منها، والاختبار يتحقق أن لكل فئة ≥٣ أحداث بخيارات وعواقب مختلفة.
@@ -192,6 +195,7 @@ export const FLAVOR_CATEGORIES = Object.freeze([
   "rivals",
   "refereeing",
   "market",
+  "empire",
 ]);
 
 // مفردات الأثر المسموحة على خيارات القرارات — أي مفتاح خارجها يفشل الاختبار.
@@ -217,6 +221,11 @@ export const DECISION_EFFECT_KEYS = Object.freeze([
   "note",
   "sponsorOffer",
   "signing",
+  // مفردات «حياة الملياردير» 0.29: الثروة الشخصية والبرستيج والشهرة وسعادة الزوجة.
+  "personal",
+  "prestige",
+  "fame",
+  "wifeHappy",
 ]);
 
 // مفردات الأثر المسموحة على أخبار النكهة — أثر صغير فقط.
@@ -227,6 +236,7 @@ export const FLAVOR_EFFECT_KEYS = Object.freeze([
   "fitness",
   "reputation",
   "targets",
+  "personal",
 ]);
 
 // حدود «صغر الأثر» للنكهة: المال ≤ ٢٥ ألفًا، والجماهير ±٢، والمعنويات ±٢.
@@ -236,7 +246,10 @@ export const FLAVOR_LIMITS = Object.freeze({
   morale: 2,
   fitness: 2,
   reputation: 2,
+  personal: 25000,
 });
+
+export const FLAVOR_PERSONAL_LIMIT = FLAVOR_LIMITS.personal;
 
 export const DECISION_GROUPS = Object.freeze([
   "legacy",
@@ -245,6 +258,7 @@ export const DECISION_GROUPS = Object.freeze([
   "market",
   "media",
   "matchday",
+  "empire",
 ]);
 
 export const decisionById = (id) => EVENT_CATALOG.find((e) => e.id === id);
