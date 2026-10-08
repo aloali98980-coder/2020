@@ -175,6 +175,12 @@ import { money, num, esc, date, setDigitsMode, setDisplayCurrency, cur } from ".
 import { ASSETS } from "./data/catalog.js";
 import { findPerson } from "./services/retired.js";
 import { APP_VERSION } from "./data/version.js";
+import { playInstantFriendly } from "./services/instantFriendly.js";
+import { getCupDraw } from "./services/cupDraw.js";
+import { cupDrawModal } from "./features/cupDraw.js";
+import { youthIntakeModal } from "./features/youthIntake.js";
+import { executeYouthIntakeDecisions } from "./services/youthIntake.js";
+import { acceptDeadlineBid, declineDeadlineBid } from "./services/deadlineDay.js";
 const app = document.getElementById("app");
 const ui = {
   route: "dashboard",
@@ -518,6 +524,55 @@ const actions = {
     );
   },
   "modal-close": () => closeModal(),
+  "instant-friendly": async () => {
+    let reportData = null;
+    await apply((s) => {
+      const res = playInstantFriendly(s);
+      reportData = res.report;
+      markStep(s, "friendly");
+    });
+    const s = getState();
+    if (reportData) {
+      showHighlightsScreen(s, reportData, () => {
+        openModal(matchReportModal(s, reportData));
+      });
+    }
+  },
+  "view-cup-draw": async (el) => {
+    const drawId = el?.dataset?.drawId || el?.dataset?.id;
+    const s = getState();
+    const draw = getCupDraw(s, drawId) || s?.latestDraw;
+    if (draw) openModal(cupDrawModal(s, draw), true);
+  },
+  "open-youth-intake": async () => {
+    const s = getState();
+    openModal(youthIntakeModal(s), true);
+  },
+  "confirm-youth-intake": async () => {
+    const root = document.querySelector(".youth-intake-modal");
+    if (!root) return;
+    const decisions = {};
+    root.querySelectorAll(".youth-candidate-card").forEach((card) => {
+      const pId = card.dataset.playerId;
+      const checked = card.querySelector(`input[name="youth-dec-${pId}"]:checked`);
+      if (pId && checked) decisions[pId] = checked.value;
+    });
+    await apply((s) => executeYouthIntakeDecisions(s, decisions));
+    closeModal();
+    toast(tr("تم اعتماد قرارات دفعة الناشئين بنجاح", "Youth intake decisions confirmed successfully", "Décisions de la promotion confirmées avec succès"));
+  },
+  "accept-deadline-bid": async (el) => {
+    const id = el.dataset.id;
+    await apply((s) => acceptDeadlineBid(s, id));
+    toast(tr("تمت الموافقة على بيع اللاعب في اللحظات الأخيرة", "Accepted last-minute player sale", "Vente de dernière minute acceptée"));
+    render();
+  },
+  "decline-deadline-bid": async (el) => {
+    const id = el.dataset.id;
+    await apply((s) => declineDeadlineBid(s, id));
+    toast(tr("تم رفض العرض العاجل", "Declined urgent offer", "Offre urgente refusée"));
+    render();
+  },
   "business-open": async (el) => apply((s) => businessOpen(s, el.dataset.id)),
   "sell-subscriptions": async () => apply((s) => sellSubscriptions(s)),
   "commercial-friendly": async () => apply((s) => friendly(s)),

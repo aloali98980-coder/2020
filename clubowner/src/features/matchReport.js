@@ -2,6 +2,7 @@
 import { icon } from "../components/icons.js";
 import { crest, clubBy } from "../components/shared.js";
 import { avatar } from "../components/shared.js";
+import { getDerbyInfo } from "../services/derby.js";
 import { esc, num, shortDate } from "../ui/format.js";
 import { getLanguage, tr } from "../i18n/index.js";
 
@@ -58,8 +59,11 @@ export function matchReportModal(s, r) {
         ? tr("تعادل", "Draw", "Nul")
         : tr("خسارة", "Defeat", "Défaite");
   const tone = ours > theirs ? "green" : ours === theirs ? "" : "red";
+  const derby = r.isDerby ? { isDerby: true, nameAr: r.derbyName } : getDerbyInfo(r.home, r.away, s);
+  const isDerbyWin = derby.isDerby && ours > theirs;
   return `<div class="mr" data-report="${esc(r.id)}">
-  <div class="mr-comp">${esc(r.competition)}${r.stage ? " · " + esc(r.stage) : ""}</div>
+  <div class="mr-comp">${esc(r.competition)}${r.stage ? " · " + esc(r.stage) : ""}${derby.isDerby ? ` · <span class="badge red">${icon("crown", 12)} ${esc(derby.nameAr || tr("مباراة ديربي", "Derby Match", "Match de Derby"))}</span>` : ""}</div>
+  ${isDerbyWin ? `<div class="mr-derby-banner">🔥 ${tr("انتصار تاريخي في الديربي! احتفالات المجد في المدينة", "Historic Derby Victory! Glory celebrations across the city", "Victoire historique au Derby ! Célébrations de gloire à travers la ville")}</div>` : ""}
   <div class="mr-score ${tone}">
     <div class="mr-team">${crest(r.home, "large")}<strong>${esc(clubBy(r.home)?.name || "")}</strong>${r.home === s.clubId ? `<small>${tr("ناديك", "Your club", "Votre club")}</small>` : ""}</div>
     <div class="mr-result"><b>${num(r.homeGoals)}<span>–</span>${num(r.awayGoals)}</b><em>${result}</em>${r.penaltyWinner ? `<small>${tr("حُسمت بالترجيح", "Decided on penalties", "Décidé aux tirs au but")}</small>` : r.extraTime ? `<small>${tr("بعد وقت إضافي", "After extra time", "Après prolongation")}</small>` : ""}</div>

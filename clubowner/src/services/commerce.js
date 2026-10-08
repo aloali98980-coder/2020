@@ -1,5 +1,6 @@
 import { ownFixtures } from "./calendar.js";
 import { extendedClub } from "../data/expandedCatalog.js";
+import { getDerbyInfo } from "./derby.js";
 import { post } from "./finance.js";
 import { assert, clamp, addDays } from "../core/utils.js";
 export const BUSINESSES = {
@@ -111,6 +112,7 @@ export function ticketForecast(s, fixture = null) {
     fixture ||
     ownFixtures(s).find((f) => !f.played && !f.neutral && f.home === s.clubId);
   const opponent = extendedClub(f?.away);
+  const isDerby = !!f?.isDerby;
   const importance =
     (f?.competition?.length ? 0.1 : 0) +
     (opponent ? Math.max(-0.1, (opponent.rep - s.reputation) / 250) : 0);
@@ -124,17 +126,18 @@ export function ticketForecast(s, fixture = null) {
   const subscribed = f?.competition ? 0 : s.commerce?.seasonTickets || 0;
   let paying = 0,
     gross = 0;
+  const derbyPriceMult = isDerby ? 2 : 1;
   const breakdown = TICKET_CATEGORIES.map((cat) => {
     const seats = Math.floor(s.capacity * cat.share);
     const fill = clamp(
-      base - (prices[cat.id] - cat.anchor) / cat.divisor,
+      base + (isDerby ? 0.35 : 0) - (prices[cat.id] - cat.anchor) / cat.divisor,
       0.05,
-      0.98,
+      0.99,
     );
     let catPaying = Math.floor(seats * fill);
     if (cat.id === "standard" && subscribed > 0)
       catPaying = Math.max(0, catPaying - Math.min(subscribed, seats));
-    const catGross = Math.round(catPaying * prices[cat.id] * (1 + premium));
+    const catGross = Math.round(catPaying * prices[cat.id] * (1 + premium) * derbyPriceMult);
     paying += catPaying;
     gross += catGross;
     return { id: cat.id, name: cat.name, paying: catPaying, gross: catGross };
@@ -145,6 +148,7 @@ export function ticketForecast(s, fixture = null) {
     gross,
     breakdown,
     premium: s.commerce?.matchPremium || 0,
+    isDerby,
   };
 }
 export function sellSubscriptions(s) {

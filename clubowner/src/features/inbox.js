@@ -1,4 +1,4 @@
-import { excerpt, getLanguage } from "../i18n/index.js";
+import { excerpt, getLanguage, tr } from "../i18n/index.js";
 import { boardTextFor } from "../data/boardTexts.js";
 import { eventDecisionView } from "./events.js";
 import { heading, badge, empty, button } from "../components/shared.js";
@@ -37,6 +37,14 @@ export function messageDetail(s, m) {
   // رسائل الجمعية العمومية للعلم: زر واحد يفتح اللائحة كاملة.
   if (isBoard && !(m.required && m.status === "open"))
     actions = button(boardTextFor("boardMailOpen", null, getLanguage()), "go-board", "", "primary");
+  if (m.kind === "cup-draw")
+    actions = button(tr("شاهد مراسم القرعة", "Watch Draw Ceremony", "Voir la cérémonie du tirage"), "view-cup-draw", m.ref, "primary");
+  if (m.kind === "youth-intake-day" && m.required && m.status === "open")
+    actions = button(tr("استعراض وتصعيد الناشئين", "Review & Decide Youth Intake", "Examiner et décider des jeunes"), "open-youth-intake", m.ref, "primary");
+  if (m.kind === "deadline-bid" && m.required && m.status === "open")
+    actions =
+      button(tr("قبول العرض العاجل", "Accept Urgent Offer", "Accepter l'offre urgente"), "accept-deadline-bid", m.id, "primary") +
+      button(tr("رفض العرض", "Decline Offer", "Refuser l'offre"), "decline-deadline-bid", m.id, "ghost");
   if (m.required && m.status === "open") {
     if (isBoard)
       actions =
