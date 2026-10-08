@@ -9,6 +9,7 @@ import {
   ALLOWANCES,
   KID_NAMES,
 } from "../data/empireFamily.js";
+import { INVEST_VEHICLES } from "../data/empireInvestments.js";
 
 const fromTexts = (() => {
   const out = {};
@@ -117,6 +118,8 @@ const EXTRA = {
   "باقة ورد": ["Flowers", "Bouquet"],
   "طقم مجوهرات": ["Jewelry set", "Parure de bijoux"],
   "رحلة خاصة": ["Private trip", "Voyage privé"],
+  "تم استثمار المبلغ.": ["Amount invested.", "Montant investi."],
+  "تم سحب المبلغ إلى ثروتك.": ["Amount withdrawn to your fortune.", "Montant retiré vers votre fortune."],
 };
 
 const withBare = (map) => {
@@ -157,6 +160,11 @@ const fromCatalog = (() => {
   for (const sc of Object.values(SCHOOLS)) put(sc.name);
   for (const al of Object.values(ALLOWANCES)) put(al.name);
   for (const k of KID_NAMES) put(k);
+  for (const v of Object.values(INVEST_VEHICLES)) {
+    put(v.name);
+    put(v.desc);
+    put(v.risk);
+  }
   return out;
 })();
 

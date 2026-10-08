@@ -11,6 +11,7 @@ import {
 } from "./wealth.js";
 import "./assets.js";
 import { familyDay } from "./family.js";
+import "./investments.js";
 
 export function empireDay(s) {
   const e = ensureEmpire(s);

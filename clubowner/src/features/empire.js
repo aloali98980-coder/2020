@@ -2,7 +2,7 @@
 // معيشة، أصول، عائلة، استثمارات، منافسون، وخير.
 import { icon } from "../components/icons.js";
 import { badge } from "../components/shared.js";
-import { money, num, cur, esc } from "../ui/format.js";
+import { money, num, cur } from "../ui/format.js";
 import { tr } from "../i18n/index.js";
 import {
   OWNER_STORIES,
@@ -25,6 +25,8 @@ import {
   ALLOWANCES,
 } from "../data/empireFamily.js";
 import { GIFTS, familyHappiness } from "../services/empire/family.js";
+import { portfolioTotal } from "../services/empire/investments.js";
+import { INVEST_VEHICLES, VEHICLE_ORDER } from "../data/empireInvestments.js";
 import { EMPIRE_TEXTS } from "../data/empireTexts.js";
 
 const cap = (s) => s[0].toUpperCase() + s.slice(1);
@@ -40,6 +42,7 @@ export const EMPIRE_TABS = [
   { id: "wealth", key: "empireTabWealth", icon: "finance" },
   { id: "assets", key: "empireTabAssets", icon: "stadium" },
   { id: "family", key: "empireTabFamily", icon: "academy" },
+  { id: "invest", key: "empireTabInvest", icon: "transfer" },
 ];
 
 function wealthTab(s) {
@@ -269,6 +272,53 @@ function familyTab(s) {
   </section>`;
 }
 
+function reportRow(r) {
+  const delta = r.netDelta ?? 0;
+  const happy = r.wifeHappiness;
+  return `<div class="report-row">
+    <b>${r.month}</b>
+    <span>${t("lifeIncome")} ${money(r.income)}</span>
+    <span>${t("lifeExpenses")} ${money(r.expenses)}</span>
+    <span>${t("lifeReturns")} ${money(r.returns)}</span>
+    <span class="${delta >= 0 ? "green" : "red"}">${t("lifeNetDelta")} ${delta >= 0 ? "+" : ""}${money(delta)}</span>
+    ${typeof happy === "number" ? `<span>💖 ${num(happy)}</span>` : ""}
+    ${r.rank ? `<span>🏆 #${num(r.rank)}</span>` : ""}
+  </div>`;
+}
+
+function investTab(s) {
+  const e = s.empire;
+  const reports = e.reports || [];
+  return `<p class="muted">${t("investTabHint")}</p>
+  <section class="panel">
+    <div class="panel-head"><h3>${t("portfolioTotalLabel")}: ${money(portfolioTotal(s))}</h3></div>
+    <div class="vehicle-grid">
+      ${VEHICLE_ORDER.map((k) => {
+        const v = INVEST_VEHICLES[k];
+        const bal = e.portfolio[k] || 0;
+        return `<div class="vehicle-card">
+          <div class="vehicle-head"><strong>${lang(v.name)}</strong><small>${t("riskLabel")}: ${lang(v.risk)}</small></div>
+          <small class="muted">${lang(v.desc)}</small>
+          <div class="vehicle-balance">${t("investedLabel")}: <b>${money(bal)}</b></div>
+          <div class="vehicle-actions">
+            <input type="number" min="${v.min}" step="10000" placeholder="${v.min}" id="inv-amt-${k}">
+            <button class="btn primary" data-action="empire-invest" data-id="${k}">${t("investLabel")}</button>
+            <button class="btn secondary" data-action="empire-withdraw" data-id="${k}" ${bal > 0 ? "" : "disabled"}>${t("withdrawLabel")}</button>
+          </div>
+        </div>`;
+      }).join("")}
+    </div>
+  </section>
+  <section class="panel">
+    <div class="panel-head"><h3>${t("lastReportLabel")}</h3></div>
+    ${reports.length ? reportRow(reports[0]) : `<p class="muted">${t("noReportsYet")}</p>`}
+  </section>
+  ${reports.length > 1 ? `<section class="panel">
+    <div class="panel-head"><h3>${t("reportsHistoryLabel")}</h3></div>
+    <div class="report-list">${reports.slice(1, 13).map(reportRow).join("")}</div>
+  </section>` : ""}`;
+}
+
 function ownedList(s) {
   const rows = (s.empire.assets || []).map((o) => {
     const a = EMPIRE_ASSETS.find((x) => x.id === o.assetId);
@@ -326,7 +376,9 @@ export function empireView(s, tab = "wealth") {
           ? assetsTab(s)
           : active === "family"
             ? familyTab(s)
-            : `<div class="empty-state"><p>${t("empireTab" + cap(active))}…</p></div>`
+            : active === "invest"
+              ? investTab(s)
+              : `<div class="empty-state"><p>${t("empireTab" + cap(active))}…</p></div>`
     }</div>
   </div>`;
 }

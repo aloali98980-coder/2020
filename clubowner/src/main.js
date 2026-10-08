@@ -1089,6 +1089,20 @@ const actions = {
     const { divorce } = await import("./services/empire/family.js");
     await apply((s) => divorce(s), "تم الطلاق ودُفعت التسوية.");
   },
+  "empire-invest": async (el) => {
+    const { invest } = await import("./services/empire/investments.js");
+    const amount = Math.round(
+      Number(document.getElementById("inv-amt-" + el.dataset.id)?.value),
+    );
+    await apply((s) => invest(s, el.dataset.id, amount), "تم استثمار المبلغ.");
+  },
+  "empire-withdraw": async (el) => {
+    const { withdraw } = await import("./services/empire/investments.js");
+    const amount = Math.round(
+      Number(document.getElementById("inv-amt-" + el.dataset.id)?.value),
+    );
+    await apply((s) => withdraw(s, el.dataset.id, amount), "تم سحب المبلغ إلى ثروتك.");
+  },
   more: async () =>
     openModal(
       `<h2>إدارة النادي</h2>${NAV_GROUPS.map(
