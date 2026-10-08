@@ -1,5 +1,6 @@
 import { initTalent } from "../services/talent/state.js";
 import { initLegends } from "../services/legends.js";
+import { initEmpire } from "../services/empire/wealth.js";
 import { extendedClub } from "../data/expandedCatalog.js";
 import { initPyramid } from "../services/pyramid.js";
 import { worldPlayers, WORLD_MANIFEST } from "../data/packs/world.js";
@@ -15,7 +16,7 @@ import { signSponsor } from "../services/sponsors.js";
 import { initBoard, startSeasonMandate } from "../services/boardMandate.js";
 import { initBlackFiles } from "../services/blackFiles.js";
 import { ensureReleaseClause } from "../services/releaseClause.js";
-export const SAVE_VERSION = 22;
+export const SAVE_VERSION = 23;
 export function createGame({
   clubId = "ahly",
   owner = "مالك النادي",
@@ -24,6 +25,7 @@ export function createGame({
   difficulty = "normal",
   language = "ar",
   expanded = false,
+  ownerStory = "selfmade",
 } = {}) {
   const club =
     expanded && database === "world"
@@ -122,6 +124,8 @@ export function createGame({
       pauseMatches: false,
       language: ["ar", "en", "fr"].includes(language) ? language : "ar",
     },
+    // حياة الملياردير 0.29: ثروة شخصية منفصلة عن خزينة النادي من اليوم الأول.
+    empire: initEmpire(null, ownerStory),
   };
   if (expanded) {
     initPyramid(s);

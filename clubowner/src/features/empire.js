@@ -1,0 +1,128 @@
+// شاشة «حياة الملياردير» 0.29 — اللعبة داخل اللعبة: ثروتان منفصلتان 💼💎
+// ومعيشة شهرية وقصة مالك (المرحلة التاسعة من تحديث الدراما).
+import { icon } from "../components/icons.js";
+import { badge } from "../components/shared.js";
+import { money, num, cur } from "../ui/format.js";
+import { tr } from "../i18n/index.js";
+import {
+  OWNER_STORIES,
+  LIFESTYLES,
+  TRANSFER_CAP,
+  transferRemaining,
+  netWorth,
+} from "../services/empire/wealth.js";
+import { EMPIRE_TEXTS } from "../data/empireTexts.js";
+
+const cap = (s) => s[0].toUpperCase() + s.slice(1);
+const t = (k) => {
+  const x = EMPIRE_TEXTS[k];
+  if (!x) return k;
+  return tr(x.ar, x.en, x.fr);
+};
+
+export const EMPIRE_TABS = [
+  { id: "wealth", key: "empireTabWealth", icon: "finance" },
+];
+
+function wealthTab(s) {
+  const e = s.empire;
+  const story = OWNER_STORIES[e.story] || OWNER_STORIES.selfmade;
+  const remainingOut = transferRemaining(s, "toPersonal");
+  const remainingIn = transferRemaining(s, "toClub");
+  return `
+  <div class="empire-fortunes">
+    <div class="fortune-card club">
+      <span class="fortune-emoji">💼</span>
+      <div><small>${t("clubTreasury")}</small><strong>${money(s.finance.cash)}</strong><span>${cur()}</span></div>
+    </div>
+    <div class="fortune-card personal">
+      <span class="fortune-emoji">💎</span>
+      <div><small>${t("personalWealth")}</small><strong>${money(e.personal)}</strong><span>${cur()}</span></div>
+    </div>
+    <div class="fortune-card mini">
+      <small>${t("empireNetWorth")}</small><strong>${money(netWorth(s))}</strong>
+      <small>${t("empireDebt")}: ${money(e.debt)}</small>
+    </div>
+    <div class="fortune-card mini">
+      <small>${t("empirePrestige")}</small><strong>${num(e.prestige)}</strong>
+      <small>${t("empireFame")}: ${num(e.fame)}/100</small>
+    </div>
+  </div>
+
+  <section class="panel">
+    <div class="panel-head"><h3>${icon("crown")} ${t("ownerStoryTitle")}</h3>${badge(t("story" + cap(e.story)), "gold")}</div>
+    <p class="muted">${t("story" + cap(e.story) + "Desc")}</p>
+    <p>${t("storyIncome")}: <strong>${money(story.income)}</strong> ${t("perMonth")}</p>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head"><h3>${icon("home")} ${t("lifestyleTitle")}</h3></div>
+    <p class="muted">${t("lifestyleHint")}</p>
+    <div class="lifestyle-grid">
+      ${Object.entries(LIFESTYLES)
+        .map(
+          ([tier, l]) => `
+        <label class="lifestyle-option ${e.lifestyle === tier ? "selected" : ""}">
+          <input type="radio" name="empire-lifestyle" value="${tier}" ${e.lifestyle === tier ? "checked" : ""}>
+          <strong>${t("lifestyle" + cap(tier))}</strong>
+          <small>${t("lifestyleCostLabel")}: ${money(l.cost)} / ${t("monthLabel")}</small>
+        </label>`,
+        )
+        .join("")}
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head"><h3>${icon("transfer")} ${t("transfersTitle")}</h3></div>
+    <p class="muted">${t("transfersHint")}</p>
+    <div class="transfer-grid">
+      <form id="empire-draw-form" class="transfer-box">
+        <h4>💼 → 💎 ${t("transferToPersonal")}</h4>
+        <small>${t("transferMonthlyCap")}: ${money(remainingOut)} / ${money(TRANSFER_CAP)}</small>
+        <input type="number" name="amount" min="1" max="${remainingOut}" step="100000" placeholder="1000000">
+        <button class="btn secondary" type="submit" ${remainingOut <= 0 ? "disabled" : ""}>${t("transferToPersonal")}</button>
+      </form>
+      <form id="empire-support-form" class="transfer-box">
+        <h4>💎 → 💼 ${t("transferToClub")}</h4>
+        <small>${t("transferMonthlyCap")}: ${money(remainingIn)} / ${money(TRANSFER_CAP)}</small>
+        <input type="number" name="amount" min="1" max="${remainingIn}" step="100000" placeholder="1000000">
+        <button class="btn secondary" type="submit" ${remainingIn <= 0 ? "disabled" : ""}>${t("transferToClub")}</button>
+      </form>
+    </div>
+  </section>
+
+  ${
+    e.debt > 0
+      ? `<section class="panel debt-panel">
+    <div class="panel-head"><h3>${icon("flag")} ${t("empireDebt")}: ${money(e.debt)}</h3></div>
+    <form id="empire-repay-form">
+      <input type="number" name="amount" min="1" max="${Math.min(e.debt, e.personal)}" step="100000" placeholder="1000000">
+      <button class="btn primary" type="submit">${t("repayDebt")}</button>
+    </form>
+  </section>`
+      : ""
+  }`;
+}
+
+export function empireView(s, tab = "wealth") {
+  if (!s.empire)
+    return `<div class="empty-state"><h3>${t("empireName")}</h3><p>${t("empireEmptyStory")}</p></div>`;
+  const active = EMPIRE_TABS.some((x) => x.id === tab) ? tab : "wealth";
+  return `<div class="empire-page">
+    <div class="empire-hero">
+      <h2>🏰 ${t("empireName")}</h2>
+      <p class="muted">${t("empireKicker")}</p>
+    </div>
+    <div class="empire-tabs" role="tablist">
+      ${EMPIRE_TABS.map(
+        (x) =>
+          `<button class="empire-tab ${active === x.id ? "active" : ""}" data-action="empire-tab" data-tab="${x.id}">${icon(x.icon, 16)} ${t(x.key)}</button>`,
+      ).join("")}
+    </div>
+    <div class="empire-tab-body">${
+      active === "wealth"
+        ? wealthTab(s)
+        : `<div class="empty-state"><p>${t("empireTab" + cap(active))}…</p></div>`
+    }</div>
+  </div>`;
+}

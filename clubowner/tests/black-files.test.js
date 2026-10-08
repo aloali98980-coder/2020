@@ -303,9 +303,11 @@ test("migration v21->v22 adds blackFiles and releaseClause", () => {
   const s = demo();
   s.version = 21;
   delete s.blackFiles;
+  delete s.empire;
   for (const p of s.players) delete p.contractTerms.releaseClause;
   const migrated = migrateSave(s);
-  assert.equal(migrated.version, 22);
+  // السلسلة تكمل حتى أحدث نسخة؛ محتوى 0.28 يظل سليمًا في الطريق إليها.
+  assert.ok(migrated.version >= 22);
   assert.ok(migrated.blackFiles);
   assert.equal(typeof migrated.blackFiles.suspicion, "number");
   assert.ok(migrated.players.every((p) => p.status === "retired" || typeof p.contractTerms.releaseClause === "number"));

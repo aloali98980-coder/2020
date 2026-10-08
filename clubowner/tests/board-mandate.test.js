@@ -582,8 +582,10 @@ test("حفظة 0.25 (النسخة 20) تُرحَّل إلى 22 بحالة مجل
   const old = demo();
   old.version = 20;
   delete old.board;
+  delete old.empire;
   const migrated = migrateSave(old);
-  assert.equal(migrated.version, 22);
+  // السلسلة تكمل حتى أحدث نسخة؛ لائحة الجمعية تظل سليمة في الطريق إليها.
+  assert.ok(migrated.version >= 22);
   assert.ok(migrated.board && migrated.board.schema === 1);
   assert.equal(migrated.board.confidence, 60);
   assert.equal(migrated.board.mandate, null);

@@ -9,6 +9,7 @@ import { APP_VERSION } from "../data/version.js";
 const LINKS = [
   { id: "dashboard", name: "مكتب المالك", icon: "home" },
   { id: "inbox", name: "البريد الوارد", icon: "inbox" },
+  { id: "empire", name: "القصر", icon: "crown" },
   { id: "board", name: "الجمعية العمومية", icon: "crown" },
   { id: "black", name: "الملفات السوداء", icon: "shield" },
   { id: "squad", name: "الفريق الأول", icon: "squad" },
@@ -29,7 +30,10 @@ const byId = (id) => LINKS.find((l) => l.id === id);
 
 // 0.22: القائمة تُعرض في مجموعات منطقية بدل قائمة واحدة طويلة.
 export const NAV_GROUPS = [
-  { caption: "نظرة عامة", items: ["dashboard", "inbox", "board", "black"] },
+  {
+    caption: "نظرة عامة",
+    items: ["dashboard", "inbox", "empire", "board", "black"],
+  },
   {
     caption: "كرة القدم",
     items: [

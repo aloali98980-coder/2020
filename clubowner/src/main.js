@@ -184,13 +184,25 @@ import { acceptDeadlineBid, declineDeadlineBid } from "./services/deadlineDay.js
 import { blackFilesView } from "./features/blackFiles.js";
 import * as BlackService from "./services/blackFiles.js";
 import * as ReleaseService from "./services/releaseClause.js";
+import { empireView } from "./features/empire.js";
+import {
+  transferToPersonal,
+  transferToClub,
+  setLifestyle,
+  repayDebt,
+} from "./services/empire/wealth.js";
 const requireBlack = () => BlackService;
 const requireRelease = () => ReleaseService;
 const app = document.getElementById("app");
 const ui = {
   route: "dashboard",
   setupClub: "ahly",
-  setupConfig: { difficulty: "normal", database: "world", expanded: true },
+  setupConfig: {
+    difficulty: "normal",
+    database: "world",
+    expanded: true,
+    ownerStory: "selfmade",
+  },
   owner: "",
   leagues: [...ALL_MARKETS],
   inboxFilter: "all",
@@ -200,6 +212,7 @@ const ui = {
   worldTab: "table",
   legendFilters: { ...DEFAULT_LEGEND_FILTERS },
   legendOffer: {},
+  empireTab: "wealth",
   palette: { open: false, q: "", sel: 0, items: [] },
 };
 let pendingImport = null;
@@ -270,6 +283,7 @@ function render() {
     management: () => managementView(s),
     press: () => pressView(s),
     black: () => blackFilesView(s),
+    empire: () => empireView(s, ui.empireTab),
     legends: () => legendsView(s, ui.legendFilters),
     settings: () => settingsView(s),
     database: () => databaseView(),
@@ -771,6 +785,7 @@ const actions = {
       leagues,
       ...ui.setupConfig,
       language: getLanguage(),
+      ownerStory: ui.setupConfig.ownerStory || "selfmade",
     });
     await saveGame(s);
     setState(s);
@@ -1040,6 +1055,10 @@ const actions = {
     window.scrollTo(0, 0);
   },
   "modal-inbox": async () => navigate("inbox"),
+  "empire-tab": async (el) => {
+    ui.empireTab = el.dataset.tab || "wealth";
+    render();
+  },
   more: async () =>
     openModal(
       `<h2>إدارة النادي</h2>${NAV_GROUPS.map(
@@ -1346,6 +1365,24 @@ document.addEventListener("submit", async (e) => {
         return donateCharity(s, amount);
       }, "تم التبرع الخيري وخفض الشبهات.");
     }
+    if (form.id === "empire-draw-form") {
+      const amount = Math.round(Number(form.elements.amount.value));
+      await apply(
+        (s) => transferToPersonal(s, amount),
+        "تم التحويل من خزينة النادي إلى ثروتك الشخصية.",
+      );
+    }
+    if (form.id === "empire-support-form") {
+      const amount = Math.round(Number(form.elements.amount.value));
+      await apply(
+        (s) => transferToClub(s, amount),
+        "تم دعم خزينة النادي من ثروتك الشخصية.",
+      );
+    }
+    if (form.id === "empire-repay-form") {
+      const amount = Math.round(Number(form.elements.amount.value));
+      await apply((s) => repayDebt(s, amount), "تم سداد جزء من الدين.");
+    }
     if (form.id === "legend-offer-form") {
       const role = form.elements.role.value;
       const years = Number(form.elements.years.value);
@@ -1475,6 +1512,20 @@ document.addEventListener("change", async (e) => {
     if (e.target.id === "team-tactic") {
       const tactic = e.target.value;
       await apply((s) => setTactic(s, tactic));
+      return;
+    }
+    if (e.target.name === "empire-lifestyle") {
+      const tier = e.target.value;
+      await apply((s) => setLifestyle(s, tier));
+      return;
+    }
+    if (e.target.name === "owner-story") {
+      ui.setupConfig.ownerStory = e.target.value;
+      for (const label of document.querySelectorAll(".story-options label"))
+        label.classList.toggle(
+          "selected",
+          label.querySelector("input")?.value === e.target.value,
+        );
       return;
     }
     if (e.target.id === "division-view") {
