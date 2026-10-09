@@ -4,7 +4,7 @@ import { assert, clamp, addDays, uid } from "../../core/utils.js";
 import { message } from "../inbox.js";
 import { post } from "../finance.js";
 import { squad } from "../../models/player.js";
-import { SPORTING_PHILOSOPHIES } from "../../data/staffCatalog.js";
+import { L, SPORTING_PHILOSOPHIES } from "../../data/staffCatalog.js";
 import { ensureStaffCorp, corpEmployees, corpSkill, srng } from "./staffCorp.js";
 
 export const sportingDirector = (s) =>
@@ -12,14 +12,26 @@ export const sportingDirector = (s) =>
 export const philNameAr = (p) => SPORTING_PHILOSOPHIES[p]?.name.ar || p;
 
 export function setPhilosophy(s, phil) {
-  assert(SPORTING_PHILOSOPHIES[phil], "فلسفة غير صالحة.");
+  const option = SPORTING_PHILOSOPHIES[phil];
+  assert(option, "فلسفة غير صالحة.");
   ensureStaffCorp(s).sporting.philosophy = phil;
-  sportingLog(s, `اعتمدت فلسفة ${philNameAr(phil)}.`, "info");
+  sportingLog(s, L(
+    `اعتمدت فلسفة ${option.name.ar}.`,
+    `Adopted the ${option.name.en} philosophy.`,
+    `Philosophie ${option.name.fr} adoptée.`,
+  ), "info");
   return phil;
 }
 export function setFreedom(s, v) {
   assert(Number.isInteger(v) && v >= 0 && v <= 100, "الصلاحيات من ٠ إلى ١٠٠.");
-  ensureStaffCorp(s).sporting.freedom = v;
+  const c = ensureStaffCorp(s);
+  const previous = c.sporting.freedom;
+  c.sporting.freedom = v;
+  if (previous !== v) sportingLog(s, L(
+    `عُدّلت صلاحيات المدير الرياضي من ${previous}٪ إلى ${v}٪.`,
+    `Sporting director authority changed from ${previous}% to ${v}%.`,
+    `Les pouvoirs du directeur sportif passent de ${previous} % à ${v} %.`,
+  ), "authority");
   return v;
 }
 export function sportingLog(s, text, kind = "info") {
@@ -34,9 +46,13 @@ const seasonStats = (s) => {
   return c.sporting.season;
 };
 
-// سوق اللاعبين المتاح: نشط، خارج ناديك، بقيمة معقولة.
-const marketPool = (s) =>
-  (s.players || []).filter((p) => p.status !== "retired" && p.clubId !== s.clubId && !p.loan);
+// سوق اللاعبين المتاح: نشط، خارج ناديك، بقيمة معقولة، ومن دون صفقة معلّقة بالفعل.
+const pendingPlayerIds = (s) => new Set((s.staffCorp?.deals || [])
+  .filter((d) => d.status === "pending").map((d) => d.playerId));
+const marketPool = (s) => {
+  const pending = pendingPlayerIds(s);
+  return (s.players || []).filter((p) => p.status !== "retired" && p.clubId !== s.clubId && !p.loan && !pending.has(p.id));
+};
 // خصم التفاوض بمهارة المدير: حتى ~٢٨٪ من القيمة.
 export const negotiatedFee = (s, player) => {
   const skill = corpSkill(s, "sporting");
@@ -69,7 +85,8 @@ const pickTarget = (s, phil) => {
 };
 // فائض للبيع: أجر مرتفع لقيمة متواضعة، أو نجم كبير في فلسفة الشباب.
 const pickSale = (s, phil) => {
-  const own = squad(s).filter((p) => p.value > 500_000 && (!p.injuryUntil || p.injuryUntil < s.date));
+  const pending = pendingPlayerIds(s);
+  const own = squad(s).filter((p) => p.value > 500_000 && !pending.has(p.id) && (!p.injuryUntil || p.injuryUntil < s.date));
   if (own.length <= 16) return null;
   const scored = own.map((p) => {
     let score = (p.salary / Math.max(1, p.value)) * 1_000_000 + Math.max(0, p.age - 30) * 4;
@@ -84,10 +101,21 @@ export const saleFee = (s, player) => {
   const skill = corpSkill(s, "sporting");
   return Math.round(player.value * (0.9 + skill / 500));
 };
-// سقف التنفيذ التلقائي معلن: أساس + الصلاحيات + ميزانية المجلس المعتمدة.
+
+// تفويض المجلس يضيف ١٥ نقطة مؤقتًا إلى صلاحية التنفيذ التلقائي طوال مدة منحه.
+export function sportingDelegationActive(s) {
+  const c = ensureStaffCorp(s);
+  const until = c.authorities?.sporting?.until || c.sporting.authorityUntil;
+  return typeof until === "string" && until >= s.date;
+}
+export const effectiveFreedom = (s) => {
+  const c = ensureStaffCorp(s);
+  return clamp(c.sporting.freedom + (sportingDelegationActive(s) ? 15 : 0), 0, 100);
+};
+// سقف التنفيذ التلقائي معلن: أساس + الصلاحيات الفعلية + ميزانية المجلس المعتمدة.
 export const autoCap = (s) => {
   const c = ensureStaffCorp(s);
-  return Math.round(3_000_000 + c.sporting.freedom * 100_000 + c.sporting.budget);
+  return Math.round(3_000_000 + effectiveFreedom(s) * 100_000 + c.sporting.budget);
 };
 
 function executeBuy(s, player, fee, wage, auto) {
@@ -176,24 +204,24 @@ export function sportingMonth(s) {
   const c = ensureStaffCorp(s);
   if (c.sporting.season && c.sporting.season.season < s.seasonNumber)
     rateStoredSeason(s, c.sporting.season);
-  const phil = c.sporting.philosophy, freedom = c.sporting.freedom;
+  const phil = c.sporting.philosophy, freedom = effectiveFreedom(s);
   const cap = autoCap(s);
   // صفقة شراء
   const target = pickTarget(s, phil);
   if (target) {
     const fee = negotiatedFee(s, target), wage = negotiatedWage(s, target);
-    const affordable = s.finance.cash >= fee && squad(s).length < (s.squadLimit || 30);
-    if (freedom >= 70 && fee <= cap && affordable) {
-      try { executeBuy(s, target, fee, wage, true); } catch { proposeDeal(s, "buy", target, fee, wage); }
-    } else proposeDeal(s, "buy", target, fee, wage);
+    const affordable = s.finance.cash >= fee
+      && squad(s).length < (s.squadLimit || 30)
+      && (s.finance.wageBudget || 0) >= wage;
+    if (freedom >= 70 && fee <= cap && affordable) executeBuy(s, target, fee, wage, true);
+    else proposeDeal(s, "buy", target, fee, wage);
   }
   // صفقة بيع
   const surplus = pickSale(s, phil);
   if (surplus) {
     const fee = saleFee(s, surplus), buyer = buyerClub(s);
-    if (freedom >= 70 && fee <= cap * 2) {
-      try { executeSale(s, surplus, fee, buyer, true); } catch { proposeDeal(s, "sell", surplus, fee, buyer); }
-    } else proposeDeal(s, "sell", surplus, fee, buyer);
+    if (freedom >= 70 && fee <= cap * 2) executeSale(s, surplus, fee, buyer, true);
+    else proposeDeal(s, "sell", surplus, fee, buyer);
   }
   const pending = c.deals.filter((d) => d.status === "pending").length;
   if (pending)
@@ -232,8 +260,7 @@ export function resolveDeal(s, dealId, approve) {
 }
 // انتهاء الصلاحية + التقييم الموسمي (يكمل / يُنصح بفصله).
 export function sportingDay(s) {
-  const c = s.staffCorp;
-  if (!c) return;
+  const c = ensureStaffCorp(s);
   for (const d of c.deals) {
     if (d.status === "pending" && d.expires < s.date) {
       d.status = "expired";

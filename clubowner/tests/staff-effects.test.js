@@ -12,6 +12,7 @@ import {
 } from "../src/services/staff/effects.js";
 import { assignScout, scoutMonth, reportError, reportBias } from "../src/services/staff/scouts.js";
 import { corpEmployees } from "../src/services/staff/staffCorp.js";
+import { staffView } from "../src/features/staff.js";
 
 const game = () => createGame({ database: "demo" });
 const hire = (s, role, skill) => {
@@ -104,9 +105,11 @@ test("الكشافون: تعيين مناطق وتقارير دورية بدقة
   assert.ok(reps.length >= 1 && reps.length <= 2, "مهارة ٨٥ تنتج ١-٢ تقرير");
   const p = s.players.find((x) => x.id === reps[0].playerId);
   assert.ok(p.scoutReport && p.scoutReport.scoutId === scout.id);
+  assert.deepEqual(reps[0].scoutName, scout.name, "مصدر التقرير محفوظ حتى إذا غادر الكشاف لاحقًا");
   assert.ok(p.scoutReport.max - p.scoutReport.min <= 8, "نطاق ضيق لمهارة عالية");
-  assert.equal(reportError(90), 2 - 0 || 2); // max(2, round(10/8)) = 2
+  assert.equal(reportError(90), 2);
   assert.ok(reportError(50) > reportError(90));
+  assert.match(staffView(s, "scouts", "en"), /Test · Europe/, "الواجهة تعرض مصدر كل تقرير ومنطقته");
   validateSave(s);
 });
 

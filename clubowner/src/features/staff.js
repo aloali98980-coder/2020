@@ -6,7 +6,7 @@ import { STAFF_ROLES, HQ_LEVELS, staffText, SPORTING_PHILOSOPHIES, SCOUT_REGIONS
 import {
   ensureStaffCorp, corpEmployees, hqCap, corpPayroll,
 } from "../services/staff/staffCorp.js";
-import { sportingDirector, autoCap } from "../services/staff/sporting.js";
+import { sportingDirector, autoCap, effectiveFreedom, sportingDelegationActive } from "../services/staff/sporting.js";
 import { gkSkillOf, fitnessSkillOf, doctorSkillOf, fitnessFactor, gkGainBonus } from "../services/staff/effects.js";
 
 const l = (ar, en, fr) => tr(ar, en, fr);
@@ -21,7 +21,7 @@ export const STAFF_TABS = [
 ];
 const roleName = (role, lang) =>
   lang === "ar" ? STAFF_ROLES[role].name.ar : lang === "fr" ? STAFF_ROLES[role].name.fr : STAFF_ROLES[role].name.en;
-const empName = (e, lang) => (lang === "ar" ? e.name.ar : e.name.en);
+const empName = (e, lang) => (lang === "ar" ? e.name.ar : lang === "fr" ? e.name.fr || e.name.en : e.name.en);
 
 const bar = (v) =>
   `<span class="meter"><i style="width:${Math.max(0, Math.min(100, v))}%"></i></span>`;
@@ -83,7 +83,7 @@ function marketTab(s, lang) {
   const n = c.negotiation;
   const cards = c.market.map((m) => {
     const active = n?.status === "open" && n.marketKey === m.key;
-    return `<div class="market-card"><div><strong data-no-translate>${esc(lang === "ar" ? m.name.ar : m.name.en)}</strong>${m.fame === "famous" ? " ★" : ""}
+    return `<div class="market-card"><div><strong data-no-translate>${esc(lang === "ar" ? m.name.ar : lang === "fr" ? m.name.fr || m.name.en : m.name.en)}</strong>${m.fame === "famous" ? " ★" : ""}
       <small>${esc(roleName(m.role, lang))} · ${l("مهارة", "skill", "compétence")} ${num(m.skill)} · ${l("يطلب", "asks", "demande")} ${money(m.wageAsk)} × ${num(m.yearsAsk)}${l("سنوات", "yrs", "ans")} · ${l("حتى", "until", "jusqu’au")} ${esc(m.expires)}</small>
       ${m.clauseAsk ? `<small>${l("شرط جزائي", "Release clause", "Clause libératoire")}: ${money(m.clauseAsk)}</small>` : ""}
       ${n?.rival && active ? `<small class="rival-bid">${l("مزاد", "Auction", "Enchères")}: <b data-no-translate>${esc(n.rival.club)}</b> ${money(n.rival.wage)}</small>` : ""}
@@ -114,7 +114,7 @@ function meetingTab(s, lang) {
     const request = `${staffText(r.text, lang)} — ${money(r.amount)}`;
     const authority = staffText(r.authority, lang);
     const granted = c.authorities?.[r.role]?.until >= s.date;
-    return `<tr><td data-no-translate>${esc(lang === "ar" ? e?.name.ar || "—" : e?.name.en || "—")}</td><td>${esc(roleName(r.role, lang))}</td>
+    return `<tr><td data-no-translate>${esc(e ? empName(e, lang) : "—")}</td><td>${esc(roleName(r.role, lang))}</td>
     <td>${report}</td><td>${esc(request)}<small>${l("التفويض المطلوب", "Requested authority", "Pouvoir demandé")}: ${esc(authority)}${granted ? ` · ${l("ممنوح حتى", "Granted until", "Accordé jusqu’au")} ${esc(c.authorities[r.role].until)}` : ""}</small></td><td>${r.status === "open"
       ? `<button class="btn small primary" data-action="staff-req" data-id="${r.id}" data-how="yes">${l("موافقة", "Approve", "Approuver")}</button>
          <button class="btn small danger" data-action="staff-req" data-id="${r.id}" data-how="no">${l("رفض", "Reject", "Refuser")}</button>`
@@ -143,6 +143,9 @@ function sportingTab(s, lang) {
   const c = ensureStaffCorp(s);
   const dir = sportingDirector(s);
   const sp = c.sporting;
+  const effective = effectiveFreedom(s);
+  const delegated = sportingDelegationActive(s);
+  const authorityUntil = c.authorities?.sporting?.until || sp.authorityUntil;
   const phils = Object.entries(SPORTING_PHILOSOPHIES).map(([id, p]) =>
     `<button class="btn small ${sp.philosophy === id ? "primary" : ""}" data-action="staff-phil" data-id="${id}">${esc(lang === "ar" ? p.name.ar : lang === "fr" ? p.name.fr : p.name.en)}</button>`).join(" ");
   const deals = c.deals.filter((d) => d.status === "pending").map((d) =>
@@ -150,15 +153,16 @@ function sportingTab(s, lang) {
     <td data-no-translate>${esc(d.name)}</td><td>${num(d.rating)}</td><td>${money(d.fee)}</td><td>${esc(d.expires)}</td>
     <td><button class="btn small primary" data-action="staff-deal" data-id="${d.id}" data-how="yes">${l("موافقة", "Approve", "Approuver")}</button>
     <button class="btn small danger" data-action="staff-deal" data-id="${d.id}" data-how="no">${l("رفض", "Reject", "Refuser")}</button></td></tr>`).join("");
-  const log = sp.log.slice(0, 12).map((e) => `<li><small>${esc(e.date)}</small> ${esc(e.text)}</li>`).join("");
+  const log = sp.log.slice(0, 12).map((e) => `<li><small>${esc(e.date)}</small> ${esc(staffText(e.text, lang))}</li>`).join("");
   const st = sp.season;
-  return `<h3>${l("المدير الرياضي", "Sporting Director", "Directeur sportif")} — <span data-no-translate>${esc(dir ? (lang === "ar" ? dir.name.ar : dir.name.en) : l("شاغر", "Vacant", "Vacant"))}</span>${dir ? ` (${l("مهارة", "skill", "compétence")} ${num(dir.skill)})` : ""}</h3>
+  return `<h3>${l("المدير الرياضي", "Sporting Director", "Directeur sportif")} — <span data-no-translate>${esc(dir ? empName(dir, lang) : l("شاغر", "Vacant", "Vacant"))}</span>${dir ? ` (${l("مهارة", "skill", "compétence")} ${num(dir.skill)})` : ""}</h3>
   <p>${l("الفلسفة", "Philosophy", "Philosophie")}: ${phils}</p>
   <p class="hint">${esc(lang === "ar" ? SPORTING_PHILOSOPHIES[sp.philosophy].desc.ar : lang === "fr" ? SPORTING_PHILOSOPHIES[sp.philosophy].desc.fr : SPORTING_PHILOSOPHIES[sp.philosophy].desc.en)}</p>
   <form id="staff-freedom-form" class="neg-form"><label>${l("الصلاحيات", "Authority", "Pouvoirs")}
   <input type="range" name="freedom" min="0" max="100" step="5" value="${sp.freedom}"></label>
   <span>${num(sp.freedom)}٪ ${sp.freedom >= 70 ? l("(حرية كاملة — ينفّذ بنفسه)", "(full authority — acts alone)", "(pleins pouvoirs — agit seul)") : l("(كل صفقة بإذنك)", "(every deal needs you)", "(chaque deal vous attend)")}</span>
   <button class="btn small primary" type="submit">${l("حفظ", "Save", "Enregistrer")}</button></form>
+  <p class="hint">${l("الصلاحية الفعلية", "Effective authority", "Pouvoirs effectifs")}: ${num(effective)}٪${delegated ? ` · ${l("تفويض مؤقت من المجلس حتى", "Temporary board delegation until", "Délégation temporaire du conseil jusqu’au")} ${esc(authorityUntil)} (${l("تفويض المجلس يضيف ١٥ نقطة", "Board delegation adds 15 points", "La délégation ajoute 15 points")})` : ""}</p>
   <p>${l("سقف التنفيذ التلقائي", "Auto-execution cap", "Plafond d’action")} ${money(autoCap(s))} · ${l("ميزانية المجلس", "Board budget", "Budget du conseil")} ${money(sp.budget)}
   ${sp.rating ? ` · ${l("تقييم الموسم", "Season rating", "Note de saison")} ${num(sp.rating.rating)}/100` : ""}</p>
   ${st ? `<p>${l("الموسم", "Season", "Saison")}: ${num(st.proposed)} ${l("مقترحة", "proposed", "proposés")} · ${num(st.auto + st.approved)} ${l("منفذة", "done", "conclus")} · ${l("صافي", "net", "net")} ${money(st.earned - st.spent)}</p>` : ""}
@@ -182,20 +186,25 @@ function techTab(s) {
 function scoutsTab(s, lang) {
   const c = ensureStaffCorp(s);
   const list = corpEmployees(s).filter((e) => e.role === "scout").map((e) =>
-    `<tr><td data-no-translate>${esc(lang === "ar" ? e.name.ar : e.name.en)}</td><td>${num(e.skill)}</td>
+    `<tr><td data-no-translate>${esc(empName(e, lang))}</td><td>${num(e.skill)}</td>
     <td>${e.assignment ? esc(SCOUT_REGIONS[e.assignment.region].name[lang] || SCOUT_REGIONS[e.assignment.region].name.ar) : l("بلا منطقة", "No region", "Sans zone")}</td>
     <td><form id="scout-region-form" class="neg-form" data-id="${e.id}"><select name="region">
     <option value="">${l("بلا منطقة", "No region", "Sans zone")}</option>
     ${REGION_IDS.map((r) => `<option value="${r}" ${e.assignment?.region === r ? "selected" : ""}>${esc(SCOUT_REGIONS[r].name[lang] || SCOUT_REGIONS[r].name.ar)}</option>`).join("")}
     </select><button class="btn small primary" type="submit">${l("تعيين", "Assign", "Affecter")}</button></form></td></tr>`).join("");
-  const reps = c.scouts.reports.slice(0, 15).map((r) =>
-    `<tr><td data-no-translate>${esc(r.name)}</td><td>${num(r.rating)}</td><td>${num(r.min)}-${num(r.max)}</td><td>${num(r.confidence)}٪</td><td>${esc(r.date)}</td></tr>`).join("");
+  const reps = c.scouts.reports.slice(0, 15).map((r) => {
+    const scoutName = r.scoutName ? staffText(r.scoutName, lang) : l("كشاف", "Scout", "Recruteur");
+    const regionName = r.region && SCOUT_REGIONS[r.region]
+      ? staffText(SCOUT_REGIONS[r.region].name, lang)
+      : l("السوق العام", "Wider market", "Marché élargi");
+    return `<tr><td data-no-translate>${esc(r.name)}</td><td>${num(r.rating)}</td><td>${num(r.min)}-${num(r.max)}</td><td>${num(r.confidence)}٪</td><td>${esc(`${scoutName} · ${regionName}`)}</td><td>${esc(r.date)}</td></tr>`;
+  }).join("");
   return `<h3>${l("الكشافون", "Scouts", "Recruteurs")}</h3>
   <table class="staff-table"><thead><tr><th>${l("الكشاف", "Scout", "Recruteur")}</th><th>${l("المهارة", "Skill", "Compétence")}</th><th>${l("المنطقة", "Region", "Zone")}</th><th></th></tr></thead>
   <tbody>${list || `<tr><td colspan="4">${l("لا كشافين معينين.", "No scouts hired.", "Aucun recruteur.")}</td></tr>`}</tbody></table>
   <h4>${l("أحدث التقارير", "Latest reports", "Derniers rapports")}</h4>
-  <table class="staff-table"><thead><tr><th>${l("اللاعب", "Player", "Joueur")}</th><th>${l("التقييم", "Rating", "Note")}</th><th>${l("الإمكانات", "Potential", "Potentiel")}</th><th>${l("الثقة", "Confidence", "Confiance")}</th><th>${l("التاريخ", "Date", "Date")}</th></tr></thead>
-  <tbody>${reps || `<tr><td colspan="5">${l("لا تقارير بعد.", "No reports yet.", "Aucun rapport.")}</td></tr>`}</tbody></table>`;
+  <table class="staff-table"><thead><tr><th>${l("اللاعب", "Player", "Joueur")}</th><th>${l("التقييم", "Rating", "Note")}</th><th>${l("الإمكانات", "Potential", "Potentiel")}</th><th>${l("الثقة", "Confidence", "Confiance")}</th><th>${l("المصدر", "Source", "Source")}</th><th>${l("التاريخ", "Date", "Date")}</th></tr></thead>
+  <tbody>${reps || `<tr><td colspan="6">${l("لا تقارير بعد.", "No reports yet.", "Aucun rapport.")}</td></tr>`}</tbody></table>`;
 }
 
 export function staffView(s, tab = "org", lang = "ar") {

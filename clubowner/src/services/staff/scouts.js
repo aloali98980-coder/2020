@@ -50,7 +50,11 @@ export function scoutMonth(s) {
         date: s.date, min: Math.min(min, max), max: Math.max(min, max),
         scoutId: scout.id, confidence: scout.skill, region: scout.assignment.region,
       };
-      const rep = { id: uid(s, "srep"), scoutId: scout.id, playerId: p.id, name: p.name, rating: p.rating, min, max, confidence: scout.skill, region: scout.assignment.region, date: s.date };
+      const rep = {
+        id: uid(s, "srep"), scoutId: scout.id, scoutName: scout.name,
+        playerId: p.id, name: p.name, rating: p.rating, min, max,
+        confidence: scout.skill, region: scout.assignment.region, date: s.date,
+      };
       c.scouts.reports.unshift(rep);
       made.push(rep);
     }
