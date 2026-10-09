@@ -1,3 +1,4 @@
+import { cityEffects } from "./cityFacilities.js";
 import { roleEffect } from "./playerRoles.js";
 import { selectXI, tacticalEffects } from "./tactics.js";
 import { extendedClub } from "../data/expandedCatalog.js";
@@ -207,6 +208,8 @@ export function matchDay(
         10,
         100,
       );
+      if (!home && !f.neutral && s.sportsCity && !(cityEffects(s).totals.awayStay))
+        post(s,-35_000,"away-accommodation","إقامة الفريق خارج ملعبه",f.id+"-away-hotel");
       if (home && !f.neutral && s.commerce) matchCommerce(s, f);
       if (home && !f.neutral && !s.commerce) {
         const capacity = Math.floor(

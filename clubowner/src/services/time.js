@@ -1,3 +1,4 @@
+import { sportsCityDay, sportsCityMatchDay } from "./sportsCityDay.js";
 import { academyDay } from "./talent/academy.js";
 import { scoutingDay } from "./talent/scouting.js";
 import { worldTalentDay } from "./talent/world.js";
@@ -93,6 +94,7 @@ export function advanceTime(s, days = null) {
     boardDay(s);
     blackFilesDay(s);
     empireDay(s);
+    sportsCityDay(s);
     if (!s.expansion) seasonDay(s);
     internationalDay(s);
     contractDay(s);
@@ -106,6 +108,7 @@ export function advanceTime(s, days = null) {
     sponsorDay(s);
     developmentDay(s);
     matchDay(s);
+    sportsCityMatchDay(s);
     const loanFixtures = s.players.some(
       (p) => p.loan?.version === 2 && p.loan.parent === s.clubId,
     )

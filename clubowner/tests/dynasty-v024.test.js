@@ -25,8 +25,8 @@ import { getLanguage, setLanguage } from "../src/i18n/index.js";
 
 test("save v24 initializes an empty dynasty without changing the club's starting finances", () => {
   const s = createGame({ database: "current", leagues: ["eg"] });
-  assert.equal(SAVE_VERSION, 24);
-  assert.equal(s.version, 24);
+  assert.equal(SAVE_VERSION, 25);
+  assert.equal(s.version, 25);
   assert.equal(s.dynasty.generation, 1);
   assert.equal(s.dynasty.owner.age, 45);
   assert.deepEqual(s.dynasty.children, []);
@@ -56,7 +56,7 @@ test("v20 migration preserves the current owner age and existing children's ages
 
   const migrated = migrateSave(old);
   assert.equal(old.version, 20, "migration works on a copy");
-  assert.equal(migrated.version, 24);
+  assert.equal(migrated.version, 25);
   assert.equal(migrated.dynasty.owner.age, 63);
   assert.equal(migrated.dynasty.familyName, "Nassar");
   assert.equal(migrated.dynasty.children[0].age, 16);
@@ -112,7 +112,7 @@ test("v21 migration supplies the expanded academy and event fields without chang
   const cash = old.finance.cash;
   const playerIds = old.players.map((player) => player.id);
   const migrated = migrateSave(old);
-  assert.equal(migrated.version, 24);
+  assert.equal(migrated.version, 25);
   assert.equal(migrated.dynasty.owner.age, 64);
   assert.equal(migrated.dynasty.publicBalance, 73);
   assert.equal(migrated.dynasty.children[0].age, 15);

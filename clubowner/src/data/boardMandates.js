@@ -267,6 +267,7 @@ export function buildMandate(s, { seasonNumber, startDate, endDate, ambition, re
     rebuild: Boolean(rebuild),
     items: resolved,
     baseline: {
+      cityFacilities: s.sportsCity?.facilities?.slice() || [],
       facilityLevels: Object.fromEntries(
         (s.facilities || []).map((f) => [f.id, f.level]),
       ),

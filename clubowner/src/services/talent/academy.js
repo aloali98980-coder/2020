@@ -1,3 +1,4 @@
+import { cityEffects } from "../cityFacilities.js";
 import { assert, uid, addDays, clamp, random } from "../../core/utils.js";
 import { prospect, population, POSITIONS } from "./state.js";
 import { reservedSquadSize } from "../employment.js";
@@ -29,7 +30,7 @@ export function startIntake(s) {
     season: s.seasonNumber,
     started: s.date,
     due: addDays(s.date, 14),
-    level,
+    level: level + (s.sportsCity ? (cityEffects(s).totals.academy || 0) + (s.sportsCity.stadium.oldGround === "youth" ? 1 : 0) : 0),
     fee,
   };
   message(s, {
