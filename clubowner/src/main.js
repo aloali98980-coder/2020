@@ -176,12 +176,12 @@ import {
   promoteEmployee, raiseEmployee, respondPoach, resolveMeetingRequest,
 } from "./services/staff/staffCorp.js";
 import { startHqUpgrade } from "./services/staff/hq.js";
+import { fileLegalCase, resolveLegalCase } from "./services/staff/legal.js";
 import { setPhilosophy, setFreedom, resolveDeal } from "./services/staff/sporting.js";
 import { assignScout } from "./services/staff/scouts.js";
 import { setCurriculum } from "./services/staff/academy.js";
 import { launchCampaign } from "./services/staff/marketing.js";
 import { publishContent, derbyCampaign, resolveCrisis } from "./services/staff/social.js";
-import { getLanguage } from "./i18n/index.js";
 import { worldView } from "./features/world.js";
 import { settingsView } from "./features/settings.js";
 import { dynastyView } from "./features/dynasty.js";
@@ -1079,6 +1079,8 @@ const actions = {
     apply((s) => resolveMeetingRequest(s, el.dataset.id, el.dataset.how === "yes")),
   "staff-hq-up": async () =>
     apply((s) => startHqUpgrade(s), tr("بدأ بناء المقر.", "HQ construction started.", "Chantier du siège lancé.")),
+  "staff-legal-act": async (el) =>
+    apply((s) => resolveLegalCase(s, el.dataset.id, el.dataset.how)),
   "staff-phil": async (el) =>
     apply((s) => setPhilosophy(s, el.dataset.id)),
   "staff-deal": async (el) =>
@@ -1517,6 +1519,10 @@ document.addEventListener("submit", async (e) => {
         form.elements.campaignType.value,
         Number(form.elements.budget.value),
       ));
+      return;
+    }
+    if (form.id === "staff-legal-file-form") {
+      await apply((s) => fileLegalCase(s, form.elements.kind.value));
       return;
     }
     if (form.id === "scout-region-form") {
@@ -2002,10 +2008,6 @@ registerOffline();
 window.addEventListener("beforeunload", (e) => {
   if (isSaving() || actionBusy) {
     e.preventDefault();
-    e.returnValue = "";
-  }
-});
-ault();
     e.returnValue = "";
   }
 });

@@ -14,7 +14,7 @@ export const hqQuote = (s) => {
   const spec = HQ_LEVELS[next];
   if (spec.needsCity)
     assert(
-      ensureStaffCorp(s) && s.sportsCity?.facilities?.includes(spec.needsCity),
+      s.sportsCity?.facilities?.includes(spec.needsCity),
       "البرج الإداري يشترط امتلاك برج المكاتب (officeTower) في المدينة الرياضية.",
     );
   return { level: next, spec };
@@ -34,8 +34,8 @@ export function startHqUpgrade(s) {
   return c.hq.project;
 }
 export function hqDay(s) {
-  const c = s.staffCorp;
-  if (!c?.hq?.project || s.date < c.hq.project.end) return false;
+  const c = ensureStaffCorp(s);
+  if (!c.hq.project || s.date < c.hq.project.end) return false;
   c.hq.level = c.hq.project.level;
   c.hq.project = null;
   message(s, {

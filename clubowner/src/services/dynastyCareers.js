@@ -6,6 +6,7 @@ import { initializeCareer } from "../models/player.js";
 import { reservedSquadSize } from "./employment.js";
 import { post, wages } from "./finance.js";
 import { message } from "./inbox.js";
+import { fileSuccessionCase } from "./staff/legal.js";
 import {
   allDynastyChildren,
   enrollDynastyAcademy,
@@ -178,6 +179,8 @@ export function siblingConflictDay(s) {
         child.relationship = roundStat(child.relationship - 0.15);
         if (!child.growth.pendingMilestones.includes("sibling-conflict"))
           child.growth.pendingMilestones.push("sibling-conflict");
+        if (heir && heir.id !== child.id && child.legalClaim)
+          fileSuccessionCase(s, child.id, "sibling-conflict");
       } else if (child.jealousy < 30) {
         child.growth.pendingMilestones = child.growth.pendingMilestones.filter(
           (milestone) => milestone !== "sibling-conflict",

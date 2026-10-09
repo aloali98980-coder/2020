@@ -15,6 +15,7 @@ import { MAX_LADDER_TIER } from "../services/boardMandate.js";
 import { boardTextAr } from "../data/boardTexts.js";
 import { isoDate } from "./isoDate.js";
 import { OWNER_STORIES, LIFESTYLES, TRANSFER_CAP } from "../services/empire/wealth.js";
+import { CASE_KINDS, CASE_STAGES } from "../data/staffCatalog.js";
 
 // A save is untrusted input. Validate structure and relationships before replacing it.
 const id = (value) =>
@@ -735,5 +736,37 @@ function validateEmpire(s) {
           Number.isSafeInteger(m.wageAsk) && m.wageAsk >= 0 && isoDate(m.expires),
       ),
     "سجلات موظفي الإدارة الشاملة غير سليمة.",
+  );
+  const legal = c.legal;
+  check(
+    Array.isArray(legal.cases) && legal.cases.length <= 40 &&
+      amount(legal.wins) && amount(legal.losses) && amount(legal.settlements) &&
+      (!legal.retainerUntil || isoDate(legal.retainerUntil)) &&
+      legal.cases.every((item) =>
+        id(item.id) && Object.hasOwn(CASE_KINDS, item.kind) &&
+        ["open", "won", "lost", "settled"].includes(item.status) &&
+        CASE_STAGES.includes(item.stage) && Number.isInteger(item.severity) && item.severity >= 1 && item.severity <= 3 &&
+        isoDate(item.openedOn) && isoDate(item.nextOn) &&
+        (item.closedOn === null || isoDate(item.closedOn)) &&
+        (item.claimantId === null || id(item.claimantId)) &&
+        Array.isArray(item.stageResults) && item.stageResults.length <= CASE_STAGES.length &&
+        item.stageResults.every((result) => CASE_STAGES.includes(result.stage) && isoDate(result.date) &&
+          amount(result.fee) && Number.isFinite(result.skill) && result.skill >= 0 && result.skill <= 100 &&
+          Number.isFinite(result.chance) && result.chance >= 0 && result.chance <= 100 &&
+          typeof result.retainer === "boolean" && typeof result.won === "boolean"),
+      ),
+    "سجل القضايا القانونية غير سليم.",
+  );
+  const validFinanceReport = (report) =>
+    report && isoDate(report.date) && /^\d{4}-(0[1-9]|1[0-2])$/.test(report.month) &&
+    ["cash", "income30", "out30", "projectedCash", "playerPayroll", "staffPayroll", "operatingCosts", "legendPayroll", "liabilities", "futureIncome", "monthNet", "loans"].every((key) => Number.isSafeInteger(report[key])) &&
+    Array.isArray(report.warnings) && report.warnings.length <= 4 && report.warnings.every((warning) => typeof warning === "string") &&
+    typeof report.audited === "boolean" && isoDate(report.forecastThrough);
+  check(
+    Array.isArray(c.financeOffice.reports) && c.financeOffice.reports.length <= 24 &&
+      (c.financeOffice.lastReport === null || validFinanceReport(c.financeOffice.lastReport)) &&
+      c.financeOffice.reports.every(validFinanceReport) &&
+      (c.financeOffice.auditUntil === null || isoDate(c.financeOffice.auditUntil)),
+    "تقارير المكتب المالي غير سليمة.",
   );
 }

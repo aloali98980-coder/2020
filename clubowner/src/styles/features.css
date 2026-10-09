@@ -3058,3 +3058,11 @@ body.reduce-motion .hl-progress span { transition: none !important; }
 .social-crisis-card { border-color: rgba(248,113,113,.4); background: rgba(248,113,113,.06); }
 .social-crisis-card p, .social-derby p { margin: 0; color: var(--muted, #94a3b8); }
 .social-crisis-card .row-actions { margin-top: .25rem; }
+
+.staff-case-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr)); gap: .75rem; margin: .65rem 0 1rem; }
+.staff-case-card { display: grid; gap: .45rem; padding: .9rem; border: 1px solid var(--line, rgba(148,163,184,.18)); border-radius: 14px; background: var(--panel-soft, rgba(148,163,184,.06)); }
+.staff-case-card > p { margin: 0; }
+.staff-case-card .panel-head { display: flex; align-items: center; justify-content: space-between; gap: .6rem; }
+.staff-case-card .badge { padding: .2rem .55rem; border: 1px solid var(--line, rgba(148,163,184,.25)); border-radius: 999px; color: var(--muted, #94a3b8); font-size: .78rem; }
+.staff-finance-warning { margin: .75rem 0; padding: .85rem 1rem; border: 1px solid rgba(248,113,113,.45); border-radius: 13px; background: rgba(248,113,113,.08); }
+.staff-finance-warning ul { margin: .5rem 0 0; padding-inline-start: 1.2rem; }

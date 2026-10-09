@@ -3,7 +3,7 @@ import { tr } from "../i18n/index.js";
 import { money, num, esc } from "../ui/format.js";
 import {
   STAFF_ROLES, HQ_LEVELS, staffText, SPORTING_PHILOSOPHIES, SCOUT_REGIONS, REGION_IDS,
-  ACADEMY_CURRICULA, CAMPAIGN_TYPES, SOCIAL_CONTENTS, SOCIAL_CRISES,
+  ACADEMY_CURRICULA, CAMPAIGN_TYPES, SOCIAL_CONTENTS, SOCIAL_CRISES, CASE_KINDS, CASE_STAGES,
 } from "../data/staffCatalog.js";
 import {
   ensureStaffCorp, corpEmployees, hqCap, corpPayroll,
@@ -13,6 +13,8 @@ import { gkSkillOf, fitnessSkillOf, doctorSkillOf, fitnessFactor, gkGainBonus } 
 import { academyManagerSkill, academyPotentialBonus, academyScoutBonus } from "../services/staff/academy.js";
 import { sponsorMood } from "../services/staff/marketing.js";
 import { socialState, onlineShirtMultiplier } from "../services/staff/social.js";
+import { legalSettlementCost } from "../services/staff/legal.js";
+import { financeOfficeSnapshot } from "../services/staff/financeOffice.js";
 import { ASSETS } from "../data/catalog.js";
 import { resolveSponsor } from "../services/sponsors.js";
 
@@ -27,6 +29,8 @@ export const STAFF_TABS = [
   ["marketing", "التسويق", "Marketing", "Marketing"],
   ["social", "السوشيال ميديا", "Social Media", "Réseaux sociaux"],
   ["meeting", "اجتماع المجلس", "Board Meeting", "Conseil"],
+  ["legal", "الشؤون القانونية", "Legal Affairs", "Affaires juridiques"],
+  ["financeOffice", "المكتب المالي", "Finance Office", "Bureau financier"],
   ["hq", "المقر الإداري", "Headquarters", "Siège"],
 ];
 const roleName = (role, lang) =>
@@ -135,18 +139,89 @@ function meetingTab(s, lang) {
   <tbody>${rows || `<tr><td colspan="5">${l("لا طلبات هذا الشهر.", "No requests this month.", "Aucune demande ce mois-ci.")}</td></tr>`}</tbody></table>`;
 }
 
-function hqTab(s) {
+function hqTab(s, lang) {
   const c = ensureStaffCorp(s);
   const cur = HQ_LEVELS[c.hq.level];
   const next = HQ_LEVELS[c.hq.level + 1];
-  return `<h3>${l("المقر الإداري", "Headquarters", "Siège")} — ${esc(staffText(cur.name, "ar"))}</h3>
+  return `<h3>${l("المقر الإداري", "Headquarters", "Siège")} — ${esc(staffText(cur.name, lang))}</h3>
   <p>${l("السعة", "Capacity", "Capacité")}: ${num(c.employees.length)}/${num(hqCap(s))} · ${l("الثروة الشخصية", "Personal wealth", "Fortune personnelle")}: ${money(s.empire?.personal || 0)}</p>
   ${c.hq.project ? `<p>${l("قيد البناء حتى", "Under construction until", "En construction jusqu’au")} ${esc(c.hq.project.end)}</p>`
-    : next ? `<div class="hq-next"><p>${l("التالي", "Next", "Suivant")}: <strong>${esc(staffText(next.name, "ar"))}</strong> — ${l("سعة", "capacity", "capacité")} ${num(next.cap)} · ${l("تكلفة", "cost", "coût")} ${money(next.cost)} ${l("من ثروتك", "from your wealth", "sur votre fortune")}
+    : next ? `<div class="hq-next"><p>${l("التالي", "Next", "Suivant")}: <strong>${esc(staffText(next.name, lang))}</strong> — ${l("سعة", "capacity", "capacité")} ${num(next.cap)} · ${l("تكلفة", "cost", "coût")} ${money(next.cost)} ${l("من ثروتك", "from your wealth", "sur votre fortune")}
       ${next.needsCity ? ` · ${l("يشترط برج المكاتب في المدينة الرياضية", "Requires the city office tower", "Exige la tour de bureaux de la cité")}` : ""}</p>
       <button class="btn primary" data-action="staff-hq-up">${l("بدء الترقية", "Start Upgrade", "Lancer les travaux")}</button></div>`
     : `<p>${l("بلغت البرج الإداري — القمة.", "Admin Tower reached — the top.", "Tour administrative atteinte — le sommet.")}</p>`}
-  <div class="hq-ladder">${HQ_LEVELS.map((h, i) => `<span class="${i < c.hq.level ? "done" : i === c.hq.level ? "cur" : ""}">${esc(staffText(h.name, "ar"))} (${num(h.cap)})</span>`).join(" ← ")}</div>`;
+  <div class="hq-ladder">${HQ_LEVELS.map((h, i) => `<span class="${i < c.hq.level ? "done" : i === c.hq.level ? "cur" : ""}">${esc(staffText(h.name, lang))} (${num(h.cap)})</span>`).join(" ← ")}</div>`;
+}
+
+const CASE_STAGE_LABELS = {
+  appeal: ["استئناف", "Appeal", "Appel"],
+  hearing: ["جلسة", "Hearing", "Audience"],
+  verdict: ["حكم", "Verdict", "Verdict"],
+};
+const CASE_STATUS_LABELS = {
+  open: ["مفتوحة", "Open", "Ouverte"],
+  won: ["كسبناها", "Won", "Gagnée"],
+  lost: ["خسرناها", "Lost", "Perdue"],
+  settled: ["تسوية", "Settled", "Réglée"],
+};
+function legalTab(s, lang) {
+  const c = ensureStaffCorp(s);
+  const cases = c.legal.cases || [];
+  const open = cases.filter((item) => item.status === "open");
+  const history = cases.filter((item) => item.status !== "open").slice(0, 8);
+  const legalDirector = corpEmployees(s).find((employee) => employee.role === "lawyer");
+  const cards = open.map((item) => {
+    const kind = CASE_KINDS[item.kind];
+    const stageIndex = CASE_STAGES.indexOf(item.stage);
+    const fee = kind?.fees[stageIndex] || 0;
+    const settlement = legalSettlementCost(item);
+    const ready = s.date >= item.nextOn;
+    const attempts = (item.stageResults || []).slice(-3).map((result) =>
+      `<li>${esc(staffText(CASE_STAGE_LABELS[result.stage] ? { ar: CASE_STAGE_LABELS[result.stage][0], en: CASE_STAGE_LABELS[result.stage][1], fr: CASE_STAGE_LABELS[result.stage][2] } : result.stage, lang))} · ${esc(result.date)} · ${num(result.chance)}٪ ${result.won ? l("نجاح", "success", "succès") : l("تعثر", "setback", "échec")}</li>`,
+    ).join("");
+    return `<section class="staff-case-card"><div class="panel-head"><strong>${esc(staffText(kind?.name, lang))}</strong><span class="badge">${esc(staffText({ ar: CASE_STAGE_LABELS[item.stage]?.[0] || item.stage, en: CASE_STAGE_LABELS[item.stage]?.[1] || item.stage, fr: CASE_STAGE_LABELS[item.stage]?.[2] || item.stage }, lang))}</span></div>
+      <p>${l("درجة الخطورة", "Severity", "Gravité")}: ${num(item.severity)}/3 · ${l("الجلسة", "Hearing", "Audience")}: ${esc(item.nextOn)} · ${l("أتعاب المرحلة", "Stage fee", "Frais de l’étape")}: ${money(fee)}</p>
+      <p class="muted">${ready ? l("الجلسة جاهزة — تحرك قبل انتهاء المهلة.", "Hearing is ready — act before the deadline.", "Audience prête — agissez avant l’échéance.") : l("الجلسة لم تحن بعد.", "The hearing is not due yet.", "L’audience n’est pas encore prévue.")}</p>
+      <div class="row-actions"><button class="btn small primary" data-action="staff-legal-act" data-id="${esc(item.id)}" data-how="contest" ${!ready || s.finance.cash < fee ? "disabled" : ""}>${l("ترافع", "Contest", "Contester")} · ${money(fee)}</button>
+      <button class="btn small" data-action="staff-legal-act" data-id="${esc(item.id)}" data-how="settle" ${s.finance.cash < settlement ? "disabled" : ""}>${l("تسوية", "Settle", "Régler")} · ${money(settlement)}</button></div>
+      ${attempts ? `<ul class="staff-log">${attempts}</ul>` : ""}</section>`;
+  }).join("");
+  const past = history.map((item) => {
+    const stageName = item.kind && CASE_KINDS[item.kind]?.name;
+    const status = CASE_STATUS_LABELS[item.status] || CASE_STATUS_LABELS.settled;
+    return `<tr><td>${esc(staffText(stageName, lang))}</td><td>${esc(staffText({ ar: status[0], en: status[1], fr: status[2] }, lang))}</td><td>${esc(item.openedOn)} – ${esc(item.closedOn || "—")}</td><td>${num(item.stageResults?.length || 0)}</td></tr>`;
+  }).join("");
+  const manualKinds = ["ban", "contract"].map((id) => `<option value="${id}">${esc(staffText(CASE_KINDS[id].name, lang))}</option>`).join("");
+  return `<h3>${l("الشؤون القانونية", "Legal Affairs", "Affaires juridiques")}</h3>
+    <div class="staff-metric-grid"><div class="staff-metric"><small>${l("القضايا المفتوحة", "Open cases", "Affaires ouvertes")}</small><strong>${num(open.length)}</strong></div><div class="staff-metric"><small>${l("مكاسب / خسائر", "Wins / losses", "Gagnées / perdues")}</small><strong>${num(c.legal.wins)} / ${num(c.legal.losses)}</strong></div><div class="staff-metric"><small>${l("التسويات", "Settlements", "Règlements")}</small><strong>${num(c.legal.settlements || 0)}</strong></div><div class="staff-metric"><small>${l("المستشار القانوني", "Legal counsel", "Conseiller juridique")}</small><strong>${legalDirector ? `${esc(empName(legalDirector, lang))} · ${num(legalDirector.skill)}` : l("غير معيّن", "Not appointed", "Non nommé")}</strong></div></div>
+    <p class="hint">${c.legal.retainerUntil >= s.date ? l("تفويض التمثيل القانوني من المجلس ساري.", "The board legal retainer is active.", "Le mandat juridique du conseil est actif.") : l("اعتماد طلب المستشار القانوني في اجتماع المجلس يرفع فرصة النجاح مؤقتًا.", "Approving counsel’s board request temporarily improves hearing odds.", "L’approbation de la demande du juriste améliore temporairement les chances.")}</p>
+    <form id="staff-legal-file-form" class="neg-form"><label>${l("فتح ملف قانوني", "Open a legal file", "Ouvrir un dossier juridique")}<select name="kind">${manualKinds}</select></label><button class="btn primary small" type="submit" ${open.length >= 8 ? "disabled" : ""}>${l("إيداع القضية", "File case", "Déposer le dossier")}</button><small>${l("الفتح دون رسوم؛ تبدأ الأتعاب عند الترافع، ولكل مرحلة موعد نهائي.", "Filing is free; fees begin when counsel acts, and each stage has a deadline.", "Le dépôt est gratuit ; les frais commencent avec la défense et chaque étape a une échéance.")}</small></form>
+    <h4>${l("القضايا الجارية", "Active cases", "Affaires en cours")}</h4><div class="staff-case-grid">${cards || `<p class="hint">${l("لا قضايا مفتوحة حاليًا.", "No open cases right now.", "Aucune affaire en cours.")}</p>`}</div>
+    <h4>${l("سجل القضايا", "Case history", "Historique des affaires")}</h4><table class="staff-table"><thead><tr><th>${l("نوع القضية", "Case", "Affaire")}</th><th>${l("النتيجة", "Outcome", "Résultat")}</th><th>${l("الفترة", "Dates", "Dates")}</th><th>${l("الجلسات", "Hearings", "Audiences")}</th></tr></thead><tbody>${past || `<tr><td colspan="4">${l("لا سجل بعد.", "No history yet.", "Aucun historique.")}</td></tr>`}</tbody></table>`;
+}
+
+const FINANCE_WARNING_LABELS = {
+  "cash-deficit": ["الخزينة سالبة", "Cash is negative", "La trésorerie est négative"],
+  "projected-deficit": ["التوقع خلال ٣٠ يومًا سالب", "The 30-day forecast is negative", "La prévision à 30 jours est négative"],
+  "payroll-over-budget": ["رواتب اللاعبين تتجاوز ميزانيتها", "Player payroll exceeds its budget", "La masse salariale des joueurs dépasse le budget"],
+  "liability-pressure": ["الالتزامات مرتفعة مقارنة بالسيولة", "Liabilities are high relative to cash", "Les engagements sont élevés par rapport à la trésorerie"],
+};
+function financeOfficeTab(s, lang) {
+  const c = ensureStaffCorp(s);
+  const report = financeOfficeSnapshot(s);
+  const last = c.financeOffice.lastReport;
+  const warnings = report.warnings.map((code) => {
+    const label = FINANCE_WARNING_LABELS[code];
+    return `<li>${esc(staffText({ ar: label[0], en: label[1], fr: label[2] }, lang))}</li>`;
+  }).join("");
+  const metric = (title, value) => `<div class="staff-metric"><small>${title}</small><strong>${value}</strong></div>`;
+  return `<h3>${l("المكتب المالي", "Finance Office", "Bureau financier")}</h3>
+    <p class="hint">${l("توقع متحرك للثلاثين يومًا المقبلة يجمع الالتزامات والإيرادات المجدولة والرواتب والتشغيل.", "A rolling 30-day forecast combines scheduled commitments and income, payroll, and operations.", "Une prévision glissante à 30 jours regroupe engagements, recettes prévues, salaires et fonctionnement.")}</p>
+    <div class="staff-metric-grid">${metric(l("الرصيد الحالي", "Current cash", "Trésorerie actuelle"), money(report.cash))}${metric(l("إيرادات مجدولة · ٣٠ يومًا", "Scheduled income · 30 days", "Recettes prévues · 30 jours"), money(report.income30))}${metric(l("مصروفات متوقعة · ٣٠ يومًا", "Forecast expenses · 30 days", "Dépenses prévues · 30 jours"), money(report.out30))}${metric(l("الرصيد المتوقع", "Projected cash", "Trésorerie prévue"), money(report.projectedCash))}${metric(l("الالتزامات المتبقية", "Outstanding liabilities", "Engagements restants"), money(report.liabilities))}${metric(l("إيرادات مستقبلية", "Future income", "Revenus futurs"), money(report.futureIncome))}</div>
+    <div class="staff-metric-grid">${metric(l("رواتب اللاعبين", "Player payroll", "Salaires des joueurs"), money(report.playerPayroll))}${metric(l("رواتب الجهاز الإداري", "Staff payroll", "Salaires de l’administration"), money(report.staffPayroll))}${metric(l("التشغيل", "Operations", "Fonctionnement"), money(report.operatingCosts))}${metric(l("صافي حركة الشهر", "Month-to-date net", "Solde du mois"), money(report.monthNet))}</div>
+    ${warnings ? `<section class="staff-finance-warning"><strong>${l("تحذيرات مالية", "Financial warnings", "Alertes financières")}</strong><ul>${warnings}</ul></section>` : `<p class="hint">${l("لا توجد تحذيرات سيولة حاليًا.", "No liquidity warnings right now.", "Aucune alerte de trésorerie pour le moment.")}</p>`}
+    <p class="hint">${report.audited ? l("المراجعة المالية مفوضة من المجلس حتى نهاية فترة التفويض.", "The board-authorized financial review is active.", "L’audit financier autorisé par le conseil est actif.") : l("يمكن للمدير المالي طلب تفويض مراجعة مؤقت من اجتماع المجلس.", "The finance director can request a temporary audit mandate at the board meeting.", "Le directeur financier peut demander un mandat d’audit temporaire au conseil.")}</p>
+    <h4>${l("آخر تقرير شهري محفوظ", "Latest saved monthly report", "Dernier rapport mensuel enregistré")}</h4>${last ? `<p>${esc(last.month)} · ${l("صافي الحركة", "Net movement", "Variation nette")}: ${money(last.monthNet)} · ${l("توقع الثلاثين يومًا", "30-day forecast", "Prévision à 30 jours")}: ${money(last.projectedCash)}${last.warnings?.length ? ` · ${l("تحذيرات", "warnings", "alertes")}: ${num(last.warnings.length)}` : ` · ${l("بلا تحذيرات", "no warnings", "aucune alerte")}`}</p>` : `<p class="hint">${l("سيُحفظ أول تقرير في بداية الشهر القادم.", "The first report is saved at the start of next month.", "Le premier rapport sera enregistré au début du mois prochain.")}</p>`}`;
 }
 
 function sportingTab(s, lang) {
@@ -311,6 +386,9 @@ export function staffView(s, tab = "org", lang = "ar") {
     : tab === "academy" ? academyTab(s, lang)
     : tab === "marketing" ? marketingTab(s, lang)
     : tab === "social" ? socialTab(s, lang)
-    : tab === "meeting" ? meetingTab(s, lang) : tab === "hq" ? hqTab(s) : orgTab(s, lang);
+    : tab === "meeting" ? meetingTab(s, lang)
+    : tab === "legal" ? legalTab(s, lang)
+    : tab === "financeOffice" ? financeOfficeTab(s, lang)
+    : tab === "hq" ? hqTab(s, lang) : orgTab(s, lang);
   return `<section class="staff-corp"><div class="tabs">${tabs}</div><div class="tab-body">${body}</div></section>`;
 }

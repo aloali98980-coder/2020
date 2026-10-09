@@ -60,8 +60,8 @@ export function blankStaffCorp() {
     scouts: { reports: [] },
     academy: { curriculum: "technique", watchlist: [] },
     social: { followers: 0, engagement: 50, posts: [], crisis: null, lastDerbyMatch: null },
-    legal: { cases: [], wins: 0, losses: 0 },
-    financeOffice: { lastReport: null },
+    legal: { cases: [], wins: 0, losses: 0, settlements: 0, retainerUntil: null },
+    financeOffice: { lastReport: null, reports: [], auditUntil: null },
     log: [],
   };
 }
@@ -119,8 +119,16 @@ export function ensureStaffCorp(s) {
   c.social.posts ||= [];
   c.social.crisis ??= null;
   c.social.lastDerbyMatch ??= null;
-  c.legal ||= { cases: [], wins: 0, losses: 0 };
-  c.financeOffice ||= { lastReport: null };
+  c.legal ||= { cases: [], wins: 0, losses: 0, settlements: 0, retainerUntil: null };
+  c.legal.cases ||= [];
+  c.legal.wins ??= 0;
+  c.legal.losses ??= 0;
+  c.legal.settlements ??= 0;
+  c.legal.retainerUntil ??= null;
+  c.financeOffice ||= { lastReport: null, reports: [], auditUntil: null };
+  c.financeOffice.reports ||= [];
+  c.financeOffice.auditUntil ??= null;
+  c.financeOffice.lastReport ??= null;
   c.log ||= [];
   return c;
 }
@@ -552,6 +560,7 @@ export function resolveMeetingRequest(s, reqId, approve) {
     for (const k of Object.keys(c.marketing.mood)) c.marketing.mood[k] = clamp(c.marketing.mood[k] + 8, 0, 100);
   if (r.role === "social") c.social.followers = Math.round(c.social.followers * 1.05 + 5000);
   if (r.role === "lawyer") c.legal.retainerUntil = addDays(s.date, 30);
+  if (r.role === "finance") c.financeOffice.auditUntil = addDays(s.date, 30);
   if (emp) {
     emp.loyalty = clamp(emp.loyalty + 3, 0, 100);
     emp.history.push({ date: s.date, text: "اعتُمد طلبه في المجلس" });
