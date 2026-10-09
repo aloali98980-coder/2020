@@ -1,3 +1,6 @@
+import "./styles/sportsCity.css";
+import { buildCityFacility } from "./services/cityFacilities.js";
+import { startStadium, chooseOldGround, nameStadium, stadiumQuote } from "./services/sportsCity.js";
 import { startIntake, chooseCandidate } from "./services/talent/academy.js";
 import {
   requestMission,
@@ -1090,6 +1093,9 @@ const actions = {
     ui.empireTab = el.dataset.tab || "wealth";
     render();
   },
+  "city-build": async (el) => apply((s) => buildCityFacility(s, el.dataset.id), tr("بُنيت المنشأة.", "Facility built.", "Installation construite.")),
+  "city-old": async (el) => apply((s) => chooseOldGround(s, el.dataset.id), tr("تقرر مصير الملعب القديم.", "Old ground allocated.", "Ancien stade réaffecté.")),
+  "city-name": async (el) => apply((s) => nameStadium(s, el.dataset.id), tr("حُسمت حقوق الاسم.", "Naming rights settled.", "Droits de dénomination attribués.")),
   "empire-buy-asset": async (el) => {
     const { buyAsset } = await import("./services/empire/assets.js");
     await apply(
@@ -1375,6 +1381,13 @@ document.addEventListener("submit", async (e) => {
   e.preventDefault();
   if (isSaving() || actionBusy) return;
   try {
+    if (form.id === "city-stadium-form") {
+      const tier = Number(form.elements.tier.value), route = form.elements.route.value, district = form.elements.district.value, design = form.elements.design.value;
+      const quote = stadiumQuote(getState(), tier, route, district, design);
+      if (!confirm(`${tr("التكلفة","Cost","Coût")}: ${quote.cost.toLocaleString()} · ${quote.days} ${tr("يوم","days","jours")}?`)) return;
+      await apply((s) => startStadium(s, {tier,route,district,design}), tr("بدأ البناء.","Construction started.","Chantier commencé."));
+      return;
+    }
     if (form.id === "dynasty-marriage-form") {
       const partner = form.elements.partner.value;
       await apply(
