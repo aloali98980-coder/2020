@@ -18,7 +18,8 @@ import { signSponsor } from "../services/sponsors.js";
 import { initBoard, startSeasonMandate } from "../services/boardMandate.js";
 import { initBlackFiles } from "../services/blackFiles.js";
 import { ensureReleaseClause } from "../services/releaseClause.js";
-export const SAVE_VERSION = 25;
+import { ensureStaffCorp } from "../services/staff/staffCorp.js";
+export const SAVE_VERSION = 26;
 export function createGame({
   clubId = "ahly",
   owner = "مالك النادي",
@@ -179,5 +180,7 @@ export function createGame({
   // 0.28: الملفات السوداء + الشرط الجزائي
   initBlackFiles(s);
   ensureReleaseClause(s);
+  // 0.30: الإدارة الشاملة — طاقم افتراضي متوسط + مقر صغير من اليوم الأول.
+  ensureStaffCorp(s);
   return s;
 }

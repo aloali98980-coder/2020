@@ -170,6 +170,13 @@ import {
 } from "./features/sponsors.js";
 import { financeView } from "./features/finance.js";
 import { boardView } from "./features/board.js";
+import { staffView } from "./features/staff.js";
+import {
+  startNegotiation, negotiate, cancelNegotiation, fireEmployee, renewEmployee,
+  promoteEmployee, raiseEmployee, respondPoach, resolveMeetingRequest,
+} from "./services/staff/staffCorp.js";
+import { startHqUpgrade } from "./services/staff/hq.js";
+import { getLanguage } from "./i18n/index.js";
 import { worldView } from "./features/world.js";
 import { settingsView } from "./features/settings.js";
 import { dynastyView } from "./features/dynasty.js";
@@ -237,6 +244,7 @@ const ui = {
   legendFilters: { ...DEFAULT_LEGEND_FILTERS },
   legendOffer: {},
   empireTab: "wealth",
+  staffTab: "org",
   palette: { open: false, q: "", sel: 0, items: [] },
 };
 let pendingImport = null;
@@ -299,6 +307,7 @@ function render() {
     sponsors: () => sponsorsView(s),
     finance: () => financeView(s, ui.financeTab),
     board: () => boardView(s),
+    staff: () => staffView(s, ui.staffTab, getLanguage()),
     world: () =>
       s.expansion
         ? competitionsView(s, ui.expandedDivision)
@@ -1043,6 +1052,28 @@ const actions = {
     ui.financeTab = el.dataset.id;
     render();
   },
+  "staff-tab": async (el) => {
+    ui.staffTab = el.dataset.id;
+    render();
+  },
+  "staff-neg-start": async (el) =>
+    apply((s) => startNegotiation(s, el.dataset.id), tr("بدأ التفاوض — ٣ جولات.", "Negotiation started — 3 rounds.", "Négociation lancée — 3 tours.")),
+  "staff-neg-cancel": async () =>
+    apply((s) => cancelNegotiation(s)),
+  "staff-fire": async (el) =>
+    apply((s) => fireEmployee(s, el.dataset.id), tr("أُنهي العقد.", "Contract terminated.", "Contrat résilié.")),
+  "staff-renew": async (el) =>
+    apply((s) => renewEmployee(s, el.dataset.id, 2, 5), tr("جُدد العقد سنتين.", "Renewed for 2 years.", "Renouvelé pour 2 ans.")),
+  "staff-promote": async (el) =>
+    apply((s) => promoteEmployee(s, el.dataset.id), tr("تمت الترقية.", "Promoted.", "Promotion accordée.")),
+  "staff-raise": async (el) =>
+    apply((s) => raiseEmployee(s, el.dataset.id, 10), tr("تمت الزيادة.", "Raise granted.", "Augmentation accordée.")),
+  "staff-poach": async (el) =>
+    apply((s) => respondPoach(s, el.dataset.id, el.dataset.how)),
+  "staff-req": async (el) =>
+    apply((s) => resolveMeetingRequest(s, el.dataset.id, el.dataset.how === "yes")),
+  "staff-hq-up": async () =>
+    apply((s) => startHqUpgrade(s), tr("بدأ بناء المقر.", "HQ construction started.", "Chantier du siège lancé.")),
   "world-tab": async (el) => {
     ui.worldTab = el.dataset.id;
     render();
@@ -1449,6 +1480,13 @@ document.addEventListener("submit", async (e) => {
     if (form.id === "shop-stock") {
       const quantity = Number(form.elements.quantity.value);
       await apply((s) => stockShirts(s, quantity));
+    }
+    if (form.id === "staff-negotiate-form") {
+      const t = Object.fromEntries(new FormData(form));
+      await apply((s) =>
+        negotiate(s, { wage: Number(t.wage), years: Number(t.years), bonus: Number(t.bonus) }),
+      );
+      return;
     }
     if (form.id === "staff-hire-form") {
       await apply((s) =>
@@ -1929,6 +1967,10 @@ registerOffline();
 window.addEventListener("beforeunload", (e) => {
   if (isSaving() || actionBusy) {
     e.preventDefault();
+    e.returnValue = "";
+  }
+});
+ault();
     e.returnValue = "";
   }
 });

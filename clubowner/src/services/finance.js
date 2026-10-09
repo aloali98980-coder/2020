@@ -1,4 +1,5 @@
 import { salaryLiability } from "./employment.js";
+import { corpPayroll } from "./staff/staffCorp.js";
 import { difficulty } from "../models/difficulty.js";
 import { uid, safeAmount, assert, addDays } from "../core/utils.js";
 import { message } from "./inbox.js";
@@ -98,6 +99,9 @@ export function financeDay(s) {
   }
   if (s.date.endsWith("-01")) {
     post(s, -wages(s), "wages", "مرتبات اللاعبين الشهرية", "wages-" + s.date);
+    // 0.30: مرتبات الجهاز الإداري الشامل تُصرف مع التشغيل أول كل شهر.
+    if (s.staffCorp)
+      post(s, -corpPayroll(s), "staff-wages", "مرتبات الجهاز الإداري", "corpwages-" + s.date);
     post(
       s,
       -operatingCosts(s),
