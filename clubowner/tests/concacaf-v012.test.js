@@ -43,6 +43,7 @@ import {
   restGap,
 } from "../src/services/calendar.js";
 import { random } from "../src/core/utils.js";
+import { SAVE_VERSION } from "../src/core/game.js";
 const game = () =>
   createGame({
     database: "world",
@@ -401,7 +402,7 @@ test("v11 migration preserves current cups and activates no new CONCACAF mid-sea
   delete s.expansion.concacaf;
   s.expansion.cups = s.expansion.cups.filter((c) => c.engine !== "concacaf-v1");
   const migrated = migrateSave(s);
-  assert.equal(migrated.version, 20);
+  assert.equal(migrated.version, SAVE_VERSION);
   assert.equal(migrated.expansion.concacafVersion, 0);
   assert.deepEqual(migrated.expansion.cups, s.expansion.cups);
   validateSave(migrated);

@@ -1,3 +1,5 @@
+import { cityEffects } from "./cityFacilities.js";
+import { daysBetween } from "../core/utils.js";
 import { developIndividual } from "./talent/training.js";
 import { reservedSquadSize } from "./employment.js";
 import { generatedPlayer } from "../models/generatedPlayers.js";
@@ -9,9 +11,11 @@ import { random, clamp, uid, addDays } from "../core/utils.js";
 import { makePlayer } from "../data/catalog.js";
 import { message } from "./inbox.js";
 export function developmentDay(s) {
+  const city = s.sportsCity ? cityEffects(s).totals : {};
   const coaching = Math.max(
     staffSkill(s, "coach"),
     s.management?.coach?.skill || 0,
+    (city.staff || 0) * 4,
   );
   const medical = s.facilities.find((f) => f.id === "medical"),
     training = s.facilities.find((f) => f.id === "training"),
@@ -19,8 +23,11 @@ export function developmentDay(s) {
   for (const p of s.players.filter(
     (p) => p.clubId === s.clubId && p.status !== "retired",
   )) {
+    if (city.recovery && p.injuryUntil >= s.date && s.date.slice(8,10) === "01") {
+      p.injuryUntil = addDays(s.date, Math.max(0,daysBetween(s.date,p.injuryUntil)-city.recovery));
+    }
     p.fitness = clamp(
-      p.fitness + (medical.level > 1 && medical.staff ? 4 : 2),
+      p.fitness + (medical.level > 1 && medical.staff ? 4 : 2) + (city.fitness || 0),
       0,
       100,
     );
@@ -84,7 +91,7 @@ export function developmentDay(s) {
   if (
     !s.talent &&
     s.date.endsWith("-01") &&
-    academy.level > 1 &&
+    (academy.level > 1 || city.academy || s.sportsCity?.stadium?.oldGround === "youth") &&
     (academy.staff || staffSkill(s, "academy") > 0) &&
     reservedSquadSize(s) < (s.squadLimit || 30)
   ) {

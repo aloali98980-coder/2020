@@ -1,5 +1,8 @@
+import { CITY_FACILITIES } from "../data/sportsCityFacilities.js";
+import { CAPACITY_TIERS } from "../services/sportsCity.js";
 import { validateTalent } from "./talentValidation.js";
 import { validateLegends } from "./legendsValidation.js";
+import { validateDynasty } from "./dynastyValidation.js";
 import { extendedClub } from "../data/expandedCatalog.js";
 import { validateExpansion } from "./expansionValidation.js";
 import { ALL_MARKETS } from "../data/worldMarkets.js";
@@ -7,7 +10,11 @@ import { EVENT_CATALOG } from "../data/eventCatalog.js";
 import { CLUBS, FACILITIES, ASSETS } from "../data/catalog.js";
 import { resolveSponsor } from "../services/sponsors.js";
 import { SAVE_VERSION } from "./game.js";
+import { AMBITIONS, AXES, CLUB_SIZES, ITEM_KINDS, MANDATE_SCHEMA as BOARD_SCHEMA } from "../data/boardMandates.js";
+import { MAX_LADDER_TIER } from "../services/boardMandate.js";
+import { boardTextAr } from "../data/boardTexts.js";
 import { isoDate } from "./isoDate.js";
+import { OWNER_STORIES, LIFESTYLES, TRANSFER_CAP } from "../services/empire/wealth.js";
 
 // A save is untrusted input. Validate structure and relationships before replacing it.
 const id = (value) =>
@@ -487,8 +494,219 @@ export function validateSave(s) {
     ),
     "بيانات القدرات أو مصادر الميلاد غير سليمة.",
   );
+  validateBoard(s);
+  validateBlackFiles(s);
+  validateEmpire(s);
+  const city = s.sportsCity, stadium = city?.stadium;
+  check(city && Array.isArray(city.facilities) && city.facilities.length <= CITY_FACILITIES.length &&
+    new Set(city.facilities).size === city.facilities.length && city.facilities.every(x => CITY_FACILITIES.some(f => f.id === x)) &&
+    stadium && Number.isInteger(stadium.tier) && stadium.tier >= 0 && stadium.tier < CAPACITY_TIERS.length &&
+    (!stadium.project || (Number.isInteger(stadium.project.tier) && stadium.project.tier > stadium.tier && stadium.project.tier < CAPACITY_TIERS.length && isoDate(stadium.project.end))) &&
+    Array.isArray(city.eventsSeen) && city.eventsSeen.length <= 100 && Array.isArray(city.news) && city.news.length <= 40 &&
+    (!city.broadcasts || (Array.isArray(city.broadcasts) && city.broadcasts.length <= 30)), "حالة المدينة الرياضية غير سليمة.");
   validateExpansion(s);
   validateTalent(s);
   validateLegends(s);
+  validateDynasty(s);
   return s;
+}
+
+// 0.28: الملفات السوداء — مؤشر شبهات، عمليات، ومنع قيد، وتاريخ فضائح
+function validateBlackFiles(s) {
+  const bf = s.blackFiles;
+  check(
+    bf && typeof bf === "object" &&
+      Number.isFinite(bf.suspicion) && bf.suspicion >= 0 && bf.suspicion <= 100 &&
+      Number.isFinite(bf.permanentRepPenalty) && bf.permanentRepPenalty >= 0 && bf.permanentRepPenalty <= 50 &&
+      amount(bf.scandalCount) && bf.scandalCount <= 100 &&
+      Array.isArray(bf.history) && bf.history.length <= 200 &&
+      typeof bf.active === "object" &&
+      typeof bf.cooldowns === "object" &&
+      (!bf.transferBanUntil || isoDate(bf.transferBanUntil)) &&
+      (!bf.lastOperationDate || isoDate(bf.lastOperationDate)) &&
+      Array.isArray(bf.pendingAiBreaks),
+    "حالة الملفات السوداء غير سليمة.",
+  );
+  check(
+    typeof bf.active.agentOnPayroll === "boolean" &&
+      (!bf.active.agentSince || isoDate(bf.active.agentSince)),
+    "حالة وكيل المرتب غير سليمة.",
+  );
+  check(
+    bf.history.every((h) => isoDate(h.date)),
+    "سجل الملفات السوداء غير سليم.",
+  );
+}
+
+// 0.26: لائحة الجمعية العمومية. الحقول كلها مشتقة أو مسجَّلة، والقيم محدودة
+// بسقف سلم العواقب — فلا يمكن لحفظة معدَّلة يدويًا أن تحمل «درجة رابعة» أو ثقة سالبة.
+function validateBoard(s) {
+  const b = s.board;
+  check(
+    b &&
+      typeof b === "object" &&
+      b.schema === BOARD_SCHEMA &&
+      Number.isFinite(b.confidence) &&
+      b.confidence >= 0 &&
+      b.confidence <= 100,
+    boardTextAr("boardInvalidState"),
+  );
+  check(
+    amount(b.failureStreak) &&
+      amount(b.successStreak) &&
+      (!b.freezeUntil || isoDate(b.freezeUntil)) &&
+      Number.isFinite(b.wageFactor) &&
+      b.wageFactor > 0 &&
+      b.wageFactor <= 4 &&
+      typeof b.nextRebuild === "boolean" &&
+      Number.isFinite(b.pendingBoost) &&
+      b.pendingBoost >= 0 &&
+      b.pendingBoost <= 1,
+    boardTextAr("boardInvalidMetrics"),
+  );
+  const validItem = (it) =>
+    id(it.id) &&
+    ITEM_KINDS[it.kind] !== undefined &&
+    AXES.includes(ITEM_KINDS[it.kind].axis) &&
+    it.axis === ITEM_KINDS[it.kind].axis &&
+    typeof it.critical === "boolean" &&
+    amount(it.target) &&
+    it.target > 0;
+  const validReview = (r) =>
+    !r ||
+    (isoDate(r.date) &&
+      typeof r.good === "boolean" &&
+      amount(r.done) &&
+      amount(r.total));
+  const m = b.mandate;
+  check(
+    !m ||
+      (id(m.id) &&
+        amount(m.season) &&
+        isoDate(m.issuedAt) &&
+        isoDate(m.startDate) &&
+        isoDate(m.midDate) &&
+        isoDate(m.endDate) &&
+        m.startDate <= m.midDate &&
+        m.midDate <= m.endDate &&
+        CLUB_SIZES[m.size] !== undefined &&
+        AMBITIONS[m.ambition] !== undefined &&
+        typeof m.rebuild === "boolean" &&
+        Array.isArray(m.items) &&
+        m.items.length >= 3 &&
+        m.items.length <= 12 &&
+        m.items.every(validItem) &&
+        new Set(m.items.map((it) => it.id)).size === m.items.length &&
+        m.baseline &&
+        typeof m.baseline.facilityLevels === "object" &&
+        Array.isArray(m.baseline.youthIds) &&
+        amount(m.baseline.squadSize) &&
+        m.review &&
+        validReview(m.review.mid) &&
+        validReview(m.review.end)),
+    boardTextAr("boardInvalidMandate"),
+  );
+  check(
+    Array.isArray(b.history) &&
+      b.history.length <= 40 &&
+      b.history.every(
+        (h) =>
+          amount(h.season) &&
+          isoDate(h.date) &&
+          ["passed", "partial", "failed"].includes(h.status) &&
+          amount(h.done) &&
+          amount(h.total) &&
+          amount(h.tier) &&
+          h.tier <= MAX_LADDER_TIER &&
+          Array.isArray(h.effects),
+      ),
+    boardTextAr("boardInvalidHistory"),
+  );
+  check(
+    Array.isArray(b.meetings) &&
+      b.meetings.length <= 200 &&
+      b.meetings.every(
+        (x) =>
+          id(x.id) &&
+          ["mid", "end"].includes(x.kind) &&
+          amount(x.season) &&
+          isoDate(x.date) &&
+          ["trust", "warning", "passed", "partial", "failed"].includes(x.status) &&
+          amount(x.done) &&
+          amount(x.total),
+      ),
+    boardTextAr("boardInvalidMeetings"),
+  );
+}
+
+// 0.29: حياة الملياردير. ثروة شخصية منفصلة عن خزينة النادي، معيشة، أصول،
+// عائلة، استثمارات، منافسون، وخير. كل القيم أعداد صحيحة آمنة ومقيدة بسقوف
+// معلنة؛ خزينة النادي نفسها لا تُمسّ هنا (تُفحص في قيود الدفاتر أعلاه).
+function validateEmpire(s) {
+  const e = s.empire;
+  check(e && typeof e === "object" && e.schema === 1, "حالة حياة الملياردير غير سليمة.");
+  check(
+    OWNER_STORIES[e.story] !== undefined &&
+      amount(e.personal) &&
+      amount(e.debt) &&
+      Number.isFinite(e.prestige) && e.prestige >= 0 && e.prestige <= 400 &&
+      Number.isFinite(e.fame) && e.fame >= 0 && e.fame <= 100 &&
+      LIFESTYLES[e.lifestyle] !== undefined,
+    "ثروة المالك الشخصية غير سليمة.",
+  );
+  check(
+    e.transfers && typeof e.transfers === "object" &&
+      typeof e.transfers.month === "string" &&
+      amount(e.transfers.toPersonal) && e.transfers.toPersonal <= TRANSFER_CAP &&
+      amount(e.transfers.toClub) && e.transfers.toClub <= TRANSFER_CAP &&
+      Array.isArray(e.transfers.log) && e.transfers.log.length <= 40,
+    "حدود التحويل بين الخزينتين غير سليمة.",
+  );
+  check(
+    Array.isArray(e.assets) && e.assets.length <= 60 &&
+      e.assets.every((a) => id(a.id) && id(a.assetId) && isoDate(a.boughtOn) && amount(a.price) && amount(a.sellValue)),
+    "أصول المالك غير سليمة.",
+  );
+  const f = e.family;
+  check(
+    f && typeof f === "object" &&
+      ["single", "engaged", "married", "divorced"].includes(f.status) &&
+      (!f.brideId || ["lawyer", "doctor", "artist", "connected"].includes(f.brideId)) &&
+      (!f.engagedOn || isoDate(f.engagedOn)) &&
+      amount(f.divorceCount) && f.divorceCount <= 10 &&
+      Array.isArray(f.children) && f.children.length <= 3 &&
+      f.children.every((c) => id(c.id) && text(c.name) && isoDate(c.born)) &&
+      (!f.wife ||
+        (id(f.wife.id) &&
+          text(f.wife.name) &&
+          Number.isFinite(f.wife.happiness) &&
+          f.wife.happiness >= 0 &&
+          f.wife.happiness <= 100 &&
+          isoDate(f.wife.marriedOn))),
+    "حالة عائلة المالك غير سليمة.",
+  );
+  const p = e.portfolio;
+  check(
+    p && typeof p === "object" &&
+      ["rental", "stocks", "startup", "coin", "deposit"].every((k) => amount(p[k])) &&
+      Array.isArray(p.history) && p.history.length <= 60,
+    "محفظة المالك غير سليمة.",
+  );
+  check(
+    e.rivals && typeof e.rivals === "object" &&
+      Array.isArray(e.rivals.list) && e.rivals.list.length <= 8 &&
+      Array.isArray(e.rivals.history) && e.rivals.history.length <= 24,
+    "قائمة المنافسين المليارديرات غير سليمة.",
+  );
+  check(
+    e.charity && typeof e.charity === "object" &&
+      amount(e.charity.total) && amount(e.charity.personalTotal) &&
+      Array.isArray(e.charity.projects) && e.charity.projects.length <= 20,
+    "سجل الخير غير سليم.",
+  );
+  check(
+    Array.isArray(e.reports) && e.reports.length <= 36 &&
+      Array.isArray(e.log) && e.log.length <= 60,
+    "سجلات حياة الملياردير غير سليمة.",
+  );
 }

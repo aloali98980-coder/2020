@@ -1,7 +1,9 @@
+import { cityEffects } from "./cityFacilities.js";
 import { roleEffect } from "./playerRoles.js";
 import { selectXI, tacticalEffects } from "./tactics.js";
 import { extendedClub } from "../data/expandedCatalog.js";
 import { matchCommerce } from "./commerce.js";
+import { getDerbyInfo, derbyPreMatchMessage, derbyPostMatchMessage } from "./derby.js";
 import { CLUBS } from "../data/catalog.js";
 import { addDays, random, clamp } from "../core/utils.js";
 import { post } from "./finance.js";
@@ -95,11 +97,36 @@ export function matchDay(
     if (f.played || f.date !== s.date) continue;
     const owns = [f.home, f.away].includes(s.clubId),
       ourHome = f.home === s.clubId;
+
+    // 0.28: black files active effects
+    const bf = s.blackFiles;
+    const hasRefBias = Boolean(bf?.active?.refereeBias && bf.active.refereeBias.until >= s.date);
+    const hasBribe = Boolean(bf?.active?.bribedOpponent && bf.active.bribedOpponent.fixtureId === f.id);
+
+    const derby = getDerbyInfo(f.home, f.away, s);
+    if (derby.isDerby) {
+      f.isDerby = true;
+      f.derbyName = derby.nameAr;
+      f.derbyInfo = derby;
+      if (owns) {
+        if (!s.derbyNotices) s.derbyNotices = {};
+        if (!s.derbyNotices[f.id]) {
+          s.derbyNotices[f.id] = true;
+          message(s, derbyPreMatchMessage(extendedClub(s.clubId), extendedClub(ourHome ? f.away : f.home), derby));
+        }
+      }
+    }
+
     const effects = owns
       ? tacticalEffects(s, ourHome ? f.away : f.home)
       : { attack: 0, defence: 0, fatigue: 0 };
-    const hp = strength(s, f.home),
+    let hp = strength(s, f.home),
       ap = strength(s, f.away);
+    // bribed opponent: opponent underperforms
+    if (hasBribe && owns) {
+      if (f.home === s.clubId) ap = ap * 0.75;
+      else hp = hp * 0.75;
+    }
     f.homeGoals = goals(
       s,
       hp + (owns && ourHome ? effects.attack : 0),
@@ -112,6 +139,18 @@ export function matchDay(
       hp + (owns && ourHome ? effects.defence : 0),
       false,
     );
+    // referee bias: extra goal / cancel opponent goal
+    if (hasRefBias && owns) {
+      const biasType = bf.active.refereeBias.type;
+      if (biasType === "penalty-dubious" || biasType === "goal-cancel") {
+        if (f.home === s.clubId) f.homeGoals += 1;
+        else f.awayGoals += 1;
+      }
+      if (biasType === "goal-cancel") {
+        if (f.home === s.clubId) f.awayGoals = Math.max(0, f.awayGoals - 1);
+        else f.homeGoals = Math.max(0, f.homeGoals - 1);
+      }
+    }
     if (owns && s.management?.tactics?.enabled) {
       f.tactics = { ...effects };
       f.lineup = selectXI(s).map((x) => ({
@@ -162,30 +201,35 @@ export function matchDay(
         our = home ? f.homeGoals : f.awayGoals,
         opp = home ? f.awayGoals : f.homeGoals;
       const result = our > opp ? "فوز" : our === opp ? "تعادل" : "خسارة";
+      const derbyWinBoost = f.isDerby ? 7 : 3;
+      const derbyLossPenalty = f.isDerby ? -6 : -4;
       s.fanSupport = clamp(
-        s.fanSupport + (our > opp ? 3 : our === opp ? 0 : -4),
+        s.fanSupport + (our > opp ? derbyWinBoost : our === opp ? 0 : derbyLossPenalty),
         10,
         100,
       );
+      if (!home && !f.neutral && s.sportsCity && !(cityEffects(s).totals.awayStay))
+        post(s,-35_000,"away-accommodation","إقامة الفريق خارج ملعبه",f.id+"-away-hotel");
       if (home && !f.neutral && s.commerce) matchCommerce(s, f);
       if (home && !f.neutral && !s.commerce) {
         const capacity = Math.floor(
           s.capacity *
             (s.facilities.find((x) => x.id === "stadium").project ? 0.9 : 1),
         );
-        f.attendance = Math.floor(
-          capacity *
-            clamp(
+        const fill = f.isDerby
+          ? clamp(0.92 + s.fanSupport / 400, 0.88, 0.99)
+          : clamp(
               0.48 + s.fanSupport / 230 - (s.ticketPrice - 100) / 650,
               0.2,
               0.98,
-            ),
-        );
+            );
+        f.attendance = Math.floor(capacity * fill);
+        const effectivePrice = f.isDerby ? s.ticketPrice * 2 : s.ticketPrice;
         post(
           s,
-          f.attendance * s.ticketPrice,
+          f.attendance * effectivePrice,
           "tickets",
-          "إيراد تذاكر المباراة",
+          f.isDerby ? "إيراد تذاكر مباراة الديربي (أسعار مضاعفة)" : "إيراد تذاكر المباراة",
           f.id + "-tickets",
         );
         post(
@@ -219,7 +263,8 @@ export function matchDay(
             `مكافأة مشاركة ${p.name}`,
             f.id + "-app-" + p.id,
           );
-        p.morale = clamp(p.morale + (our > opp ? 3 : -1), 0, 100);
+        const moraleDelta = our > opp ? (f.isDerby ? 5 : 3) : -1;
+        p.morale = clamp(p.morale + moraleDelta, 0, 100);
       });
       if (team.length)
         for (let i = 0; i < our; i++) {
@@ -240,20 +285,30 @@ export function matchDay(
       const xi = Array.isArray(f.lineup) && f.lineup.length
         ? f.lineup.map((x) => s.players.find((y) => y.id === x.playerId)).filter(Boolean)
         : selectXI(s).filter((x) => x.p.status !== "retired").map((x) => x.p);
-      const cards = generateCardDistribution(xi, () => random(s));
+      const cards = generateCardDistribution(xi, () => random(s), { isDerby: f.isDerby });
       recordMatchStats(s, f, () => random(s), our, cards);
       const { redCardPenalty } = applyMatchConsequences(s, f, cards, () => random(s));
       // Red card numerical disadvantage: reduce score with probability.
-      if (redCardPenalty > 0 && random(s) < 0.3) {
+      if (!f.extraTime && redCardPenalty > 0 && random(s) < 0.3) {
         f[our === "homeGoals" ? "homeGoals" : "awayGoals"] = Math.max(0, f[
           f.home === s.clubId ? "homeGoals" : "awayGoals"
         ] - 1);
       }
       message(s, {
-        title: `${result} ${our}–${opp} | تقرير المباراة`,
-        body: `${extendedClub(f.home).name} ${f.homeGoals} — ${f.awayGoals} ${extendedClub(f.away).name}. ${f.neutral ? "مباراة على ملعب محايد؛ لا إيراد تذاكر ملعب ناديك." : home ? "تم تسجيل التذاكر ومصروفات التنظيم في الحسابات." : "مباراة خارج ملعبك."} ${f.tactics ? `خطة ${f.tactics.formation} · ملاءمة المراكز ${f.tactics.fit}٪ · الضغط والإيقاع يؤثران على الفرص والإجهاد. ` : ""}المحاكاة احتمالية ومبسطة، وليست مباراة مرئية.`,
+        title: `${f.isDerby ? "🔥 " : ""}${result} ${our}–${opp} | تقرير ${f.isDerby ? "الديربي" : "المباراة"}`,
+        body: `${extendedClub(f.home).name} ${f.homeGoals} — ${f.awayGoals} ${extendedClub(f.away).name}. ${f.neutral ? "مباراة على ملعب محايد؛ لا إيراد تذاكر ملعب ناديك." : home ? (f.isDerby ? "تم تسجيل تذاكر الديربي بأسعار مضاعفة ومصروفات التنظيم." : "تم تسجيل التذاكر ومصروفات التنظيم في الحسابات.") : "مباراة خارج ملعبك."} ${f.tactics ? `خطة ${f.tactics.formation} · ملاءمة المراكز ${f.tactics.fit}٪ · الضغط والإيقاع يؤثران على الفرص والإجهاد. ` : ""}المحاكاة احتمالية ومبسطة، وليست مباراة مرئية.`,
         category: "matches",
       });
+      if (f.isDerby) {
+        message(s, derbyPostMatchMessage(
+          extendedClub(s.clubId),
+          extendedClub(home ? f.away : f.home),
+          our > opp ? "win" : our === opp ? "draw" : "loss",
+          our,
+          opp,
+          derby
+        ));
+      }
     }
   }
 }

@@ -8,6 +8,7 @@ import { CONTINENTAL, policy, STAGE_NAMES } from "./presets.js";
 import { qualify } from "./qualification.js";
 import { groupDraw, shuffle, seededPairs } from "./draw.js";
 import { groupTable, compareAcross } from "./table.js";
+import { recordCupDraw } from "../cupDraw.js";
 // 0.14 review: tiered prize factors (CAF/Libertadores keep the base table;
 // domestic cups/supers pay a modeled fraction) + round-win cap below the final.
 export const CONTINENTAL_PRIZE_FACTOR = {
@@ -210,6 +211,7 @@ export function planPairs(s, c, phase, pairs, offset = 14, byes = []) {
     .filter((f) => !f.played)
     .map((f) => f.date)
     .sort()[0];
+  recordCupDraw(s, c, phase, pairs, byes);
 }
 function planKnockout(s, c, ids, offset = 14) {
   const shuffled = shuffle(s, ids),

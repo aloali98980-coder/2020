@@ -1,5 +1,8 @@
+import { realisticAttendance } from "./sportsCity.js";
+import { cityEffects } from "./cityFacilities.js";
 import { ownFixtures } from "./calendar.js";
 import { extendedClub } from "../data/expandedCatalog.js";
+import { getDerbyInfo } from "./derby.js";
 import { post } from "./finance.js";
 import { assert, clamp, addDays } from "../core/utils.js";
 export const BUSINESSES = {
@@ -111,6 +114,7 @@ export function ticketForecast(s, fixture = null) {
     fixture ||
     ownFixtures(s).find((f) => !f.played && !f.neutral && f.home === s.clubId);
   const opponent = extendedClub(f?.away);
+  const isDerby = !!f?.isDerby;
   const importance =
     (f?.competition?.length ? 0.1 : 0) +
     (opponent ? Math.max(-0.1, (opponent.rep - s.reputation) / 250) : 0);
@@ -124,27 +128,35 @@ export function ticketForecast(s, fixture = null) {
   const subscribed = f?.competition ? 0 : s.commerce?.seasonTickets || 0;
   let paying = 0,
     gross = 0;
+  const derbyPriceMult = isDerby ? 2 : 1;
   const breakdown = TICKET_CATEGORIES.map((cat) => {
     const seats = Math.floor(s.capacity * cat.share);
     const fill = clamp(
-      base - (prices[cat.id] - cat.anchor) / cat.divisor,
+      base + (isDerby ? 0.35 : 0) - (prices[cat.id] - cat.anchor) / cat.divisor,
       0.05,
-      0.98,
+      0.99,
     );
     let catPaying = Math.floor(seats * fill);
     if (cat.id === "standard" && subscribed > 0)
       catPaying = Math.max(0, catPaying - Math.min(subscribed, seats));
-    const catGross = Math.round(catPaying * prices[cat.id] * (1 + premium));
+    const catGross = Math.round(catPaying * prices[cat.id] * (1 + premium) * derbyPriceMult);
     paying += catPaying;
     gross += catGross;
     return { id: cat.id, name: cat.name, paying: catPaying, gross: catGross };
   });
+  const limit = s.sportsCity ? realisticAttendance(s, f) : s.capacity;
+  const total = Math.min(s.capacity, paying + subscribed);
+  const ratio = total > limit ? limit / total : 1;
+  paying = Math.floor(paying * ratio);
+  gross = Math.round(gross * ratio);
+  for (const row of breakdown) { row.paying = Math.floor(row.paying * ratio); row.gross = Math.round(row.gross * ratio); }
   return {
-    attendance: Math.min(s.capacity, paying + subscribed),
+    attendance: Math.min(limit, total),
     paying,
     gross,
     breakdown,
     premium: s.commerce?.matchPremium || 0,
+    isDerby,
   };
 }
 export function sellSubscriptions(s) {
@@ -154,7 +166,7 @@ export function sellSubscriptions(s) {
     (f) => f.home === s.clubId && !f.played,
   ).length;
   assert(home >= 5, "عدد المباريات المتبقية غير كافٍ.");
-  const count = Math.floor(s.capacity * clamp(s.fanSupport / 600, 0.04, 0.18));
+  const count = Math.floor((s.sportsCity ? realisticAttendance(s) : s.capacity) * clamp(s.fanSupport / 600, 0.04, 0.18) * (1 + (s.sportsCity ? (cityEffects(s).totals.seasonTickets || 0) * .05 : 0)));
   const price = Math.round(s.ticketPrice * home * 0.75);
   c.seasonTickets = count;
   c.seasonTicketPrice = price;
@@ -171,8 +183,10 @@ export function matchCommerce(s, f) {
   const c = s.commerce,
     forecast = ticketForecast(s, f);
   f.attendance = forecast.attendance;
+  if (s.sportsCity) { const st=s.sportsCity.stadium; st.lastAttendance=f.attendance; st.lastDerbyDate=f.isDerby?s.date:null; st.record=Math.max(st.record||0,f.attendance); }
   f.ticketBreakdown = forecast.breakdown;
   c.matchPremium = 0;
+  if(s.sportsCity && cityEffects(s).totals.matchIncome) post(s,f.attendance*cityEffects(s).totals.matchIncome*4,"city-parking","موقف المدينة",f.id+"-city-parking");
   post(
     s,
     forecast.gross,
@@ -275,10 +289,11 @@ export function commerceDay(s) {
         ),
       );
       c.inventory -= sold;
+      const shopMultiplier = s.sportsCity?.facilities?.includes("officialShop") ? 2 : 1;
       merchandiseCost = sold * c.shirtCost;
       post(
         s,
-        sold * c.shirtPrice,
+        sold * c.shirtPrice * shopMultiplier,
         "merchandise",
         "مبيعات قمصان: " + sold,
         "shirts-" + s.date,
