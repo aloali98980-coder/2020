@@ -25,6 +25,7 @@ import { matchDay } from "./matches.js";
 import { developmentDay } from "./development.js";
 import { academyJourneyDay, dynastyGrowthDay } from "./dynasty.js";
 import { dynastyEventDay } from "./dynastyEvents.js";
+import { siblingConflictDay } from "./dynastyCareers.js";
 function eventsDay(s) {
   for (const e of s.events) {
     if (e.done || e.date > s.date) continue;
@@ -78,6 +79,7 @@ export function advanceTime(s, days = null) {
     advanced++;
     agingDay(s);
     dynastyGrowthDay(s);
+    siblingConflictDay(s);
     academyJourneyDay(s);
     dynastyEventDay(s);
     retirementDay(s);

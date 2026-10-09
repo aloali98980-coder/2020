@@ -20,6 +20,7 @@ const LINKS = [
   { id: "finance", name: "الإدارة المالية", icon: "finance" },
   { id: "world", name: "عالم الكرة", icon: "world" },
   { id: "legends", name: "قاعة الأساطير", icon: "crown" },
+  { id: "dynasty", name: "الأجيال", icon: "crown" },
   { id: "settings", name: "الإعدادات والحفظ", icon: "settings" },
 ];
 const byId = (id) => LINKS.find((l) => l.id === id);
@@ -43,6 +44,7 @@ export const NAV_GROUPS = [
     items: ["facilities", "sponsors", "commerce", "finance"],
   },
   { caption: "عالم الكرة", items: ["world", "legends"] },
+  { caption: "العائلة والإرث", items: ["dynasty"] },
   { caption: "النظام", items: ["settings"] },
 ];
 export const NAV = NAV_GROUPS.flatMap((g) => g.items.map(byId));

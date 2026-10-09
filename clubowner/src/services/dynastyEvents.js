@@ -2,6 +2,7 @@ import { addDays, assert, clamp, random, uid } from "../core/utils.js";
 import { DYNASTY_EVENTS } from "../data/dynastyEvents.js";
 import { isoDate } from "../core/isoDate.js";
 import { allDynastyChildren, findDynastyChild } from "./dynasty.js";
+import { dynastySiblings } from "./dynastyCareers.js";
 import { closeThread, message } from "./inbox.js";
 
 const EVENT_BY_ID = new Map(DYNASTY_EVENTS.map((event) => [event.id, event]));
@@ -156,6 +157,14 @@ function applyEventEffects(s, eventRecord, effects) {
   if (effects.relationship && child)
     child.relationship = meter(child.relationship + effects.relationship);
   if (effects.jealousy && child) child.jealousy = meter(child.jealousy + effects.jealousy);
+  if (child && (effects.siblingRelationship || effects.siblingJealousy)) {
+    for (const sibling of dynastySiblings(s, child)) {
+      if (effects.siblingRelationship)
+        sibling.relationship = meter(sibling.relationship + effects.siblingRelationship);
+      if (effects.siblingJealousy)
+        sibling.jealousy = meter(sibling.jealousy + effects.siblingJealousy);
+    }
+  }
   if (effects.stats && child)
     for (const [key, delta] of Object.entries(effects.stats))
       if (["talent", "discipline", "ambition"].includes(key) && Number.isFinite(delta))

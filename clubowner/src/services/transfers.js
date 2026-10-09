@@ -2,7 +2,7 @@ import { assertMarket } from "./market.js";
 import { reservedSquadSize } from "./employment.js";
 import { difficulty } from "../models/difficulty.js";
 import { normalizeClauses, guaranteedWages } from "./contractClauses.js";
-import { assert, uid, addDays } from "../core/utils.js";
+import { assert, uid, addDays, clamp } from "../core/utils.js";
 import { message, closeThread } from "./inbox.js";
 import { post, obligation, wages } from "./finance.js";
 export function submitOffer(s, playerId, terms) {
@@ -66,18 +66,21 @@ export function transferReply(s, id) {
   const n = s.negotiations.find((x) => x.id === id);
   if (!n || n.stage !== "waiting") return;
   const p = s.players.find((x) => x.id === n.playerId);
+  const relations = clamp(s.dynasty?.ownerBonuses?.playerRelations || 0, 0, 100);
+  const acceptanceThreshold =
+    p.value * clamp(0.93 - relations / 100, 0.75, 0.93) * difficulty(s).transfer;
   n.counter =
     p.contractTerms?.releaseClause > 0 && n.fee >= p.contractTerms.releaseClause
       ? n.fee
-      : Math.max(n.fee, Math.round(p.value * 0.93 * difficulty(s).transfer));
+      : Math.max(n.fee, Math.round(acceptanceThreshold));
   n.stage = "club-reply";
   message(s, {
     title:
-      n.fee >= p.value * 0.93 * difficulty(s).transfer
+      n.fee >= acceptanceThreshold
         ? `قبول مبدئي لعرض ${p.name}`
         : `عرض مضاد: ${p.name}`,
     body:
-      n.fee >= p.value * 0.93 * difficulty(s).transfer
+      n.fee >= acceptanceThreshold
         ? "النادي وافق على قيمة العرض. الاتفاق النهائي يتطلب التفاوض على عقد اللاعب والفحص والتسجيل."
         : "النادي يطلب زيادة قيمة الانتقال. يمكنك قبول القيمة الجديدة والانتقال لشروط اللاعب، أو إنهاء التفاوض.",
     category: "transfers",
