@@ -64,6 +64,25 @@ import {
   scoutAssignment,
 } from "./services/staff.js";
 import { retirementDecision } from "./services/careers.js";
+import {
+  enrollDynastyAcademy,
+  haveChild,
+  leaveDynastyAcademy,
+  marryOwner,
+  setAcademyFocus,
+  setAcademyMentor,
+  setAcademyPosition,
+  setDynastyHeir,
+  setSuccessionEligibility,
+  resolveRetirementOffer,
+  setUpbringing,
+} from "./services/dynasty.js";
+import { resolveDynastyEvent } from "./services/dynastyEvents.js";
+import {
+  promoteDynastyPlayer,
+  reconcileSiblings,
+  setCareerPath,
+} from "./services/dynastyCareers.js";
 import { resolveClubEvent } from "./services/clubEvents.js";
 import { sourcesView } from "./features/dataSources.js";
 import { guaranteedWages } from "./services/contractClauses.js";
@@ -76,6 +95,7 @@ import "./styles/responsive.css";
 import "./styles/readability.css";
 import "./styles/tokens.css";
 import "./styles/motion.css";
+import "./styles/dynasty.css";
 import { createGame } from "./core/game.js";
 import { getState, setState, commit, isSaving } from "./core/store.js";
 import { saveGame, loadGame, exportGame, importGame } from "./services/save.js";
@@ -146,8 +166,10 @@ import {
   sponsorDealResult,
 } from "./features/sponsors.js";
 import { financeView } from "./features/finance.js";
+import { boardView } from "./features/board.js";
 import { worldView } from "./features/world.js";
 import { settingsView } from "./features/settings.js";
+import { dynastyView } from "./features/dynasty.js";
 import {
   legendsView,
   legendDetailModal,
@@ -173,11 +195,35 @@ import { badge, button, infoNote } from "./components/shared.js";
 import { money, num, esc, date, setDigitsMode, setDisplayCurrency, cur } from "./ui/format.js";
 import { ASSETS } from "./data/catalog.js";
 import { findPerson } from "./services/retired.js";
+import { APP_VERSION } from "./data/version.js";
+import { playInstantFriendly } from "./services/instantFriendly.js";
+import { getCupDraw } from "./services/cupDraw.js";
+import { cupDrawModal } from "./features/cupDraw.js";
+import { youthIntakeModal } from "./features/youthIntake.js";
+import { executeYouthIntakeDecisions } from "./services/youthIntake.js";
+import { acceptDeadlineBid, declineDeadlineBid } from "./services/deadlineDay.js";
+import { blackFilesView } from "./features/blackFiles.js";
+import * as BlackService from "./services/blackFiles.js";
+import * as ReleaseService from "./services/releaseClause.js";
+import { empireView } from "./features/empire.js";
+import {
+  transferToPersonal,
+  transferToClub,
+  setLifestyle,
+  repayDebt,
+} from "./services/empire/wealth.js";
+const requireBlack = () => BlackService;
+const requireRelease = () => ReleaseService;
 const app = document.getElementById("app");
 const ui = {
   route: "dashboard",
   setupClub: "ahly",
-  setupConfig: { difficulty: "normal", database: "world", expanded: true },
+  setupConfig: {
+    difficulty: "normal",
+    database: "world",
+    expanded: true,
+    ownerStory: "selfmade",
+  },
   owner: "",
   leagues: [...ALL_MARKETS],
   inboxFilter: "all",
@@ -187,6 +233,7 @@ const ui = {
   worldTab: "table",
   legendFilters: { ...DEFAULT_LEGEND_FILTERS },
   legendOffer: {},
+  empireTab: "wealth",
   palette: { open: false, q: "", sel: 0, items: [] },
 };
 let pendingImport = null;
@@ -237,8 +284,7 @@ function render() {
     app.firstElementChild?.classList.add("page-enter");
     lastRenderedRoute = "setup";
     translateDOM(app);
-    document.title =
-      getLanguage() === "ar" ? "صاحب النادي | Club Owner" : "Club Owner";
+    document.title = "Empire FC";
     return;
   }
   const views = {
@@ -249,6 +295,7 @@ function render() {
     facilities: () => facilitiesView(s),
     sponsors: () => sponsorsView(s),
     finance: () => financeView(s, ui.financeTab),
+    board: () => boardView(s),
     world: () =>
       s.expansion
         ? competitionsView(s, ui.expandedDivision)
@@ -256,7 +303,10 @@ function render() {
     commerce: () => commerceView(s),
     management: () => managementView(s),
     press: () => pressView(s),
+    black: () => blackFilesView(s),
+    empire: () => empireView(s, ui.empireTab),
     legends: () => legendsView(s, ui.legendFilters),
+    dynasty: () => dynastyView(s),
     settings: () => settingsView(s),
     database: () => databaseView(),
     careers: () => careersView(s, ui.talentPlayer),
@@ -267,8 +317,7 @@ function render() {
   lastRenderedRoute = ui.route;
   translateDOM(app);
   document.title =
-    (NAV.find((n) => n.id === ui.route)?.name || "صاحب النادي") +
-    " | صاحب النادي";
+    (NAV.find((n) => n.id === ui.route)?.name || "Empire FC") + " | Empire FC";
   document.title = translateText(document.title);
 }
 function navigate(route) {
@@ -504,7 +553,7 @@ function authModalContent(activeTab = "login", error = "") {
 }
 
 const actions = {
-  // خزنة المالك السرية: الزر المخفي هو رقم الإصدار أسفل القائمة الجانبية.
+  // خزنة المالك السرية: مفاتيحها أرقام الإصدار (أسفل القائمة الجانبية + سطر EMPIRE FC في شيت «المزيد» + شارة «عن اللعبة»).
   "secret-vault": () =>
     openModal(
       `<h2>${tr("خزنة المالك السرية 🤫", "The owner's secret vault 🤫", "Le coffre secret du propriétaire 🤫")}</h2><p class="muted">${tr("إيداع فوري بفلوس تجريبية لمن يعرف المكان. يُسجَّل في الدفاتر مثل أي تدفق نقدية فتبقى الإدارة المالية صادقة.", "An instant injection of play money for those who know the spot. It is posted to the ledger like any cash flow, so the books stay honest.", "Une injection instantanée d’argent fictif pour qui connaît l’endroit. Inscrite au registre comme tout flux, la comptabilité reste honnête.")}</p><div class="modal-actions vault-grid">${button(`${money(10000000)} ${cur()}`, "vault-deposit", "10000000", "soft")}${button(`${money(100000000)} ${cur()}`, "vault-deposit", "100000000", "secondary")}${button(`${money(1000000000)} ${cur()}`, "vault-deposit", "1000000000", "primary")}</div><div class="modal-actions">${button(tr("إغلاق الخزنة", "Close the vault", "Fermer le coffre"), "modal-close", "", "ghost")}</div>`,
@@ -517,6 +566,55 @@ const actions = {
     );
   },
   "modal-close": () => closeModal(),
+  "instant-friendly": async () => {
+    let reportData = null;
+    await apply((s) => {
+      const res = playInstantFriendly(s);
+      reportData = res.report;
+      markStep(s, "friendly");
+    });
+    const s = getState();
+    if (reportData) {
+      showHighlightsScreen(s, reportData, () => {
+        openModal(matchReportModal(s, reportData));
+      });
+    }
+  },
+  "view-cup-draw": async (el) => {
+    const drawId = el?.dataset?.drawId || el?.dataset?.id;
+    const s = getState();
+    const draw = getCupDraw(s, drawId) || s?.latestDraw;
+    if (draw) openModal(cupDrawModal(s, draw), true);
+  },
+  "open-youth-intake": async () => {
+    const s = getState();
+    openModal(youthIntakeModal(s), true);
+  },
+  "confirm-youth-intake": async () => {
+    const root = document.querySelector(".youth-intake-modal");
+    if (!root) return;
+    const decisions = {};
+    root.querySelectorAll(".youth-candidate-card").forEach((card) => {
+      const pId = card.dataset.playerId;
+      const checked = card.querySelector(`input[name="youth-dec-${pId}"]:checked`);
+      if (pId && checked) decisions[pId] = checked.value;
+    });
+    await apply((s) => executeYouthIntakeDecisions(s, decisions));
+    closeModal();
+    toast(tr("تم اعتماد قرارات دفعة الناشئين بنجاح", "Youth intake decisions confirmed successfully", "Décisions de la promotion confirmées avec succès"));
+  },
+  "accept-deadline-bid": async (el) => {
+    const id = el.dataset.id;
+    await apply((s) => acceptDeadlineBid(s, id));
+    toast(tr("تمت الموافقة على بيع اللاعب في اللحظات الأخيرة", "Accepted last-minute player sale", "Vente de dernière minute acceptée"));
+    render();
+  },
+  "decline-deadline-bid": async (el) => {
+    const id = el.dataset.id;
+    await apply((s) => declineDeadlineBid(s, id));
+    toast(tr("تم رفض العرض العاجل", "Declined urgent offer", "Offre urgente refusée"));
+    render();
+  },
   "business-open": async (el) => apply((s) => businessOpen(s, el.dataset.id)),
   "sell-subscriptions": async () => apply((s) => sellSubscriptions(s)),
   "commercial-friendly": async () => apply((s) => friendly(s)),
@@ -571,6 +669,40 @@ const actions = {
   "go-talent": async () => {
     ui.route = "careers";
     render();
+  },
+  // 0.26: من البريد إلى لائحة الجمعية العمومية، ويُعلَّم بند الأونبوردنج تلقائيًا.
+  "go-board": async () => {
+    const s = getState();
+    if (s) await apply((state) => markStep(state, "board"));
+    navigate("board");
+  },
+  "go-black": async () => {
+    navigate("black");
+  },
+  "black-op": async (el) => {
+    const opId = el.dataset.id;
+    await apply((s) => {
+      const { doOperation } = requireBlack();
+      return doOperation(s, opId);
+    }, "تم تنفيذ العملية عبر الوسيط.");
+  },
+  "black-cut": async () => {
+    await apply((s) => {
+      const { cutMiddlemen } = requireBlack();
+      return cutMiddlemen(s);
+    }, "تم قطع الوسطاء.");
+  },
+  "break-clause": async (el) => {
+    const playerId = el.dataset.id;
+    await apply((s) => {
+      const { breakReleaseClause } = requireRelease();
+      return breakReleaseClause(s, playerId);
+    }, "تم كسر الشرط الجزائي — التفاوض مع اللاعب مباشرة.");
+    showContract(`release-${getState().nextId-1}-${playerId}`.replace(/.*release-/, "release-").includes("release-") ? "" : "", false);
+    // افتح عقد اللاعب عبر التفاوض الأخير
+    const s = getState();
+    const last = [...s.negotiations].reverse().find((n) => n.playerId === playerId && n.stage === "personal");
+    if (last) showContract(last.id, false);
   },
   "loan-open": async (el) => openModal(loanForm(getState(), el.dataset.id)),
   "loan-out-open": async () =>
@@ -675,6 +807,7 @@ const actions = {
       leagues,
       ...ui.setupConfig,
       language: getLanguage(),
+      ownerStory: ui.setupConfig.ownerStory || "selfmade",
     });
     await saveGame(s);
     setState(s);
@@ -788,10 +921,19 @@ const actions = {
     render();
   },
   "open-message": async (el) => {
+    const dynastyDecision = getState().inbox.some(
+      (message) =>
+        message.id === el.dataset.id &&
+        ["dynasty-event", "dynasty-retirement"].includes(message.kind),
+    );
     await apply((s) => {
       const m = s.inbox.find((m) => m.id === el.dataset.id);
       if (m) m.read = true;
     });
+    if (dynastyDecision) {
+      navigate("dynasty");
+      return;
+    }
     ui.message = el.dataset.id;
     ui.route = "inbox";
     ui.inboxFilter = "all";
@@ -944,6 +1086,66 @@ const actions = {
     window.scrollTo(0, 0);
   },
   "modal-inbox": async () => navigate("inbox"),
+  "empire-tab": async (el) => {
+    ui.empireTab = el.dataset.tab || "wealth";
+    render();
+  },
+  "empire-buy-asset": async (el) => {
+    const { buyAsset } = await import("./services/empire/assets.js");
+    await apply(
+      (s) => buyAsset(s, el.dataset.id),
+      "تم شراء الأصل وإضافته إلى إمبراطوريتك.",
+    );
+  },
+  "empire-sell-asset": async (el) => {
+    const { sellAsset } = await import("./services/empire/assets.js");
+    await apply(
+      (s) => sellAsset(s, el.dataset.id),
+      "تم بيع الأصل وإضافة قيمته إلى ثروتك.",
+    );
+  },
+  "empire-propose": async (el) => {
+    const { propose } = await import("./services/empire/family.js");
+    await apply((s) => propose(s, el.dataset.id), "تمت الخطوبة بنجاح.");
+  },
+  "empire-marry": async (el) => {
+    const { marry } = await import("./services/empire/family.js");
+    await apply((s) => marry(s, el.dataset.id), "تم الفرح. عقبال المئة سنة.");
+  },
+  "empire-gift": async (el) => {
+    const { giveGift } = await import("./services/empire/family.js");
+    await apply((s) => giveGift(s, el.dataset.id), "وصلت الهدية وأسعدت البيت.");
+  },
+  "empire-divorce": async (el) => {
+    const { divorce } = await import("./services/empire/family.js");
+    await apply((s) => divorce(s), "تم الطلاق ودُفعت التسوية.");
+  },
+  "empire-invest": async (el) => {
+    const { invest } = await import("./services/empire/investments.js");
+    const amount = Math.round(
+      Number(document.getElementById("inv-amt-" + el.dataset.id)?.value),
+    );
+    await apply((s) => invest(s, el.dataset.id, amount), "تم استثمار المبلغ.");
+  },
+  "empire-withdraw": async (el) => {
+    const { withdraw } = await import("./services/empire/investments.js");
+    const amount = Math.round(
+      Number(document.getElementById("inv-amt-" + el.dataset.id)?.value),
+    );
+    await apply((s) => withdraw(s, el.dataset.id, amount), "تم سحب المبلغ إلى ثروتك.");
+  },
+  "empire-donate": async () => {
+    const { donatePersonal } = await import("./services/empire/charity.js");
+    const amount = Math.round(Number(document.getElementById("charity-amt")?.value));
+    await apply((s) => donatePersonal(s, amount), "تم التبرع وارتفعت سمعتك.");
+  },
+  "empire-charity-project": async (el) => {
+    const { startCharityProject } = await import("./services/empire/charity.js");
+    await apply(
+      (s) => startCharityProject(s, el.dataset.id),
+      "بدأ العمل في مشروعك الخيري.",
+    );
+  },
   more: async () =>
     openModal(
       `<h2>إدارة النادي</h2>${NAV_GROUPS.map(
@@ -954,7 +1156,7 @@ const actions = {
                 `<button data-nav="${id}">${icon(NAV_BY_ID[id].icon, 24)}<span>${NAV_BY_ID[id].name}</span></button>`,
             )
             .join("")}</div></div>`,
-      ).join("")}`,
+      ).join("")}<div class="more-foot"><span data-no-translate>EMPIRE FC</span><button type="button" class="badge vault-key" data-action="secret-vault">v${APP_VERSION}</button></div>`,
     ),
     "open-auth-modal": () => openModal(authModalContent("login")),
   "auth-tab-login": () => openModal(authModalContent("login")),
@@ -1093,6 +1295,53 @@ const actions = {
     }
   },
 
+  "dynasty-career-path": async (el) =>
+    await apply(
+      (s) => setCareerPath(s, el.dataset.id, el.dataset.path),
+      tr("تم تسجيل المسار الذي اختاره الابن.", "The child's chosen career path has been recorded.", "Le parcours choisi par l’enfant a été enregistré."),
+    ),
+  "dynasty-heir-set": async (el) =>
+    await apply(
+      (s) => setDynastyHeir(s, el.dataset.id),
+      tr("تم تسجيل الوريث وإعداد مستندات الخلافة.", "The heir has been recorded and succession documents prepared.", "L’héritier est enregistré et les documents de succession sont préparés."),
+    ),
+  "dynasty-succession-eligibility": async (el) =>
+    await apply(
+      (s) => setSuccessionEligibility(s, el.dataset.id, el.dataset.eligible === "true"),
+      tr("تم تحديث أهلية الخلافة.", "Succession eligibility has been updated.", "L’éligibilité à la succession a été mise à jour."),
+    ),
+  "dynasty-retirement-choice": async (el) =>
+    await apply(
+      (s) => resolveRetirementOffer(s, el.dataset.id, el.dataset.decision),
+      tr("تم تسجيل قرار التقاعد والخلافة.", "The retirement and succession decision has been recorded.", "La décision de retraite et de succession a été enregistrée."),
+    ),
+  "dynasty-sibling-reconcile": async (el) =>
+    await apply(
+      (s) => reconcileSiblings(s, el.dataset.id),
+      tr("تحسنت العلاقة بين الإخوة بعد جلسة المصالحة.", "Sibling relationships improved after the reconciliation.", "Les relations entre frères et sœurs se sont améliorées après la réconciliation."),
+    ),
+  "dynasty-academy-graduate": async (el) =>
+    await apply(
+      (s) => promoteDynastyPlayer(s, el.dataset.id),
+      tr("انضم خريج الأكاديمية إلى قائمة الفريق الأول.", "An academy graduate joined the first-team squad.", "Un diplômé de l’académie a rejoint l’effectif professionnel."),
+    ),
+  "dynasty-event-choice": async (el) =>
+    await apply(
+      (s) => resolveDynastyEvent(s, el.dataset.id, el.dataset.choice),
+      tr("سُجل قرار الأسرة، وعاد الوقت للتقدم.", "The family decision is recorded; time can advance again.", "La décision familiale est enregistrée ; le temps peut reprendre."),
+    ),
+  "dynasty-academy-enroll": async (el) => {
+    const position = document.getElementById(`dynasty-academy-position-${el.dataset.id}`)?.value || "CM";
+    await apply(
+      (s) => enrollDynastyAcademy(s, el.dataset.id, position),
+      tr("بدأت رحلة الأكاديمية. تظهر التقارير مع تقدم الأشهر.", "The academy journey has begun. Reports appear as months pass.", "Le parcours à l’académie commence. Les rapports apparaîtront au fil des mois."),
+    );
+  },
+  "dynasty-academy-leave": async (el) =>
+    await apply(
+      (s) => leaveDynastyAcademy(s, el.dataset.id),
+      tr("غادر الابن الأكاديمية؛ بقي سجله محفوظًا.", "The child left the academy; their record was preserved.", "L’enfant a quitté l’académie ; son dossier est conservé."),
+    ),
   "close-modal": closeModal,
 };
 document.addEventListener("click", async (e) => {
@@ -1126,7 +1375,23 @@ document.addEventListener("submit", async (e) => {
   e.preventDefault();
   if (isSaving() || actionBusy) return;
   try {
-        if (form.id === "auth-login-form") {
+    if (form.id === "dynasty-marriage-form") {
+      const partner = form.elements.partner.value;
+      await apply(
+        (s) => marryOwner(s, partner),
+        tr("بدأت حياة أسرية جديدة.", "A new family journey has begun.", "Une nouvelle vie de famille commence."),
+      );
+      return;
+    }
+    if (form.id === "dynasty-child-form") {
+      const name = form.elements.childName.value;
+      await apply(
+        (s) => haveChild(s, name),
+        tr("سُجل الميلاد، وبدأت رحلة النمو.", "The birth was recorded; the growth journey has begun.", "La naissance est enregistrée ; le parcours de croissance commence."),
+      );
+      return;
+    }
+    if (form.id === "auth-login-form") {
       const id = form.elements.identifier.value;
       const pass = form.elements.password.value;
       try {
@@ -1213,6 +1478,16 @@ document.addEventListener("submit", async (e) => {
       closeModal();
     }
     if (form.id === "contract-form") {
+      let releaseClause = Number(form.elements.releaseClause.value);
+      const clauseLevel = form.elements.clauseLevel?.value;
+      if (clauseLevel) {
+        const baseInput = document.getElementById("release-clause-input");
+        // إذا اختار مستوى، نستخدم القيمة المحسوبة من المستوى إن لم يعدلها يدويًا بشكل كبير
+        const selectedOption = form.elements.clauseLevel.selectedOptions[0];
+        const levelClause = Number(selectedOption?.dataset?.clause || 0);
+        if (levelClause === 0) releaseClause = 0;
+        else if (Math.abs(releaseClause - levelClause) < levelClause * 0.5) releaseClause = levelClause;
+      }
       const terms = {
         salary: Number(form.elements.salary.value),
         years: Number(form.elements.years.value),
@@ -1221,7 +1496,8 @@ document.addEventListener("submit", async (e) => {
         appearanceBonus: Number(form.elements.appearanceBonus.value),
         goalBonus: Number(form.elements.goalBonus.value),
         annualRaisePct: Number(form.elements.annualRaisePct.value),
-        releaseClause: Number(form.elements.releaseClause.value),
+        releaseClause,
+        clauseLevel,
       };
       await apply(
         (s) =>
@@ -1231,6 +1507,31 @@ document.addEventListener("submit", async (e) => {
         "تم توقيع العقد وتحديث السجل المالي.",
       );
       closeModal();
+    }
+    if (form.id === "black-charity") {
+      const amount = Number(form.elements.amount.value);
+      await apply((s) => {
+        const { donateCharity } = requireBlack();
+        return donateCharity(s, amount);
+      }, "تم التبرع الخيري وخفض الشبهات.");
+    }
+    if (form.id === "empire-draw-form") {
+      const amount = Math.round(Number(form.elements.amount.value));
+      await apply(
+        (s) => transferToPersonal(s, amount),
+        "تم التحويل من خزينة النادي إلى ثروتك الشخصية.",
+      );
+    }
+    if (form.id === "empire-support-form") {
+      const amount = Math.round(Number(form.elements.amount.value));
+      await apply(
+        (s) => transferToClub(s, amount),
+        "تم دعم خزينة النادي من ثروتك الشخصية.",
+      );
+    }
+    if (form.id === "empire-repay-form") {
+      const amount = Math.round(Number(form.elements.amount.value));
+      await apply((s) => repayDebt(s, amount), "تم سداد جزء من الدين.");
     }
     if (form.id === "legend-offer-form") {
       const role = form.elements.role.value;
@@ -1335,6 +1636,30 @@ document.addEventListener("keydown", (e) => {
 document.addEventListener("change", async (e) => {
   if (isSaving() || actionBusy) return;
   try {
+    if (e.target.dataset.dynastyUpbringing) {
+      const childId = e.target.dataset.dynastyUpbringing;
+      const style = e.target.value;
+      await apply((s) => setUpbringing(s, childId, style));
+      return;
+    }
+    if (e.target.dataset.dynastyAcademyFocus) {
+      const childId = e.target.dataset.dynastyAcademyFocus;
+      const focus = e.target.value;
+      await apply((s) => setAcademyFocus(s, childId, focus));
+      return;
+    }
+    if (e.target.dataset.dynastyAcademyPosition) {
+      const childId = e.target.dataset.dynastyAcademyPosition;
+      const position = e.target.value;
+      await apply((s) => setAcademyPosition(s, childId, position));
+      return;
+    }
+    if (e.target.dataset.dynastyAcademyMentor) {
+      const childId = e.target.dataset.dynastyAcademyMentor;
+      const mentorId = e.target.value;
+      await apply((s) => setAcademyMentor(s, childId, mentorId || null));
+      return;
+    }
     if (e.target.id === "talent-training-player") {
       ui.talentPlayer = e.target.value;
       const plan = getState().talent.training[ui.talentPlayer] || {
@@ -1361,6 +1686,31 @@ document.addEventListener("change", async (e) => {
     if (e.target.id === "team-tactic") {
       const tactic = e.target.value;
       await apply((s) => setTactic(s, tactic));
+      return;
+    }
+    if (e.target.name === "empire-lifestyle") {
+      const tier = e.target.value;
+      await apply((s) => setLifestyle(s, tier));
+      return;
+    }
+    if (e.target.name === "owner-story") {
+      ui.setupConfig.ownerStory = e.target.value;
+      for (const label of document.querySelectorAll(".story-options label"))
+        label.classList.toggle(
+          "selected",
+          label.querySelector("input")?.value === e.target.value,
+        );
+      return;
+    }
+    if (e.target.dataset.child) {
+      const { setSchool, setAllowance } = await import(
+        "./services/empire/family.js"
+      );
+      const childId = e.target.dataset.child;
+      const value = e.target.value;
+      if (e.target.dataset.kind === "school")
+        await apply((s) => setSchool(s, childId, value));
+      else await apply((s) => setAllowance(s, childId, value));
       return;
     }
     if (e.target.id === "division-view") {
@@ -1429,6 +1779,21 @@ document.addEventListener("change", async (e) => {
         ui.setupClub = "ahly";
       }
       render();
+    }
+    if (e.target.id === "clause-level") {
+      const opt = e.target.selectedOptions[0];
+      const clauseVal = Number(opt?.dataset?.clause || 0);
+      const salaryFactor = Number(opt?.dataset?.salary || 1);
+      const clauseInput = document.getElementById("release-clause-input");
+      if (clauseInput) clauseInput.value = clauseVal;
+      const salaryInput = e.target.form?.elements?.salary;
+      if (salaryInput && salaryFactor !== 1) {
+        const baseSalary = Number(salaryInput.dataset.base || salaryInput.value);
+        if (!salaryInput.dataset.base) salaryInput.dataset.base = salaryInput.value;
+        salaryInput.value = Math.round(baseSalary * salaryFactor);
+      }
+      updateCalculations();
+      return;
     }
     if (e.target.id === "game-language") {
       const lang = e.target.value;

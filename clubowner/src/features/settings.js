@@ -206,7 +206,7 @@ export function settingsView(s) {
     <section class="panel settings-panel about-panel">
       <div class="panel-head">
         <h3>${icon("info")} ${tr("عن اللعبة", "About the game", "À propos du jeu")}</h3>
-        ${badge(`ALPHA ${APP_VERSION}`)}
+        <button type="button" class="badge vault-key" data-action="secret-vault">v${APP_VERSION}</button>
       </div>
       <div class="about-author">
         <span class="about-avatar" data-no-translate>A</span>
@@ -215,7 +215,7 @@ export function settingsView(s) {
           <small>${tr("تصميم وتطوير اللعبة", "Game design & development", "Conception et développement du jeu")}</small>
         </div>
       </div>
-      <p>${tr("«صاحب النادي» — لعبة إدارة وملكية نادي كرة قدم تعمل بالكامل في المتصفح: محرك وقت، تعاقدات، مالية، رعايات، منشآت، بطولات، وحفظ محلي وسحابي.", "“Club Owner” — a football club ownership and management game that runs entirely in the browser: time engine, transfers, finances, sponsors, facilities, competitions, and local plus cloud saves.", "« Club Owner » — un jeu de gestion et de propriété de club de football entièrement dans le navigateur : moteur de temps, transferts, finances, sponsors, installations, compétitions, sauvegardes locales et cloud.")}</p>
+      <p>${tr("«Empire FC» — ابنِ ناديك من الصفر: تعاقدات، مالية، رعايات، منشآت، بطولات قارية وعالمية، وحفظ محلي وسحابي — كله في المتصفح.", "“Empire FC” — build your club from the ground up: transfers, finances, sponsors, facilities, continental and world competitions, local and cloud saves — all in the browser.", "« Empire FC » — bâtissez votre club : transferts, finances, sponsors, installations, compétitions continentales et mondiales, sauvegardes locales et cloud — dans le navigateur.")}</p>
       <div class="scope-list">
         <span>${icon("check", 16)} مفاوضات وانتقالات وعقود</span>
         <span>${icon("check", 16)} دفعات ورعايات وحصرية</span>
