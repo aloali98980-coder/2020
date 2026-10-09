@@ -59,7 +59,7 @@ export function blankStaffCorp() {
     marketing: { campaigns: [], mood: {} },
     scouts: { reports: [] },
     academy: { curriculum: "technique", watchlist: [] },
-    social: { followers: 0, engagement: 50, posts: [], crisis: null },
+    social: { followers: 0, engagement: 50, posts: [], crisis: null, lastDerbyMatch: null },
     legal: { cases: [], wins: 0, losses: 0 },
     financeOffice: { lastReport: null },
     log: [],
@@ -107,9 +107,18 @@ export function ensureStaffCorp(s) {
   c.sporting.authorityUntil ||= null;
   c.deals ||= [];
   c.marketing ||= { campaigns: [], mood: {} };
+  c.marketing.campaigns ||= [];
+  c.marketing.mood ||= {};
   c.scouts ||= { reports: [] };
   c.academy ||= { curriculum: "technique", watchlist: [] };
-  c.social ||= { followers: 0, engagement: 50, posts: [], crisis: null };
+  c.academy.curriculum ||= "technique";
+  c.academy.watchlist ||= [];
+  c.social ||= { followers: 0, engagement: 50, posts: [], crisis: null, lastDerbyMatch: null };
+  c.social.followers ??= 0;
+  c.social.engagement ??= 50;
+  c.social.posts ||= [];
+  c.social.crisis ??= null;
+  c.social.lastDerbyMatch ??= null;
   c.legal ||= { cases: [], wins: 0, losses: 0 };
   c.financeOffice ||= { lastReport: null };
   c.log ||= [];

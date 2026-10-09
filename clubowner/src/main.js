@@ -178,6 +178,9 @@ import {
 import { startHqUpgrade } from "./services/staff/hq.js";
 import { setPhilosophy, setFreedom, resolveDeal } from "./services/staff/sporting.js";
 import { assignScout } from "./services/staff/scouts.js";
+import { setCurriculum } from "./services/staff/academy.js";
+import { launchCampaign } from "./services/staff/marketing.js";
+import { publishContent, derbyCampaign, resolveCrisis } from "./services/staff/social.js";
 import { getLanguage } from "./i18n/index.js";
 import { worldView } from "./features/world.js";
 import { settingsView } from "./features/settings.js";
@@ -1080,6 +1083,12 @@ const actions = {
     apply((s) => setPhilosophy(s, el.dataset.id)),
   "staff-deal": async (el) =>
     apply((s) => resolveDeal(s, el.dataset.id, el.dataset.how === "yes")),
+  "staff-social-content": async (el) =>
+    apply((s) => publishContent(s, el.dataset.id)),
+  "staff-social-derby": async () =>
+    apply(derbyCampaign),
+  "staff-social-crisis": async (el) =>
+    apply((s) => resolveCrisis(s, el.dataset.how)),
   "world-tab": async (el) => {
     ui.worldTab = el.dataset.id;
     render();
@@ -1496,6 +1505,18 @@ document.addEventListener("submit", async (e) => {
     }
     if (form.id === "staff-freedom-form") {
       await apply((s) => setFreedom(s, Number(form.elements.freedom.value)));
+      return;
+    }
+    if (form.id === "staff-curriculum-form") {
+      await apply((s) => setCurriculum(s, form.elements.curriculum.value));
+      return;
+    }
+    if (form.id === "staff-campaign-form") {
+      await apply((s) => launchCampaign(
+        s,
+        form.elements.campaignType.value,
+        Number(form.elements.budget.value),
+      ));
       return;
     }
     if (form.id === "scout-region-form") {

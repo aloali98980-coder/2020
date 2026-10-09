@@ -1,13 +1,20 @@
-// شاشة «الإدارة الشاملة» — تبويبات الهيكل والسوق والمقر والاجتماع أولًا،
-// وتُضاف تبويبات المجموعات التالية (الرياضي/الفني/الكشافين/الأكاديمية/التسويق/السوشيال/القانونية/المالية).
+// شاشة «الإدارة الشاملة» — الهيكل والسوق والرياضي والفني والكشافون والأكاديمية والتسويق والسوشيال والمجلس والمقر.
 import { tr } from "../i18n/index.js";
 import { money, num, esc } from "../ui/format.js";
-import { STAFF_ROLES, HQ_LEVELS, staffText, SPORTING_PHILOSOPHIES, SCOUT_REGIONS, REGION_IDS } from "../data/staffCatalog.js";
+import {
+  STAFF_ROLES, HQ_LEVELS, staffText, SPORTING_PHILOSOPHIES, SCOUT_REGIONS, REGION_IDS,
+  ACADEMY_CURRICULA, CAMPAIGN_TYPES, SOCIAL_CONTENTS, SOCIAL_CRISES,
+} from "../data/staffCatalog.js";
 import {
   ensureStaffCorp, corpEmployees, hqCap, corpPayroll,
 } from "../services/staff/staffCorp.js";
 import { sportingDirector, autoCap, effectiveFreedom, sportingDelegationActive } from "../services/staff/sporting.js";
 import { gkSkillOf, fitnessSkillOf, doctorSkillOf, fitnessFactor, gkGainBonus } from "../services/staff/effects.js";
+import { academyManagerSkill, academyPotentialBonus, academyScoutBonus } from "../services/staff/academy.js";
+import { sponsorMood } from "../services/staff/marketing.js";
+import { socialState, onlineShirtMultiplier } from "../services/staff/social.js";
+import { ASSETS } from "../data/catalog.js";
+import { resolveSponsor } from "../services/sponsors.js";
 
 const l = (ar, en, fr) => tr(ar, en, fr);
 export const STAFF_TABS = [
@@ -16,6 +23,9 @@ export const STAFF_TABS = [
   ["sporting", "المدير الرياضي", "Sporting Dir.", "Directeur sportif"],
   ["tech", "الطاقم الفني", "Technical", "Technique"],
   ["scouts", "الكشافون", "Scouts", "Recruteurs"],
+  ["academy", "الأكاديمية", "Academy", "Académie"],
+  ["marketing", "التسويق", "Marketing", "Marketing"],
+  ["social", "السوشيال ميديا", "Social Media", "Réseaux sociaux"],
   ["meeting", "اجتماع المجلس", "Board Meeting", "Conseil"],
   ["hq", "المقر الإداري", "Headquarters", "Siège"],
 ];
@@ -207,6 +217,89 @@ function scoutsTab(s, lang) {
   <tbody>${reps || `<tr><td colspan="6">${l("لا تقارير بعد.", "No reports yet.", "Aucun rapport.")}</td></tr>`}</tbody></table>`;
 }
 
+function academyTab(s, lang) {
+  const c = ensureStaffCorp(s);
+  const a = c.academy;
+  const current = ACADEMY_CURRICULA[a.curriculum] ? a.curriculum : "technique";
+  const options = Object.entries(ACADEMY_CURRICULA).map(([id, item]) =>
+    `<option value="${id}" ${current === id ? "selected" : ""}>${esc(staffText(item.name, lang))}</option>`).join("");
+  const watchlist = a.watchlist.map((w) =>
+    `<article class="academy-watch-card"><div><strong>${esc(typeof w.name === "string" ? w.name : staffText(w.name, lang))}</strong><span class="badge">${w.kind === "heir" ? l("الوريث", "Heir", "Héritier") : l("ناشئ", "Youth prospect", "Jeune")}</span></div><p>${esc(staffText(w.note, lang))}</p><small>${l("التقييم", "Assessment", "Évaluation")}: ${num(w.rating ?? 0)} · ${esc(w.date || "—")}</small></article>`).join("");
+  return `<h3>${l("الأكاديمية", "Academy", "Académie")}</h3>
+    <div class="staff-metric-grid">
+      <div class="staff-metric"><small>${l("مهارة المدير", "Director skill", "Compétence du directeur")}</small><strong>${num(academyManagerSkill(s))}</strong></div>
+      <div class="staff-metric"><small>${l("مكافأة الإمكانات", "Potential bonus", "Bonus de potentiel")}</small><strong>+${num(academyPotentialBonus(s))}</strong></div>
+      <div class="staff-metric"><small>${l("تحسن دقة الكشف", "Scouting accuracy", "Précision du recrutement")}</small><strong>−${num(academyScoutBonus(s))} ${l("نقاط خطأ", "error points", "points d’erreur")}</strong></div>
+    </div>
+    <p class="hint">${esc(staffText(ACADEMY_CURRICULA[current].desc, lang))}</p>
+    <form id="staff-curriculum-form" class="neg-form"><label>${l("منهج الأكاديمية", "Academy curriculum", "Programme de l’académie")}<select name="curriculum">${options}</select></label><button class="btn small primary" type="submit">${l("اعتماد المنهج", "Set curriculum", "Choisir le programme")}</button></form>
+    <h4>${l("قائمة المتابعة", "Watchlist", "Liste de suivi")} (${num(a.watchlist.length)})</h4>
+    <div class="academy-watchlist">${watchlist || `<p>${l("لا مواهب في قائمة المتابعة بعد.", "No prospects on the watchlist yet.", "Aucun jeune dans la liste pour le moment.")}</p>`}</div>`;
+}
+
+function marketingTab(s, lang) {
+  const c = ensureStaffCorp(s);
+  const marketing = c.marketing;
+  const campaigns = (marketing.campaigns || []).map((item) => {
+    const type = CAMPAIGN_TYPES[item.type];
+    if (!type) return "";
+    return `<article class="staff-campaign-card"><strong>${esc(staffText(type.name, lang))}</strong><span>${money(item.budget)}</span><small>${l("ينتهي", "Ends", "Se termine le")} ${esc(item.ends)} · ${l("مهارة التنفيذ", "Execution skill", "Compétence marketing")} ${num(item.skill)}</small></article>`;
+  }).join("");
+  const sponsors = (s.sponsors || []).filter((item) => item.status === "active").map((item) => {
+    const asset = ASSETS.find((a) => a.id === item.assetId);
+    const sponsor = resolveSponsor(item.sponsorId);
+    const mood = sponsorMood(s, item.assetId) ?? 60;
+    const status = mood >= 80
+      ? l("راضٍ — عروض أفضل", "Satisfied — stronger offers", "Satisfait — offres bonifiées")
+      : mood < 40
+        ? l("غاضب — عروض أضعف", "Unhappy — weaker offers", "Mécontent — offres réduites")
+        : l("مستقر", "Steady", "Stable");
+    return `<article class="staff-sponsor-mood"><div><strong>${esc(sponsor?.name || item.sponsorId)}</strong><span>${esc(asset?.name || item.assetId)}</span></div><strong>${num(mood)}٪</strong><div class="mood-meter"><i style="width:${mood}%"></i></div><small>${status} · ${l("ينتهي", "Ends", "Expire le")} ${esc(item.end)}</small></article>`;
+  }).join("");
+  const campaignOptions = Object.entries(CAMPAIGN_TYPES).map(([id, type]) =>
+    `<option value="${id}">${esc(staffText(type.name, lang))} — ${esc(staffText(type.desc, lang))}</option>`).join("");
+  return `<h3>${l("التسويق", "Marketing", "Marketing")}</h3>
+    <p class="hint">${l("يرفع المدير عائد الحملات ورضا الرعاة؛ الرضا يغيّر قيمة عروض التجديد.", "The marketing director improves campaign returns and sponsor satisfaction; satisfaction affects renewal offers.", "Le directeur marketing améliore le rendement des campagnes et la satisfaction, qui influence les offres de renouvellement.")}</p>
+    <form id="staff-campaign-form" class="neg-form"><label>${l("نوع الحملة", "Campaign", "Campagne")}<select name="campaignType">${campaignOptions}</select></label><label>${l("الميزانية", "Budget", "Budget")}<input type="number" name="budget" value="1000000" min="100000" max="50000000" step="50000" required></label><button class="btn small primary" type="submit">${l("إطلاق الحملة", "Launch campaign", "Lancer la campagne")}</button></form>
+    <h4>${l("الحملات الجارية", "Active campaigns", "Campagnes en cours")} (${num(marketing.campaigns.length)})</h4>
+    <div class="staff-campaign-list">${campaigns || `<p>${l("لا حملات جارية.", "No active campaigns.", "Aucune campagne en cours.")}</p>`}</div>
+    <h4>${l("رضا الرعاة", "Sponsor satisfaction", "Satisfaction des sponsors")}</h4>
+    <div class="staff-sponsor-list">${sponsors || `<p>${l("لا عقود رعاية فعالة لقياس الرضا.", "No active sponsorships to rate.", "Aucun contrat actif à évaluer.")}</p>`}</div>`;
+}
+
+function socialTab(s, lang) {
+  const st = socialState(s);
+  const nearMatch = (s.bigMatches || []).filter((m) => m.date > s.date && m.date <= addDaysForView(s.date, 7)).sort((a, b) => a.date.localeCompare(b.date))[0];
+  const matchId = nearMatch?.id || nearMatch?.date;
+  const derbyUsed = matchId && st.lastDerbyMatch === matchId;
+  const content = Object.entries(SOCIAL_CONTENTS).map(([id, item]) =>
+    `<button class="social-content-card" data-action="staff-social-content" data-id="${id}" ${s.finance.cash < item.cost ? "disabled" : ""}><strong>${esc(staffText(item.name, lang))}</strong><small>${money(item.cost)} · +${num(item.fans)} ${l("جمهور", "fans", "supporters")} · +${num(item.eng)} ${l("تفاعل", "engagement", "engagement")}</small></button>`).join("");
+  const crisisStatus = st.crisis?.status === "exploded" ? l("انفجرت", "Exploded", "Explosée")
+    : st.crisis?.status === "apology" ? l("اعتذار", "Apology", "Excuses")
+      : st.crisis?.status === "fine" ? l("غرامة", "Fine", "Amende")
+        : l("تم التجاهل", "Ignored", "Ignorée");
+  const crisis = st.crisis?.status === "open" && SOCIAL_CRISES[st.crisis.kind]
+    ? `<section class="social-crisis-card"><strong>${l("أزمة مفتوحة", "Open crisis", "Crise en cours")}: ${esc(staffText(SOCIAL_CRISES[st.crisis.kind].name, lang))}</strong><p>${esc(staffText(SOCIAL_CRISES[st.crisis.kind].desc, lang))}</p><small>${l("آخر موعد للرد", "Response deadline", "Date limite de réponse")}: ${esc(st.crisis.deadline)}</small><div class="row-actions"><button class="btn small primary" data-action="staff-social-crisis" data-how="apology" ${s.finance.cash < 200000 ? "disabled" : ""}>${l("اعتذار علني", "Public apology", "Excuses publiques")} · ${money(200000)}</button><button class="btn small" data-action="staff-social-crisis" data-how="fine">${l("غرامة انضباطية", "Disciplinary fine", "Amende disciplinaire")}</button><button class="btn small danger" data-action="staff-social-crisis" data-how="ignore">${l("تجاهل", "Ignore", "Ignorer")}</button></div></section>`
+    : st.crisis
+      ? `<p class="hint">${l("آخر أزمة", "Last crisis", "Dernière crise")}: ${esc(staffText(SOCIAL_CRISES[st.crisis.kind]?.name, lang) || st.crisis.kind)} · ${crisisStatus}</p>`
+      : `<p class="hint">${l("لا أزمة مفتوحة.", "No open crisis.", "Aucune crise en cours.")}</p>`;
+  const posts = (st.posts || []).slice(0, 10).map((item) => {
+    const label = item.kind === "derby" ? l("حملة الديربي", "Derby campaign", "Campagne du derby") : staffText(SOCIAL_CONTENTS[item.kind]?.name, lang) || item.kind;
+    return `<li>${esc(label)} · ${esc(item.date)}</li>`;
+  }).join("");
+  return `<h3>${l("السوشيال ميديا", "Social media", "Réseaux sociaux")}</h3>
+    <div class="staff-metric-grid"><div class="staff-metric"><small>${l("المتابعون", "Followers", "Abonnés")}</small><strong>${num(st.followers)}</strong></div><div class="staff-metric"><small>${l("التفاعل", "Engagement", "Engagement")}</small><strong>${num(st.engagement)}٪</strong></div><div class="staff-metric"><small>${l("مضاعف طلب القمصان", "Shirt-demand multiplier", "Multiplicateur de demande de maillots")}</small><strong>×${onlineShirtMultiplier(s).toFixed(2)}</strong></div></div>
+    <h4>${l("نشر محتوى", "Publish content", "Publier du contenu")}</h4><div class="social-content-grid">${content}</div>
+    <div class="social-derby"><strong>${l("حملة جماهيرية قبل الديربي", "Derby fan campaign", "Campagne avant le derby")}</strong><p>${nearMatch ? `${l("الموعد القريب", "Upcoming fixture", "Prochain match")}: ${esc(nearMatch.date)}` : l("لا ديربي خلال ٧ أيام.", "No derby in the next 7 days.", "Aucun derby dans les 7 prochains jours.")}</p><button class="btn small primary" data-action="staff-social-derby" ${!nearMatch || derbyUsed || s.finance.cash < 300000 ? "disabled" : ""}>${l("إطلاق حملة الديربي", "Launch derby campaign", "Lancer la campagne du derby")} · ${money(300000)}</button>${derbyUsed ? `<small>${l("أطلقت حملة لهذا الديربي بالفعل.", "A campaign is already booked for this derby.", "Une campagne est déjà prévue pour ce derby.")}</small>` : ""}</div>
+    ${crisis}<h4>${l("آخر المنشورات", "Recent posts", "Publications récentes")}</h4><ul class="staff-log">${posts || `<li>${l("لا منشورات بعد.", "No posts yet.", "Aucune publication.")}</li>`}</ul>`;
+}
+
+const addDaysForView = (date, days) => {
+  const d = new Date(`${date}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + days);
+  return d.toISOString().slice(0, 10);
+};
+
 export function staffView(s, tab = "org", lang = "ar") {
   ensureStaffCorp(s);
   const tabs = STAFF_TABS.map(([id, ar, en, fr]) =>
@@ -215,6 +308,9 @@ export function staffView(s, tab = "org", lang = "ar") {
     : tab === "sporting" ? sportingTab(s, lang)
     : tab === "tech" ? techTab(s)
     : tab === "scouts" ? scoutsTab(s, lang)
+    : tab === "academy" ? academyTab(s, lang)
+    : tab === "marketing" ? marketingTab(s, lang)
+    : tab === "social" ? socialTab(s, lang)
     : tab === "meeting" ? meetingTab(s, lang) : tab === "hq" ? hqTab(s) : orgTab(s, lang);
   return `<section class="staff-corp"><div class="tabs">${tabs}</div><div class="tab-body">${body}</div></section>`;
 }
