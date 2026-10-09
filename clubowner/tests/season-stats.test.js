@@ -189,7 +189,7 @@ test("v18→v19 migration initializes season stats on active players", () => {
   assert.equal(v18.players[0].seasonGoals, undefined);
 
   const migrated = migrateSave(v18);
-  assert.equal(migrated.version, 20);
+  assert.equal(migrated.version, 22);
   assert.ok(
     migrated.migrationNote.includes("إحصائيات الموسم 0.23"),
     "migration note should mention season stats 0.23",

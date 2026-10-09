@@ -319,7 +319,7 @@ test("v10 migration preserves current cups and activates no new Asia mid-season"
     (c) => c.engine !== "asia-v1" && c.engine !== "concacaf-v1",
   );
   const migrated = migrateSave(s);
-  assert.equal(migrated.version, 20);
+  assert.equal(migrated.version, 22);
   assert.equal(migrated.expansion.asiaVersion, 0);
   assert.equal(migrated.expansion.concacafVersion, 0);
   assert.deepEqual(migrated.expansion.cups, s.expansion.cups);

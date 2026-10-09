@@ -11,6 +11,7 @@ import {
   STAFF_POOL_MAX_AGE_DAYS,
 } from "../services/careers.js";
 import { initSeasonStats } from "../services/seasonStats.js";
+import { migrateDynasty } from "../services/dynasty.js";
 function migrateToFive(input) {
   if (input?.version === 4) {
     const s = structuredClone(input);
@@ -345,11 +346,41 @@ function migrateToTwenty(input) {
   return s;
 }
 
+// 0.24 (save v21): dynasty and generational succession. Existing family records and the
+// owner's age are normalized in place; empty old saves start the family at their first marriage/birth.
+function migrateToTwentyOne(input) {
+  if (!input || input.version !== 20) return input;
+  const s = structuredClone(input);
+  s.version = 21;
+  s.dynasty = migrateDynasty(s);
+  s.migrationNote =
+    (s.migrationNote || "") +
+    " الأجيال 0.24: حُفظ عمر المالك والأبناء وصفاتهم الحالية، وتبدأ منظومة العائلة تلقائيًا عند الزواج والإنجاب دون تغيير اللاعبين أو المالية.";
+  return s;
+}
+
+// Save v22: normalize academy journey records and initialize the event/opinion timeline.
+// Existing v21 family members, academy history and owner age are migrated without touching club finances.
+function migrateToTwentyTwo(input) {
+  if (!input || input.version !== 21) return input;
+  const s = structuredClone(input);
+  s.version = 22;
+  s.dynasty = migrateDynasty(s);
+  s.migrationNote =
+    (s.migrationNote || "") +
+    " تحديث الأجيال: تمت تهيئة تقارير الأكاديمية وسجل الرأي العام والأحداث، مع الحفاظ على الأسرة والعمر واللاعبين والمالية.";
+  return s;
+}
+
 export function migrateSave(input) {
-  if (!input || input.version === 20) return input;
+  if (!input || input.version === 22) return input;
+  if (input.version === 21) return migrateToTwentyTwo(input);
+  if (input.version === 20) return migrateToTwentyTwo(migrateToTwentyOne(input));
   const v17 = migrateToSeventeen(input);
   const v18 = v17?.version === 17 ? migrateToEighteen(v17) : v17;
   if (v18?.version !== 18) return v18;
   const v19 = migrateToNineteen(v18);
-  return migrateToTwenty(v19);
+  const v20 = migrateToTwenty(v19);
+  const v21 = migrateToTwentyOne(v20);
+  return migrateToTwentyTwo(v21);
 }

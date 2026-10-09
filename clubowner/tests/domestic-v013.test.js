@@ -65,7 +65,7 @@ const skipGone = (raw) => {
 
 test("all fifty markets get full domestic cups with loaded non-reserve entrants", () => {
   const s = game();
-  assert.equal(s.version, 20);
+  assert.equal(s.version, 22);
   assert.deepEqual(Object.keys(DOMESTIC).sort(), [...ALL_MARKETS].sort());
   const cups = s.expansion.cups.filter((c) => c.kind === "domestic");
   assert.equal(cups.length, 50);
@@ -194,7 +194,7 @@ test("authentic v012 save migrates to 16 with its season-1 cups preserved", asyn
   if (skipGone(old)) return;
   assert.equal(old.version, 12);
   const s = migrateSave(old);
-  assert.equal(s.version, 20);
+  assert.equal(s.version, 22);
   assert.equal(old.version, 12);
   assert(s.migrationNote.includes("0.13"));
   assert(s.migrationNote.includes("0.14"));
