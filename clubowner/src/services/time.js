@@ -24,6 +24,7 @@ import { transferReply } from "./transfers.js";
 import { matchDay } from "./matches.js";
 import { developmentDay } from "./development.js";
 import { academyJourneyDay, dynastyGrowthDay } from "./dynasty.js";
+import { dynastyEventDay } from "./dynastyEvents.js";
 function eventsDay(s) {
   for (const e of s.events) {
     if (e.done || e.date > s.date) continue;
@@ -78,6 +79,7 @@ export function advanceTime(s, days = null) {
     agingDay(s);
     dynastyGrowthDay(s);
     academyJourneyDay(s);
+    dynastyEventDay(s);
     retirementDay(s);
     staffDay(s);
     if (!s.expansion) seasonDay(s);

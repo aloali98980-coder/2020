@@ -6,6 +6,14 @@ import { SYSTEM_PHRASES } from "./phrases-system.js";
 import { NAME_PHRASES } from "./phrases-names.js";
 import { LEGEND_PHRASES } from "./phrases-legends.js";
 import { EXTRA_PHRASES } from "./phrases-extra.js";
+import { DYNASTY_PHRASES } from "./phrases-dynasty.js";
+import {
+  ACADEMY_FOCUSES,
+  CHILD_STAGES,
+  DYNASTY_PATHS,
+  DYNASTY_TRAITS,
+  UPBRINGING_STYLES,
+} from "../data/dynasty.js";
 import egyptPyramid from "../data/egyptPyramid.json" with { type: "json" };
 import { ROSTERS } from "../data/packs/current-2026.js";
 import { worldNameMap } from "../data/packs/world.js";
@@ -13,6 +21,22 @@ import { LEGENDS } from "../data/legends.js";
 import { MARKETS } from "../data/worldMarkets.js";
 // 0.19: phrase modules are merged in order; earlier hand-tuned entries win. A string value means
 // "same wording in English and French" (brands, codes, transliterated names).
+const dynastyCopies = [
+  ...CHILD_STAGES.map((stage) => stage.label),
+  ...DYNASTY_TRAITS.flatMap((trait) => [trait.label, trait.description]),
+  ...DYNASTY_PATHS.flatMap((path) => [path.label, path.bonus]),
+  ...UPBRINGING_STYLES.map((style) => style.label),
+  ...ACADEMY_FOCUSES.map((focus) => focus.label),
+];
+const normalizedPhrase = (value) => String(value).trim().replace(/[.؛:!؟…،,]+$/, "");
+for (const copy of dynastyCopies) {
+  const key = normalizedPhrase(copy.ar);
+  if (!DICTIONARY[key]) DICTIONARY[key] = [copy.en, copy.fr];
+}
+for (const [ar, pair] of Object.entries(DYNASTY_PHRASES)) {
+  const key = normalizedPhrase(ar);
+  if (!DICTIONARY[key]) DICTIONARY[key] = pair;
+}
 for (const extra of [
   NARRATIVES,
   UI_PHRASES,
