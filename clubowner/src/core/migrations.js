@@ -1,3 +1,4 @@
+import { ensureSportsCity } from "../services/sportsCity.js";
 import { initLegends } from "../services/legends.js";
 import { initTalent } from "../services/talent/state.js";
 import { initializeCareer } from "../models/player.js";
@@ -463,6 +464,21 @@ function migrateToTwentyFour(input) {
 }
 
 export function migrateSave(input) {
+  if (!input || input.version === 25) return input;
+  if (input.version === 24) {
+    const s = structuredClone(input);
+    s.version = 25;
+    ensureSportsCity(s);
+    return s;
+  }
+  const old = migrateSaveToTwentyFour(input);
+  if (old?.version !== 24) return old;
+  old.version = 25;
+  ensureSportsCity(old);
+  return old;
+}
+
+function migrateSaveToTwentyFour(input) {
   if (!input || input.version === 24) return input;
   if (input.version === 23) return migrateToTwentyFour(input);
   if (input.version === 22)
