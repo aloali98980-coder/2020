@@ -8,6 +8,7 @@ import { squad } from "../src/models/player.js";
 import {
   setPhilosophy, setFreedom, sportingMonth, resolveDeal, sportingDay,
   sportingSeasonRating, negotiatedFee, negotiatedWage, saleFee, autoCap,
+  effectiveFreedom, sportingDelegationActive,
 } from "../src/services/staff/sporting.js";
 import { corpEmployees } from "../src/services/staff/staffCorp.js";
 
@@ -29,6 +30,24 @@ test("الفلسفة والصلاحيات: ضبط وتخزين", () => {
   // بلا مدير رياضي: لا نبض ولا اقتراحات.
   s.staffCorp.employees = s.staffCorp.employees.filter((e) => e.role !== "sporting");
   assert.equal(sportingMonth(s), null);
+  validateSave(s);
+});
+
+test("تفويض المجلس يمنح صلاحية مؤقتة ويرجع للسقف الأساسي عند انتهائه", () => {
+  const s = game();
+  setFreedom(s, 60);
+  const baseCap = autoCap(s);
+  const until = addDays(s.date, 30);
+  s.staffCorp.authorities.sporting = { scope: { ar: "اختبار", en: "Test", fr: "Test" }, grantedOn: s.date, until };
+  s.staffCorp.sporting.authorityUntil = until;
+  assert.equal(sportingDelegationActive(s), true);
+  assert.equal(effectiveFreedom(s), 75);
+  assert.equal(autoCap(s), baseCap + 1_500_000);
+  assert.equal(s.staffCorp.sporting.log[0].text.en, "Sporting director authority changed from 40% to 60%.");
+  s.date = addDays(until, 1);
+  assert.equal(sportingDelegationActive(s), false);
+  assert.equal(effectiveFreedom(s), 60);
+  assert.equal(autoCap(s), baseCap);
   validateSave(s);
 });
 
@@ -61,6 +80,19 @@ test("صلاحيات منخفضة: صفقات معلّقة بانتظار الإ
   validateSave(s);
 });
 
+test("لا يكرر المدير اقتراح صفقة لاعب ما دامت معلّقة", () => {
+  const s = rich(game());
+  setFreedom(s, 0);
+  for (let i = 0; i < 3; i++) {
+    s.date = addDays(s.date, 1);
+    sportingMonth(s);
+  }
+  const pending = s.staffCorp.deals.filter((d) => d.status === "pending");
+  const playerIds = pending.map((d) => d.playerId);
+  assert.equal(new Set(playerIds).size, playerIds.length, "كل لاعب له اقتراح واحد مفتوح فقط");
+  validateSave(s);
+});
+
 test("حرية كاملة: تنفيذ تلقائي ضمن السقف المعلن", () => {
   const s = rich(game());
   setPhilosophy(s, "stars");
@@ -71,10 +103,19 @@ test("حرية كاملة: تنفيذ تلقائي ضمن السقف المعل�
   const st = s.staffCorp.sporting.season;
   assert.ok(st.auto + st.proposed >= 1);
   // التلقائي لا يتجاوز السقف أبدًا.
-  for (const e of s.staffCorp.sporting.log.filter((x) => x.text.startsWith("نفّذ"))) {
+  for (const e of s.staffCorp.sporting.log.filter((x) => typeof x.text === "string" && x.text.startsWith("نفّذ"))) {
     const m = e.text.match(/ب([\d,]+)/);
     if (m) assert.ok(Number(m[1].replace(/,/g, "")) <= cap * 2 + 1, e.text);
   }
+  validateSave(s);
+});
+
+test("لا ينفذ شراءً تلقائيًا إذا تجاوز راتبه ميزانية الرواتب", () => {
+  const s = rich(game());
+  s.finance.wageBudget = 0;
+  setFreedom(s, 100);
+  sportingMonth(s);
+  assert.ok(s.staffCorp.deals.some((d) => d.kind === "buy" && d.status === "pending"), "يبقى الشراء للموافقة بدل تجاوز الميزانية");
   validateSave(s);
 });
 

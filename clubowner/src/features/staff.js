@@ -1,13 +1,22 @@
-// شاشة «الإدارة الشاملة» — تبويبات الهيكل والسوق والمقر والاجتماع أولًا،
-// وتُضاف تبويبات المجموعات التالية (الرياضي/الفني/الكشافين/الأكاديمية/التسويق/السوشيال/القانونية/المالية).
+// شاشة «الإدارة الشاملة» — الهيكل والسوق والرياضي والفني والكشافون والأكاديمية والتسويق والسوشيال والمجلس والمقر.
 import { tr } from "../i18n/index.js";
 import { money, num, esc } from "../ui/format.js";
-import { STAFF_ROLES, HQ_LEVELS, staffText, SPORTING_PHILOSOPHIES, SCOUT_REGIONS, REGION_IDS } from "../data/staffCatalog.js";
 import {
-  ensureStaffCorp, corpEmployees, roleNameAr, hqCap, corpPayroll,
+  STAFF_ROLES, HQ_LEVELS, staffText, SPORTING_PHILOSOPHIES, SCOUT_REGIONS, REGION_IDS,
+  ACADEMY_CURRICULA, CAMPAIGN_TYPES, SOCIAL_CONTENTS, SOCIAL_CRISES, CASE_KINDS, CASE_STAGES,
+} from "../data/staffCatalog.js";
+import {
+  ensureStaffCorp, corpEmployees, hqCap, corpPayroll,
 } from "../services/staff/staffCorp.js";
-import { sportingDirector, autoCap } from "../services/staff/sporting.js";
+import { sportingDirector, autoCap, effectiveFreedom, sportingDelegationActive } from "../services/staff/sporting.js";
 import { gkSkillOf, fitnessSkillOf, doctorSkillOf, fitnessFactor, gkGainBonus } from "../services/staff/effects.js";
+import { academyManagerSkill, academyPotentialBonus, academyScoutBonus } from "../services/staff/academy.js";
+import { sponsorMood } from "../services/staff/marketing.js";
+import { socialState, onlineShirtMultiplier } from "../services/staff/social.js";
+import { legalSettlementCost } from "../services/staff/legal.js";
+import { financeOfficeSnapshot } from "../services/staff/financeOffice.js";
+import { ASSETS } from "../data/catalog.js";
+import { resolveSponsor } from "../services/sponsors.js";
 
 const l = (ar, en, fr) => tr(ar, en, fr);
 export const STAFF_TABS = [
@@ -16,15 +25,39 @@ export const STAFF_TABS = [
   ["sporting", "المدير الرياضي", "Sporting Dir.", "Directeur sportif"],
   ["tech", "الطاقم الفني", "Technical", "Technique"],
   ["scouts", "الكشافون", "Scouts", "Recruteurs"],
+  ["academy", "الأكاديمية", "Academy", "Académie"],
+  ["marketing", "التسويق", "Marketing", "Marketing"],
+  ["social", "السوشيال ميديا", "Social Media", "Réseaux sociaux"],
   ["meeting", "اجتماع المجلس", "Board Meeting", "Conseil"],
+  ["legal", "الشؤون القانونية", "Legal Affairs", "Affaires juridiques"],
+  ["financeOffice", "المكتب المالي", "Finance Office", "Bureau financier"],
   ["hq", "المقر الإداري", "Headquarters", "Siège"],
 ];
 const roleName = (role, lang) =>
   lang === "ar" ? STAFF_ROLES[role].name.ar : lang === "fr" ? STAFF_ROLES[role].name.fr : STAFF_ROLES[role].name.en;
-const empName = (e, lang) => (lang === "ar" ? e.name.ar : e.name.en);
+const empName = (e, lang) => (lang === "ar" ? e.name.ar : lang === "fr" ? e.name.fr || e.name.en : e.name.en);
 
 const bar = (v) =>
   `<span class="meter"><i style="width:${Math.max(0, Math.min(100, v))}%"></i></span>`;
+
+const orgNode = (s, role, lang) => {
+  const staff = corpEmployees(s).filter((e) => e.role === role);
+  const title = roleName(role, lang);
+  return `<div class="org-node"><strong>${esc(title)}</strong>${staff.length
+    ? staff.map((e) => `<span data-no-translate>${esc(empName(e, lang))} · ${l("ولاء", "Loyalty", "Loyauté")} ${num(e.loyalty)}٪</span>`).join("")
+    : `<span class="vacant">${l("شاغر", "Vacant", "Vacant")}</span>`}</div>`;
+};
+function orgTree(s, lang) {
+  const executives = ["sporting", "marketing", "finance", "lawyer"];
+  const football = ["coach", "doctor", "fitness", "gk", "scout", "academy"];
+  const support = ["social", "assistant"];
+  return `<div class="org-tree" aria-label="${l("الشجرة التنظيمية", "Organisation chart", "Organigramme")}">
+    <div class="org-node org-owner"><small>${l("الرئيس والمالك", "Chair & owner", "Président-propriétaire")}</small><strong data-no-translate>${esc(s.owner)}</strong></div>
+    <div class="org-branch"><h4>${l("الإدارة العليا", "Executive team", "Direction générale")}</h4><div class="org-children">${executives.map((r) => orgNode(s, r, lang)).join("")}</div></div>
+    <div class="org-branch"><h4>${l("الكرة والأداء", "Football & performance", "Football et performance")}</h4><div class="org-children">${football.map((r) => orgNode(s, r, lang)).join("")}</div></div>
+    <div class="org-branch"><h4>${l("الاتصال والمساندة", "Communications & support", "Communication et soutien")}</h4><div class="org-children">${support.map((r) => orgNode(s, r, lang)).join("")}</div></div>
+  </div>`;
+}
 
 function orgTab(s, lang) {
   const c = ensureStaffCorp(s);
@@ -54,6 +87,7 @@ function orgTab(s, lang) {
       </span></div>`;
   }).join("");
   return `<h3>${l("الهيكل التنظيمي", "Organisation Chart", "Organigramme")} (${num(c.employees.length)}/${num(hqCap(s))}) · ${l("الرواتب", "Payroll", "Salaires")}: ${money(corpPayroll(s))}</h3>
+  ${orgTree(s, lang)}
   ${poach ? `<div class="poach-list">${poach}</div>` : ""}
   <table class="staff-table"><thead><tr><th>${l("الموظف", "Employee", "Employé")}</th><th>${l("الدور", "Role", "Rôle")}</th><th>${l("المهارة", "Skill", "Compétence")}</th><th>${l("الولاء", "Loyalty", "Loyauté")}</th><th>${l("الراتب", "Wage", "Salaire")}</th><th>${l("الدرجة", "Grade", "Grade")}</th><th>${l("العقد حتى", "Contract until", "Contrat jusqu’au")}</th><th></th></tr></thead><tbody>${rows || `<tr><td colspan="8">${l("لا موظفين بعد.", "No employees yet.", "Aucun employé.")}</td></tr>`}</tbody></table>`;
 }
@@ -63,7 +97,7 @@ function marketTab(s, lang) {
   const n = c.negotiation;
   const cards = c.market.map((m) => {
     const active = n?.status === "open" && n.marketKey === m.key;
-    return `<div class="market-card"><div><strong data-no-translate>${esc(lang === "ar" ? m.name.ar : m.name.en)}</strong>${m.fame === "famous" ? " ★" : ""}
+    return `<div class="market-card"><div><strong data-no-translate>${esc(lang === "ar" ? m.name.ar : lang === "fr" ? m.name.fr || m.name.en : m.name.en)}</strong>${m.fame === "famous" ? " ★" : ""}
       <small>${esc(roleName(m.role, lang))} · ${l("مهارة", "skill", "compétence")} ${num(m.skill)} · ${l("يطلب", "asks", "demande")} ${money(m.wageAsk)} × ${num(m.yearsAsk)}${l("سنوات", "yrs", "ans")} · ${l("حتى", "until", "jusqu’au")} ${esc(m.expires)}</small>
       ${m.clauseAsk ? `<small>${l("شرط جزائي", "Release clause", "Clause libératoire")}: ${money(m.clauseAsk)}</small>` : ""}
       ${n?.rival && active ? `<small class="rival-bid">${l("مزاد", "Auction", "Enchères")}: <b data-no-translate>${esc(n.rival.club)}</b> ${money(n.rival.wage)}</small>` : ""}
@@ -83,39 +117,120 @@ function marketTab(s, lang) {
   <div class="market-list">${cards || `<p>${l("السوق فارغ حاليًا.", "Market is empty.", "Marché vide.")}</p>`}</div>`;
 }
 
-function meetingTab(s) {
+function meetingTab(s, lang) {
   const c = ensureStaffCorp(s);
   const rows = c.meeting.requests.map((r) => {
     const e = corpEmployees(s).find((x) => x.id === r.from);
-    return `<tr><td data-no-translate>${esc(e?.name.ar || "—")}</td><td>${esc(roleNameAr(r.role))}</td>
-    <td>${esc(r.text)} — ${money(r.amount)}</td><td>${r.status === "open"
+    const reportValue = r.report?.money ? money(r.report.value) : num(r.report?.value ?? 0);
+    const report = r.report
+      ? `<strong>${esc(staffText(r.report.label, lang))}: ${reportValue}</strong><small>${esc(staffText(r.report.note, lang))}</small>`
+      : l("لا يوجد تقرير", "No report", "Aucun rapport");
+    const request = `${staffText(r.text, lang)} — ${money(r.amount)}`;
+    const authority = staffText(r.authority, lang);
+    const granted = c.authorities?.[r.role]?.until >= s.date;
+    return `<tr><td data-no-translate>${esc(e ? empName(e, lang) : "—")}</td><td>${esc(roleName(r.role, lang))}</td>
+    <td>${report}</td><td>${esc(request)}<small>${l("التفويض المطلوب", "Requested authority", "Pouvoir demandé")}: ${esc(authority)}${granted ? ` · ${l("ممنوح حتى", "Granted until", "Accordé jusqu’au")} ${esc(c.authorities[r.role].until)}` : ""}</small></td><td>${r.status === "open"
       ? `<button class="btn small primary" data-action="staff-req" data-id="${r.id}" data-how="yes">${l("موافقة", "Approve", "Approuver")}</button>
          <button class="btn small danger" data-action="staff-req" data-id="${r.id}" data-how="no">${l("رفض", "Reject", "Refuser")}</button>`
       : r.status === "approved" ? l("اعتُمد ✓", "Approved ✓", "Approuvé ✓") : l("رُفض ✗", "Rejected ✗", "Rejeté ✗")}</td></tr>`;
   }).join("");
   return `<h3>${l("اجتماع المجلس الشهري", "Monthly Board Meeting", "Conseil mensuel")} (${esc(c.meeting.month || "—")})</h3>
-  <table class="staff-table"><thead><tr><th>${l("المدير", "Director", "Directeur")}</th><th>${l("الدور", "Role", "Rôle")}</th><th>${l("الطلب", "Request", "Demande")}</th><th></th></tr></thead>
-  <tbody>${rows || `<tr><td colspan="4">${l("لا طلبات هذا الشهر.", "No requests this month.", "Aucune demande ce mois-ci.")}</td></tr>`}</tbody></table>`;
+  <table class="staff-table"><thead><tr><th>${l("المدير", "Director", "Directeur")}</th><th>${l("الدور", "Role", "Rôle")}</th><th>${l("تقرير المدير", "Director’s report", "Rapport du directeur")}</th><th>${l("طلب الميزانية والتفويض", "Budget & authority request", "Demande de budget et de pouvoir")}</th><th></th></tr></thead>
+  <tbody>${rows || `<tr><td colspan="5">${l("لا طلبات هذا الشهر.", "No requests this month.", "Aucune demande ce mois-ci.")}</td></tr>`}</tbody></table>`;
 }
 
-function hqTab(s) {
+function hqTab(s, lang) {
   const c = ensureStaffCorp(s);
   const cur = HQ_LEVELS[c.hq.level];
   const next = HQ_LEVELS[c.hq.level + 1];
-  return `<h3>${l("المقر الإداري", "Headquarters", "Siège")} — ${esc(staffText(cur.name, "ar"))}</h3>
+  return `<h3>${l("المقر الإداري", "Headquarters", "Siège")} — ${esc(staffText(cur.name, lang))}</h3>
   <p>${l("السعة", "Capacity", "Capacité")}: ${num(c.employees.length)}/${num(hqCap(s))} · ${l("الثروة الشخصية", "Personal wealth", "Fortune personnelle")}: ${money(s.empire?.personal || 0)}</p>
   ${c.hq.project ? `<p>${l("قيد البناء حتى", "Under construction until", "En construction jusqu’au")} ${esc(c.hq.project.end)}</p>`
-    : next ? `<div class="hq-next"><p>${l("التالي", "Next", "Suivant")}: <strong>${esc(staffText(next.name, "ar"))}</strong> — ${l("سعة", "capacity", "capacité")} ${num(next.cap)} · ${l("تكلفة", "cost", "coût")} ${money(next.cost)} ${l("من ثروتك", "from your wealth", "sur votre fortune")}
+    : next ? `<div class="hq-next"><p>${l("التالي", "Next", "Suivant")}: <strong>${esc(staffText(next.name, lang))}</strong> — ${l("سعة", "capacity", "capacité")} ${num(next.cap)} · ${l("تكلفة", "cost", "coût")} ${money(next.cost)} ${l("من ثروتك", "from your wealth", "sur votre fortune")}
       ${next.needsCity ? ` · ${l("يشترط برج المكاتب في المدينة الرياضية", "Requires the city office tower", "Exige la tour de bureaux de la cité")}` : ""}</p>
       <button class="btn primary" data-action="staff-hq-up">${l("بدء الترقية", "Start Upgrade", "Lancer les travaux")}</button></div>`
     : `<p>${l("بلغت البرج الإداري — القمة.", "Admin Tower reached — the top.", "Tour administrative atteinte — le sommet.")}</p>`}
-  <div class="hq-ladder">${HQ_LEVELS.map((h, i) => `<span class="${i < c.hq.level ? "done" : i === c.hq.level ? "cur" : ""}">${esc(staffText(h.name, "ar"))} (${num(h.cap)})</span>`).join(" ← ")}</div>`;
+  <div class="hq-ladder">${HQ_LEVELS.map((h, i) => `<span class="${i < c.hq.level ? "done" : i === c.hq.level ? "cur" : ""}">${esc(staffText(h.name, lang))} (${num(h.cap)})</span>`).join(" ← ")}</div>`;
+}
+
+const CASE_STAGE_LABELS = {
+  appeal: ["استئناف", "Appeal", "Appel"],
+  hearing: ["جلسة", "Hearing", "Audience"],
+  verdict: ["حكم", "Verdict", "Verdict"],
+};
+const CASE_STATUS_LABELS = {
+  open: ["مفتوحة", "Open", "Ouverte"],
+  won: ["كسبناها", "Won", "Gagnée"],
+  lost: ["خسرناها", "Lost", "Perdue"],
+  settled: ["تسوية", "Settled", "Réglée"],
+};
+function legalTab(s, lang) {
+  const c = ensureStaffCorp(s);
+  const cases = c.legal.cases || [];
+  const open = cases.filter((item) => item.status === "open");
+  const history = cases.filter((item) => item.status !== "open").slice(0, 8);
+  const legalDirector = corpEmployees(s).find((employee) => employee.role === "lawyer");
+  const cards = open.map((item) => {
+    const kind = CASE_KINDS[item.kind];
+    const stageIndex = CASE_STAGES.indexOf(item.stage);
+    const fee = kind?.fees[stageIndex] || 0;
+    const settlement = legalSettlementCost(item);
+    const ready = s.date >= item.nextOn;
+    const attempts = (item.stageResults || []).slice(-3).map((result) =>
+      `<li>${esc(staffText(CASE_STAGE_LABELS[result.stage] ? { ar: CASE_STAGE_LABELS[result.stage][0], en: CASE_STAGE_LABELS[result.stage][1], fr: CASE_STAGE_LABELS[result.stage][2] } : result.stage, lang))} · ${esc(result.date)} · ${num(result.chance)}٪ ${result.won ? l("نجاح", "success", "succès") : l("تعثر", "setback", "échec")}</li>`,
+    ).join("");
+    return `<section class="staff-case-card"><div class="panel-head"><strong>${esc(staffText(kind?.name, lang))}</strong><span class="badge">${esc(staffText({ ar: CASE_STAGE_LABELS[item.stage]?.[0] || item.stage, en: CASE_STAGE_LABELS[item.stage]?.[1] || item.stage, fr: CASE_STAGE_LABELS[item.stage]?.[2] || item.stage }, lang))}</span></div>
+      <p>${l("درجة الخطورة", "Severity", "Gravité")}: ${num(item.severity)}/3 · ${l("الجلسة", "Hearing", "Audience")}: ${esc(item.nextOn)} · ${l("أتعاب المرحلة", "Stage fee", "Frais de l’étape")}: ${money(fee)}</p>
+      <p class="muted">${ready ? l("الجلسة جاهزة — تحرك قبل انتهاء المهلة.", "Hearing is ready — act before the deadline.", "Audience prête — agissez avant l’échéance.") : l("الجلسة لم تحن بعد.", "The hearing is not due yet.", "L’audience n’est pas encore prévue.")}</p>
+      <div class="row-actions"><button class="btn small primary" data-action="staff-legal-act" data-id="${esc(item.id)}" data-how="contest" ${!ready || s.finance.cash < fee ? "disabled" : ""}>${l("ترافع", "Contest", "Contester")} · ${money(fee)}</button>
+      <button class="btn small" data-action="staff-legal-act" data-id="${esc(item.id)}" data-how="settle" ${s.finance.cash < settlement ? "disabled" : ""}>${l("تسوية", "Settle", "Régler")} · ${money(settlement)}</button></div>
+      ${attempts ? `<ul class="staff-log">${attempts}</ul>` : ""}</section>`;
+  }).join("");
+  const past = history.map((item) => {
+    const stageName = item.kind && CASE_KINDS[item.kind]?.name;
+    const status = CASE_STATUS_LABELS[item.status] || CASE_STATUS_LABELS.settled;
+    return `<tr><td>${esc(staffText(stageName, lang))}</td><td>${esc(staffText({ ar: status[0], en: status[1], fr: status[2] }, lang))}</td><td>${esc(item.openedOn)} – ${esc(item.closedOn || "—")}</td><td>${num(item.stageResults?.length || 0)}</td></tr>`;
+  }).join("");
+  const manualKinds = ["ban", "contract"].map((id) => `<option value="${id}">${esc(staffText(CASE_KINDS[id].name, lang))}</option>`).join("");
+  return `<h3>${l("الشؤون القانونية", "Legal Affairs", "Affaires juridiques")}</h3>
+    <div class="staff-metric-grid"><div class="staff-metric"><small>${l("القضايا المفتوحة", "Open cases", "Affaires ouvertes")}</small><strong>${num(open.length)}</strong></div><div class="staff-metric"><small>${l("مكاسب / خسائر", "Wins / losses", "Gagnées / perdues")}</small><strong>${num(c.legal.wins)} / ${num(c.legal.losses)}</strong></div><div class="staff-metric"><small>${l("التسويات", "Settlements", "Règlements")}</small><strong>${num(c.legal.settlements || 0)}</strong></div><div class="staff-metric"><small>${l("المستشار القانوني", "Legal counsel", "Conseiller juridique")}</small><strong>${legalDirector ? `${esc(empName(legalDirector, lang))} · ${num(legalDirector.skill)}` : l("غير معيّن", "Not appointed", "Non nommé")}</strong></div></div>
+    <p class="hint">${c.legal.retainerUntil >= s.date ? l("تفويض التمثيل القانوني من المجلس ساري.", "The board legal retainer is active.", "Le mandat juridique du conseil est actif.") : l("اعتماد طلب المستشار القانوني في اجتماع المجلس يرفع فرصة النجاح مؤقتًا.", "Approving counsel’s board request temporarily improves hearing odds.", "L’approbation de la demande du juriste améliore temporairement les chances.")}</p>
+    <form id="staff-legal-file-form" class="neg-form"><label>${l("فتح ملف قانوني", "Open a legal file", "Ouvrir un dossier juridique")}<select name="kind">${manualKinds}</select></label><button class="btn primary small" type="submit" ${open.length >= 8 ? "disabled" : ""}>${l("إيداع القضية", "File case", "Déposer le dossier")}</button><small>${l("الفتح دون رسوم؛ تبدأ الأتعاب عند الترافع، ولكل مرحلة موعد نهائي.", "Filing is free; fees begin when counsel acts, and each stage has a deadline.", "Le dépôt est gratuit ; les frais commencent avec la défense et chaque étape a une échéance.")}</small></form>
+    <h4>${l("القضايا الجارية", "Active cases", "Affaires en cours")}</h4><div class="staff-case-grid">${cards || `<p class="hint">${l("لا قضايا مفتوحة حاليًا.", "No open cases right now.", "Aucune affaire en cours.")}</p>`}</div>
+    <h4>${l("سجل القضايا", "Case history", "Historique des affaires")}</h4><table class="staff-table"><thead><tr><th>${l("نوع القضية", "Case", "Affaire")}</th><th>${l("النتيجة", "Outcome", "Résultat")}</th><th>${l("الفترة", "Dates", "Dates")}</th><th>${l("الجلسات", "Hearings", "Audiences")}</th></tr></thead><tbody>${past || `<tr><td colspan="4">${l("لا سجل بعد.", "No history yet.", "Aucun historique.")}</td></tr>`}</tbody></table>`;
+}
+
+const FINANCE_WARNING_LABELS = {
+  "cash-deficit": ["الخزينة سالبة", "Cash is negative", "La trésorerie est négative"],
+  "projected-deficit": ["التوقع خلال ٣٠ يومًا سالب", "The 30-day forecast is negative", "La prévision à 30 jours est négative"],
+  "payroll-over-budget": ["رواتب اللاعبين تتجاوز ميزانيتها", "Player payroll exceeds its budget", "La masse salariale des joueurs dépasse le budget"],
+  "liability-pressure": ["الالتزامات مرتفعة مقارنة بالسيولة", "Liabilities are high relative to cash", "Les engagements sont élevés par rapport à la trésorerie"],
+};
+function financeOfficeTab(s, lang) {
+  const c = ensureStaffCorp(s);
+  const report = financeOfficeSnapshot(s);
+  const last = c.financeOffice.lastReport;
+  const warnings = report.warnings.map((code) => {
+    const label = FINANCE_WARNING_LABELS[code];
+    return `<li>${esc(staffText({ ar: label[0], en: label[1], fr: label[2] }, lang))}</li>`;
+  }).join("");
+  const metric = (title, value) => `<div class="staff-metric"><small>${title}</small><strong>${value}</strong></div>`;
+  return `<h3>${l("المكتب المالي", "Finance Office", "Bureau financier")}</h3>
+    <p class="hint">${l("توقع متحرك للثلاثين يومًا المقبلة يجمع الالتزامات والإيرادات المجدولة والرواتب والتشغيل.", "A rolling 30-day forecast combines scheduled commitments and income, payroll, and operations.", "Une prévision glissante à 30 jours regroupe engagements, recettes prévues, salaires et fonctionnement.")}</p>
+    <div class="staff-metric-grid">${metric(l("الرصيد الحالي", "Current cash", "Trésorerie actuelle"), money(report.cash))}${metric(l("إيرادات مجدولة · ٣٠ يومًا", "Scheduled income · 30 days", "Recettes prévues · 30 jours"), money(report.income30))}${metric(l("مصروفات متوقعة · ٣٠ يومًا", "Forecast expenses · 30 days", "Dépenses prévues · 30 jours"), money(report.out30))}${metric(l("الرصيد المتوقع", "Projected cash", "Trésorerie prévue"), money(report.projectedCash))}${metric(l("الالتزامات المتبقية", "Outstanding liabilities", "Engagements restants"), money(report.liabilities))}${metric(l("إيرادات مستقبلية", "Future income", "Revenus futurs"), money(report.futureIncome))}</div>
+    <div class="staff-metric-grid">${metric(l("رواتب اللاعبين", "Player payroll", "Salaires des joueurs"), money(report.playerPayroll))}${metric(l("رواتب الجهاز الإداري", "Staff payroll", "Salaires de l’administration"), money(report.staffPayroll))}${metric(l("التشغيل", "Operations", "Fonctionnement"), money(report.operatingCosts))}${metric(l("صافي حركة الشهر", "Month-to-date net", "Solde du mois"), money(report.monthNet))}</div>
+    ${warnings ? `<section class="staff-finance-warning"><strong>${l("تحذيرات مالية", "Financial warnings", "Alertes financières")}</strong><ul>${warnings}</ul></section>` : `<p class="hint">${l("لا توجد تحذيرات سيولة حاليًا.", "No liquidity warnings right now.", "Aucune alerte de trésorerie pour le moment.")}</p>`}
+    <p class="hint">${report.audited ? l("المراجعة المالية مفوضة من المجلس حتى نهاية فترة التفويض.", "The board-authorized financial review is active.", "L’audit financier autorisé par le conseil est actif.") : l("يمكن للمدير المالي طلب تفويض مراجعة مؤقت من اجتماع المجلس.", "The finance director can request a temporary audit mandate at the board meeting.", "Le directeur financier peut demander un mandat d’audit temporaire au conseil.")}</p>
+    <h4>${l("آخر تقرير شهري محفوظ", "Latest saved monthly report", "Dernier rapport mensuel enregistré")}</h4>${last ? `<p>${esc(last.month)} · ${l("صافي الحركة", "Net movement", "Variation nette")}: ${money(last.monthNet)} · ${l("توقع الثلاثين يومًا", "30-day forecast", "Prévision à 30 jours")}: ${money(last.projectedCash)}${last.warnings?.length ? ` · ${l("تحذيرات", "warnings", "alertes")}: ${num(last.warnings.length)}` : ` · ${l("بلا تحذيرات", "no warnings", "aucune alerte")}`}</p>` : `<p class="hint">${l("سيُحفظ أول تقرير في بداية الشهر القادم.", "The first report is saved at the start of next month.", "Le premier rapport sera enregistré au début du mois prochain.")}</p>`}`;
 }
 
 function sportingTab(s, lang) {
   const c = ensureStaffCorp(s);
   const dir = sportingDirector(s);
   const sp = c.sporting;
+  const effective = effectiveFreedom(s);
+  const delegated = sportingDelegationActive(s);
+  const authorityUntil = c.authorities?.sporting?.until || sp.authorityUntil;
   const phils = Object.entries(SPORTING_PHILOSOPHIES).map(([id, p]) =>
     `<button class="btn small ${sp.philosophy === id ? "primary" : ""}" data-action="staff-phil" data-id="${id}">${esc(lang === "ar" ? p.name.ar : lang === "fr" ? p.name.fr : p.name.en)}</button>`).join(" ");
   const deals = c.deals.filter((d) => d.status === "pending").map((d) =>
@@ -123,15 +238,16 @@ function sportingTab(s, lang) {
     <td data-no-translate>${esc(d.name)}</td><td>${num(d.rating)}</td><td>${money(d.fee)}</td><td>${esc(d.expires)}</td>
     <td><button class="btn small primary" data-action="staff-deal" data-id="${d.id}" data-how="yes">${l("موافقة", "Approve", "Approuver")}</button>
     <button class="btn small danger" data-action="staff-deal" data-id="${d.id}" data-how="no">${l("رفض", "Reject", "Refuser")}</button></td></tr>`).join("");
-  const log = sp.log.slice(0, 12).map((e) => `<li><small>${esc(e.date)}</small> ${esc(e.text)}</li>`).join("");
+  const log = sp.log.slice(0, 12).map((e) => `<li><small>${esc(e.date)}</small> ${esc(staffText(e.text, lang))}</li>`).join("");
   const st = sp.season;
-  return `<h3>${l("المدير الرياضي", "Sporting Director", "Directeur sportif")} — <span data-no-translate>${esc(dir ? (lang === "ar" ? dir.name.ar : dir.name.en) : l("شاغر", "Vacant", "Vacant"))}</span>${dir ? ` (${l("مهارة", "skill", "compétence")} ${num(dir.skill)})` : ""}</h3>
+  return `<h3>${l("المدير الرياضي", "Sporting Director", "Directeur sportif")} — <span data-no-translate>${esc(dir ? empName(dir, lang) : l("شاغر", "Vacant", "Vacant"))}</span>${dir ? ` (${l("مهارة", "skill", "compétence")} ${num(dir.skill)})` : ""}</h3>
   <p>${l("الفلسفة", "Philosophy", "Philosophie")}: ${phils}</p>
   <p class="hint">${esc(lang === "ar" ? SPORTING_PHILOSOPHIES[sp.philosophy].desc.ar : lang === "fr" ? SPORTING_PHILOSOPHIES[sp.philosophy].desc.fr : SPORTING_PHILOSOPHIES[sp.philosophy].desc.en)}</p>
   <form id="staff-freedom-form" class="neg-form"><label>${l("الصلاحيات", "Authority", "Pouvoirs")}
   <input type="range" name="freedom" min="0" max="100" step="5" value="${sp.freedom}"></label>
   <span>${num(sp.freedom)}٪ ${sp.freedom >= 70 ? l("(حرية كاملة — ينفّذ بنفسه)", "(full authority — acts alone)", "(pleins pouvoirs — agit seul)") : l("(كل صفقة بإذنك)", "(every deal needs you)", "(chaque deal vous attend)")}</span>
   <button class="btn small primary" type="submit">${l("حفظ", "Save", "Enregistrer")}</button></form>
+  <p class="hint">${l("الصلاحية الفعلية", "Effective authority", "Pouvoirs effectifs")}: ${num(effective)}٪${delegated ? ` · ${l("تفويض مؤقت من المجلس حتى", "Temporary board delegation until", "Délégation temporaire du conseil jusqu’au")} ${esc(authorityUntil)} (${l("تفويض المجلس يضيف ١٥ نقطة", "Board delegation adds 15 points", "La délégation ajoute 15 points")})` : ""}</p>
   <p>${l("سقف التنفيذ التلقائي", "Auto-execution cap", "Plafond d’action")} ${money(autoCap(s))} · ${l("ميزانية المجلس", "Board budget", "Budget du conseil")} ${money(sp.budget)}
   ${sp.rating ? ` · ${l("تقييم الموسم", "Season rating", "Note de saison")} ${num(sp.rating.rating)}/100` : ""}</p>
   ${st ? `<p>${l("الموسم", "Season", "Saison")}: ${num(st.proposed)} ${l("مقترحة", "proposed", "proposés")} · ${num(st.auto + st.approved)} ${l("منفذة", "done", "conclus")} · ${l("صافي", "net", "net")} ${money(st.earned - st.spent)}</p>` : ""}
@@ -155,21 +271,109 @@ function techTab(s) {
 function scoutsTab(s, lang) {
   const c = ensureStaffCorp(s);
   const list = corpEmployees(s).filter((e) => e.role === "scout").map((e) =>
-    `<tr><td data-no-translate>${esc(lang === "ar" ? e.name.ar : e.name.en)}</td><td>${num(e.skill)}</td>
+    `<tr><td data-no-translate>${esc(empName(e, lang))}</td><td>${num(e.skill)}</td>
     <td>${e.assignment ? esc(SCOUT_REGIONS[e.assignment.region].name[lang] || SCOUT_REGIONS[e.assignment.region].name.ar) : l("بلا منطقة", "No region", "Sans zone")}</td>
     <td><form id="scout-region-form" class="neg-form" data-id="${e.id}"><select name="region">
     <option value="">${l("بلا منطقة", "No region", "Sans zone")}</option>
     ${REGION_IDS.map((r) => `<option value="${r}" ${e.assignment?.region === r ? "selected" : ""}>${esc(SCOUT_REGIONS[r].name[lang] || SCOUT_REGIONS[r].name.ar)}</option>`).join("")}
     </select><button class="btn small primary" type="submit">${l("تعيين", "Assign", "Affecter")}</button></form></td></tr>`).join("");
-  const reps = c.scouts.reports.slice(0, 15).map((r) =>
-    `<tr><td data-no-translate>${esc(r.name)}</td><td>${num(r.rating)}</td><td>${num(r.min)}-${num(r.max)}</td><td>${num(r.confidence)}٪</td><td>${esc(r.date)}</td></tr>`).join("");
+  const reps = c.scouts.reports.slice(0, 15).map((r) => {
+    const scoutName = r.scoutName ? staffText(r.scoutName, lang) : l("كشاف", "Scout", "Recruteur");
+    const regionName = r.region && SCOUT_REGIONS[r.region]
+      ? staffText(SCOUT_REGIONS[r.region].name, lang)
+      : l("السوق العام", "Wider market", "Marché élargi");
+    return `<tr><td data-no-translate>${esc(r.name)}</td><td>${num(r.rating)}</td><td>${num(r.min)}-${num(r.max)}</td><td>${num(r.confidence)}٪</td><td>${esc(`${scoutName} · ${regionName}`)}</td><td>${esc(r.date)}</td></tr>`;
+  }).join("");
   return `<h3>${l("الكشافون", "Scouts", "Recruteurs")}</h3>
   <table class="staff-table"><thead><tr><th>${l("الكشاف", "Scout", "Recruteur")}</th><th>${l("المهارة", "Skill", "Compétence")}</th><th>${l("المنطقة", "Region", "Zone")}</th><th></th></tr></thead>
   <tbody>${list || `<tr><td colspan="4">${l("لا كشافين معينين.", "No scouts hired.", "Aucun recruteur.")}</td></tr>`}</tbody></table>
   <h4>${l("أحدث التقارير", "Latest reports", "Derniers rapports")}</h4>
-  <table class="staff-table"><thead><tr><th>${l("اللاعب", "Player", "Joueur")}</th><th>${l("التقييم", "Rating", "Note")}</th><th>${l("الإمكانات", "Potential", "Potentiel")}</th><th>${l("الثقة", "Confidence", "Confiance")}</th><th>${l("التاريخ", "Date", "Date")}</th></tr></thead>
-  <tbody>${reps || `<tr><td colspan="5">${l("لا تقارير بعد.", "No reports yet.", "Aucun rapport.")}</td></tr>`}</tbody></table>`;
+  <table class="staff-table"><thead><tr><th>${l("اللاعب", "Player", "Joueur")}</th><th>${l("التقييم", "Rating", "Note")}</th><th>${l("الإمكانات", "Potential", "Potentiel")}</th><th>${l("الثقة", "Confidence", "Confiance")}</th><th>${l("المصدر", "Source", "Source")}</th><th>${l("التاريخ", "Date", "Date")}</th></tr></thead>
+  <tbody>${reps || `<tr><td colspan="6">${l("لا تقارير بعد.", "No reports yet.", "Aucun rapport.")}</td></tr>`}</tbody></table>`;
 }
+
+function academyTab(s, lang) {
+  const c = ensureStaffCorp(s);
+  const a = c.academy;
+  const current = ACADEMY_CURRICULA[a.curriculum] ? a.curriculum : "technique";
+  const options = Object.entries(ACADEMY_CURRICULA).map(([id, item]) =>
+    `<option value="${id}" ${current === id ? "selected" : ""}>${esc(staffText(item.name, lang))}</option>`).join("");
+  const watchlist = a.watchlist.map((w) =>
+    `<article class="academy-watch-card"><div><strong>${esc(typeof w.name === "string" ? w.name : staffText(w.name, lang))}</strong><span class="badge">${w.kind === "heir" ? l("الوريث", "Heir", "Héritier") : l("ناشئ", "Youth prospect", "Jeune")}</span></div><p>${esc(staffText(w.note, lang))}</p><small>${l("التقييم", "Assessment", "Évaluation")}: ${num(w.rating ?? 0)} · ${esc(w.date || "—")}</small></article>`).join("");
+  return `<h3>${l("الأكاديمية", "Academy", "Académie")}</h3>
+    <div class="staff-metric-grid">
+      <div class="staff-metric"><small>${l("مهارة المدير", "Director skill", "Compétence du directeur")}</small><strong>${num(academyManagerSkill(s))}</strong></div>
+      <div class="staff-metric"><small>${l("مكافأة الإمكانات", "Potential bonus", "Bonus de potentiel")}</small><strong>+${num(academyPotentialBonus(s))}</strong></div>
+      <div class="staff-metric"><small>${l("تحسن دقة الكشف", "Scouting accuracy", "Précision du recrutement")}</small><strong>−${num(academyScoutBonus(s))} ${l("نقاط خطأ", "error points", "points d’erreur")}</strong></div>
+    </div>
+    <p class="hint">${esc(staffText(ACADEMY_CURRICULA[current].desc, lang))}</p>
+    <form id="staff-curriculum-form" class="neg-form"><label>${l("منهج الأكاديمية", "Academy curriculum", "Programme de l’académie")}<select name="curriculum">${options}</select></label><button class="btn small primary" type="submit">${l("اعتماد المنهج", "Set curriculum", "Choisir le programme")}</button></form>
+    <h4>${l("قائمة المتابعة", "Watchlist", "Liste de suivi")} (${num(a.watchlist.length)})</h4>
+    <div class="academy-watchlist">${watchlist || `<p>${l("لا مواهب في قائمة المتابعة بعد.", "No prospects on the watchlist yet.", "Aucun jeune dans la liste pour le moment.")}</p>`}</div>`;
+}
+
+function marketingTab(s, lang) {
+  const c = ensureStaffCorp(s);
+  const marketing = c.marketing;
+  const campaigns = (marketing.campaigns || []).map((item) => {
+    const type = CAMPAIGN_TYPES[item.type];
+    if (!type) return "";
+    return `<article class="staff-campaign-card"><strong>${esc(staffText(type.name, lang))}</strong><span>${money(item.budget)}</span><small>${l("ينتهي", "Ends", "Se termine le")} ${esc(item.ends)} · ${l("مهارة التنفيذ", "Execution skill", "Compétence marketing")} ${num(item.skill)}</small></article>`;
+  }).join("");
+  const sponsors = (s.sponsors || []).filter((item) => item.status === "active").map((item) => {
+    const asset = ASSETS.find((a) => a.id === item.assetId);
+    const sponsor = resolveSponsor(item.sponsorId);
+    const mood = sponsorMood(s, item.assetId) ?? 60;
+    const status = mood >= 80
+      ? l("راضٍ — عروض أفضل", "Satisfied — stronger offers", "Satisfait — offres bonifiées")
+      : mood < 40
+        ? l("غاضب — عروض أضعف", "Unhappy — weaker offers", "Mécontent — offres réduites")
+        : l("مستقر", "Steady", "Stable");
+    return `<article class="staff-sponsor-mood"><div><strong>${esc(sponsor?.name || item.sponsorId)}</strong><span>${esc(asset?.name || item.assetId)}</span></div><strong>${num(mood)}٪</strong><div class="mood-meter"><i style="width:${mood}%"></i></div><small>${status} · ${l("ينتهي", "Ends", "Expire le")} ${esc(item.end)}</small></article>`;
+  }).join("");
+  const campaignOptions = Object.entries(CAMPAIGN_TYPES).map(([id, type]) =>
+    `<option value="${id}">${esc(staffText(type.name, lang))} — ${esc(staffText(type.desc, lang))}</option>`).join("");
+  return `<h3>${l("التسويق", "Marketing", "Marketing")}</h3>
+    <p class="hint">${l("يرفع المدير عائد الحملات ورضا الرعاة؛ الرضا يغيّر قيمة عروض التجديد.", "The marketing director improves campaign returns and sponsor satisfaction; satisfaction affects renewal offers.", "Le directeur marketing améliore le rendement des campagnes et la satisfaction, qui influence les offres de renouvellement.")}</p>
+    <form id="staff-campaign-form" class="neg-form"><label>${l("نوع الحملة", "Campaign", "Campagne")}<select name="campaignType">${campaignOptions}</select></label><label>${l("الميزانية", "Budget", "Budget")}<input type="number" name="budget" value="1000000" min="100000" max="50000000" step="50000" required></label><button class="btn small primary" type="submit">${l("إطلاق الحملة", "Launch campaign", "Lancer la campagne")}</button></form>
+    <h4>${l("الحملات الجارية", "Active campaigns", "Campagnes en cours")} (${num(marketing.campaigns.length)})</h4>
+    <div class="staff-campaign-list">${campaigns || `<p>${l("لا حملات جارية.", "No active campaigns.", "Aucune campagne en cours.")}</p>`}</div>
+    <h4>${l("رضا الرعاة", "Sponsor satisfaction", "Satisfaction des sponsors")}</h4>
+    <div class="staff-sponsor-list">${sponsors || `<p>${l("لا عقود رعاية فعالة لقياس الرضا.", "No active sponsorships to rate.", "Aucun contrat actif à évaluer.")}</p>`}</div>`;
+}
+
+function socialTab(s, lang) {
+  const st = socialState(s);
+  const nearMatch = (s.bigMatches || []).filter((m) => m.date > s.date && m.date <= addDaysForView(s.date, 7)).sort((a, b) => a.date.localeCompare(b.date))[0];
+  const matchId = nearMatch?.id || nearMatch?.date;
+  const derbyUsed = matchId && st.lastDerbyMatch === matchId;
+  const content = Object.entries(SOCIAL_CONTENTS).map(([id, item]) =>
+    `<button class="social-content-card" data-action="staff-social-content" data-id="${id}" ${s.finance.cash < item.cost ? "disabled" : ""}><strong>${esc(staffText(item.name, lang))}</strong><small>${money(item.cost)} · +${num(item.fans)} ${l("جمهور", "fans", "supporters")} · +${num(item.eng)} ${l("تفاعل", "engagement", "engagement")}</small></button>`).join("");
+  const crisisStatus = st.crisis?.status === "exploded" ? l("انفجرت", "Exploded", "Explosée")
+    : st.crisis?.status === "apology" ? l("اعتذار", "Apology", "Excuses")
+      : st.crisis?.status === "fine" ? l("غرامة", "Fine", "Amende")
+        : l("تم التجاهل", "Ignored", "Ignorée");
+  const crisis = st.crisis?.status === "open" && SOCIAL_CRISES[st.crisis.kind]
+    ? `<section class="social-crisis-card"><strong>${l("أزمة مفتوحة", "Open crisis", "Crise en cours")}: ${esc(staffText(SOCIAL_CRISES[st.crisis.kind].name, lang))}</strong><p>${esc(staffText(SOCIAL_CRISES[st.crisis.kind].desc, lang))}</p><small>${l("آخر موعد للرد", "Response deadline", "Date limite de réponse")}: ${esc(st.crisis.deadline)}</small><div class="row-actions"><button class="btn small primary" data-action="staff-social-crisis" data-how="apology" ${s.finance.cash < 200000 ? "disabled" : ""}>${l("اعتذار علني", "Public apology", "Excuses publiques")} · ${money(200000)}</button><button class="btn small" data-action="staff-social-crisis" data-how="fine">${l("غرامة انضباطية", "Disciplinary fine", "Amende disciplinaire")}</button><button class="btn small danger" data-action="staff-social-crisis" data-how="ignore">${l("تجاهل", "Ignore", "Ignorer")}</button></div></section>`
+    : st.crisis
+      ? `<p class="hint">${l("آخر أزمة", "Last crisis", "Dernière crise")}: ${esc(staffText(SOCIAL_CRISES[st.crisis.kind]?.name, lang) || st.crisis.kind)} · ${crisisStatus}</p>`
+      : `<p class="hint">${l("لا أزمة مفتوحة.", "No open crisis.", "Aucune crise en cours.")}</p>`;
+  const posts = (st.posts || []).slice(0, 10).map((item) => {
+    const label = item.kind === "derby" ? l("حملة الديربي", "Derby campaign", "Campagne du derby") : staffText(SOCIAL_CONTENTS[item.kind]?.name, lang) || item.kind;
+    return `<li>${esc(label)} · ${esc(item.date)}</li>`;
+  }).join("");
+  return `<h3>${l("السوشيال ميديا", "Social media", "Réseaux sociaux")}</h3>
+    <div class="staff-metric-grid"><div class="staff-metric"><small>${l("المتابعون", "Followers", "Abonnés")}</small><strong>${num(st.followers)}</strong></div><div class="staff-metric"><small>${l("التفاعل", "Engagement", "Engagement")}</small><strong>${num(st.engagement)}٪</strong></div><div class="staff-metric"><small>${l("مضاعف طلب القمصان", "Shirt-demand multiplier", "Multiplicateur de demande de maillots")}</small><strong>×${onlineShirtMultiplier(s).toFixed(2)}</strong></div></div>
+    <h4>${l("نشر محتوى", "Publish content", "Publier du contenu")}</h4><div class="social-content-grid">${content}</div>
+    <div class="social-derby"><strong>${l("حملة جماهيرية قبل الديربي", "Derby fan campaign", "Campagne avant le derby")}</strong><p>${nearMatch ? `${l("الموعد القريب", "Upcoming fixture", "Prochain match")}: ${esc(nearMatch.date)}` : l("لا ديربي خلال ٧ أيام.", "No derby in the next 7 days.", "Aucun derby dans les 7 prochains jours.")}</p><button class="btn small primary" data-action="staff-social-derby" ${!nearMatch || derbyUsed || s.finance.cash < 300000 ? "disabled" : ""}>${l("إطلاق حملة الديربي", "Launch derby campaign", "Lancer la campagne du derby")} · ${money(300000)}</button>${derbyUsed ? `<small>${l("أطلقت حملة لهذا الديربي بالفعل.", "A campaign is already booked for this derby.", "Une campagne est déjà prévue pour ce derby.")}</small>` : ""}</div>
+    ${crisis}<h4>${l("آخر المنشورات", "Recent posts", "Publications récentes")}</h4><ul class="staff-log">${posts || `<li>${l("لا منشورات بعد.", "No posts yet.", "Aucune publication.")}</li>`}</ul>`;
+}
+
+const addDaysForView = (date, days) => {
+  const d = new Date(`${date}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + days);
+  return d.toISOString().slice(0, 10);
+};
 
 export function staffView(s, tab = "org", lang = "ar") {
   ensureStaffCorp(s);
@@ -179,6 +383,12 @@ export function staffView(s, tab = "org", lang = "ar") {
     : tab === "sporting" ? sportingTab(s, lang)
     : tab === "tech" ? techTab(s)
     : tab === "scouts" ? scoutsTab(s, lang)
-    : tab === "meeting" ? meetingTab(s) : tab === "hq" ? hqTab(s) : orgTab(s, lang);
+    : tab === "academy" ? academyTab(s, lang)
+    : tab === "marketing" ? marketingTab(s, lang)
+    : tab === "social" ? socialTab(s, lang)
+    : tab === "meeting" ? meetingTab(s, lang)
+    : tab === "legal" ? legalTab(s, lang)
+    : tab === "financeOffice" ? financeOfficeTab(s, lang)
+    : tab === "hq" ? hqTab(s, lang) : orgTab(s, lang);
   return `<section class="staff-corp"><div class="tabs">${tabs}</div><div class="tab-body">${body}</div></section>`;
 }

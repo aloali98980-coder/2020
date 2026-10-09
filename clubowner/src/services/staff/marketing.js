@@ -1,12 +1,20 @@
 // التسويق: حملات بعائد حقيقي + رضا الرعاة يحرّك قيمة العروض والتجديدات.
-import { addDays, random } from "../../core/utils.js";
-import { assert, clamp } from "../../core/utils.js";
+import { addDays, assert, clamp, uid } from "../../core/utils.js";
 import { message } from "../inbox.js";
 import { post } from "../finance.js";
 import { CAMPAIGN_TYPES } from "../../data/staffCatalog.js";
 import { ensureStaffCorp, corpSkill, srng } from "./staffCorp.js";
 
-export const sponsorMood = (s, assetId) => ensureStaffCorp(s).marketing.mood?.[assetId] ?? null;
+export function sponsorMood(s, assetId) {
+  const marketing = ensureStaffCorp(s).marketing;
+  marketing.mood ||= {};
+  if (!Number.isFinite(marketing.mood[assetId])) {
+    const active = (s.sponsors || []).some((c) => c.assetId === assetId && c.status === "active");
+    if (!active) return null;
+    return setSponsorMood(s, assetId, 60);
+  }
+  return marketing.mood[assetId];
+}
 // معامل قيمة عروض الرعاية: رضا مرتفع يرفع، وغاضب يخفض.
 export function sponsorMoodFactor(s, assetId) {
   const m = sponsorMood(s, assetId);
@@ -16,20 +24,23 @@ export function sponsorMoodFactor(s, assetId) {
   return 1;
 }
 export function setSponsorMood(s, assetId, v) {
+  assert(typeof assetId === "string" && assetId.length > 0, "مساحة الرعاية غير صالحة.");
+  assert(Number.isFinite(v), "درجة رضا الراعي غير صالحة.");
   const m = ensureStaffCorp(s).marketing;
-  m.mood = m.mood || {};
+  m.mood ||= {};
   m.mood[assetId] = clamp(Math.round(v), 0, 100);
   return m.mood[assetId];
 }
 export function launchCampaign(s, type, budget) {
   assert(CAMPAIGN_TYPES[type], "حملة غير صالحة.");
-  assert(Number.isFinite(budget) && budget >= 100000 && budget <= 50000000, "الميزانية من ١٠٠ ألف إلى ٥٠ مليونًا.");
+  assert(Number.isSafeInteger(budget) && budget >= 100000 && budget <= 50000000, "الميزانية من ١٠٠ ألف إلى ٥٠ مليونًا.");
   assert(s.finance.cash >= budget, "السيولة لا تغطي الحملة.");
   if (type === "derby") assert(s.bigMatches?.some((m) => m.date > s.date && m.date <= addDays(s.date, 21)), "لا ديربي خلال ٣ أسابيع — الحملة الجماهيرية تحتاج موعدًا قريبًا.");
   const t = CAMPAIGN_TYPES[type];
-  post(s, -budget, "marketing", "حملة: " + t.name.ar, "campaign-" + type + s.date);
+  const id = uid(s, "campaign");
+  post(s, -budget, "marketing", "حملة: " + t.name.ar, id + "-launch");
   const m = ensureStaffCorp(s).marketing;
-  const c = { id: "cmp" + Date.now().toString(36) + Math.floor(random() * 999), type, budget, ends: addDays(s.date, t.days), skill: corpSkill(s, "marketing") };
+  const c = { id, type, budget, ends: addDays(s.date, t.days), skill: corpSkill(s, "marketing") };
   m.campaigns = m.campaigns || [];
   m.campaigns.push(c);
   message(s, { title: `حملة: ${t.name.ar}`, body: `انطلقت بميزانية ${budget.toLocaleString("ar-EG")} — العائد يظهر ${c.ends}.`, category: "business" });
@@ -47,12 +58,14 @@ export function marketingDay(s) {
     const t = CAMPAIGN_TYPES[c.type];
     const mult = 0.6 + (c.skill || 0) / 120 + rep / 250 + srng(s) * 0.3;
     const ret = Math.round(c.budget * mult);
-    post(s, ret, "marketing-return", "عائد حملة: " + t.name.ar, c.id);
+    const profitable = ret >= c.budget;
+    post(s, ret, "marketing-return", "عائد حملة: " + t.name.ar, c.id + "-return");
     s.fanSupport = clamp(s.fanSupport + t.fans, 0, 100);
-    for (const k of Object.keys(m.mood || {})) m.mood[k] = clamp(m.mood[k] + 8, 0, 100);
+    const moodDelta = profitable ? 8 : -4;
+    for (const k of Object.keys(m.mood || {})) m.mood[k] = clamp(m.mood[k] + moodDelta, 0, 100);
     message(s, {
       title: `عائد حملة: ${t.name.ar}`,
-      body: `أعادت ${(ret - c.budget) >= 0 ? "+" : ""}${(ret - c.budget).toLocaleString("ar-EG")} صافيًا، والجماهير ${t.fans > 0 ? "+" : ""}${t.fans}، ورضا الرعاة ارتفع.`,
+      body: `أعادت ${(ret - c.budget) >= 0 ? "+" : ""}${(ret - c.budget).toLocaleString("ar-EG")} صافيًا، والجماهير ${t.fans > 0 ? "+" : ""}${t.fans}، و${profitable ? "رضا الرعاة ارتفع" : "رضا الرعاة انخفض بعد عائد ضعيف"}.`,
       category: "business", money: ret,
     });
   }
@@ -66,7 +79,6 @@ export function marketingMonth(s) {
 // رد فعل نهاية العقد: غاضب يرحل ويأخذ معه جزءًا من الجمهور، وراضٍ يترك وداعية.
 export function sponsorExpiryMood(s, c) {
   const m = sponsorMood(s, c.assetId);
-  revenueShare(s, 0); // إبقاء الواردات متوازنة مع الاستيراد
   if (m != null && m < 25) {
     s.fanSupport = clamp(s.fanSupport + -3, 0, 100);
     message(s, { title: "راعٍ غاضب يرحل", body: `رضا الراعي عن ${c.sector || "القطاع"} انهار (${m}٪) — رحل غاضبًا وأخذ جزءًا من الجمهور معه. دلّل الرعاة بالحملات.`, category: "business" });

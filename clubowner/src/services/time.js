@@ -23,6 +23,7 @@ import { staffCorpDay } from "./staff/day.js";
 import { addDays } from "../core/utils.js";
 import { message, pendingActions } from "./inbox.js";
 import { financeDay } from "./finance.js";
+import { financeOfficeDay } from "./staff/financeOffice.js";
 import { facilityDay } from "./facilities.js";
 import { sponsorDay } from "./sponsors.js";
 import { transferReply } from "./transfers.js";
@@ -106,6 +107,7 @@ export function advanceTime(s, days = null) {
     scoutingDay(s);
     cleanTraining(s);
     financeDay(s);
+    financeOfficeDay(s);
     facilityDay(s);
     sponsorDay(s);
     developmentDay(s);

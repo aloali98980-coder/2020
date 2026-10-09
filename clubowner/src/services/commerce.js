@@ -4,6 +4,7 @@ import { ownFixtures } from "./calendar.js";
 import { extendedClub } from "../data/expandedCatalog.js";
 import { getDerbyInfo } from "./derby.js";
 import { post } from "./finance.js";
+import { onlineShirtMultiplier } from "./staff/social.js";
 import { assert, clamp, addDays } from "../core/utils.js";
 export const BUSINESSES = {
   shop: { name: "متجر النادي", setup: 350000, cost: 55000, rep: 20 },
@@ -285,7 +286,8 @@ export function commerceDay(s) {
         c.inventory,
         Math.floor(
           (s.reputation * 10 + s.fanSupport * 5) *
-            clamp(650 / c.shirtPrice - 0.4, 0.05, 2),
+            clamp(650 / c.shirtPrice - 0.4, 0.05, 2) *
+            onlineShirtMultiplier(s),
         ),
       );
       c.inventory -= sold;

@@ -8,6 +8,7 @@ import { blackTextAr } from "../data/blackTexts.js";
 import { boardTextAr } from "../data/boardTexts.js";
 import { ensureBoard } from "./boardMandate.js";
 import { aiBreakReleaseClauses } from "./releaseClause.js";
+import { fileLegalCase } from "./staff/legal.js";
 
 export const SUSPICION_THRESHOLDS = {
   whispers: 30,
@@ -384,6 +385,12 @@ export function triggerScandal(s) {
     fanDrop,
     banDays,
     titleStripped: Boolean(isLeader),
+  });
+
+  fileLegalCase(s, "scandal", {
+    source: "black-scandal",
+    sourceId: `black-scandal-${bf.scandalCount}`,
+    severity: 3,
   });
 
   message(s, {

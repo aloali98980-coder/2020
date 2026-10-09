@@ -2,6 +2,7 @@ import { addDays, assert, clamp, random, uid } from "../core/utils.js";
 import { staffSkill } from "./staff.js";
 import { ageAt } from "../models/player.js";
 import { isoDate } from "../core/isoDate.js";
+import { fileLegalCase } from "./staff/legal.js";
 import { closeThread, message } from "./inbox.js";
 import {
   ACADEMY_FOCUS_IDS,
@@ -923,6 +924,7 @@ export function setSuccessionEligibility(s, childId, eligible) {
   const d = s.dynasty;
   const child = d?.children.find((person) => person.id === childId);
   assert(child && typeof eligible === "boolean", "بيانات أهلية الخلافة غير صالحة.");
+  const disputedClaim = !eligible && child.legalClaim;
   child.excludedFromSuccession = !eligible;
   child.legalClaim = eligible;
   if (!eligible && d.heirId === child.id) {
@@ -934,6 +936,13 @@ export function setSuccessionEligibility(s, childId, eligible) {
     claimantId: d.heirId,
     preparedOn: d.heirId ? saveDate(s) : null,
   };
+  if (disputedClaim)
+    fileLegalCase(s, "succession", {
+      source: "succession-exclusion",
+      sourceId: `succession-${child.id}`,
+      claimantId: child.id,
+      severity: 2,
+    });
   return child.excludedFromSuccession;
 }
 

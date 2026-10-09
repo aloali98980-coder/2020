@@ -13,11 +13,13 @@ import { scoutMonth } from "./scouts.js";
 import { marketingDay, marketingMonth } from "./marketing.js";
 import { socialDay, socialMonth } from "./social.js";
 import { academyWatchMonth } from "./academy.js";
+import { legalDay } from "./legal.js";
 
 export function staffCorpDay(s) {
   const c = ensureStaffCorp(s);
   staffCorpContractsDay(s);
   hqDay(s);
+  legalDay(s);
   sportingDay(s);
   doctorDay(s);
   marketingDay(s);

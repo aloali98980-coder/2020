@@ -17,7 +17,7 @@ export function srng(s) {
 import { message, closeThread } from "../inbox.js";
 import { post } from "../finance.js";
 import {
-  STAFF_ROLES, ROLE_IDS, DIRECTOR_ROLES, marketWage, HQ_LEVELS,
+  L, STAFF_ROLES, ROLE_IDS, DIRECTOR_ROLES, marketWage, HQ_LEVELS,
   FAMOUS_STAFF, STAFF_FIRST, STAFF_LAST, POACH_CLUBS,
 } from "../../data/staffCatalog.js";
 
@@ -53,14 +53,15 @@ export function blankStaffCorp() {
     negotiation: null,
     poach: [],
     meeting: { month: "", requests: [] },
+    authorities: {},
     sporting: { philosophy: "smart", freedom: 40, budget: 0, log: [], season: null, rating: null },
     deals: [],
     marketing: { campaigns: [], mood: {} },
     scouts: { reports: [] },
     academy: { curriculum: "technique", watchlist: [] },
-    social: { followers: 0, engagement: 50, posts: [], crisis: null },
-    legal: { cases: [], wins: 0, losses: 0 },
-    financeOffice: { lastReport: null },
+    social: { followers: 0, engagement: 50, posts: [], crisis: null, lastDerbyMatch: null },
+    legal: { cases: [], wins: 0, losses: 0, settlements: 0, retainerUntil: null },
+    financeOffice: { lastReport: null, reports: [], auditUntil: null },
     log: [],
   };
 }
@@ -101,14 +102,33 @@ export function ensureStaffCorp(s) {
   c.hq ||= { level: 0, project: null };
   c.employees ||= []; c.market ||= []; c.poach ||= [];
   c.meeting ||= { month: "", requests: [] };
+  c.authorities ||= {};
   c.sporting ||= blankStaffCorp().sporting;
+  c.sporting.authorityUntil ||= null;
   c.deals ||= [];
   c.marketing ||= { campaigns: [], mood: {} };
+  c.marketing.campaigns ||= [];
+  c.marketing.mood ||= {};
   c.scouts ||= { reports: [] };
   c.academy ||= { curriculum: "technique", watchlist: [] };
-  c.social ||= { followers: 0, engagement: 50, posts: [], crisis: null };
-  c.legal ||= { cases: [], wins: 0, losses: 0 };
-  c.financeOffice ||= { lastReport: null };
+  c.academy.curriculum ||= "technique";
+  c.academy.watchlist ||= [];
+  c.social ||= { followers: 0, engagement: 50, posts: [], crisis: null, lastDerbyMatch: null };
+  c.social.followers ??= 0;
+  c.social.engagement ??= 50;
+  c.social.posts ||= [];
+  c.social.crisis ??= null;
+  c.social.lastDerbyMatch ??= null;
+  c.legal ||= { cases: [], wins: 0, losses: 0, settlements: 0, retainerUntil: null };
+  c.legal.cases ||= [];
+  c.legal.wins ??= 0;
+  c.legal.losses ??= 0;
+  c.legal.settlements ??= 0;
+  c.legal.retainerUntil ??= null;
+  c.financeOffice ||= { lastReport: null, reports: [], auditUntil: null };
+  c.financeOffice.reports ||= [];
+  c.financeOffice.auditUntil ??= null;
+  c.financeOffice.lastReport ??= null;
   c.log ||= [];
   return c;
 }
@@ -200,6 +220,11 @@ export function negotiate(s, { wage, years, bonus }) {
   const yearsOk = years >= Math.max(1, cand.yearsAsk - 1);
   const bonusOk = bonus >= cand.bonusAsk - 5;
   if (wage >= need && yearsOk && bonusOk) {
+    // Check constraints before mutating the negotiation so a full HQ or occupied role
+    // leaves the round open and retryable instead of saving an accepted-but-unhired deal.
+    assert(c.employees.length < hqCap(s), `المقر ممتلئ (${hqCap(s)} موظفين). رقِّ المقر أولًا.`);
+    assert(roleCount(s, cand.role) < STAFF_ROLES[cand.role].slots, "الدور مشغول؛ أنهِ عقد الحالي أولًا.");
+    assert(s.finance.cash >= wage, "يلزم رصيد يغطي شهرًا واحدًا على الأقل.");
     n.status = "accepted";
     hireFromMarket(s, cand.key, { wage, years, bonus });
     return { result: "accepted", negotiation: n };
@@ -459,15 +484,37 @@ export function loyaltyMonth(s) {
   }
 }
 
-// ── اجتماع المجلس الشهري: كل مدير يعرض تقريره ويطلب — توافق / ترفض ──────────
-const REQUEST_KINDS = {
-  sporting: { text: "ميزانية صفقات إضافية للمدير الرياضي", amount: 8_000_000 },
-  marketing: { text: "تمويل خطة التسويق الشهرية", amount: 1_500_000 },
-  finance: { text: "اعتماد مراجعة مالية معمّقة", amount: 200_000 },
-  lawyer: { text: "أتعاب استشارات قانونية وقائية", amount: 400_000 },
-  academy: { text: "دعم برامج الناشئين", amount: 800_000 },
-  social: { text: "ميزانية محتوى السوشيال ميديا", amount: 500_000 },
-};
+// ── اجتماع المجلس الشهري: تقرير لكل مدير + طلب ميزانية/تفويض ────────────────
+const REQUEST_KINDS = Object.freeze({
+  sporting: { text: L("ميزانية صفقات إضافية", "Additional transfer budget", "Budget transferts supplémentaire"), amount: 8_000_000, authority: L("تفويض تفاوض أوسع للصفقات", "Wider transfer-negotiation authority", "Pouvoir élargi de négociation des transferts") },
+  marketing: { text: L("تمويل خطة التسويق الشهرية", "Monthly marketing-plan funding", "Financement du plan marketing mensuel"), amount: 1_500_000, authority: L("تفويض تنسيق عروض الرعاة", "Authority to coordinate sponsor activations", "Pouvoir de coordonner les activations sponsors") },
+  finance: { text: L("اعتماد مراجعة مالية معمّقة", "Approve an in-depth financial review", "Valider un audit financier approfondi"), amount: 200_000, authority: L("صلاحية مراجعة الالتزامات قبل اعتمادها", "Authority to review liabilities before approval", "Pouvoir de vérifier les engagements avant validation") },
+  lawyer: { text: L("أتعاب استشارات قانونية وقائية", "Preventive legal-counsel retainer", "Honoraires de conseil juridique préventif"), amount: 400_000, authority: L("تفويض التفاوض على التسويات القانونية", "Authority to negotiate legal settlements", "Pouvoir de négocier des règlements juridiques") },
+  academy: { text: L("دعم برامج الناشئين", "Youth-programme funding", "Soutien aux programmes de jeunes"), amount: 800_000, authority: L("تفويض ترتيب متابعة الناشئين", "Authority to organize youth reviews", "Pouvoir d’organiser le suivi des jeunes") },
+  social: { text: L("ميزانية محتوى السوشيال ميديا", "Social-media content budget", "Budget de contenu des réseaux sociaux"), amount: 500_000, authority: L("تفويض إدارة الرد الأولي على الأزمات", "Authority for first-response crisis management", "Pouvoir de gérer la première réponse aux crises") },
+});
+
+function directorReport(s, role) {
+  const c = ensureStaffCorp(s);
+  if (role === "sporting") {
+    const pending = c.deals.filter((d) => d.status === "pending").length;
+    return { label: L("الصفقات المعلّقة", "Pending deals", "Deals en attente"), value: pending, note: L(`فلسفة ${c.sporting.philosophy} · صلاحيات ${c.sporting.freedom}٪`, `Philosophy ${c.sporting.philosophy} · authority ${c.sporting.freedom}%`, `Philosophie ${c.sporting.philosophy} · pouvoirs ${c.sporting.freedom}%`) };
+  }
+  if (role === "marketing") {
+    const running = c.marketing.campaigns.filter((x) => x.ends > s.date).length;
+    return { label: L("الحملات الجارية", "Active campaigns", "Campagnes actives"), value: running, note: L("يراجع رضا الرعاة وعائد الحملات", "Reviewing sponsor satisfaction and campaign returns", "Suit la satisfaction des sponsors et les retours de campagne") };
+  }
+  if (role === "finance")
+    return { label: L("رصيد الخزينة", "Treasury balance", "Solde de trésorerie"), value: s.finance.cash, money: true, note: L("يراجع الالتزامات والإنذار المبكر", "Reviewing liabilities and early warnings", "Suit les engagements et les alertes précoces") };
+  if (role === "lawyer") {
+    const active = c.legal.cases.filter((x) => x.status === "open").length;
+    return { label: L("القضايا المفتوحة", "Open cases", "Affaires ouvertes"), value: active, note: L(`سجل ${c.legal.wins} كسب / ${c.legal.losses} خسارة`, `${c.legal.wins} wins / ${c.legal.losses} losses`, `${c.legal.wins} gagnées / ${c.legal.losses} perdues`) };
+  }
+  if (role === "academy")
+    return { label: L("قائمة المتابعة", "Watchlist", "Liste de suivi"), value: c.academy.watchlist.length, note: L(`المنهج ${c.academy.curriculum}`, `Curriculum ${c.academy.curriculum}`, `Programme ${c.academy.curriculum}`) };
+  return { label: L("المتابعون", "Followers", "Abonnés"), value: c.social.followers, note: L(`التفاعل ${c.social.engagement}٪`, `${c.social.engagement}% engagement`, `${c.social.engagement}% d’engagement`) };
+}
+
 export function boardMeetingMonth(s) {
   const c = ensureStaffCorp(s);
   const month = s.date.slice(0, 7);
@@ -479,13 +526,14 @@ export function boardMeetingMonth(s) {
     const spec = REQUEST_KINDS[role];
     c.meeting.requests.push({
       id: uid(s, "req"), from: emp.id, role,
-      text: spec.text, amount: spec.amount, status: "open",
+      text: spec.text, amount: spec.amount, authority: spec.authority,
+      report: directorReport(s, role), status: "open",
     });
   }
   if (c.meeting.requests.length)
     message(s, {
       title: `اجتماع المجلس الشهري (${month})`,
-      body: `${c.meeting.requests.length} طلبات على الطاولة من مديريك. وافق أو ارفض كل طلب من شاشة الإدارة الشاملة؛ الرفض يخفض ولاء صاحبه.`,
+      body: `${c.meeting.requests.length} طلبات على الطاولة من مديريك. وافق أو ارفض الميزانية والتفويض من شاشة الإدارة الشاملة؛ الرفض يخفض ولاء صاحبه.`,
       category: "club",
     });
   return c.meeting;
@@ -495,18 +543,24 @@ export function resolveMeetingRequest(s, reqId, approve) {
   const r = c.meeting.requests.find((x) => x.id === reqId);
   assert(r?.status === "open", "الطلب محسوم أو منتهٍ.");
   const emp = corpEmployee(s, r.from);
+  // تحقق السيولة قبل تغيير حالة الطلب حتى لا يعلق الطلب «معتمدًا» عند فشل الحفظ.
+  if (approve) assert(s.finance.cash >= r.amount, "السيولة لا تكفي لاعتماد الطلب.");
   r.status = approve ? "approved" : "rejected";
   if (!approve) {
     if (emp) emp.loyalty = clamp(emp.loyalty - 3, 0, 100);
     return r;
   }
-  assert(s.finance.cash >= r.amount, "السيولة لا تكفي لاعتماد الطلب.");
-  post(s, -r.amount, "board-request", r.text, uid(s, "req"));
-  if (r.role === "sporting") c.sporting.budget += r.amount;
+  post(s, -r.amount, "board-request", typeof r.text === "string" ? r.text : r.text.ar, uid(s, "req"));
+  c.authorities[r.role] = { scope: r.authority, until: addDays(s.date, 30), grantedOn: s.date };
+  if (r.role === "sporting") {
+    c.sporting.budget += r.amount;
+    c.sporting.authorityUntil = c.authorities.sporting.until;
+  }
   if (r.role === "marketing")
     for (const k of Object.keys(c.marketing.mood)) c.marketing.mood[k] = clamp(c.marketing.mood[k] + 8, 0, 100);
   if (r.role === "social") c.social.followers = Math.round(c.social.followers * 1.05 + 5000);
   if (r.role === "lawyer") c.legal.retainerUntil = addDays(s.date, 30);
+  if (r.role === "finance") c.financeOffice.auditUntil = addDays(s.date, 30);
   if (emp) {
     emp.loyalty = clamp(emp.loyalty + 3, 0, 100);
     emp.history.push({ date: s.date, text: "اعتُمد طلبه في المجلس" });
