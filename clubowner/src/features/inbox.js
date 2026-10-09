@@ -1,4 +1,5 @@
-import { excerpt } from "../i18n/index.js";
+import { excerpt, getLanguage, tr } from "../i18n/index.js";
+import { boardTextFor } from "../data/boardTexts.js";
 import { eventDecisionView } from "./events.js";
 import { heading, badge, empty, button } from "../components/shared.js";
 import { icon } from "../components/icons.js";
@@ -20,6 +21,7 @@ export function inboxView(s, filter = "all", selected = null) {
     ["matches", "المباريات"],
     ["careers", "الجهاز الفني والمسيرة"],
     ["events", "أحداث النادي"],
+    ["board", "الجمعية العمومية"],
   ]
     .map(
       ([id, title]) =>
@@ -31,7 +33,23 @@ export function inboxView(s, filter = "all", selected = null) {
 }
 export function messageDetail(s, m) {
   let actions = "";
+  const isBoard = typeof m.kind === "string" && m.kind.startsWith("board-");
+  // رسائل الجمعية العمومية للعلم: زر واحد يفتح اللائحة كاملة.
+  if (isBoard && !(m.required && m.status === "open"))
+    actions = button(boardTextFor("boardMailOpen", null, getLanguage()), "go-board", "", "primary");
+  if (m.kind === "cup-draw")
+    actions = button(tr("شاهد مراسم القرعة", "Watch Draw Ceremony", "Voir la cérémonie du tirage"), "view-cup-draw", m.ref, "primary");
+  if (m.kind === "youth-intake-day" && m.required && m.status === "open")
+    actions = button(tr("استعراض وتصعيد الناشئين", "Review & Decide Youth Intake", "Examiner et décider des jeunes"), "open-youth-intake", m.ref, "primary");
+  if (m.kind === "deadline-bid" && m.required && m.status === "open")
+    actions =
+      button(tr("قبول العرض العاجل", "Accept Urgent Offer", "Accepter l'offre urgente"), "accept-deadline-bid", m.id, "primary") +
+      button(tr("رفض العرض", "Decline Offer", "Refuser l'offre"), "decline-deadline-bid", m.id, "ghost");
   if (m.required && m.status === "open") {
+    if (isBoard)
+      actions =
+        button(boardTextFor("boardMailOpen", null, getLanguage()), "go-board", "", "primary") +
+        button(boardTextFor("boardMailSeen", null, getLanguage()), "resolve", m.id, "ghost");
     if (m.kind === "academy-review")
       actions =
         button("مراجعة الأكاديمية", "go-talent", m.ref, "primary") +

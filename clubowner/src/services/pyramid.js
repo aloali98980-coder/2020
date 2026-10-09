@@ -40,6 +40,10 @@ import { post } from "./finance.js";
 import { message } from "./inbox.js";
 import { initCommerce } from "./commerce.js";
 import { initManagement } from "./clubManagement.js";
+import { endSeasonBoardReview, startSeasonMandate } from "./boardMandate.js";
+import { politicalSeasonEnd } from "./politics/campaign.js";
+import { associationSeasonEnd } from "./politics/associationFinance.js";
+import { reconcilePoliticalMap } from "./politics/state.js";
 const EUROPE = [
   "en",
   "es",
@@ -503,6 +507,12 @@ function rollover(s) {
       (x.playoffs.length !== 2 || x.playoffs.some((p) => !p.winners.length)))
   )
     return;
+  // 0.31: تصويت انتخابات الاتحاد يُحسم قبل ترقية الأندية وتغيير الموسم.
+  politicalSeasonEnd(s);
+  // 0.32: توزيع بث الاتحاد ومراجعة الحسابات قبل أرشفة الموسم.
+  associationSeasonEnd(s);
+  // 0.26: تصويت الجمعية العمومية على الموسم المنتهي قبل أي أرشفة أو ترقية.
+  endSeasonBoardReview(s);
   const own = ownDivision(s),
     rank = standings(own).findIndex((t) => t.clubId === s.clubId) + 1;
   for (const p of s.press.promises.filter((p) => !p.resolved)) {
@@ -582,7 +592,10 @@ function rollover(s) {
   const next = ownDivision(s);
   s.table = next.table;
   s.fixtures = next.fixtures;
+  reconcilePoliticalMap(s);
   s.nextSeasonDate = addDays(s.date, 365);
+  // لائحة الموسم الجديد بعد بناء الجداول الجديدة (تاريخ المنتصف يُحسب منها).
+  startSeasonMandate(s);
   s.commerce.seasonTickets = 0;
   s.management.lineup = [];
   // Academy graduates keep identities throughout subsequent seasons; only new intake is generated.

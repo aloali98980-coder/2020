@@ -6,6 +6,22 @@ import { SYSTEM_PHRASES } from "./phrases-system.js";
 import { NAME_PHRASES } from "./phrases-names.js";
 import { LEGEND_PHRASES } from "./phrases-legends.js";
 import { EXTRA_PHRASES } from "./phrases-extra.js";
+import { EVENT_PHRASES } from "./phrases-events.js";
+import { BOARD_PHRASES } from "./phrases-board.js";
+import { DRAMA_MOMENTS_PHRASES } from "./phrases-drama-moments.js";
+import { BLACK_PHRASES } from "./phrases-black.js";
+import { EMPIRE_PHRASES } from "./phrases-empire.js";
+import { SPORTS_CITY_PHRASES } from "./phrases-sports-city.js";
+import { STAFF_PHRASES } from "./phrases-staff.js";
+import { POLITICS_PHRASES } from "./phrases-politics.js";
+import { DYNASTY_PHRASES } from "./phrases-dynasty.js";
+import {
+  ACADEMY_FOCUSES,
+  CHILD_STAGES,
+  DYNASTY_PATHS,
+  DYNASTY_TRAITS,
+  UPBRINGING_STYLES,
+} from "../data/dynasty.js";
 import egyptPyramid from "../data/egyptPyramid.json" with { type: "json" };
 import { ROSTERS } from "../data/packs/current-2026.js";
 import { worldNameMap } from "../data/packs/world.js";
@@ -13,6 +29,22 @@ import { LEGENDS } from "../data/legends.js";
 import { MARKETS } from "../data/worldMarkets.js";
 // 0.19: phrase modules are merged in order; earlier hand-tuned entries win. A string value means
 // "same wording in English and French" (brands, codes, transliterated names).
+const dynastyCopies = [
+  ...CHILD_STAGES.map((stage) => stage.label),
+  ...DYNASTY_TRAITS.flatMap((trait) => [trait.label, trait.description]),
+  ...DYNASTY_PATHS.flatMap((path) => [path.label, path.bonus]),
+  ...UPBRINGING_STYLES.map((style) => style.label),
+  ...ACADEMY_FOCUSES.map((focus) => focus.label),
+];
+const normalizedDynastyPhrase = (value) => String(value).trim().replace(/[.؛:!؟…،,]+$/, "");
+for (const copy of dynastyCopies) {
+  const key = normalizedDynastyPhrase(copy.ar);
+  if (!DICTIONARY[key]) DICTIONARY[key] = [copy.en, copy.fr];
+}
+for (const [ar, pair] of Object.entries(DYNASTY_PHRASES)) {
+  const key = normalizedDynastyPhrase(ar);
+  if (!DICTIONARY[key]) DICTIONARY[key] = pair;
+}
 for (const extra of [
   NARRATIVES,
   UI_PHRASES,
@@ -21,6 +53,22 @@ for (const extra of [
   NAME_PHRASES,
   LEGEND_PHRASES,
   EXTRA_PHRASES,
+  // 0.25: phrases-events comes last so hand-tuned entries in earlier modules always win.
+  EVENT_PHRASES,
+  // 0.26: assembly mandate phrases are derived from src/data/boardTexts.js (single source).
+  BOARD_PHRASES,
+  // 0.27: drama moments (cup draw, deadline day, youth intake, derby flavor, instant friendly).
+  DRAMA_MOMENTS_PHRASES,
+  // 0.28: black files (suspicion, fixer operations, release clauses)
+  BLACK_PHRASES,
+  // 0.29: empire life (two fortunes, living, assets, family, investments, rivals, charity)
+  EMPIRE_PHRASES,
+  // Dynasty phrases are generated from the family, academy and succession systems.
+  DYNASTY_PHRASES,
+  SPORTS_CITY_PHRASES,
+  // 0.30: comprehensive staff management (org chart, market, HQ, events)
+  STAFF_PHRASES,
+  POLITICS_PHRASES,
 ])
   for (const [ar, pair] of Object.entries(extra))
     if (!DICTIONARY[ar])

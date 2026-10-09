@@ -1,0 +1,225 @@
+// Predicates are deliberately pure: no narrative can fire without its actual infrastructure.
+const event = (id, ar, en, fr, when, effect = null) => ({
+  id,
+  name: { ar, en, fr },
+  when,
+  effect,
+});
+const has = (s, id) => !!s.sportsCity?.facilities?.includes(id);
+const st = (s) => s.sportsCity?.stadium || {};
+const project = (s) => st(s).project;
+export const CITY_EVENTS = Object.freeze([
+  event(
+    "runaway",
+    "هروب المقاول بالدفعة 😄",
+    "Contractor vanishes with the advance",
+    "L'entrepreneur disparaît avec l'acompte",
+    (s) => !!project(s) && project(s).route === "new" && !project(s).delays,
+    "delay",
+  ),
+  event(
+    "delay",
+    "تأخير توريد الحديد",
+    "Steel delivery delay",
+    "Retard de livraison d'acier",
+    (s) => !!project(s),
+    "delay",
+  ),
+  event(
+    "weather",
+    "أمطار توقف البناء",
+    "Rain halts construction",
+    "La pluie interrompt le chantier",
+    (s) => !!project(s),
+    "delay",
+  ),
+  event(
+    "inspection",
+    "فحص سلامة المشروع",
+    "Construction safety inspection",
+    "Inspection de sécurité",
+    (s) => !!project(s),
+  ),
+  event(
+    "contractor",
+    "المقاول يطلب مراجعة الجدول",
+    "Contractor revises schedule",
+    "L'entrepreneur révise le calendrier",
+    (s) => !!project(s),
+    "delay",
+  ),
+  event(
+    "opening",
+    "ليلة الافتتاح التاريخية",
+    "Opening night",
+    "Soirée d'inauguration",
+    (s) => st(s).openingPending,
+    "opening",
+  ),
+  event(
+    "namingWar",
+    "حرب مزاد الاسم",
+    "Naming rights bidding war",
+    "Guerre des enchères pour le nom",
+    (s) => st(s).naming === "auction",
+  ),
+  event(
+    "ownerName",
+    "الملعب يحمل اسم المالك",
+    "Stadium bears the owner's name",
+    "Le stade porte le nom du propriétaire",
+    (s) => st(s).naming === "owner",
+  ),
+  event(
+    "empty",
+    "مدرجات فاضية وسخرية صحفية",
+    "Empty stands draw press mockery",
+    "Tribunes vides et moqueries",
+    (s) =>
+      s.capacity >= 100000 &&
+      (st(s).lastAttendance || 0) < s.capacity * 0.3 &&
+      !!st(s).lastAttendance,
+    "mockery",
+  ),
+  event(
+    "record",
+    "رقم حضور قياسي",
+    "Record crowd",
+    "Affluence record",
+    (s) => (st(s).record || 0) >= 100000,
+  ),
+  event(
+    "guinness",
+    "موسوعة جينيس: أكبر ملعب في التاريخ!",
+    "Guinness: largest stadium in history!",
+    "Guinness : le plus grand stade de l'histoire !",
+    (s) => st(s).tier === 7 && !project(s),
+    "prestige",
+  ),
+  event(
+    "marathon",
+    "ماراثون المدينة السنوي",
+    "Annual city marathon",
+    "Marathon annuel de la cité",
+    (s) => has(s, "track") && s.date.slice(5, 7) === "04",
+  ),
+  event(
+    "wedding",
+    "فرح في الاستاد 💒",
+    "A wedding at the stadium",
+    "Mariage au stade",
+    (s) => has(s, "weddingHall"),
+  ),
+  event(
+    "accident",
+    "حادث منشأة",
+    "Facility accident",
+    "Accident dans une installation",
+    (s) => s.sportsCity?.facilities?.length >= 4,
+    "repair",
+  ),
+  event(
+    "blackout",
+    "عطل الكشافات ليلة الديربي",
+    "Floodlight failure on derby night",
+    "Panne de projecteurs lors du derby",
+    (s) => st(s).lastDerbyDate === s.date,
+  ),
+  event(
+    "derby",
+    "ديربي المدينة تحت الكشافات",
+    "City derby under the floodlights",
+    "Derby sous les projecteurs",
+    (s) => st(s).lastDerbyDate === s.date,
+  ),
+  event(
+    "screens",
+    "الجماهير تشاهد مباراة خارجية",
+    "Away match on giant screens",
+    "Match à l'extérieur sur écrans géants",
+    (s) => has(s, "screens"),
+  ),
+  event(
+    "museum",
+    "افتتاح معرض البطولات",
+    "Trophy exhibition",
+    "Exposition des trophées",
+    (s) => has(s, "museum"),
+  ),
+  event(
+    "hospital",
+    "المستشفى ينقذ لاعبًا مصابًا",
+    "Hospital saves an injured player",
+    "L'hôpital aide un joueur blessé",
+    (s) =>
+      has(s, "hospital") &&
+      s.players?.some((p) => p.clubId === s.clubId && p.injuryUntil >= s.date),
+  ),
+  event(
+    "academy",
+    "موهبة تتخرج من الأكاديمية",
+    "Academy prospect graduates",
+    "Un talent sort de l'académie",
+    (s) => has(s, "academyBuilding") && !!s.talent?.academy,
+  ),
+  event(
+    "solar",
+    "المدينة تعمل بالطاقة الشمسية",
+    "City goes solar",
+    "La cité passe au solaire",
+    (s) => has(s, "solar"),
+  ),
+  event(
+    "hotel",
+    "الفريق يقيم في فندقه",
+    "Team stays at its own hotel",
+    "L'équipe séjourne dans son hôtel",
+    (s) => has(s, "hotel"),
+  ),
+  event(
+    "transit",
+    "قطارات ممتلئة في يوم المباراة",
+    "Packed trains on match day",
+    "Trains pleins le jour du match",
+    (s) => has(s, "transport") && (st(s).lastAttendance || 0) > 30000,
+  ),
+  event(
+    "fanWall",
+    "الجماهير تحجز لوحات الأسماء",
+    "Fans buy name plaques",
+    "Les fans achètent des plaques",
+    (s) => has(s, "nameWall"),
+  ),
+  event(
+    "cinema",
+    "ليلة سينما للنادي",
+    "Club cinema night",
+    "Soirée cinéma du club",
+    (s) => has(s, "cinema"),
+  ),
+  event(
+    "channel",
+    "بث خاص من استوديو القناة",
+    "Special broadcast from the channel studio",
+    "Émission spéciale depuis le studio",
+    (s) => has(s, "channelStudio"),
+  ),
+  event(
+    "oldYouth",
+    "جيل جديد في الملعب القديم",
+    "Old ground nurtures youth",
+    "L'ancien stade forme les jeunes",
+    (s) => st(s).oldGround === "youth",
+  ),
+  event(
+    "oldLease",
+    "مستأجر جديد للملعب القديم",
+    "Old ground finds a tenant",
+    "L'ancien stade trouve un locataire",
+    (s) => st(s).oldGround === "lease",
+  ),
+]);
+export const eligibleCityEvents = (s) =>
+  CITY_EVENTS.filter(
+    (e) => !s.sportsCity?.eventsSeen?.includes(e.id) && e.when(s),
+  );

@@ -3,9 +3,10 @@ import { ASSETS, SPONSORS } from "../data/catalog.js";
 import { LOCAL_SPONSORS } from "../data/localSponsors.js";
 import { marketBy } from "../data/worldMarkets.js";
 import { extendedClub } from "../data/expandedCatalog.js";
-import { uid, assert, addDays } from "../core/utils.js";
+import { uid, assert, addDays, clamp } from "../core/utils.js";
 import { post, obligation } from "./finance.js";
 import { message } from "./inbox.js";
+import { setSponsorMood, sponsorMoodFactor, sponsorExpiryMood } from "./staff/marketing.js";
 // 0.15: local sponsors per market. Brand colors/initials derive
 // deterministically so the data file stays compact triples.
 const LOCAL_COLORS = [
@@ -57,6 +58,8 @@ export function offersFor(s, assetId) {
     SPONSORS[assetIndex % SPONSORS.length],
     locals[(assetIndex + 1) % locals.length],
   ];
+  const dynastyNegotiation =
+    1 + clamp(s.dynasty?.ownerBonuses?.sponsorNegotiation || 0, 0, 100) / 100;
   return lineup.map((sp, i) => ({
     id: sp.id + "-" + assetId,
     assetId,
@@ -66,7 +69,9 @@ export function offersFor(s, assetId) {
         (0.86 + i * 0.075) *
         (s.reputation / 80) *
         difficulty(s).sponsor *
-        (s.press ? 1 + (s.press.trust - 60) / 400 : 1),
+        dynastyNegotiation *
+        (s.press ? 1 + (s.press.trust - 60) / 400 : 1) *
+        sponsorMoodFactor(s, assetId),
     ),
     days: 360,
     exclusive: i === 1,
@@ -107,6 +112,8 @@ export function signSponsor(s, offer) {
     status: "active",
   };
   s.sponsors.push(c);
+  const priorMood = s.staffCorp?.marketing?.mood?.[c.assetId];
+  setSponsorMood(s, c.assetId, Number.isFinite(priorMood) ? priorMood : 60);
   const upfront = Math.floor(c.amount * 0.25);
   post(
     s,
@@ -145,6 +152,7 @@ export function signSponsor(s, offer) {
 export function sponsorDay(s) {
   for (const c of s.sponsors) {
     if (c.status === "active" && c.end < s.date) {
+      sponsorExpiryMood(s, c);
       c.status = "expired";
       message(s, {
         title: "انتهى عقد رعاية",
