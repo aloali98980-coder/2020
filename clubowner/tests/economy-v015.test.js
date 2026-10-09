@@ -107,7 +107,7 @@ test("offers mix two owner-country locals with one rotating global", () => {
 
 test("signing a local sponsor posts upfront plus eleven obligations", () => {
   const s = game();
-  assert.equal(s.version, 22);
+  assert.equal(s.version, 23);
   const offer = offersFor(s, "sleeve").find(
     (o) => resolveSponsor(o.sponsorId).local,
   );
@@ -206,7 +206,7 @@ test("v14 save migrates to 16 with sponsors and finances intact", () => {
   v14.version = 14;
   delete v14.migrationNote;
   const m = migrateSave(v14);
-  assert.equal(m.version, 22);
+  assert.equal(m.version, 23);
   assert.equal(v14.version, 14);
   assert(m.migrationNote.includes("0.15"));
 assert(m.migrationNote.includes("0.16"));

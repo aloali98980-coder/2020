@@ -2,6 +2,7 @@ import { addDays, assert, clamp, random, uid } from "../core/utils.js";
 import { staffSkill } from "./staff.js";
 import { ageAt } from "../models/player.js";
 import { isoDate } from "../core/isoDate.js";
+import { closeThread, message } from "./inbox.js";
 import {
   ACADEMY_FOCUS_IDS,
   ACADEMY_POSITION_IDS,
@@ -208,7 +209,7 @@ function normalizeChild(s, raw, index, usedIds, generation, parentId = null) {
     bornOn: birthday,
     age,
     stage: childStage(age),
-    generation: integerInRange(source.generation, 1, 1000000, generation),
+    generation: integerInRange(source.generation, 1, Number.MAX_SAFE_INTEGER, generation),
     parentId: parentId || (typeof source.parentId === "string" ? source.parentId : null),
     stats,
     traits: normalizeTraits(source.traits ?? source.personalityTraits),
@@ -729,6 +730,9 @@ export function initDynasty(s, { ownerAge } = {}) {
     lastEventMonth: null,
     lastSiblingMonth: null,
     lastProcessedMonth: null,
+    lastOwnerMonth: null,
+    lastLegacyMonth: null,
+    retirementOffer: null,
   };
 }
 
@@ -747,7 +751,7 @@ export function migrateDynasty(s) {
   const actualAge = ageAt({ birthDate: birthday }, today);
   const childIds = new Set();
   const children = sourceChildren.map((child, index) =>
-    normalizeChild(context, child, index, childIds, integerInRange(existing.generation, 1, 1000000, 1)),
+    normalizeChild(context, child, index, childIds, integerInRange(existing.generation, 1, Number.MAX_SAFE_INTEGER, 1)),
   );
   let heirId = existing.heirId || s.heirId || s.inheritorId || null;
   if (!heirId) heirId = children.find((child) => child.isHeir)?.id || null;
@@ -769,7 +773,7 @@ export function migrateDynasty(s) {
     ...defaults,
     ...existing,
     schema: DYNASTY_SCHEMA,
-    generation: integerInRange(existing.generation, 1, 1000000, 1),
+    generation: integerInRange(existing.generation, 1, Number.MAX_SAFE_INTEGER, 1),
     owner: {
       ...defaults.owner,
       ...ownerSource,
@@ -832,5 +836,286 @@ export function migrateDynasty(s) {
     lastProcessedMonth: validMonth(existing.lastProcessedMonth)
       ? existing.lastProcessedMonth
       : null,
+    lastOwnerMonth: validMonth(existing.lastOwnerMonth)
+      ? existing.lastOwnerMonth
+      : null,
+    lastLegacyMonth: validMonth(existing.lastLegacyMonth)
+      ? existing.lastLegacyMonth
+      : null,
+    retirementOffer:
+      existing.retirementOffer &&
+      SAFE_ID.test(existing.retirementOffer.id) &&
+      isoDate(existing.retirementOffer.openedOn) &&
+      typeof existing.retirementOffer.forced === "boolean"
+        ? {
+            id: existing.retirementOffer.id,
+            openedOn: existing.retirementOffer.openedOn,
+            forced: existing.retirementOffer.forced,
+          }
+        : null,
   };
+}
+
+export function calculateLegacyScore(s) {
+  const d = s?.dynasty;
+  if (!d) return 0;
+  const descendants = allDynastyChildren(s);
+  const resolvedEvents = (d.events || []).filter((event) => event.status === "resolved").length;
+  const chosenPaths = descendants.filter((child) => child.careerPath).length;
+  const reputation = Number.isFinite(s.reputation) ? s.reputation : 0;
+  const score =
+    Math.min(200, d.generation * 20) +
+    Math.min(250, (d.titlesWon || 0) * 25) +
+    Math.min(100, descendants.length * 4) +
+    Math.min(120, resolvedEvents * 2) +
+    Math.min(80, chosenPaths * 8) +
+    (d.publicBalance || 0) * 0.35 +
+    (d.fanConfidence || 0) * 0.2 +
+    reputation * 0.25 +
+    Math.min(50, Math.log10(Math.max(0, d.shirtSales || 0) + 1) * 8) +
+    Math.min(150, (d.familyArchive || []).length * 10);
+  return Math.round(clamp(score, 0, 1000));
+}
+
+export function recordLegacyScore(s, reason = "monthly") {
+  const d = s.dynasty;
+  assert(d, "ملف الإرث غير متاح.");
+  const score = calculateLegacyScore(s);
+  d.legacyScore = score;
+  const snapshot = {
+    date: saveDate(s),
+    generation: d.generation,
+    owner: d.owner.name,
+    score,
+    reason: String(reason || "monthly").slice(0, 40),
+  };
+  const previous = d.legacyHistory.at(-1);
+  if (
+    previous?.date === snapshot.date &&
+    previous?.generation === snapshot.generation &&
+    previous?.owner === snapshot.owner
+  ) {
+    Object.assign(previous, snapshot);
+  } else {
+    d.legacyHistory.push(snapshot);
+  }
+  if (d.legacyHistory.length > 100) d.legacyHistory.splice(0, d.legacyHistory.length - 100);
+  return score;
+}
+
+export function setDynastyHeir(s, childId) {
+  const d = s.dynasty;
+  const child = d?.children.find((person) => person.id === childId);
+  assert(child, "يمكن تعيين وريث واحد من أبناء المالك الحالي.");
+  assert(!child.excludedFromSuccession, "أُبعد هذا الابن عن الخلافة.");
+  for (const sibling of d.children) sibling.isHeir = sibling.id === child.id;
+  child.legalClaim = true;
+  d.heirId = child.id;
+  d.legalPrelude = {
+    status: "prepared",
+    claimantId: child.id,
+    preparedOn: saveDate(s),
+  };
+  return child;
+}
+
+export function setSuccessionEligibility(s, childId, eligible) {
+  const d = s.dynasty;
+  const child = d?.children.find((person) => person.id === childId);
+  assert(child && typeof eligible === "boolean", "بيانات أهلية الخلافة غير صالحة.");
+  child.excludedFromSuccession = !eligible;
+  child.legalClaim = eligible;
+  if (!eligible && d.heirId === child.id) {
+    d.heirId = null;
+    child.isHeir = false;
+  }
+  d.legalPrelude = {
+    status: d.heirId ? "prepared" : "seeded",
+    claimantId: d.heirId,
+    preparedOn: d.heirId ? saveDate(s) : null,
+  };
+  return child.excludedFromSuccession;
+}
+
+function legacyMemberSummary(child) {
+  return {
+    id: child.id,
+    name: child.name,
+    age: child.age,
+    generation: child.generation,
+    careerPath: child.careerPath,
+    traits: [...child.traits],
+    playerId: child.playerId,
+    descendantCount: allDescendantsCount(child.offspring),
+  };
+}
+
+function allDescendantsCount(children) {
+  let total = 0;
+  for (const child of children || []) total += 1 + allDescendantsCount(child.offspring);
+  return total;
+}
+
+function distantRelative(s) {
+  const d = s.dynasty;
+  const person = createDynastyChild(s, {
+    name: `${d.familyName} Cousin`,
+    age: 38,
+    stats: { talent: 55, discipline: 62, ambition: 48 },
+  });
+  person.careerPath = "business";
+  person.education = "Family governance";
+  person.relationship = 22;
+  person.legalClaim = true;
+  person.isHeir = true;
+  return person;
+}
+
+function retireCurrentOwner(s) {
+  const d = s.dynasty;
+  const eligible = d.children
+    .filter((child) => child.age >= 18 && !child.excludedFromSuccession)
+    .sort((a, b) => {
+      if (a.id === b.id) return 0;
+      const aNamedHeir = Number(a.id === d.heirId);
+      const bNamedHeir = Number(b.id === d.heirId);
+      if (aNamedHeir !== bNamedHeir) return bNamedHeir - aNamedHeir;
+      if (a.legalClaim !== b.legalClaim) return Number(b.legalClaim) - Number(a.legalClaim);
+      if (a.relationship !== b.relationship) return b.relationship - a.relationship;
+      if (a.jealousy !== b.jealousy) return a.jealousy - b.jealousy;
+      if (a.stats.discipline !== b.stats.discipline) return b.stats.discipline - a.stats.discipline;
+      return a.id.localeCompare(b.id);
+    });
+  const heir = eligible[0] || distantRelative(s);
+  const usedDistantRelative = eligible.length === 0;
+  heir.isHeir = true;
+  heir.legalClaim = true;
+
+  const previousScore = recordLegacyScore(s, "retirement");
+  const archive = {
+    date: saveDate(s),
+    generation: d.generation,
+    owner: d.owner.name,
+    ownerAge: d.owner.age,
+    ownerRoute: d.ownerRoute,
+    retired: true,
+    legacyScore: previousScore,
+    successorId: heir.id,
+    successorName: heir.name,
+    successionSource: usedDistantRelative ? "distant-relative" : "family",
+    members: d.children.map(legacyMemberSummary),
+  };
+  d.familyArchive.push(archive);
+  if (d.familyArchive.length > 100) d.familyArchive.shift();
+
+  const nextGeneration = Math.min(
+    Number.MAX_SAFE_INTEGER,
+    Math.max(d.generation + 1, heir.generation + 1),
+  );
+  const nextChildren = (heir.offspring || []).slice(0, 50);
+  for (const child of nextChildren) {
+    child.parentId = null;
+    child.generation = nextGeneration;
+    child.isHeir = false;
+    child.excludedFromSuccession = false;
+    child.legalClaim = false;
+  }
+  const nextOwnerAge = ageAt({ birthDate: heir.birthDate }, saveDate(s));
+  d.generation = nextGeneration;
+  d.children = nextChildren;
+  d.heirId = null;
+  d.owner = {
+    name: heir.name,
+    age: nextOwnerAge,
+    birthDate: heir.birthDate,
+    health: 100,
+    retired: false,
+    since: saveDate(s),
+    retirementAge: 65,
+    forcedRetirementAge: 85,
+    lastRetirementOfferAge: 0,
+  };
+  d.spouse = heir.spouse || null;
+  d.ownerRoute = CAREER_PATH_IDS.includes(heir.careerPath) ? heir.careerPath : null;
+  d.ownerTraits = [...heir.traits];
+  d.inheritanceBonus = Math.min(20, (d.inheritanceBonus || 0) + 1 + Math.floor(previousScore / 250));
+  d.legalPrelude = { status: "none", claimantId: null, preparedOn: null };
+  d.retirementOffer = null;
+  const month = saveDate(s).slice(0, 7);
+  d.lastOwnerMonth = month;
+  d.lastLegacyMonth = month;
+  d.lastSiblingMonth = month;
+  d.lastProcessedMonth = month;
+  s.owner = heir.name;
+  recordLegacyScore(s, "succession");
+  message(s, {
+    title: "جيل جديد يتولى إدارة النادي",
+    body: usedDistantRelative
+      ? "انتقلت الإدارة إلى قريب بعيد من العائلة، مع حفظ نقاط الإرث وسجل الأجيال لمواصلة السلالة."
+      : "انتقلت الإدارة إلى الوريث، مع حفظ سجل الأسرة ونقاط الإرث لمواصلة الأجيال.",
+    category: "management",
+    kind: "dynasty-succession",
+    ref: heir.id,
+  });
+  return { heir, usedDistantRelative, archive };
+}
+
+export function dynastyLifeDay(s) {
+  const d = s.dynasty;
+  if (!d) return null;
+  const today = saveDate(s);
+  const month = today.slice(0, 7);
+  const owner = d.owner;
+  owner.age = ageAt({ birthDate: owner.birthDate }, today);
+  if (d.lastOwnerMonth !== month) {
+    d.lastOwnerMonth = month;
+    if (owner.age >= 80) owner.health = roundStat(owner.health - 0.35);
+    else if (owner.age >= 70) owner.health = roundStat(owner.health - 0.12);
+  }
+  if (d.lastLegacyMonth !== month) {
+    recordLegacyScore(s, "monthly");
+    d.lastLegacyMonth = month;
+  }
+  const due =
+    (owner.age >= owner.retirementAge && owner.age > owner.lastRetirementOfferAge) ||
+    owner.health <= 0;
+  if (!owner.retired && due && !d.retirementOffer) {
+    const forced = owner.age >= owner.forcedRetirementAge || owner.health <= 0;
+    const offer = { id: uid(s, "dynasty-retirement"), openedOn: today, forced };
+    d.retirementOffer = offer;
+    message(s, {
+      title: "موعد تقاعد مالك النادي",
+      body: forced
+        ? "بلغ المالك سن التقاعد الإلزامي. اختر وريثًا مؤهلًا، أو ستتولى الخلافة شخصية من فرع بعيد للعائلة."
+        : "وصل المالك إلى سن التقاعد. يمكنك نقل الإرث الآن أو تمديد فترة الإدارة سنة واحدة.",
+      category: "management",
+      required: true,
+      kind: "dynasty-retirement",
+      ref: offer.id,
+      priority: forced ? "urgent" : "high",
+    });
+    return offer;
+  }
+  return null;
+}
+
+export function resolveRetirementOffer(s, offerId, decision) {
+  const d = s.dynasty;
+  const offer = d?.retirementOffer;
+  assert(offer && offer.id === offerId, "عرض التقاعد غير مفتوح.");
+  if (decision === "continue") {
+    assert(!offer.forced, "بلغ المالك سن التقاعد الإلزامي.");
+    d.owner.retirementAge = Math.min(
+      d.owner.forcedRetirementAge - 1,
+      Math.max(d.owner.retirementAge + 1, d.owner.age + 1),
+    );
+    d.owner.lastRetirementOfferAge = d.owner.age;
+    d.retirementOffer = null;
+    closeThread(s, offer.id);
+    return { continued: true, owner: d.owner };
+  }
+  assert(decision === "retire", "قرار التقاعد غير صالح.");
+  const succession = retireCurrentOwner(s);
+  closeThread(s, offer.id);
+  return { continued: false, ...succession };
 }

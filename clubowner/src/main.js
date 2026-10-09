@@ -72,6 +72,9 @@ import {
   setAcademyFocus,
   setAcademyMentor,
   setAcademyPosition,
+  setDynastyHeir,
+  setSuccessionEligibility,
+  resolveRetirementOffer,
   setUpbringing,
 } from "./services/dynasty.js";
 import { resolveDynastyEvent } from "./services/dynastyEvents.js";
@@ -808,7 +811,9 @@ const actions = {
   },
   "open-message": async (el) => {
     const dynastyDecision = getState().inbox.some(
-      (message) => message.id === el.dataset.id && message.kind === "dynasty-event",
+      (message) =>
+        message.id === el.dataset.id &&
+        ["dynasty-event", "dynasty-retirement"].includes(message.kind),
     );
     await apply((s) => {
       const m = s.inbox.find((m) => m.id === el.dataset.id);
@@ -1123,6 +1128,21 @@ const actions = {
     await apply(
       (s) => setCareerPath(s, el.dataset.id, el.dataset.path),
       tr("تم تسجيل المسار الذي اختاره الابن.", "The child's chosen career path has been recorded.", "Le parcours choisi par l’enfant a été enregistré."),
+    ),
+  "dynasty-heir-set": async (el) =>
+    await apply(
+      (s) => setDynastyHeir(s, el.dataset.id),
+      tr("تم تسجيل الوريث وإعداد مستندات الخلافة.", "The heir has been recorded and succession documents prepared.", "L’héritier est enregistré et les documents de succession sont préparés."),
+    ),
+  "dynasty-succession-eligibility": async (el) =>
+    await apply(
+      (s) => setSuccessionEligibility(s, el.dataset.id, el.dataset.eligible === "true"),
+      tr("تم تحديث أهلية الخلافة.", "Succession eligibility has been updated.", "L’éligibilité à la succession a été mise à jour."),
+    ),
+  "dynasty-retirement-choice": async (el) =>
+    await apply(
+      (s) => resolveRetirementOffer(s, el.dataset.id, el.dataset.decision),
+      tr("تم تسجيل قرار التقاعد والخلافة.", "The retirement and succession decision has been recorded.", "La décision de retraite et de succession a été enregistrée."),
     ),
   "dynasty-sibling-reconcile": async (el) =>
     await apply(

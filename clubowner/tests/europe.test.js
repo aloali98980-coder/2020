@@ -362,7 +362,7 @@ test("Schema four import keeps ongoing cups, player objects and finances unchang
     cups = structuredClone(s.expansion.cups),
     finance = structuredClone(s.finance);
   const next = migrateSave(s);
-  assert.equal(next.version, 22);
+  assert.equal(next.version, 23);
   assert.equal(s.version, 4);
   assert.deepEqual(next.players, players);
   assert.deepEqual(next.finance, finance);

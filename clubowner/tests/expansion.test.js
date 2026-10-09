@@ -190,7 +190,7 @@ test("Version 3 careers migrate without retrofitting competitions or replacing p
   const s = createGame({ database: "current" });
   s.version = 3;
   const t = migrateSave(s);
-  assert.equal(t.version, 22);
+  assert.equal(t.version, 23);
   assert.equal(t.expansion, undefined);
   assert.deepEqual(t.players, s.players);
   validateSave(t);

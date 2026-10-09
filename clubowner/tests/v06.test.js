@@ -94,7 +94,7 @@ test("Egypt fresh membership, stable old IDs and no invented fourth tier", () =>
   assert(ds[1].clubs.includes("ismaily"));
   assert(!ds.some((d) => d.tier === 4));
   const s = game();
-  assert.equal(s.version, 22);
+  assert.equal(s.version, 23);
   assert(
     s.players
       .filter((p) =>

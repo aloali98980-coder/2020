@@ -30,7 +30,7 @@ function validateChild(child, seen, depth = 0) {
   if (!Number.isInteger(child.age) || child.age < 0 || child.age > 120)
     fail("عمر طفل خارج النطاق.");
   if (!STAGE_IDS.includes(child.stage)) fail("مرحلة نمو غير معروفة.");
-  if (!Number.isInteger(child.generation) || child.generation < 1)
+  if (!Number.isSafeInteger(child.generation) || child.generation < 1)
     fail("رقم جيل غير صالح.");
   if (
     !child.stats ||
@@ -132,7 +132,7 @@ function validateChild(child, seen, depth = 0) {
 export function validateDynasty(s) {
   const d = s?.dynasty;
   if (!d || d.schema !== DYNASTY_SCHEMA) fail("إصدار البيانات غير مدعوم.");
-  if (!Number.isInteger(d.generation) || d.generation < 1 || d.generation > 1000000)
+  if (!Number.isSafeInteger(d.generation) || d.generation < 1)
     fail("رقم الجيل غير صالح.");
   if (
     !d.owner ||
@@ -158,6 +158,22 @@ export function validateDynasty(s) {
     fail("الوريث الرسمي غير موجود في الجيل الحالي.");
   if (d.children.filter((child) => child.isHeir).length > 1)
     fail("يوجد أكثر من وريث رسمي.");
+  if (d.heirId && !d.children.find((child) => child.id === d.heirId)?.isHeir)
+    fail("سجل الوريث الرسمي غير متسق.");
+  if (
+    d.retirementOffer !== null &&
+    (!d.retirementOffer ||
+      typeof d.retirementOffer !== "object" ||
+      !validId(d.retirementOffer.id) ||
+      !isoDate(d.retirementOffer.openedOn) ||
+      typeof d.retirementOffer.forced !== "boolean")
+  )
+    fail("عرض التقاعد غير صالح.");
+  if (
+    (d.lastOwnerMonth !== null && !validMonth(d.lastOwnerMonth)) ||
+    (d.lastLegacyMonth !== null && !validMonth(d.lastLegacyMonth))
+  )
+    fail("تاريخ معالجة التقاعد أو الإرث غير صالح.");
   if (!validNumber(d.publicBalance, 0, 100)) fail("ميزان الرأي العام خارج النطاق.");
   if (!validNumber(d.fanConfidence, 0, 100)) fail("ثقة الجماهير خارج النطاق.");
   if (!Number.isSafeInteger(d.shirtSales) || d.shirtSales < 0)
@@ -182,6 +198,21 @@ export function validateDynasty(s) {
   }
   if (!Array.isArray(d.legacyHistory) || d.legacyHistory.length > 100)
     fail("أرشيف الإرث غير صالح.");
+  if (
+    d.legacyHistory.some(
+      (item) =>
+        !item ||
+        !isoDate(item.date) ||
+        !Number.isSafeInteger(item.generation) ||
+        item.generation < 1 ||
+        !text(item.owner, 80) ||
+        !Number.isInteger(item.score) ||
+        item.score < 0 ||
+        item.score > 1000 ||
+        !text(item.reason, 40),
+    )
+  )
+    fail("لقطة نقاط الإرث غير صالحة.");
   if (!Array.isArray(d.familyArchive) || d.familyArchive.length > 100)
     fail("أرشيف العائلة غير صالح.");
   if (!d.ownerBonuses || !["playerRelations", "sponsorNegotiation", "clubFame", "autonomy"].every((key) => validNumber(d.ownerBonuses[key], 0, 100)))

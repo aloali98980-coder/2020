@@ -242,12 +242,12 @@ test("coach renewal extends tenure and expiry vacates the job", () => {
 
 test("v15 save migrates to 16 with economy defaults and history intact", () => {
   const s = game();
-  assert.equal(s.version, 22);
+  assert.equal(s.version, 23);
   const v15 = structuredClone(s);
   v15.version = 15;
   delete v15.migrationNote;
   const m = migrateSave(v15);
-  assert.equal(m.version, 22);
+  assert.equal(m.version, 23);
   assert.equal(v15.version, 15);
   assert(m.migrationNote.includes("0.16"));
   assert.deepEqual(m.sponsorDeals, []);

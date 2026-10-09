@@ -1,4 +1,4 @@
-export const DYNASTY_SCHEMA = 1;
+export const DYNASTY_SCHEMA = 2;
 
 export const CHILD_STAGES = [
   { id: "infant", minAge: 0, maxAge: 2, label: { ar: "رضيع", en: "Infant", fr: "Nourrisson" } },

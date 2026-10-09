@@ -143,7 +143,7 @@ test("v18→v20 migration initializes match consequence fields", () => {
     retired: [],
   };
   const migrated = migrateSave(v18);
-  assert.equal(migrated.version, 22);
+  assert.equal(migrated.version, 23);
   const p = migrated.players[0];
   // v19 fields
   assert.equal(p.seasonGoals, 0);

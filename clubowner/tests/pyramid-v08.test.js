@@ -193,7 +193,7 @@ test("schema seven migration retains all values and old membership; current migr
   const p = structuredClone(s.players),
     f = structuredClone(s.finance);
   const next = migrateSave(s);
-  assert.equal(next.version, 22);
+  assert.equal(next.version, 23);
   assert.equal(s.version, 7);
   assert.deepEqual(next.players, p);
   assert.deepEqual(next.finance, f);

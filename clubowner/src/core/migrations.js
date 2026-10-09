@@ -372,15 +372,32 @@ function migrateToTwentyTwo(input) {
   return s;
 }
 
+// Save v23: add retirement offers, successor archives and continuing-generation checkpoints.
+// Dynasty state is normalized in place; club identity, player data and finances are not rewritten.
+function migrateToTwentyThree(input) {
+  if (!input || input.version !== 22) return input;
+  const s = structuredClone(input);
+  s.version = 23;
+  s.dynasty = migrateDynasty(s);
+  s.migrationNote =
+    (s.migrationNote || "") +
+    " تحديث الخلافة: تمت إضافة التقاعد وتعيين الوريث وسجل الإرث واستمرار الأجيال مع الحفاظ على الأسرة واللاعبين والمالية.";
+  return s;
+}
+
 export function migrateSave(input) {
-  if (!input || input.version === 22) return input;
-  if (input.version === 21) return migrateToTwentyTwo(input);
-  if (input.version === 20) return migrateToTwentyTwo(migrateToTwentyOne(input));
+  if (!input || input.version === 23) return input;
+  if (input.version === 22) return migrateToTwentyThree(input);
+  if (input.version === 21)
+    return migrateToTwentyThree(migrateToTwentyTwo(input));
+  if (input.version === 20)
+    return migrateToTwentyThree(migrateToTwentyTwo(migrateToTwentyOne(input)));
   const v17 = migrateToSeventeen(input);
   const v18 = v17?.version === 17 ? migrateToEighteen(v17) : v17;
   if (v18?.version !== 18) return v18;
   const v19 = migrateToNineteen(v18);
   const v20 = migrateToTwenty(v19);
   const v21 = migrateToTwentyOne(v20);
-  return migrateToTwentyTwo(v21);
+  const v22 = migrateToTwentyTwo(v21);
+  return migrateToTwentyThree(v22);
 }

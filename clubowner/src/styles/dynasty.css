@@ -269,6 +269,48 @@
   gap: 10px;
   margin-top: 12px;
 }
+.dynasty-succession-controls,
+.dynasty-retirement-actions,
+.dynasty-retirement-head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.dynasty-retirement {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 16px;
+  border-color: color-mix(in srgb, var(--accent, #4f9bff) 45%, var(--line, #23354d));
+}
+.dynasty-retirement h2,
+.dynasty-legacy-history h3 {
+  margin: 4px 0;
+}
+.dynasty-retirement > p {
+  margin: 0;
+}
+.dynasty-retirement .muted {
+  color: var(--muted, #9eacc0);
+}
+.dynasty-legacy-history {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.dynasty-legacy-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 10px;
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--panel, #121e30) 85%, transparent);
+  font-size: 12px;
+}
+.dynasty-legacy-row strong {
+  color: var(--accent, #78b0ff);
+}
 .dynasty-event-history > h3 {
   margin: 0;
 }
@@ -280,7 +322,8 @@
 @media (max-width: 560px) {
   .dynasty-overview,
   .dynasty-child-head,
-  .dynasty-academy-head {
+  .dynasty-academy-head,
+  .dynasty-retirement-head {
     align-items: flex-start;
     flex-direction: column;
   }
