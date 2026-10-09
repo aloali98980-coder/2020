@@ -4,15 +4,32 @@
 
 import { addDays, clamp } from "../core/utils.js";
 import { message } from "./inbox.js";
+import { fitnessFactor } from "./staff/effects.js";
 
 // ── 1. إصابات ──────────────────────────────────────────────────────────────
 
 const INJURY_TYPES = [
-  { textAr: "التواء الكاحل", textEn: "Ankle sprain", textFr: "Entorse de la cheville" },
-  { textAr: "تمزق عضلي", textEn: "Muscle tear", textFr: "Déchirure musculaire" },
-  { textAr: "إصابة في الركبة", textEn: "Knee injury", textFr: "Blessure au genou" },
+  {
+    textAr: "التواء الكاحل",
+    textEn: "Ankle sprain",
+    textFr: "Entorse de la cheville",
+  },
+  {
+    textAr: "تمزق عضلي",
+    textEn: "Muscle tear",
+    textFr: "Déchirure musculaire",
+  },
+  {
+    textAr: "إصابة في الركبة",
+    textEn: "Knee injury",
+    textFr: "Blessure au genou",
+  },
   { textAr: "كدمة قوية", textEn: "Heavy bruise", textFr: "Contusion sévère" },
-  { textAr: "شد في الفخذ", textEn: "Thigh strain", textFr: "Clou de la cuisse" },
+  {
+    textAr: "شد في الفخذ",
+    textEn: "Thigh strain",
+    textFr: "Clou de la cuisse",
+  },
 ];
 
 export function injuryDurationText(days) {
@@ -37,10 +54,11 @@ export function injuryDurationTextFr(days) {
  * احتمال الإصابة: يعتمد على تعب اللاعب (fitness منخفض) + دقائق تراكمية كثيرة.
  * الصيغة: 3% أساسي × معامل التعب × معامل اللياقة.
  */
-export function injuryProbability(p) {
+export function injuryProbability(p, factor = 1) {
   const fatigue = 1 + Math.min((p.seasonMinutes || 0) / 3000, 1.5);
-  const lowFit = 1 + Math.max(0, (70 - (p.fitness || 70))) / 100;
-  return clamp(0.03 * fatigue * lowFit, 0.005, 0.12);
+  const lowFit = 1 + Math.max(0, 70 - (p.fitness || 70)) / 100;
+  // 0.30: مدرب اللياقة يخفض الاحتمال عبر factor (افتراضي ١ يُبقي السلوك القديم).
+  return clamp(0.03 * fatigue * lowFit * factor, 0.005, 0.12);
 }
 
 /**
@@ -49,7 +67,7 @@ export function injuryProbability(p) {
 export function injuryDuration(rng) {
   const roll = rng();
   if (roll < 0.55) return 2 + Math.floor(rng() * 4); // 2-5 أيام
-  if (roll < 0.90) return 6 + Math.floor(rng() * 9); // 6-14 يوم
+  if (roll < 0.9) return 6 + Math.floor(rng() * 9); // 6-14 يوم
   return 15 + Math.floor(rng() * 76); // 15-90 يوم
 }
 
@@ -57,11 +75,19 @@ export function injuryDuration(rng) {
 
 /**
  * توليد توزيع البطاقات بشكل حتمي — يُشارك بين seasonStats وعواقب.
+ * في مباريات الديربي: توتر أعلى وبطاقات صفراء وحمراء أعلى قليلًا.
  * @returns {{ yellows: Player[], reds: Player[] }}
  */
-export function generateCardDistribution(xi, rng) {
-  const yellowCount = Math.floor(rng() * 3) + (rng() < 0.3 ? 1 : 0);
-  const redCount = rng() < 0.04 ? 1 : 0;
+export function generateCardDistribution(xi, rng, options = {}) {
+  const isDerby = !!options?.isDerby;
+  const refereePolicy = options?.refereePolicy || "balanced";
+  let yellowCount = isDerby
+    ? Math.floor(rng() * 3) + (rng() < 0.6 ? 2 : 1)
+    : Math.floor(rng() * 3) + (rng() < 0.3 ? 1 : 0);
+  let redCount = isDerby ? (rng() < 0.08 ? 1 : 0) : rng() < 0.04 ? 1 : 0;
+  if (refereePolicy === "strict") yellowCount++;
+  else if (refereePolicy === "lenient")
+    yellowCount = Math.max(0, yellowCount - 1);
   const yellows = [];
   const reds = [];
   for (let i = 0; i < yellowCount + redCount && xi.length; i++) {
@@ -106,15 +132,16 @@ export function updateForm(p, matchRating) {
  *
  * @returns {{ redCardPenalty: number }} — عقوبة النقص العددي (للاستخدام في strength)
  */
-export function applyMatchConsequences(s, f, cards, rng) {
-  const xi = Array.isArray(f.lineup) && f.lineup.length
-    ? f.lineup
-        .map((x) => {
-          const p = s.players.find((y) => y.id === x.playerId);
-          return p && p.status !== "retired" ? p : null;
-        })
-        .filter(Boolean)
-    : [];
+export function applyMatchConsequences(s, f, cards, rng, options = {}) {
+  const xi =
+    Array.isArray(f.lineup) && f.lineup.length
+      ? f.lineup
+          .map((x) => {
+            const p = s.players.find((y) => y.id === x.playerId);
+            return p && p.status !== "retired" ? p : null;
+          })
+          .filter(Boolean)
+      : [];
   if (!xi.length) return { redCardPenalty: 0 };
 
   const home = f.home === s.clubId;
@@ -125,9 +152,12 @@ export function applyMatchConsequences(s, f, cards, rng) {
   let redCardPenalty = 0;
 
   // ── بطاقات صفراء: تراكم وإيقاف ──
-  for (const p of (cards.yellows || [])) {
+  const suspensionThreshold = Number.isSafeInteger(options.suspensionThreshold)
+    ? Math.max(2, Math.min(8, options.suspensionThreshold))
+    : YELLOW_SUSPENSION_THRESHOLD;
+  for (const p of cards.yellows || []) {
     p.seasonYellowByComp = (p.seasonYellowByComp || 0) + 1;
-    if (p.seasonYellowByComp >= YELLOW_SUSPENSION_THRESHOLD) {
+    if (p.seasonYellowByComp >= suspensionThreshold) {
       p.yellowCardSuspensions = (p.yellowCardSuspensions || 0) + 1;
       p.suspendedUntil = addDays(s.date, 8); // أسبوع إيقاف
       p.seasonYellowByComp = 0;
@@ -140,7 +170,7 @@ export function applyMatchConsequences(s, f, cards, rng) {
   }
 
   // ── بطاقة حمراء: إيقاف المباراة القادمة + نقص عددي ──
-  for (const p of (cards.reds || [])) {
+  for (const p of cards.reds || []) {
     p.suspendedUntil = addDays(s.date, 8);
     redCardPenalty += 8;
     message(s, {
@@ -153,7 +183,7 @@ export function applyMatchConsequences(s, f, cards, rng) {
 
   // ── إصابات ──
   for (const p of xi) {
-    const prob = injuryProbability(p);
+    const prob = injuryProbability(p, fitnessFactor(s));
     if (rng() < prob) {
       const days = injuryDuration(rng);
       const type = INJURY_TYPES[Math.floor(rng() * INJURY_TYPES.length)];
@@ -168,9 +198,10 @@ export function applyMatchConsequences(s, f, cards, rng) {
 
   // ── فورمة ──
   for (const p of xi) {
-    const rating = Math.round(
-      (5.9 + (p.rating - 60) / 22 + delta + (rng() * 0.9 - 0.45)) * 10
-    ) / 10;
+    const rating =
+      Math.round(
+        (5.9 + (p.rating - 60) / 22 + delta + (rng() * 0.9 - 0.45)) * 10,
+      ) / 10;
     updateForm(p, Math.max(4, Math.min(10, rating)));
   }
 

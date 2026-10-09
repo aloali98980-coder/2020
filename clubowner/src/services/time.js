@@ -1,3 +1,4 @@
+import { sportsCityDay, sportsCityMatchDay } from "./sportsCityDay.js";
 import { academyDay } from "./talent/academy.js";
 import { scoutingDay } from "./talent/scouting.js";
 import { worldTalentDay } from "./talent/world.js";
@@ -13,16 +14,27 @@ import { internationalDay } from "./internationals.js";
 import { contractDay } from "./contractClauses.js";
 import { agingDay, retirementDay } from "./careers.js";
 import { staffDay } from "./staff.js";
-import { clubEventDay } from "./clubEvents.js";
+import { clubEventDay, flavorEventDay } from "./clubEvents.js";
 import { seasonDay } from "./season.js";
+import { boardDay } from "./boardMandate.js";
+import { blackFilesDay } from "./blackFiles.js";
+import { empireDay } from "./empire/day.js";
+import { staffCorpDay } from "./staff/day.js";
 import { addDays } from "../core/utils.js";
 import { message, pendingActions } from "./inbox.js";
 import { financeDay } from "./finance.js";
+import { financeOfficeDay } from "./staff/financeOffice.js";
 import { facilityDay } from "./facilities.js";
 import { sponsorDay } from "./sponsors.js";
 import { transferReply } from "./transfers.js";
 import { matchDay } from "./matches.js";
 import { developmentDay } from "./development.js";
+import { deadlineDayTick } from "./deadlineDay.js";
+import { youthIntakeTick } from "./youthIntake.js";
+import { academyJourneyDay, dynastyGrowthDay, dynastyLifeDay } from "./dynasty.js";
+import { dynastyEventDay } from "./dynastyEvents.js";
+import { siblingConflictDay } from "./dynastyCareers.js";
+import { politicsDay } from "./politics/day.js";
 function eventsDay(s) {
   for (const e of s.events) {
     if (e.done || e.date > s.date) continue;
@@ -75,8 +87,18 @@ export function advanceTime(s, days = null) {
     s.remainingDays--;
     advanced++;
     agingDay(s);
+    dynastyGrowthDay(s);
+    siblingConflictDay(s);
+    academyJourneyDay(s);
+    dynastyEventDay(s);
+    dynastyLifeDay(s);
     retirementDay(s);
     staffDay(s);
+    boardDay(s);
+    blackFilesDay(s);
+    empireDay(s);
+    staffCorpDay(s);
+    sportsCityDay(s);
     if (!s.expansion) seasonDay(s);
     internationalDay(s);
     contractDay(s);
@@ -86,10 +108,12 @@ export function advanceTime(s, days = null) {
     scoutingDay(s);
     cleanTraining(s);
     financeDay(s);
+    financeOfficeDay(s);
     facilityDay(s);
     sponsorDay(s);
     developmentDay(s);
     matchDay(s);
+    sportsCityMatchDay(s);
     const loanFixtures = s.players.some(
       (p) => p.loan?.version === 2 && p.loan.parent === s.clubId,
     )
@@ -101,8 +125,14 @@ export function advanceTime(s, days = null) {
     managementDay(s);
     legendDay(s);
     aiTransferDay(s);
+    deadlineDayTick(s);
+    youthIntakeTick(s);
     eventsDay(s);
+    // النكهة أولًا ثم القرار: القرار (required) يُرسل أخيرًا فيصير على رأس البريد،
+    // والخبر القصير لا يوقف الزمن أبدًا لأنه required: false.
+    flavorEventDay(s);
     clubEventDay(s);
+    politicsDay(s);
     if (pendingActions(s).length) return { advanced, blocked: true };
     if (
       s.preferences.pauseMatches &&

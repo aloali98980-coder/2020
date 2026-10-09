@@ -1,3 +1,11 @@
+import "./styles/sportsCity.css";
+import { buildCityFacility } from "./services/cityFacilities.js";
+import {
+  startStadium,
+  chooseOldGround,
+  nameStadium,
+  stadiumQuote,
+} from "./services/sportsCity.js";
 import { startIntake, chooseCandidate } from "./services/talent/academy.js";
 import {
   requestMission,
@@ -64,6 +72,25 @@ import {
   scoutAssignment,
 } from "./services/staff.js";
 import { retirementDecision } from "./services/careers.js";
+import {
+  enrollDynastyAcademy,
+  haveChild,
+  leaveDynastyAcademy,
+  marryOwner,
+  setAcademyFocus,
+  setAcademyMentor,
+  setAcademyPosition,
+  setDynastyHeir,
+  setSuccessionEligibility,
+  resolveRetirementOffer,
+  setUpbringing,
+} from "./services/dynasty.js";
+import { resolveDynastyEvent } from "./services/dynastyEvents.js";
+import {
+  promoteDynastyPlayer,
+  reconcileSiblings,
+  setCareerPath,
+} from "./services/dynastyCareers.js";
 import { resolveClubEvent } from "./services/clubEvents.js";
 import { sourcesView } from "./features/dataSources.js";
 import { guaranteedWages } from "./services/contractClauses.js";
@@ -76,6 +103,8 @@ import "./styles/responsive.css";
 import "./styles/readability.css";
 import "./styles/tokens.css";
 import "./styles/motion.css";
+import "./styles/dynasty.css";
+import "./styles/politics.css";
 import { createGame } from "./core/game.js";
 import { getState, setState, commit, isSaving } from "./core/store.js";
 import { saveGame, loadGame, exportGame, importGame } from "./services/save.js";
@@ -107,10 +136,7 @@ import {
   deleteSlot,
   listSlots,
 } from "./services/slots.js";
-import {
-  playedOwnFixtures,
-  reportFor,
-} from "./services/matchReport.js";
+import { playedOwnFixtures, reportFor } from "./services/matchReport.js";
 import {
   submitOffer,
   acceptClub,
@@ -146,8 +172,87 @@ import {
   sponsorDealResult,
 } from "./features/sponsors.js";
 import { financeView } from "./features/finance.js";
+import { boardView } from "./features/board.js";
+import { staffView } from "./features/staff.js";
+import {
+  startNegotiation,
+  negotiate,
+  cancelNegotiation,
+  fireEmployee,
+  renewEmployee,
+  promoteEmployee,
+  raiseEmployee,
+  respondPoach,
+  resolveMeetingRequest,
+} from "./services/staff/staffCorp.js";
+import { startHqUpgrade } from "./services/staff/hq.js";
+import { fileLegalCase, resolveLegalCase } from "./services/staff/legal.js";
+import {
+  setPhilosophy,
+  setFreedom,
+  resolveDeal,
+} from "./services/staff/sporting.js";
+import { assignScout } from "./services/staff/scouts.js";
+import { setCurriculum } from "./services/staff/academy.js";
+import { launchCampaign } from "./services/staff/marketing.js";
+import {
+  publishContent,
+  derbyCampaign,
+  resolveCrisis,
+} from "./services/staff/social.js";
 import { worldView } from "./features/world.js";
 import { settingsView } from "./features/settings.js";
+import { dynastyView } from "./features/dynasty.js";
+import { politicsView } from "./features/politics.js";
+import { POLITICAL_BLOCS } from "./data/politicsCatalog.js";
+import { formAlliance, politicalClub } from "./services/politics/state.js";
+import {
+  visitClub,
+  holdConference,
+  makeCampaignPromise,
+  fundCampaign,
+  debate as politicalDebate,
+  offerCandidateAlliance,
+} from "./services/politics/campaign.js";
+import {
+  bargainBill,
+  proposeBill,
+  resolveBill,
+} from "./services/politics/council.js";
+import {
+  createSupportFund,
+  grantFromSupportFund,
+  runFinancialAudit,
+} from "./services/politics/associationFinance.js";
+import {
+  appointCommitteeChair,
+  resolveDisciplineCase,
+  setCommitteePolicy,
+} from "./services/politics/committees.js";
+import {
+  createAssociationTournament,
+  playAssociationTournamentRound,
+} from "./services/politics/competitions.js";
+import {
+  addressOpposition,
+  holdConfidenceVote,
+} from "./services/politics/opposition.js";
+import {
+  conductIntegrityAudit,
+  openIntegrityInvestigation,
+  resolveIntegrityInvestigation,
+  submitAssetDeclaration,
+} from "./services/politics/integrity.js";
+import {
+  holdDiplomaticMission,
+  secureExecutiveSeat,
+  submitHostingBid,
+} from "./services/politics/foreign.js";
+import {
+  resignOffice,
+  resolveLegacyTrial,
+} from "./services/politics/legacy.js";
+import { resolvePoliticalEvent } from "./services/politics/events.js";
 import {
   legendsView,
   legendDetailModal,
@@ -170,14 +275,49 @@ import {
 } from "./ui/modal.js";
 import { icon } from "./components/icons.js";
 import { badge, button, infoNote } from "./components/shared.js";
-import { money, num, esc, date, setDigitsMode, setDisplayCurrency, cur } from "./ui/format.js";
+import {
+  money,
+  num,
+  esc,
+  date,
+  setDigitsMode,
+  setDisplayCurrency,
+  cur,
+} from "./ui/format.js";
 import { ASSETS } from "./data/catalog.js";
 import { findPerson } from "./services/retired.js";
+import { APP_VERSION } from "./data/version.js";
+import { playInstantFriendly } from "./services/instantFriendly.js";
+import { getCupDraw } from "./services/cupDraw.js";
+import { cupDrawModal } from "./features/cupDraw.js";
+import { youthIntakeModal } from "./features/youthIntake.js";
+import { executeYouthIntakeDecisions } from "./services/youthIntake.js";
+import {
+  acceptDeadlineBid,
+  declineDeadlineBid,
+} from "./services/deadlineDay.js";
+import { blackFilesView } from "./features/blackFiles.js";
+import * as BlackService from "./services/blackFiles.js";
+import * as ReleaseService from "./services/releaseClause.js";
+import { empireView } from "./features/empire.js";
+import {
+  transferToPersonal,
+  transferToClub,
+  setLifestyle,
+  repayDebt,
+} from "./services/empire/wealth.js";
+const requireBlack = () => BlackService;
+const requireRelease = () => ReleaseService;
 const app = document.getElementById("app");
 const ui = {
   route: "dashboard",
   setupClub: "ahly",
-  setupConfig: { difficulty: "normal", database: "world", expanded: true },
+  setupConfig: {
+    difficulty: "normal",
+    database: "world",
+    expanded: true,
+    ownerStory: "selfmade",
+  },
   owner: "",
   leagues: [...ALL_MARKETS],
   inboxFilter: "all",
@@ -187,6 +327,9 @@ const ui = {
   worldTab: "table",
   legendFilters: { ...DEFAULT_LEGEND_FILTERS },
   legendOffer: {},
+  empireTab: "wealth",
+  staffTab: "org",
+  politicsTab: "overview",
   palette: { open: false, q: "", sel: 0, items: [] },
 };
 let pendingImport = null;
@@ -237,8 +380,7 @@ function render() {
     app.firstElementChild?.classList.add("page-enter");
     lastRenderedRoute = "setup";
     translateDOM(app);
-    document.title =
-      getLanguage() === "ar" ? "صاحب النادي | Club Owner" : "Club Owner";
+    document.title = "Empire FC";
     return;
   }
   const views = {
@@ -249,6 +391,9 @@ function render() {
     facilities: () => facilitiesView(s),
     sponsors: () => sponsorsView(s),
     finance: () => financeView(s, ui.financeTab),
+    board: () => boardView(s),
+    politics: () => politicsView(s, ui.politicsTab),
+    staff: () => staffView(s, ui.staffTab, getLanguage()),
     world: () =>
       s.expansion
         ? competitionsView(s, ui.expandedDivision)
@@ -256,7 +401,10 @@ function render() {
     commerce: () => commerceView(s),
     management: () => managementView(s),
     press: () => pressView(s),
+    black: () => blackFilesView(s),
+    empire: () => empireView(s, ui.empireTab),
     legends: () => legendsView(s, ui.legendFilters),
+    dynasty: () => dynastyView(s),
     settings: () => settingsView(s),
     database: () => databaseView(),
     careers: () => careersView(s, ui.talentPlayer),
@@ -267,8 +415,7 @@ function render() {
   lastRenderedRoute = ui.route;
   translateDOM(app);
   document.title =
-    (NAV.find((n) => n.id === ui.route)?.name || "صاحب النادي") +
-    " | صاحب النادي";
+    (NAV.find((n) => n.id === ui.route)?.name || "Empire FC") + " | Empire FC";
   document.title = translateText(document.title);
 }
 function navigate(route) {
@@ -296,7 +443,12 @@ function renderPalette() {
 }
 function openPalette() {
   if (!getState()) return;
-  ui.palette = { open: true, q: "", sel: 0, items: paletteItems(getState(), "") };
+  ui.palette = {
+    open: true,
+    q: "",
+    sel: 0,
+    items: paletteItems(getState(), ""),
+  };
   renderPalette();
 }
 function closePalette() {
@@ -462,7 +614,9 @@ function authModalContent(activeTab = "login", error = "") {
     <button type="button" class="auth-tab ${activeTab === "login" ? "active" : ""}" data-action="auth-tab-login">تسجيل الدخول</button>
     <button type="button" class="auth-tab ${activeTab === "register" ? "active" : ""}" data-action="auth-tab-register">إنشاء حساب جديد</button>
   </div>
-  ${activeTab === "login" ? `
+  ${
+    activeTab === "login"
+      ? `
     <form id="auth-login-form">
       <div class="form-grid">
         <label class="field">
@@ -479,7 +633,8 @@ function authModalContent(activeTab = "login", error = "") {
         ${button("إلغاء", "close-modal", "", "ghost")}
       </div>
     </form>
-  ` : `
+  `
+      : `
     <form id="auth-register-form">
       <div class="form-grid">
         <label class="field">
@@ -500,11 +655,12 @@ function authModalContent(activeTab = "login", error = "") {
         ${button("إلغاء", "close-modal", "", "ghost")}
       </div>
     </form>
-  `}`;
+  `
+  }`;
 }
 
 const actions = {
-  // خزنة المالك السرية: الزر المخفي هو رقم الإصدار أسفل القائمة الجانبية.
+  // خزنة المالك السرية: مفاتيحها أرقام الإصدار (أسفل القائمة الجانبية + سطر EMPIRE FC في شيت «المزيد» + شارة «عن اللعبة»).
   "secret-vault": () =>
     openModal(
       `<h2>${tr("خزنة المالك السرية 🤫", "The owner's secret vault 🤫", "Le coffre secret du propriétaire 🤫")}</h2><p class="muted">${tr("إيداع فوري بفلوس تجريبية لمن يعرف المكان. يُسجَّل في الدفاتر مثل أي تدفق نقدية فتبقى الإدارة المالية صادقة.", "An instant injection of play money for those who know the spot. It is posted to the ledger like any cash flow, so the books stay honest.", "Une injection instantanée d’argent fictif pour qui connaît l’endroit. Inscrite au registre comme tout flux, la comptabilité reste honnête.")}</p><div class="modal-actions vault-grid">${button(`${money(10000000)} ${cur()}`, "vault-deposit", "10000000", "soft")}${button(`${money(100000000)} ${cur()}`, "vault-deposit", "100000000", "secondary")}${button(`${money(1000000000)} ${cur()}`, "vault-deposit", "1000000000", "primary")}</div><div class="modal-actions">${button(tr("إغلاق الخزنة", "Close the vault", "Fermer le coffre"), "modal-close", "", "ghost")}</div>`,
@@ -517,6 +673,75 @@ const actions = {
     );
   },
   "modal-close": () => closeModal(),
+  "instant-friendly": async () => {
+    let reportData = null;
+    await apply((s) => {
+      const res = playInstantFriendly(s);
+      reportData = res.report;
+      markStep(s, "friendly");
+    });
+    const s = getState();
+    if (reportData) {
+      showHighlightsScreen(s, reportData, () => {
+        openModal(matchReportModal(s, reportData));
+      });
+    }
+  },
+  "view-cup-draw": async (el) => {
+    const drawId = el?.dataset?.drawId || el?.dataset?.id;
+    const s = getState();
+    const draw = getCupDraw(s, drawId) || s?.latestDraw;
+    if (draw) openModal(cupDrawModal(s, draw), true);
+  },
+  "open-youth-intake": async () => {
+    const s = getState();
+    openModal(youthIntakeModal(s), true);
+  },
+  "confirm-youth-intake": async () => {
+    const root = document.querySelector(".youth-intake-modal");
+    if (!root) return;
+    const decisions = {};
+    root.querySelectorAll(".youth-candidate-card").forEach((card) => {
+      const pId = card.dataset.playerId;
+      const checked = card.querySelector(
+        `input[name="youth-dec-${pId}"]:checked`,
+      );
+      if (pId && checked) decisions[pId] = checked.value;
+    });
+    await apply((s) => executeYouthIntakeDecisions(s, decisions));
+    closeModal();
+    toast(
+      tr(
+        "تم اعتماد قرارات دفعة الناشئين بنجاح",
+        "Youth intake decisions confirmed successfully",
+        "Décisions de la promotion confirmées avec succès",
+      ),
+    );
+  },
+  "accept-deadline-bid": async (el) => {
+    const id = el.dataset.id;
+    await apply((s) => acceptDeadlineBid(s, id));
+    toast(
+      tr(
+        "تمت الموافقة على بيع اللاعب في اللحظات الأخيرة",
+        "Accepted last-minute player sale",
+        "Vente de dernière minute acceptée",
+      ),
+    );
+    render();
+  },
+  "decline-deadline-bid": async (el) => {
+    const id = el.dataset.id;
+    await apply((s) => declineDeadlineBid(s, id));
+    toast(
+      tr(
+        "تم رفض العرض العاجل",
+        "Declined urgent offer",
+        "Offre urgente refusée",
+      ),
+    );
+    render();
+  },
   "business-open": async (el) => apply((s) => businessOpen(s, el.dataset.id)),
   "sell-subscriptions": async () => apply((s) => sellSubscriptions(s)),
   "commercial-friendly": async () => apply((s) => friendly(s)),
@@ -571,6 +796,250 @@ const actions = {
   "go-talent": async () => {
     ui.route = "careers";
     render();
+  },
+  // 0.26: من البريد إلى لائحة الجمعية العمومية، ويُعلَّم بند الأونبوردنج تلقائيًا.
+  "go-board": async () => {
+    const s = getState();
+    if (s) await apply((state) => markStep(state, "board"));
+    navigate("board");
+  },
+  "politics-tab": async (el) => {
+    ui.politicsTab = el.dataset.id || "overview";
+    render();
+  },
+  "politics-event-choice": async (el) =>
+    apply(
+      (s) => resolvePoliticalEvent(s, el.dataset.id),
+      tr(
+        "حُسم الحدث وأضيفت آثاره إلى السجل السياسي.",
+        "The event was resolved and its effects were added to the political record.",
+        "L’événement est tranché et ses effets sont ajoutés au registre politique.",
+      ),
+    ),
+  "politics-visit": async (el) =>
+    apply(
+      (s) => visitClub(s, el.dataset.id),
+      tr(
+        "تمت الزيارة وسُجل أثرها على الموقف والميزانية الشخصية.",
+        "Visit recorded; its support and personal-budget effects are logged.",
+        "Visite enregistrée ; son effet sur le soutien et le budget personnel est consigné.",
+      ),
+    ),
+  "politics-conference": async (el) =>
+    apply(
+      (s) => holdConference(s, el.dataset.id),
+      tr(
+        "انتهى المؤتمر، وتغيرت مواقف أندية التكتل.",
+        "The conference ended; clubs in the bloc shifted their positions.",
+        "La conférence est terminée ; les positions des clubs du bloc ont évolué.",
+      ),
+    ),
+  "politics-promise": async (el) =>
+    apply(
+      (s) => {
+        const club = politicalClub(s, el.dataset.id);
+        if (!club)
+          throw new Error(
+            tr(
+              "النادي غير موجود في الخريطة السياسية.",
+              "That club is missing from the political map.",
+              "Ce club manque sur la carte politique.",
+            ),
+          );
+        return makeCampaignPromise(s, el.dataset.id, club.demandId);
+      },
+      tr(
+        "سُجل الوعد بمطلب محدد، وسيُحاسبك النادي عليه.",
+        "A specific promise was recorded; the club will hold you to it.",
+        "L’engagement est enregistré ; le club vous demandera des comptes.",
+      ),
+    ),
+  "politics-form-bloc": async (el) =>
+    apply(
+      (s) => {
+        const members = s.politics.clubs
+          .filter((club) => club.bloc === el.dataset.id)
+          .map((club) => club.clubId);
+        return formAlliance(
+          s,
+          members,
+          POLITICAL_BLOCS[el.dataset.id]?.ar || "تكتل الأندية",
+        );
+      },
+      tr(
+        "تأسس التكتل وأُسندت عضويته إلى الأندية المختارة.",
+        "The bloc was formed and its club membership recorded.",
+        "Le bloc est constitué et ses membres sont enregistrés.",
+      ),
+    ),
+  "politics-alliance": async (el) => {
+    const result = await apply((s) => offerCandidateAlliance(s, el.dataset.id));
+    toast(
+      result?.accepted
+        ? tr(
+            "قُبل التحالف الانتخابي وأُعلن التأييد.",
+            "The electoral alliance was accepted and publicly endorsed.",
+            "L’alliance électorale est acceptée et le soutien est annoncé.",
+          )
+        : tr(
+            "لم يقبل المنافس بعد؛ تحسنت العلاقة قليلًا وبقي باب التفاوض مفتوحًا.",
+            "The rival has not accepted yet; relations improved slightly and talks remain open.",
+            "L’adversaire n’a pas encore accepté ; la relation s’améliore légèrement et la négociation reste ouverte.",
+          ),
+    );
+  },
+  "politics-propose-law": async (el) =>
+    apply(
+      (s) => proposeBill(s, el.dataset.id),
+      tr(
+        "قُدّمت اللائحة إلى المجلس وبدأت المداولة.",
+        "The bill was introduced and council debate has begun.",
+        "Le texte est présenté et le débat du conseil commence.",
+      ),
+    ),
+  "politics-vote-bill": async (el) =>
+    apply(
+      (s) => resolveBill(s, el.dataset.id),
+      tr(
+        "سُجل الاقتراع العلني ونتيجة اللائحة.",
+        "The public ballot and bill result have been recorded.",
+        "Le scrutin public et le résultat du texte sont enregistrés.",
+      ),
+    ),
+  "politics-financial-audit": async () =>
+    apply(
+      (s) => runFinancialAudit(s),
+      tr(
+        "اكتملت مراجعة الحسابات وسُجلت نتيجتها.",
+        "The financial audit is complete and its result has been recorded.",
+        "L’audit financier est terminé et son résultat est enregistré.",
+      ),
+    ),
+  "politics-discipline-ruling": async (el) => {
+    const [caseId, verdict] = (el.dataset.id || "").split("|");
+    await apply(
+      (s) => resolveDisciplineCase(s, caseId, verdict),
+      tr(
+        "صدر قرار لجنة الانضباط ووُثق في السجل العام.",
+        "The disciplinary committee ruling was recorded in the public log.",
+        "La décision disciplinaire a été enregistrée au registre public.",
+      ),
+    );
+  },
+  "politics-tournament-advance": async (el) =>
+    apply(
+      (s) => playAssociationTournamentRound(s, el.dataset.id),
+      tr(
+        "اكتملت الجولة وسُجلت النتائج والترتيب أو المتأهلون.",
+        "The round is complete; results, standings or qualifiers are recorded.",
+        "La journée est terminée ; résultats, classement ou qualifiés sont enregistrés.",
+      ),
+    ),
+  "politics-confidence-vote": async () =>
+    apply(
+      (s) => holdConfidenceVote(s),
+      tr(
+        "اكتمل اقتراع الثقة بالأسماء وحُفظت نتيجته.",
+        "The named confidence vote is complete and its result is saved.",
+        "Le vote de confiance nominatif est terminé et son résultat est enregistré.",
+      ),
+    ),
+  "politics-integrity-declare": async () =>
+    apply(
+      (s) => submitAssetDeclaration(s),
+      tr(
+        "قُدم إقرار الأصول وأضيف إلى السجل العام.",
+        "The asset declaration was filed in the public record.",
+        "La déclaration d’actifs est inscrite au registre public.",
+      ),
+    ),
+  "politics-integrity-audit": async () =>
+    apply(
+      (s) => conductIntegrityAudit(s),
+      tr(
+        "اكتمل تدقيق النزاهة والتطابق المالي.",
+        "The integrity and financial audit is complete.",
+        "L’audit d’intégrité et de rapprochement financier est terminé.",
+      ),
+    ),
+  "politics-integrity-decision": async (el) => {
+    const [investigationId, decision] = (el.dataset.id || "").split("|");
+    await apply(
+      (s) => resolveIntegrityInvestigation(s, investigationId, decision),
+      tr(
+        "سُجل قرار التحقيق وأدلته في ملف الاتحاد.",
+        "The investigation ruling and evidence were recorded in the association file.",
+        "La décision d’enquête et les preuves sont inscrites au dossier de la fédération.",
+      ),
+    );
+  },
+  "politics-legacy-trial": async (el) => {
+    const response = el.dataset.id || "";
+    await apply(
+      (s) => resolveLegacyTrial(s, response),
+      tr(
+        "صدر الحكم النهائي وأُضيف إلى سجل الإرث.",
+        "The final ruling was added to the legacy record.",
+        "Le verdict final est ajouté au registre d’héritage.",
+      ),
+    );
+  },
+  "politics-office-resign": async () => {
+    if (
+      !confirm(
+        tr(
+          "هل تريد إنهاء ولايتك وتوثيق إرثك السياسي؟",
+          "End your term and archive your political legacy?",
+          "Mettre fin à votre mandat et archiver votre héritage politique ?",
+        ),
+      )
+    )
+      return;
+    await apply(
+      (s) => resignOffice(s),
+      tr(
+        "انتهت ولايتك وأُرشف سجلها.",
+        "Your term ended and its record was archived.",
+        "Votre mandat prend fin et son dossier est archivé.",
+      ),
+    );
+  },
+  "go-black": async () => {
+    navigate("black");
+  },
+  "black-op": async (el) => {
+    const opId = el.dataset.id;
+    await apply((s) => {
+      const { doOperation } = requireBlack();
+      return doOperation(s, opId);
+    }, "تم تنفيذ العملية عبر الوسيط.");
+  },
+  "black-cut": async () => {
+    await apply((s) => {
+      const { cutMiddlemen } = requireBlack();
+      return cutMiddlemen(s);
+    }, "تم قطع الوسطاء.");
+  },
+  "break-clause": async (el) => {
+    const playerId = el.dataset.id;
+    await apply((s) => {
+      const { breakReleaseClause } = requireRelease();
+      return breakReleaseClause(s, playerId);
+    }, "تم كسر الشرط الجزائي — التفاوض مع اللاعب مباشرة.");
+    showContract(
+      `release-${getState().nextId - 1}-${playerId}`
+        .replace(/.*release-/, "release-")
+        .includes("release-")
+        ? ""
+        : "",
+      false,
+    );
+    // افتح عقد اللاعب عبر التفاوض الأخير
+    const s = getState();
+    const last = [...s.negotiations]
+      .reverse()
+      .find((n) => n.playerId === playerId && n.stage === "personal");
+    if (last) showContract(last.id, false);
   },
   "loan-open": async (el) => openModal(loanForm(getState(), el.dataset.id)),
   "loan-out-open": async () =>
@@ -675,6 +1144,7 @@ const actions = {
       leagues,
       ...ui.setupConfig,
       language: getLanguage(),
+      ownerStory: ui.setupConfig.ownerStory || "selfmade",
     });
     await saveGame(s);
     setState(s);
@@ -788,10 +1258,19 @@ const actions = {
     render();
   },
   "open-message": async (el) => {
+    const dynastyDecision = getState().inbox.some(
+      (message) =>
+        message.id === el.dataset.id &&
+        ["dynasty-event", "dynasty-retirement"].includes(message.kind),
+    );
     await apply((s) => {
       const m = s.inbox.find((m) => m.id === el.dataset.id);
       if (m) m.read = true;
     });
+    if (dynastyDecision) {
+      navigate("dynasty");
+      return;
+    }
     ui.message = el.dataset.id;
     ui.route = "inbox";
     ui.inboxFilter = "all";
@@ -898,6 +1377,65 @@ const actions = {
     ui.financeTab = el.dataset.id;
     render();
   },
+  "staff-tab": async (el) => {
+    ui.staffTab = el.dataset.id;
+    render();
+  },
+  "staff-neg-start": async (el) =>
+    apply(
+      (s) => startNegotiation(s, el.dataset.id),
+      tr(
+        "بدأ التفاوض — ٣ جولات.",
+        "Negotiation started — 3 rounds.",
+        "Négociation lancée — 3 tours.",
+      ),
+    ),
+  "staff-neg-cancel": async () => apply((s) => cancelNegotiation(s)),
+  "staff-fire": async (el) =>
+    apply(
+      (s) => fireEmployee(s, el.dataset.id),
+      tr("أُنهي العقد.", "Contract terminated.", "Contrat résilié."),
+    ),
+  "staff-renew": async (el) =>
+    apply(
+      (s) => renewEmployee(s, el.dataset.id, 2, 5),
+      tr("جُدد العقد سنتين.", "Renewed for 2 years.", "Renouvelé pour 2 ans."),
+    ),
+  "staff-promote": async (el) =>
+    apply(
+      (s) => promoteEmployee(s, el.dataset.id),
+      tr("تمت الترقية.", "Promoted.", "Promotion accordée."),
+    ),
+  "staff-raise": async (el) =>
+    apply(
+      (s) => raiseEmployee(s, el.dataset.id, 10),
+      tr("تمت الزيادة.", "Raise granted.", "Augmentation accordée."),
+    ),
+  "staff-poach": async (el) =>
+    apply((s) => respondPoach(s, el.dataset.id, el.dataset.how)),
+  "staff-req": async (el) =>
+    apply((s) =>
+      resolveMeetingRequest(s, el.dataset.id, el.dataset.how === "yes"),
+    ),
+  "staff-hq-up": async () =>
+    apply(
+      (s) => startHqUpgrade(s),
+      tr(
+        "بدأ بناء المقر.",
+        "HQ construction started.",
+        "Chantier du siège lancé.",
+      ),
+    ),
+  "staff-legal-act": async (el) =>
+    apply((s) => resolveLegalCase(s, el.dataset.id, el.dataset.how)),
+  "staff-phil": async (el) => apply((s) => setPhilosophy(s, el.dataset.id)),
+  "staff-deal": async (el) =>
+    apply((s) => resolveDeal(s, el.dataset.id, el.dataset.how === "yes")),
+  "staff-social-content": async (el) =>
+    apply((s) => publishContent(s, el.dataset.id)),
+  "staff-social-derby": async () => apply(derbyCampaign),
+  "staff-social-crisis": async (el) =>
+    apply((s) => resolveCrisis(s, el.dataset.how)),
   "world-tab": async (el) => {
     ui.worldTab = el.dataset.id;
     render();
@@ -944,6 +1482,95 @@ const actions = {
     window.scrollTo(0, 0);
   },
   "modal-inbox": async () => navigate("inbox"),
+  "empire-tab": async (el) => {
+    ui.empireTab = el.dataset.tab || "wealth";
+    render();
+  },
+  "city-build": async (el) =>
+    apply(
+      (s) => buildCityFacility(s, el.dataset.id),
+      tr("بُنيت المنشأة.", "Facility built.", "Installation construite."),
+    ),
+  "city-old": async (el) =>
+    apply(
+      (s) => chooseOldGround(s, el.dataset.id),
+      tr(
+        "تقرر مصير الملعب القديم.",
+        "Old ground allocated.",
+        "Ancien stade réaffecté.",
+      ),
+    ),
+  "city-name": async (el) =>
+    apply(
+      (s) => nameStadium(s, el.dataset.id),
+      tr(
+        "حُسمت حقوق الاسم.",
+        "Naming rights settled.",
+        "Droits de dénomination attribués.",
+      ),
+    ),
+  "empire-buy-asset": async (el) => {
+    const { buyAsset } = await import("./services/empire/assets.js");
+    await apply(
+      (s) => buyAsset(s, el.dataset.id),
+      "تم شراء الأصل وإضافته إلى إمبراطوريتك.",
+    );
+  },
+  "empire-sell-asset": async (el) => {
+    const { sellAsset } = await import("./services/empire/assets.js");
+    await apply(
+      (s) => sellAsset(s, el.dataset.id),
+      "تم بيع الأصل وإضافة قيمته إلى ثروتك.",
+    );
+  },
+  "empire-propose": async (el) => {
+    const { propose } = await import("./services/empire/family.js");
+    await apply((s) => propose(s, el.dataset.id), "تمت الخطوبة بنجاح.");
+  },
+  "empire-marry": async (el) => {
+    const { marry } = await import("./services/empire/family.js");
+    await apply((s) => marry(s, el.dataset.id), "تم الفرح. عقبال المئة سنة.");
+  },
+  "empire-gift": async (el) => {
+    const { giveGift } = await import("./services/empire/family.js");
+    await apply((s) => giveGift(s, el.dataset.id), "وصلت الهدية وأسعدت البيت.");
+  },
+  "empire-divorce": async (el) => {
+    const { divorce } = await import("./services/empire/family.js");
+    await apply((s) => divorce(s), "تم الطلاق ودُفعت التسوية.");
+  },
+  "empire-invest": async (el) => {
+    const { invest } = await import("./services/empire/investments.js");
+    const amount = Math.round(
+      Number(document.getElementById("inv-amt-" + el.dataset.id)?.value),
+    );
+    await apply((s) => invest(s, el.dataset.id, amount), "تم استثمار المبلغ.");
+  },
+  "empire-withdraw": async (el) => {
+    const { withdraw } = await import("./services/empire/investments.js");
+    const amount = Math.round(
+      Number(document.getElementById("inv-amt-" + el.dataset.id)?.value),
+    );
+    await apply(
+      (s) => withdraw(s, el.dataset.id, amount),
+      "تم سحب المبلغ إلى ثروتك.",
+    );
+  },
+  "empire-donate": async () => {
+    const { donatePersonal } = await import("./services/empire/charity.js");
+    const amount = Math.round(
+      Number(document.getElementById("charity-amt")?.value),
+    );
+    await apply((s) => donatePersonal(s, amount), "تم التبرع وارتفعت سمعتك.");
+  },
+  "empire-charity-project": async (el) => {
+    const { startCharityProject } =
+      await import("./services/empire/charity.js");
+    await apply(
+      (s) => startCharityProject(s, el.dataset.id),
+      "بدأ العمل في مشروعك الخيري.",
+    );
+  },
   more: async () =>
     openModal(
       `<h2>إدارة النادي</h2>${NAV_GROUPS.map(
@@ -954,9 +1581,11 @@ const actions = {
                 `<button data-nav="${id}">${icon(NAV_BY_ID[id].icon, 24)}<span>${NAV_BY_ID[id].name}</span></button>`,
             )
             .join("")}</div></div>`,
-      ).join("")}`,
+      ).join(
+        "",
+      )}<div class="more-foot"><span data-no-translate>EMPIRE FC</span><button type="button" class="badge vault-key" data-action="secret-vault">v${APP_VERSION}</button></div>`,
     ),
-    "open-auth-modal": () => openModal(authModalContent("login")),
+  "open-auth-modal": () => openModal(authModalContent("login")),
   "auth-tab-login": () => openModal(authModalContent("login")),
   "auth-tab-register": () => openModal(authModalContent("register")),
   "cloud-logout": async () => {
@@ -992,7 +1621,9 @@ const actions = {
       toast("جارٍ فحص الحفظات على السحابة…");
       const save = await fetchLatestCloudSave();
       if (!save) {
-        openModal(`<h2>المزامنة السحابية</h2><p class="muted">لا توجد أي حفظة سحابية مسجلة لحسابك حتى الآن. يمكنك مزامنة ناديك الحالي أولًا.</p><div class="modal-actions">${button("حسنًا", "close-modal", "", "primary")}</div>`);
+        openModal(
+          `<h2>المزامنة السحابية</h2><p class="muted">لا توجد أي حفظة سحابية مسجلة لحسابك حتى الآن. يمكنك مزامنة ناديك الحالي أولًا.</p><div class="modal-actions">${button("حسنًا", "close-modal", "", "primary")}</div>`,
+        );
         return;
       }
       const local = getState();
@@ -1052,14 +1683,18 @@ const actions = {
       toast("جارٍ جلب سجل الحفظات…");
       const saves = await listCloudSaves();
       if (!saves.length) {
-        openModal(`<h2>سجل الحفظات السحابية</h2><p class="muted">لا توجد حفظات سحابية مسجلة بعد.</p><div class="modal-actions">${button("إغلاق", "close-modal", "", "primary")}</div>`);
+        openModal(
+          `<h2>سجل الحفظات السحابية</h2><p class="muted">لا توجد حفظات سحابية مسجلة بعد.</p><div class="modal-actions">${button("إغلاق", "close-modal", "", "primary")}</div>`,
+        );
         return;
       }
       openModal(`
         <h2>سجل الحفظات السحابية</h2>
         <p class="muted">يتم الاحتفاظ بآخر ٥ حفظات لحسابك تلقائيًا. يمكنك استرجاع أي نسخة أو حذفها.</p>
         <div class="cloud-saves-container">
-          ${saves.map(s => `
+          ${saves
+            .map(
+              (s) => `
             <div class="cloud-save-item">
               <div class="cloud-save-info">
                 <strong>${s.metadata.clubName} · الموسم ${s.metadata.seasonNumber}</strong>
@@ -1071,7 +1706,9 @@ const actions = {
                 ${button("حذف", "delete-cloud-save", s.id, "danger small")}
               </div>
             </div>
-          `).join("")}
+          `,
+            )
+            .join("")}
         </div>
         <div class="modal-actions" style="margin-top: 15px;">
           ${button("إغلاق", "close-modal", "", "ghost")}
@@ -1093,6 +1730,96 @@ const actions = {
     }
   },
 
+  "dynasty-career-path": async (el) =>
+    await apply(
+      (s) => setCareerPath(s, el.dataset.id, el.dataset.path),
+      tr(
+        "تم تسجيل المسار الذي اختاره الابن.",
+        "The child's chosen career path has been recorded.",
+        "Le parcours choisi par l’enfant a été enregistré.",
+      ),
+    ),
+  "dynasty-heir-set": async (el) =>
+    await apply(
+      (s) => setDynastyHeir(s, el.dataset.id),
+      tr(
+        "تم تسجيل الوريث وإعداد مستندات الخلافة.",
+        "The heir has been recorded and succession documents prepared.",
+        "L’héritier est enregistré et les documents de succession sont préparés.",
+      ),
+    ),
+  "dynasty-succession-eligibility": async (el) =>
+    await apply(
+      (s) =>
+        setSuccessionEligibility(
+          s,
+          el.dataset.id,
+          el.dataset.eligible === "true",
+        ),
+      tr(
+        "تم تحديث أهلية الخلافة.",
+        "Succession eligibility has been updated.",
+        "L’éligibilité à la succession a été mise à jour.",
+      ),
+    ),
+  "dynasty-retirement-choice": async (el) =>
+    await apply(
+      (s) => resolveRetirementOffer(s, el.dataset.id, el.dataset.decision),
+      tr(
+        "تم تسجيل قرار التقاعد والخلافة.",
+        "The retirement and succession decision has been recorded.",
+        "La décision de retraite et de succession a été enregistrée.",
+      ),
+    ),
+  "dynasty-sibling-reconcile": async (el) =>
+    await apply(
+      (s) => reconcileSiblings(s, el.dataset.id),
+      tr(
+        "تحسنت العلاقة بين الإخوة بعد جلسة المصالحة.",
+        "Sibling relationships improved after the reconciliation.",
+        "Les relations entre frères et sœurs se sont améliorées après la réconciliation.",
+      ),
+    ),
+  "dynasty-academy-graduate": async (el) =>
+    await apply(
+      (s) => promoteDynastyPlayer(s, el.dataset.id),
+      tr(
+        "انضم خريج الأكاديمية إلى قائمة الفريق الأول.",
+        "An academy graduate joined the first-team squad.",
+        "Un diplômé de l’académie a rejoint l’effectif professionnel.",
+      ),
+    ),
+  "dynasty-event-choice": async (el) =>
+    await apply(
+      (s) => resolveDynastyEvent(s, el.dataset.id, el.dataset.choice),
+      tr(
+        "سُجل قرار الأسرة، وعاد الوقت للتقدم.",
+        "The family decision is recorded; time can advance again.",
+        "La décision familiale est enregistrée ; le temps peut reprendre.",
+      ),
+    ),
+  "dynasty-academy-enroll": async (el) => {
+    const position =
+      document.getElementById(`dynasty-academy-position-${el.dataset.id}`)
+        ?.value || "CM";
+    await apply(
+      (s) => enrollDynastyAcademy(s, el.dataset.id, position),
+      tr(
+        "بدأت رحلة الأكاديمية. تظهر التقارير مع تقدم الأشهر.",
+        "The academy journey has begun. Reports appear as months pass.",
+        "Le parcours à l’académie commence. Les rapports apparaîtront au fil des mois.",
+      ),
+    );
+  },
+  "dynasty-academy-leave": async (el) =>
+    await apply(
+      (s) => leaveDynastyAcademy(s, el.dataset.id),
+      tr(
+        "غادر الابن الأكاديمية؛ بقي سجله محفوظًا.",
+        "The child left the academy; their record was preserved.",
+        "L’enfant a quitté l’académie ; son dossier est conservé.",
+      ),
+    ),
   "close-modal": closeModal,
 };
 document.addEventListener("click", async (e) => {
@@ -1126,7 +1853,225 @@ document.addEventListener("submit", async (e) => {
   e.preventDefault();
   if (isSaving() || actionBusy) return;
   try {
-        if (form.id === "auth-login-form") {
+    if (form.id === "politics-campaign-fund") {
+      const amount = Math.round(Number(form.elements.amount.value));
+      await apply(
+        (s) => fundCampaign(s, amount),
+        tr(
+          "تم توثيق التمويل الشخصي للحملة.",
+          "Personal campaign funding has been recorded.",
+          "Le financement personnel de la campagne est enregistré.",
+        ),
+      );
+      return;
+    }
+    if (form.id === "politics-debate-form") {
+      const candidateId = form.elements.candidateId.value;
+      const strategy = form.elements.strategy.value;
+      await apply(
+        (s) => politicalDebate(s, candidateId, strategy),
+        tr(
+          "انتهت المناظرة العلنية وسُجل تقييمها في سجل الحملة.",
+          "The public debate is over; its result was added to the campaign record.",
+          "Le débat public est terminé ; son résultat figure au registre de campagne.",
+        ),
+      );
+      return;
+    }
+    if (form.id === "politics-bargain-form") {
+      const billId = form.elements.billId.value;
+      const clubId = form.elements.clubId.value;
+      const offer = form.elements.offer.value;
+      const amount = Math.round(Number(form.elements.amount.value));
+      const result = await apply((s) =>
+        bargainBill(s, billId, clubId, offer, amount),
+      );
+      toast(
+        result.accepted
+          ? tr(
+              "قُبل التفاهم وسُجل علنًا في ملف التصويت.",
+              "The compromise was accepted and publicly logged with the vote.",
+              "Le compromis est accepté et consigné publiquement avec le vote.",
+            )
+          : tr(
+              "لم يُقبل التنازل؛ سُجل موقف النادي وسيظهر في الاقتراع.",
+              "The concession did not match the club's demand; its position will appear in the vote.",
+              "La concession ne répond pas à la demande du club ; sa position figurera au vote.",
+            ),
+      );
+      return;
+    }
+    if (form.id === "politics-support-fund-form") {
+      const name = form.elements.name.value;
+      const amount = Math.round(Number(form.elements.amount.value));
+      const criteria = form.elements.criteria.value;
+      await apply(
+        (s) => createSupportFund(s, { name, amount, criteria }),
+        tr(
+          "حُجز رصيد صندوق الدعم وسُجل في دفتر الخزينة.",
+          "The support fund was reserved and recorded in the treasury ledger.",
+          "Le fonds de soutien est réservé et inscrit au registre de trésorerie.",
+        ),
+      );
+      return;
+    }
+    if (form.id === "politics-support-grant-form") {
+      const fundId = form.elements.fundId.value;
+      const clubId = form.elements.clubId.value;
+      const amount = Math.round(Number(form.elements.amount.value));
+      await apply(
+        (s) => grantFromSupportFund(s, fundId, clubId, amount),
+        tr(
+          "صُرفت المنحة وأُضيفت إلى حساب النادي.",
+          "The grant was issued and credited to the club account.",
+          "L’aide est versée et créditée au compte du club.",
+        ),
+      );
+      return;
+    }
+    if (form.id.startsWith("politics-chair-")) {
+      const committeeId = form.elements.committeeId.value;
+      const officialId = form.elements.officialId.value;
+      await apply(
+        (s) => appointCommitteeChair(s, committeeId, officialId),
+        tr(
+          "عُيّن رئيس اللجنة وسُجلت مؤهلاته.",
+          "The committee chair was appointed and their credentials recorded.",
+          "Le président de commission est nommé et ses qualifications sont enregistrées.",
+        ),
+      );
+      return;
+    }
+    if (form.id.startsWith("politics-policy-")) {
+      const committeeId = form.elements.committeeId.value;
+      const policy = form.elements.policy.value;
+      await apply(
+        (s) => setCommitteePolicy(s, committeeId, policy),
+        tr(
+          "اعتمدت سياسة اللجنة وستؤثر في المباريات والروزنامة.",
+          "The committee policy is set and will shape matches and the calendar.",
+          "La politique de la commission est adoptée et influencera les matchs et le calendrier.",
+        ),
+      );
+      return;
+    }
+    if (form.id === "politics-tournament-create-form") {
+      const templateId = form.elements.templateId.value;
+      const sponsorId = form.elements.sponsorId.value;
+      await apply(
+        (s) => createAssociationTournament(s, templateId, sponsorId),
+        tr(
+          "أُطلقت البطولة، وسُجل الراعي والجائزة والقرعة في دفتر الاتحاد.",
+          "The competition has launched; sponsor, prize and draw are in the association ledger.",
+          "La compétition est lancée ; sponsor, prix et tirage figurent au registre de la fédération.",
+        ),
+      );
+      return;
+    }
+    if (form.id === "politics-opposition-response-form") {
+      const responseId = form.elements.responseId.value;
+      await apply(
+        (s) => addressOpposition(s, responseId),
+        tr(
+          "سُجل ردك العلني وحدثت مؤشرات الشرعية والنزاهة.",
+          "Your public response was logged and legitimacy/integrity indicators were updated.",
+          "Votre réponse publique est consignée et les indicateurs de légitimité et d’intégrité sont actualisés.",
+        ),
+      );
+      return;
+    }
+    if (form.id === "politics-integrity-investigation-form") {
+      const subject = form.elements.subject.value;
+      await apply(
+        (s) => openIntegrityInvestigation(s, subject),
+        tr(
+          "فُتح تحقيق مستقل وحدد له موعد وأدلة أولية.",
+          "An independent review was opened with a due date and initial evidence.",
+          "Un examen indépendant est ouvert avec échéance et premières preuves.",
+        ),
+      );
+      return;
+    }
+    if (form.id === "politics-diplomatic-mission-form") {
+      const organizationId = form.elements.organizationId.value;
+      const missionType = form.elements.missionType.value;
+      await apply(
+        (s) => holdDiplomaticMission(s, organizationId, missionType),
+        tr(
+          "عادت البعثة بتحديث للعلاقات والنفوذ، وسُجلت تكلفتها.",
+          "The mission updated relations and influence; its cost was recorded.",
+          "La mission a renforcé les relations et l’influence ; son coût est consigné.",
+        ),
+      );
+      return;
+    }
+    if (form.id === "politics-hosting-bid-form") {
+      const eventId = form.elements.eventId.value;
+      await apply(
+        (s) => submitHostingBid(s, eventId),
+        tr(
+          "قُدم ملف الاستضافة؛ يصدر القرار بعد الموعد المسجل.",
+          "The hosting bid was filed; a decision will follow on its due date.",
+          "La candidature d’accueil est déposée ; une décision sera rendue à l’échéance.",
+        ),
+      );
+      return;
+    }
+    if (form.id === "politics-executive-seat-form") {
+      const organizationId = form.elements.organizationId.value;
+      await apply(
+        (s) => secureExecutiveSeat(s, organizationId),
+        tr(
+          "فزت بمقعد تنفيذي دولي لمدة أربع مواسم.",
+          "You secured an international executive seat for four seasons.",
+          "Vous obtenez un siège exécutif international pour quatre saisons.",
+        ),
+      );
+      return;
+    }
+    if (form.id === "city-stadium-form") {
+      const tier = Number(form.elements.tier.value),
+        route = form.elements.route.value,
+        district = form.elements.district.value,
+        design = form.elements.design.value;
+      const quote = stadiumQuote(getState(), tier, route, district, design);
+      if (
+        !confirm(
+          `${tr("التكلفة", "Cost", "Coût")}: ${quote.cost.toLocaleString()} · ${quote.days} ${tr("يوم", "days", "jours")}?`,
+        )
+      )
+        return;
+      await apply(
+        (s) => startStadium(s, { tier, route, district, design }),
+        tr("بدأ البناء.", "Construction started.", "Chantier commencé."),
+      );
+      return;
+    }
+    if (form.id === "dynasty-marriage-form") {
+      const partner = form.elements.partner.value;
+      await apply(
+        (s) => marryOwner(s, partner),
+        tr(
+          "بدأت حياة أسرية جديدة.",
+          "A new family journey has begun.",
+          "Une nouvelle vie de famille commence.",
+        ),
+      );
+      return;
+    }
+    if (form.id === "dynasty-child-form") {
+      const name = form.elements.childName.value;
+      await apply(
+        (s) => haveChild(s, name),
+        tr(
+          "سُجل الميلاد، وبدأت رحلة النمو.",
+          "The birth was recorded; the growth journey has begun.",
+          "La naissance est enregistrée ; le parcours de croissance commence.",
+        ),
+      );
+      return;
+    }
+    if (form.id === "auth-login-form") {
       const id = form.elements.identifier.value;
       const pass = form.elements.password.value;
       try {
@@ -1172,6 +2117,45 @@ document.addEventListener("submit", async (e) => {
       const quantity = Number(form.elements.quantity.value);
       await apply((s) => stockShirts(s, quantity));
     }
+    if (form.id === "staff-negotiate-form") {
+      const t = Object.fromEntries(new FormData(form));
+      await apply((s) =>
+        negotiate(s, {
+          wage: Number(t.wage),
+          years: Number(t.years),
+          bonus: Number(t.bonus),
+        }),
+      );
+      return;
+    }
+    if (form.id === "staff-freedom-form") {
+      await apply((s) => setFreedom(s, Number(form.elements.freedom.value)));
+      return;
+    }
+    if (form.id === "staff-curriculum-form") {
+      await apply((s) => setCurriculum(s, form.elements.curriculum.value));
+      return;
+    }
+    if (form.id === "staff-campaign-form") {
+      await apply((s) =>
+        launchCampaign(
+          s,
+          form.elements.campaignType.value,
+          Number(form.elements.budget.value),
+        ),
+      );
+      return;
+    }
+    if (form.id === "staff-legal-file-form") {
+      await apply((s) => fileLegalCase(s, form.elements.kind.value));
+      return;
+    }
+    if (form.id === "scout-region-form") {
+      await apply((s) =>
+        assignScout(s, form.dataset.id, form.elements.region.value || null),
+      );
+      return;
+    }
     if (form.id === "staff-hire-form") {
       await apply((s) =>
         hireStaff(s, form.dataset.id, form.elements.staffRole.value),
@@ -1185,17 +2169,14 @@ document.addEventListener("submit", async (e) => {
       closeModal();
     }
     if (form.id === "offer-form") {
-      await apply(
-        (s) => {
-          const r = submitOffer(s, form.dataset.player, {
-            fee: Number(form.elements.fee.value),
-            upfrontPercent: Number(form.elements.upfront.value),
-          });
-          markStep(s, "offer");
-          return r;
-        },
-        "العرض اتبعت. مرّر يومًا عشان يوصلك الرد.",
-      );
+      await apply((s) => {
+        const r = submitOffer(s, form.dataset.player, {
+          fee: Number(form.elements.fee.value),
+          upfrontPercent: Number(form.elements.upfront.value),
+        });
+        markStep(s, "offer");
+        return r;
+      }, "العرض اتبعت. مرّر يومًا عشان يوصلك الرد.");
       closeModal();
     }
     if (form.id === "loan-offer-form") {
@@ -1213,6 +2194,17 @@ document.addEventListener("submit", async (e) => {
       closeModal();
     }
     if (form.id === "contract-form") {
+      let releaseClause = Number(form.elements.releaseClause.value);
+      const clauseLevel = form.elements.clauseLevel?.value;
+      if (clauseLevel) {
+        const baseInput = document.getElementById("release-clause-input");
+        // إذا اختار مستوى، نستخدم القيمة المحسوبة من المستوى إن لم يعدلها يدويًا بشكل كبير
+        const selectedOption = form.elements.clauseLevel.selectedOptions[0];
+        const levelClause = Number(selectedOption?.dataset?.clause || 0);
+        if (levelClause === 0) releaseClause = 0;
+        else if (Math.abs(releaseClause - levelClause) < levelClause * 0.5)
+          releaseClause = levelClause;
+      }
       const terms = {
         salary: Number(form.elements.salary.value),
         years: Number(form.elements.years.value),
@@ -1221,7 +2213,8 @@ document.addEventListener("submit", async (e) => {
         appearanceBonus: Number(form.elements.appearanceBonus.value),
         goalBonus: Number(form.elements.goalBonus.value),
         annualRaisePct: Number(form.elements.annualRaisePct.value),
-        releaseClause: Number(form.elements.releaseClause.value),
+        releaseClause,
+        clauseLevel,
       };
       await apply(
         (s) =>
@@ -1231,6 +2224,31 @@ document.addEventListener("submit", async (e) => {
         "تم توقيع العقد وتحديث السجل المالي.",
       );
       closeModal();
+    }
+    if (form.id === "black-charity") {
+      const amount = Number(form.elements.amount.value);
+      await apply((s) => {
+        const { donateCharity } = requireBlack();
+        return donateCharity(s, amount);
+      }, "تم التبرع الخيري وخفض الشبهات.");
+    }
+    if (form.id === "empire-draw-form") {
+      const amount = Math.round(Number(form.elements.amount.value));
+      await apply(
+        (s) => transferToPersonal(s, amount),
+        "تم التحويل من خزينة النادي إلى ثروتك الشخصية.",
+      );
+    }
+    if (form.id === "empire-support-form") {
+      const amount = Math.round(Number(form.elements.amount.value));
+      await apply(
+        (s) => transferToClub(s, amount),
+        "تم دعم خزينة النادي من ثروتك الشخصية.",
+      );
+    }
+    if (form.id === "empire-repay-form") {
+      const amount = Math.round(Number(form.elements.amount.value));
+      await apply((s) => repayDebt(s, amount), "تم سداد جزء من الدين.");
     }
     if (form.id === "legend-offer-form") {
       const role = form.elements.role.value;
@@ -1263,18 +2281,15 @@ document.addEventListener("submit", async (e) => {
       closeModal();
     }
     if (form.id === "project-form") {
-      await apply(
-        (s) => {
-          const r = startProject(
-            s,
-            form.dataset.id,
-            form.elements.speed.value === "fast",
-          );
-          markStep(s, "facility");
-          return r;
-        },
-        "المشروع بدأ. موعد الاستلام واتفاق الدفع في البريد.",
-      );
+      await apply((s) => {
+        const r = startProject(
+          s,
+          form.dataset.id,
+          form.elements.speed.value === "fast",
+        );
+        markStep(s, "facility");
+        return r;
+      }, "المشروع بدأ. موعد الاستلام واتفاق الدفع في البريد.");
       closeModal();
     }
     if (form.id === "ticket-form") {
@@ -1335,6 +2350,30 @@ document.addEventListener("keydown", (e) => {
 document.addEventListener("change", async (e) => {
   if (isSaving() || actionBusy) return;
   try {
+    if (e.target.dataset.dynastyUpbringing) {
+      const childId = e.target.dataset.dynastyUpbringing;
+      const style = e.target.value;
+      await apply((s) => setUpbringing(s, childId, style));
+      return;
+    }
+    if (e.target.dataset.dynastyAcademyFocus) {
+      const childId = e.target.dataset.dynastyAcademyFocus;
+      const focus = e.target.value;
+      await apply((s) => setAcademyFocus(s, childId, focus));
+      return;
+    }
+    if (e.target.dataset.dynastyAcademyPosition) {
+      const childId = e.target.dataset.dynastyAcademyPosition;
+      const position = e.target.value;
+      await apply((s) => setAcademyPosition(s, childId, position));
+      return;
+    }
+    if (e.target.dataset.dynastyAcademyMentor) {
+      const childId = e.target.dataset.dynastyAcademyMentor;
+      const mentorId = e.target.value;
+      await apply((s) => setAcademyMentor(s, childId, mentorId || null));
+      return;
+    }
     if (e.target.id === "talent-training-player") {
       ui.talentPlayer = e.target.value;
       const plan = getState().talent.training[ui.talentPlayer] || {
@@ -1361,6 +2400,30 @@ document.addEventListener("change", async (e) => {
     if (e.target.id === "team-tactic") {
       const tactic = e.target.value;
       await apply((s) => setTactic(s, tactic));
+      return;
+    }
+    if (e.target.name === "empire-lifestyle") {
+      const tier = e.target.value;
+      await apply((s) => setLifestyle(s, tier));
+      return;
+    }
+    if (e.target.name === "owner-story") {
+      ui.setupConfig.ownerStory = e.target.value;
+      for (const label of document.querySelectorAll(".story-options label"))
+        label.classList.toggle(
+          "selected",
+          label.querySelector("input")?.value === e.target.value,
+        );
+      return;
+    }
+    if (e.target.dataset.child) {
+      const { setSchool, setAllowance } =
+        await import("./services/empire/family.js");
+      const childId = e.target.dataset.child;
+      const value = e.target.value;
+      if (e.target.dataset.kind === "school")
+        await apply((s) => setSchool(s, childId, value));
+      else await apply((s) => setAllowance(s, childId, value));
       return;
     }
     if (e.target.id === "division-view") {
@@ -1429,6 +2492,24 @@ document.addEventListener("change", async (e) => {
         ui.setupClub = "ahly";
       }
       render();
+    }
+    if (e.target.id === "clause-level") {
+      const opt = e.target.selectedOptions[0];
+      const clauseVal = Number(opt?.dataset?.clause || 0);
+      const salaryFactor = Number(opt?.dataset?.salary || 1);
+      const clauseInput = document.getElementById("release-clause-input");
+      if (clauseInput) clauseInput.value = clauseVal;
+      const salaryInput = e.target.form?.elements?.salary;
+      if (salaryInput && salaryFactor !== 1) {
+        const baseSalary = Number(
+          salaryInput.dataset.base || salaryInput.value,
+        );
+        if (!salaryInput.dataset.base)
+          salaryInput.dataset.base = salaryInput.value;
+        salaryInput.value = Math.round(baseSalary * salaryFactor);
+      }
+      updateCalculations();
+      return;
     }
     if (e.target.id === "game-language") {
       const lang = e.target.value;
@@ -1514,12 +2595,20 @@ document.addEventListener("change", async (e) => {
     if (e.target.id === "reduce-motion")
       await apply(
         (s) => (s.preferences.reduceMotion = e.target.checked),
-        tr("تم حفظ إعداد العرض.", "Display setting saved.", "Réglage d'affichage enregistré."),
+        tr(
+          "تم حفظ إعداد العرض.",
+          "Display setting saved.",
+          "Réglage d'affichage enregistré.",
+        ),
       );
     if (e.target.id === "num-format")
       await apply(
         (s) => (s.preferences.digits = e.target.value),
-        tr("تم حفظ نمط الأرقام.", "Number style saved.", "Style des chiffres enregistré."),
+        tr(
+          "تم حفظ نمط الأرقام.",
+          "Number style saved.",
+          "Style des chiffres enregistré.",
+        ),
       );
     if (e.target.closest("#offer-form,#contract-form")) updateCalculations();
   } catch (err) {

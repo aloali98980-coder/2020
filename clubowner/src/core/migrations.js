@@ -1,3 +1,4 @@
+import { ensureSportsCity } from "../services/sportsCity.js";
 import { initLegends } from "../services/legends.js";
 import { initTalent } from "../services/talent/state.js";
 import { initializeCareer } from "../models/player.js";
@@ -11,6 +12,15 @@ import {
   STAFF_POOL_MAX_AGE_DAYS,
 } from "../services/careers.js";
 import { initSeasonStats } from "../services/seasonStats.js";
+import { migrateDynasty } from "../services/dynasty.js";
+import { initBoard } from "../services/boardMandate.js";
+import { initBlackFiles } from "../services/blackFiles.js";
+import { ensureReleaseClause } from "../services/releaseClause.js";
+import { boardTextAr } from "../data/boardTexts.js";
+import { ensureStaffCorp } from "../services/staff/staffCorp.js";
+import { initPolitics } from "../services/politics/state.js";
+import { initEmpire, storyForOldSave } from "../services/empire/wealth.js";
+import { empireText } from "../data/empireTexts.js";
 function migrateToFive(input) {
   if (input?.version === 4) {
     const s = structuredClone(input);
@@ -256,7 +266,8 @@ export function migrateToEighteen(s) {
     let p = s.players[i];
     if (p.status === "retired") {
       if (!known.has(p.id)) {
-        p.retiredOn ??= p.careerHistory?.find((h) => h.type === "retired")?.date || s.date;
+        p.retiredOn ??=
+          p.careerHistory?.find((h) => h.type === "retired")?.date || s.date;
         retiring.push(p);
         known.add(p.id);
       }
@@ -267,7 +278,8 @@ export function migrateToEighteen(s) {
     if (Number.isFinite(p.developmentRate))
       p.developmentRate = Math.round(p.developmentRate * 1000) / 1000;
     if (Array.isArray(p.agingHistory)) {
-      const keep = p.clubId === s.clubId ? AGING_HISTORY_KEEP_OWN : AGING_HISTORY_KEEP;
+      const keep =
+        p.clubId === s.clubId ? AGING_HISTORY_KEEP_OWN : AGING_HISTORY_KEEP;
       p.agingHistory = p.agingHistory
         .slice(-keep)
         .map((h) => ({ date: h.date, rating: h.rating }));
@@ -284,7 +296,8 @@ export function migrateToEighteen(s) {
     const r = retiredById.get(c.personId);
     c.formerClubId ??= r?.previousClubId ?? null;
     c.since ??= r?.retiredOn ?? s.date;
-    if (c.status === "employed" || c.formerClubId === s.clubId) keepStaff.push(c);
+    if (c.status === "employed" || c.formerClubId === s.clubId)
+      keepStaff.push(c);
     else if (
       pool < STAFF_POOL_LIMIT &&
       daysBetween(c.since, s.date) < STAFF_POOL_MAX_AGE_DAYS
@@ -345,11 +358,276 @@ function migrateToTwenty(input) {
   return s;
 }
 
+// 0.26 (save v21): لائحة الجمعية العمومية — حالة المجلس وثقته وسجل المواسم.
+// الحفظة الأقدم تبدأ بثقة محايدة وبلا لائحة، وتُصدر لائحتها مع أول موسم جديد.
+function migrateToTwentyOne(input) {
+  if (!input || input.version !== 20) return input;
+  const old = migrateToTwenty(input);
+  if (old?.version !== 20) return old;
+  const s = structuredClone(old);
+  s.version = 21;
+  s.board ??= {
+    schema: 1,
+    confidence: 60,
+    failureStreak: 0,
+    successStreak: 0,
+    freezeUntil: null,
+    wageFactor: 1,
+    pendingBoost: 0,
+    nextRebuild: false,
+    mandate: null,
+    history: [],
+    meetings: [],
+  };
+  s.migrationNote =
+    (s.migrationNote || "") + " " + boardTextAr("boardMigrationNote") + ".";
+  return s;
+}
+
+// 0.28 (save v22): الملفات السوداء والشرط الجزائي.
+// الحفظة القديمة تبدأ بنظافة كاملة وشرط جزائي متدرج لكل لاعب نشط.
+function migrateToTwentyTwo(input) {
+  if (!input || input.version !== 21) return input;
+  const old = migrateToTwentyOne(input);
+  if (old?.version !== 21) return old;
+  const s = structuredClone(old);
+  s.version = 22;
+  s.blackFiles ??= {
+    suspicion: 0,
+    permanentRepPenalty: 0,
+    lastOperationDate: null,
+    lastOperationType: null,
+    cooldowns: {},
+    active: {
+      refereeBias: null,
+      bribedOpponent: null,
+      mediaWar: null,
+      agentOnPayroll: false,
+      agentSince: null,
+    },
+    transferBanUntil: null,
+    scandalCount: 0,
+    history: [],
+    titleStripped: false,
+    pendingAiBreaks: [],
+    charityTotal: 0,
+  };
+  // شرط جزائي لكل لاعب نشط
+  for (const p of s.players) {
+    if (p.status === "retired") continue;
+    p.contractTerms ??= {
+      appearanceBonus: 0,
+      goalBonus: 0,
+      annualRaisePct: 0,
+      releaseClause: 0,
+      signedOn: s.date,
+      lastRaiseYear: s.date.slice(0, 4),
+    };
+    if (typeof p.contractTerms.releaseClause !== "number") {
+      // نطاق بسيط حسب التقييم للحفظات المهاجرة — التفاصيل في releaseClause.js
+      const rating = p.rating || 60;
+      let min = 2000000,
+        max = 5000000;
+      if (rating >= 70 && rating <= 74) {
+        min = 5000000;
+        max = 12000000;
+      } else if (rating >= 75 && rating <= 79) {
+        min = 12000000;
+        max = 30000000;
+      } else if (rating >= 80 && rating <= 84) {
+        min = 30000000;
+        max = 80000000;
+      } else if (rating >= 85) {
+        min = 80000000;
+        max = 150000000;
+      }
+      // 25% بلا شرط
+      const rnd = Math.random();
+      p.contractTerms.releaseClause =
+        rnd < 0.25 ? 0 : Math.round(min + (max - min) * ((rnd - 0.25) / 0.75));
+    }
+  }
+  s.migrationNote =
+    (s.migrationNote || "") +
+    " الملفات السوداء 0.28: مؤشر شبهات 0-100% مع عواقب معلنة، وعمليات عبر الوسيط بتكلفة كبيرة واحتمال فشل، وشرط جزائي متدرج حسب التقييم مع مضاعفات؛ الحفظة القديمة تبدأ نظيفة.";
+  return s;
+}
+
+// 0.29 (save v23): حياة الملياردير — ثروة شخصية منفصلة عن خزينة النادي.
+// الحفظة القديمة تُمنح قصتها تلقائيًا حسب الصعوبة (وريث/عصامي/مقامر)،
+// وخزينة النادي ودفاترها لا تُمسّ.
+function migrateToTwentyThree(input) {
+  if (!input || input.version !== 22) return input;
+  const old = migrateToTwentyTwo(input);
+  if (old?.version !== 22) return old;
+  const s = structuredClone(old);
+  s.version = 23;
+  s.empire ??= initEmpire(null, storyForOldSave(s));
+  s.migrationNote =
+    (s.migrationNote || "") + " " + empireText("storyMigrationNote") + ".";
+  return s;
+}
+
+// 0.24 dynasty/save schema v2: initialize family succession after the v23 empire migration.
+// The club ledger, personal empire, player identities and any legacy family records are preserved.
+function migrateToTwentyFour(input) {
+  if (!input || input.version !== 23) return input;
+  const s = structuredClone(input);
+  s.version = 24;
+  if (!s.board) initBoard(s);
+  if (!s.blackFiles) initBlackFiles(s);
+  s.empire ??= initEmpire(null, storyForOldSave(s));
+  ensureReleaseClause(s);
+  s.dynasty = migrateDynasty(s);
+  s.migrationNote =
+    (s.migrationNote || "") +
+    " تحديث الخلافة: تمت إضافة التقاعد وتعيين الوريث وسجل الإرث واستمرار الأجيال مع الحفاظ على الأسرة واللاعبين والمالية.";
+  return s;
+}
+
+// 0.30 (save v26): الإدارة الشاملة — طاقم افتراضي متوسط + مقر صغير.
+// الحفظات القديمة تُرحَّل تلقائيًا دون كسر: اللاعبون والمالية والعقود لا تُمسّ.
+function migrateSaveToTwentySix(input) {
+  if (!input || input.version === 26) return input;
+  if (input.version === 25) {
+    const s = structuredClone(input);
+    s.version = 26;
+    ensureStaffCorp(s);
+    s.migrationNote =
+      (s.migrationNote || "") +
+      " الإدارة الشاملة 0.30: طاقم إداري افتراضي متوسط المهارة مع مقر صغير؛ وسّع هيكلك من شاشة الإدارة الشاملة.";
+    return s;
+  }
+  const v25 = migrateSaveToTwentyFive(input);
+  if (v25?.version !== 25) return v25;
+  v25.version = 26;
+  ensureStaffCorp(v25);
+  v25.migrationNote =
+    (v25.migrationNote || "") +
+    " الإدارة الشاملة 0.30: طاقم إداري افتراضي متوسط المهارة مع مقر صغير؛ وسّع هيكلك من شاشة الإدارة الشاملة.";
+  return v25;
+}
+
+// 0.31 (save v27): political career. Existing owners remain outside the presidency,
+// receive a neutral league map, and face their first election next season.
+function migrateSaveToTwentySeven(input) {
+  if (!input || input.version === 27) return input;
+  const prior =
+    input.version === 26
+      ? structuredClone(input)
+      : migrateSaveToTwentySix(input);
+  if (prior?.version !== 26) return prior;
+  const s = prior;
+  s.version = 27;
+  initPolitics(s, { legacy: true });
+  s.migrationNote =
+    (s.migrationNote || "") +
+    " رئاسة الاتحاد 0.31: بدأت حفظتك خارج المنصب مع خريطة أندية محايدة وأول انتخابات في الموسم القادم؛ لا تغيير على النادي أو المال أو اللاعبين.";
+  return s;
+}
+
+// 0.32 (save v28): council charter and association finance containers. Preserve
+// the v27 map, campaign, rivals, and all pre-existing club data.
+function migrateSaveToTwentyEight(input) {
+  if (!input || input.version === 28) return input;
+  const prior =
+    input.version === 27
+      ? structuredClone(input)
+      : migrateSaveToTwentySeven(input);
+  if (prior?.version !== 27) return prior;
+  const s = prior;
+  s.version = 28;
+  initPolitics(s);
+  s.migrationNote =
+    (s.migrationNote || "") +
+    " رئاسة الاتحاد 0.32: أُضيف سجل المجلس والميزانية المالية مع الحفاظ على خريطة السياسة والحملة واللاعبين والأموال السابقة.";
+  return s;
+}
+
+// 0.33 (save v29): committee appointments, disciplinary reviews, and tournament records.
+// Upgrade only missing committee containers; do not reset prior chairs, ledgers, or cases.
+function migrateSaveToTwentyNine(input) {
+  if (!input || input.version === 29) return input;
+  const prior =
+    input.version === 28
+      ? structuredClone(input)
+      : migrateSaveToTwentyEight(input);
+  if (prior?.version !== 28) return prior;
+  const s = prior;
+  s.version = 29;
+  initPolitics(s);
+  s.migrationNote =
+    (s.migrationNote || "") +
+    " رئاسة الاتحاد 0.33: أُضيفت ملفات اللجان والبطولات؛ بدأت القرارات الجديدة من سجل محايد مع الحفاظ على حفظك السابق.";
+  return s;
+}
+
+// 0.34 (save v30): opposition, integrity, diplomacy, and presidential legacy.
+function migrateSaveToThirty(input) {
+  if (!input || input.version === 30) return input;
+  const prior =
+    input.version === 29
+      ? structuredClone(input)
+      : migrateSaveToTwentyNine(input);
+  if (prior?.version !== 29) return prior;
+  const s = prior;
+  s.version = 30;
+  initPolitics(s);
+  s.migrationNote =
+    (s.migrationNote || "") +
+    " رئاسة الاتحاد 0.34: أُضيفت سجلات المعارضة والنزاهة والعلاقات الخارجية والإرث، مع إبقاء الحالة السياسية المحفوظة كما هي.";
+  return s;
+}
+
+// 0.35 (save v31): recurring, choice-driven political events.
 export function migrateSave(input) {
-  if (!input || input.version === 20) return input;
+  if (!input || input.version === 31) return input;
+  const prior =
+    input.version === 30 ? structuredClone(input) : migrateSaveToThirty(input);
+  if (prior?.version !== 30) return prior;
+  const s = prior;
+  s.version = 31;
+  initPolitics(s);
+  s.migrationNote =
+    (s.migrationNote || "") +
+    " رئاسة الاتحاد 0.35: أُضيفت أحداث سياسية تفاعلية متجددة وسجل خياراتها، مع الحفاظ على قراراتك وسجلاتك السابقة.";
+  return s;
+}
+
+function migrateSaveToTwentyFive(input) {
+  if (!input || input.version === 25) return input;
+  if (input.version === 24) {
+    const s = structuredClone(input);
+    s.version = 25;
+    ensureSportsCity(s);
+    return s;
+  }
+  const old = migrateSaveToTwentyFour(input);
+  if (old?.version !== 24) return old;
+  old.version = 25;
+  ensureSportsCity(old);
+  return old;
+}
+
+function migrateSaveToTwentyFour(input) {
+  if (!input || input.version === 24) return input;
+  if (input.version === 23) return migrateToTwentyFour(input);
+  if (input.version === 22)
+    return migrateToTwentyFour(migrateToTwentyThree(input));
+  if (input.version === 21)
+    return migrateToTwentyFour(migrateToTwentyThree(migrateToTwentyTwo(input)));
+  // Keep the established board, black-files and empire migrations; then add the dynasty schema.
+  if (input.version === 20)
+    return migrateToTwentyFour(
+      migrateToTwentyThree(migrateToTwentyTwo(migrateToTwentyOne(input))),
+    );
   const v17 = migrateToSeventeen(input);
   const v18 = v17?.version === 17 ? migrateToEighteen(v17) : v17;
   if (v18?.version !== 18) return v18;
   const v19 = migrateToNineteen(v18);
-  return migrateToTwenty(v19);
+  const v20 = migrateToTwenty(v19);
+  const v21 = migrateToTwentyOne(v20);
+  const v22 = migrateToTwentyTwo(v21);
+  const v23 = migrateToTwentyThree(v22);
+  return migrateToTwentyFour(v23);
 }

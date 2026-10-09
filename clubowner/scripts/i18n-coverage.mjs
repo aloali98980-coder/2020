@@ -15,6 +15,12 @@ const SKIP = [
   /src\/data\/starProfiles\.js/,
   /src\/data\/legends\.js/,
   /src\/data\/worldMarkets\.js/,
+  // Political catalog records store explicit {ar,en,fr} objects and are rendered by locale.
+  /src\/data\/politicsCatalog\.js/,
+  /src\/data\/politicsLaws\.js/,
+  /src\/data\/politicsCommittees\.js/,
+  /src\/data\/politicsGovernance\.js/,
+  /src\/data\/politicsEvents\.js/,
 ];
 const files = [];
 (function walk(dir) {

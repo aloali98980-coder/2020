@@ -1,0 +1,346 @@
+.dynasty-overview,
+.dynasty-section-title,
+.dynasty-balance-head,
+.dynasty-event-head,
+.dynasty-child-head,
+.dynasty-academy-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+.dynasty-overview h2,
+.dynasty-child-head h3,
+.dynasty-academy-head h4,
+.dynasty-section-title h2 {
+  margin: 4px 0;
+}
+.dynasty-overview p,
+.dynasty-child-head p {
+  color: var(--muted, #9eacc0);
+  margin: 6px 0 0;
+}
+.dynasty-overview-stats,
+.dynasty-child-stats,
+.dynasty-academy-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(80px, 1fr));
+  gap: 10px;
+}
+.dynasty-overview-stats > div,
+.dynasty-child-stats > div,
+.dynasty-academy-stats > div {
+  display: grid;
+  gap: 4px;
+  padding: 12px;
+  border: 1px solid var(--line, #23354d);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--panel, #121e30) 80%, transparent);
+}
+.dynasty-overview-stats strong,
+.dynasty-child-stats b,
+.dynasty-academy-stats strong {
+  font-size: 20px;
+  line-height: 1.2;
+}
+.dynasty-overview-stats small,
+.dynasty-child-stats span,
+.dynasty-academy-stats small {
+  color: var(--muted, #9eacc0);
+  font-size: 12px;
+}
+.dynasty-action-panel {
+  margin-top: 16px;
+}
+.dynasty-action-panel h2 {
+  margin: 4px 0;
+}
+.dynasty-action-panel > p {
+  max-width: 780px;
+  color: var(--muted, #9eacc0);
+}
+.dynasty-inline-form {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) auto;
+  align-items: end;
+  gap: 12px;
+  max-width: 620px;
+}
+.dynasty-family-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.dynasty-child-card {
+  display: grid;
+  align-content: start;
+  gap: 14px;
+  min-width: 0;
+}
+.dynasty-child-head {
+  align-items: flex-start;
+}
+.dynasty-child-head h3 {
+  overflow-wrap: anywhere;
+}
+.dynasty-child-stats {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.dynasty-traits {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-height: 24px;
+}
+.dynasty-upbringing small {
+  color: var(--muted, #9eacc0);
+}
+.dynasty-academy {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid color-mix(in srgb, var(--accent, #4f9bff) 32%, var(--line, #23354d));
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--accent, #4f9bff) 5%, var(--panel, #121e30));
+}
+.dynasty-academy-stats {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.dynasty-academy-controls {
+  margin: 0;
+}
+.dynasty-academy-note,
+.dynasty-academy-locked,
+.dynasty-injury {
+  margin: 0;
+  color: var(--muted, #9eacc0);
+  font-size: 13px;
+  line-height: 1.65;
+}
+.dynasty-injury {
+  color: var(--danger, #ff7b78);
+}
+.dynasty-academy-start {
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-top: 4px;
+}
+.dynasty-academy-start .field {
+  width: min(260px, 100%);
+  margin: 0;
+}
+.dynasty-academy-start .btn {
+  min-height: 42px;
+}
+.dynasty-reports {
+  display: grid;
+  gap: 7px;
+}
+.dynasty-reports > strong {
+  font-size: 13px;
+}
+.dynasty-reports > div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 10px;
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--panel, #121e30) 85%, transparent);
+  font-size: 12px;
+}
+.dynasty-reports > div span:last-child {
+  color: var(--muted, #9eacc0);
+}
+.dynasty-reports small {
+  font-weight: 400;
+  color: var(--muted, #9eacc0);
+}
+.dynasty-section-title {
+  margin: 26px 0 12px;
+}
+.dynasty-section-title > span {
+  color: var(--muted, #9eacc0);
+}
+.dynasty-empty {
+  margin-bottom: 14px;
+}
+.dynasty-empty p {
+  color: var(--muted, #9eacc0);
+  margin-bottom: 0;
+}
+.dynasty-balance,
+.dynasty-event,
+.dynasty-event-history {
+  margin-bottom: 16px;
+}
+.dynasty-balance-head h2,
+.dynasty-event-head h3 {
+  margin: 4px 0;
+}
+.dynasty-balance-value {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin: 12px 0 6px;
+}
+.dynasty-balance-value strong {
+  font-size: 30px;
+}
+.dynasty-balance-value span,
+.dynasty-balance > p,
+.dynasty-event > p {
+  color: var(--muted, #9eacc0);
+}
+.dynasty-balance-history,
+.dynasty-event-history {
+  display: grid;
+  gap: 8px;
+  margin-top: 14px;
+}
+.dynasty-balance-history > div,
+.dynasty-event-history > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 10px;
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--panel, #121e30) 85%, transparent);
+  font-size: 12px;
+}
+.dynasty-balance-history .positive {
+  color: var(--success, #51d3a3);
+}
+.dynasty-balance-history .negative {
+  color: var(--danger, #ff7b78);
+}
+.dynasty-career-path,
+.dynasty-sibling-state {
+  display: grid;
+  gap: 9px;
+  padding: 12px;
+  border: 1px solid var(--line, #23354d);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--panel, #121e30) 85%, transparent);
+}
+.dynasty-career-path > p,
+.dynasty-sibling-state small {
+  margin: 0;
+  color: var(--muted, #9eacc0);
+  font-size: 12px;
+  line-height: 1.6;
+}
+.dynasty-path-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+.dynasty-path-option {
+  display: grid;
+  gap: 5px;
+  padding: 10px;
+  text-align: start;
+  color: var(--text, #e9f1fc);
+  border: 1px solid var(--line, #23354d);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--accent, #4f9bff) 7%, var(--panel, #121e30));
+  cursor: pointer;
+}
+.dynasty-path-option:hover {
+  border-color: var(--accent, #4f9bff);
+}
+.dynasty-path-option small {
+  color: var(--muted, #9eacc0);
+  line-height: 1.5;
+}
+.dynasty-sibling-state > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+.dynasty-sibling-state > div span {
+  color: var(--muted, #9eacc0);
+}
+.dynasty-event-choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+}
+.dynasty-succession-controls,
+.dynasty-retirement-actions,
+.dynasty-retirement-head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.dynasty-retirement {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 16px;
+  border-color: color-mix(in srgb, var(--accent, #4f9bff) 45%, var(--line, #23354d));
+}
+.dynasty-retirement h2,
+.dynasty-legacy-history h3 {
+  margin: 4px 0;
+}
+.dynasty-retirement > p {
+  margin: 0;
+}
+.dynasty-retirement .muted {
+  color: var(--muted, #9eacc0);
+}
+.dynasty-legacy-history {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.dynasty-legacy-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 10px;
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--panel, #121e30) 85%, transparent);
+  font-size: 12px;
+}
+.dynasty-legacy-row strong {
+  color: var(--accent, #78b0ff);
+}
+.dynasty-event-history > h3 {
+  margin: 0;
+}
+@media (max-width: 920px) {
+  .dynasty-family-grid {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 560px) {
+  .dynasty-overview,
+  .dynasty-child-head,
+  .dynasty-academy-head,
+  .dynasty-retirement-head {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .dynasty-overview-stats,
+  .dynasty-child-stats,
+  .dynasty-academy-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+  }
+  .dynasty-inline-form,
+  .dynasty-path-options {
+    grid-template-columns: 1fr;
+  }
+  .dynasty-reports > div {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .dynasty-reports > div span:last-child {
+    grid-column: 1 / -1;
+  }
+}

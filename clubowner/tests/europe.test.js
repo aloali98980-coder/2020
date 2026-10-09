@@ -17,6 +17,7 @@ import { pyramidDay, blankRow } from "../src/services/pyramid.js";
 import { friendly } from "../src/services/commerce.js";
 import { EXPANDED_CLUBS } from "../src/data/expandedCatalog.js";
 import { addDays } from "../src/core/utils.js";
+import { SAVE_VERSION } from "../src/core/game.js";
 const club = EXPANDED_CLUBS.find(
   (c) => c.country === "en" && c.tier === 1 && c.selectable,
 );
@@ -362,7 +363,7 @@ test("Schema four import keeps ongoing cups, player objects and finances unchang
     cups = structuredClone(s.expansion.cups),
     finance = structuredClone(s.finance);
   const next = migrateSave(s);
-  assert.equal(next.version, 20);
+  assert.equal(next.version, SAVE_VERSION);
   assert.equal(s.version, 4);
   assert.deepEqual(next.players, players);
   assert.deepEqual(next.finance, finance);

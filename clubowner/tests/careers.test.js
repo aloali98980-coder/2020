@@ -37,6 +37,7 @@ import {
 } from "../src/services/contractClauses.js";
 import { matchDay } from "../src/services/matches.js";
 import { seasonDay } from "../src/services/season.js";
+import { SAVE_VERSION } from "../src/core/game.js";
 function retiredCandidate(s) {
   const p = s.players.find((p) => p.clubId === s.clubId);
   p.careerInterest = 0;
@@ -148,24 +149,40 @@ test("Every event choice records concrete effects once; delayed income is collec
         status: "open",
         choice: null,
       });
+      // 0.25: الكتالوج صار ٧٠ حدثًا بمفردات أثر أوسع (youth بعدد، signing، incomeDays،
+      // costLater). الاختبار يبقى كما هو في روحه — كل أثر يُسجَّل مرة واحدة بالضبط —
+      // لكنه يقرأ الأرقام من الخيار نفسه بدل ثابت ١٨٠٠٠٠.
+      s.finance.cash = Math.max(s.finance.cash, 60000000);
       const cash = s.finance.cash,
         headcount = s.players.length;
       resolveClubEvent(s, "decision-test", choice.id);
       assert.equal(s.finance.cash, cash + (choice.cash || 0));
       assert.throws(() => resolveClubEvent(s, "decision-test", choice.id));
-      if (choice.youth) {
-        assert.equal(s.players.length, headcount + 1);
-        assert.equal(s.players.at(-1).age, 17);
-        assert.equal(s.players.at(-1).fictional, true);
+      const youth =
+        typeof choice.youth === "number" ? choice.youth : choice.youth ? 1 : 0;
+      const signings = choice.signing ? choice.signing.count || 1 : 0;
+      if (youth + signings) {
+        assert.equal(s.players.length, headcount + youth + signings);
+        const added = s.players.slice(headcount);
+        for (const p of added) {
+          assert.equal(p.fictional, true);
+          assert.equal(p.clubId, s.clubId);
+        }
+        if (youth) assert.equal(added[0].age, 17);
+        if (choice.signing) {
+          assert.equal(added.at(-1).age, choice.signing.age);
+          assert.equal(added.at(-1).rating, choice.signing.rating);
+          assert.equal(added.at(-1).salary, choice.signing.wage);
+        }
       }
       if (choice.incomeLater) {
-        s.date = addDays(s.date, 30);
+        s.date = addDays(s.date, choice.incomeDays || 30);
         financeDay(s);
         const paid = s.finance.ledger.filter(
           (e) => e.key === "decision-test-income",
         );
         assert.equal(paid.length, 1);
-        assert.equal(paid[0].amount, 180000);
+        assert.equal(paid[0].amount, choice.incomeLater);
         financeDay(s);
         assert.equal(
           s.finance.ledger.filter((e) => e.key === "decision-test-income")
@@ -173,6 +190,26 @@ test("Every event choice records concrete effects once; delayed income is collec
           1,
         );
       }
+      if (choice.costLater) {
+        s.date = addDays(s.date, choice.costDays || 30);
+        financeDay(s);
+        const paid = s.finance.ledger.filter(
+          (e) => e.key === "decision-test-cost",
+        );
+        assert.equal(paid.length, 1);
+        assert.equal(paid[0].amount, -choice.costLater);
+        financeDay(s);
+        assert.equal(
+          s.finance.ledger.filter((e) => e.key === "decision-test-cost").length,
+          1,
+        );
+      }
+      if (choice.sponsorOffer)
+        assert(
+          s.events.some(
+            (e) => e.type === "sponsor" && e.ref === choice.sponsorOffer,
+          ),
+        );
       validateSave(s);
     }
   }
@@ -301,7 +338,7 @@ test("v1 migration preserves identities, cash and historical dates; invalid clau
   }
   const migrated = migrateSave(original);
   assert.equal(original.version, 1);
-  assert.equal(migrated.version, 20);
+  assert.equal(migrated.version, SAVE_VERSION);
   assert.equal(migrated.finance.cash, cash);
   assert.deepEqual(
     migrated.players.map((p) => [p.id, p.name, p.rating]),
