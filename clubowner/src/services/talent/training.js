@@ -1,5 +1,6 @@
 import { assert, clamp, random } from "../../core/utils.js";
 import { staffSkill } from "../staff.js";
+import { gkGainBonus, gkChanceBonus } from "../staff/effects.js";
 export const FOCUSES = [
   "balanced",
   "pace",
@@ -45,8 +46,10 @@ export function developIndividual(s, p) {
     coach = Math.max(staffSkill(s, "coach"), s.management?.coach?.skill || 0),
     intensity = { light: 0.65, normal: 1, intense: 1.3 }[plan.intensity];
   if (plan.intensity === "intense") p.fitness = Math.max(45, p.fitness - 3);
+  // 0.30: مدرب الحراس يرفع فرصة تطور الحراس ومكسبهم (بلا عشوائية جديدة).
+  const isGk = p.position === "GK";
   const chance = clamp(
-    0.2 + level * 0.06 + coach / 400 + Math.min(4, matches) * 0.04,
+    0.2 + level * 0.06 + coach / 400 + Math.min(4, matches) * 0.04 + (isGk ? gkChanceBonus(s) : 0),
     0,
     0.85,
   );
@@ -57,7 +60,7 @@ export function developIndividual(s, p) {
       0.45,
       p.potential - p.rating,
       (0.04 + level * 0.02 + coach / 1200 + Math.min(4, matches) * 0.045) *
-        intensity,
+        intensity + (isGk ? gkGainBonus(s) : 0),
     ),
   );
   p.rating += gain;

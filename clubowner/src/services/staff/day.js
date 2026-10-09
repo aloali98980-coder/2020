@@ -7,15 +7,23 @@ import {
   boardMeetingMonth, staffCorpContractsDay, poachTargetChance, makePoachOffer, srng,
 } from "./staffCorp.js";
 import { hqDay } from "./hq.js";
+import { sportingMonth, sportingDay } from "./sporting.js";
+import { doctorDay, doctorMonth } from "./effects.js";
+import { scoutMonth } from "./scouts.js";
 
 export function staffCorpDay(s) {
   const c = ensureStaffCorp(s);
   staffCorpContractsDay(s);
   hqDay(s);
+  sportingDay(s);
+  doctorDay(s);
   if (s.date.endsWith("-01")) {
     loyaltyMonth(s);
     refreshStaffMarket(s);
     boardMeetingMonth(s);
+    sportingMonth(s);
+    doctorMonth(s);
+    scoutMonth(s);
     // الخطف الشهري: كل موظف مستهدف باحتماله الخاص.
     for (const emp of corpEmployees(s)) {
       if (c.poach.some((o) => o.status === "open" && o.empId === emp.id)) continue;

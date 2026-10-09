@@ -6,6 +6,7 @@ import { generatedPlayer } from "../models/generatedPlayers.js";
 import { extendedClub } from "../data/expandedCatalog.js";
 import { developmentGain } from "../models/ability.js";
 import { staffSkill } from "./staff.js";
+import { gkGainBonus, gkChanceBonus } from "./staff/effects.js";
 import { initializeCareer } from "../models/player.js";
 import { random, clamp, uid, addDays } from "../core/utils.js";
 import { makePlayer } from "../data/catalog.js";
@@ -17,6 +18,8 @@ export function developmentDay(s) {
     s.management?.coach?.skill || 0,
     (city.staff || 0) * 4,
   );
+  // 0.30: مدرب الحراس يرفع فرصة تطور الحراس ومكسبهم الشهري (بلا استهلاك عشوائية جديدة).
+  const gkGain = gkGainBonus(s), gkChance = gkChanceBonus(s);
   const medical = s.facilities.find((f) => f.id === "medical"),
     training = s.facilities.find((f) => f.id === "training"),
     academy = s.facilities.find((f) => f.id === "academy");
@@ -73,7 +76,7 @@ export function developmentDay(s) {
       p.age < 25 &&
       training.level > 1 &&
       (training.staff || coaching > 0) &&
-      random(s) < 0.3 + (training.level - 1) * 0.1 + coaching / 500
+      random(s) < 0.3 + (training.level - 1) * 0.1 + coaching / 500 + (p.position === "GK" ? gkChance : 0)
     ) {
       const gain = p.abilityVersion
         ? developmentGain(p, {
@@ -83,9 +86,10 @@ export function developmentDay(s) {
             injured: !!p.injuryUntil && p.injuryUntil >= s.date,
           })
         : 0.3;
-      p.rating = Math.min(p.potential, p.rating + gain);
+      const total = gain + (p.position === "GK" ? gkGain : 0);
+      p.rating = Math.min(p.potential, p.rating + total);
       for (const key of Object.keys(p.attributes))
-        p.attributes[key] = Math.min(99, p.attributes[key] + gain);
+        p.attributes[key] = Math.min(99, p.attributes[key] + total);
     }
   }
   if (
