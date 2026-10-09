@@ -23,6 +23,7 @@ import { sponsorDay } from "./sponsors.js";
 import { transferReply } from "./transfers.js";
 import { matchDay } from "./matches.js";
 import { developmentDay } from "./development.js";
+import { dynastyGrowthDay } from "./dynasty.js";
 function eventsDay(s) {
   for (const e of s.events) {
     if (e.done || e.date > s.date) continue;
@@ -75,6 +76,7 @@ export function advanceTime(s, days = null) {
     s.remainingDays--;
     advanced++;
     agingDay(s);
+    dynastyGrowthDay(s);
     retirementDay(s);
     staffDay(s);
     if (!s.expansion) seasonDay(s);
