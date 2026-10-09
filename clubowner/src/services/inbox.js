@@ -10,6 +10,7 @@ export function message(
     ref = null,
     deadline = null,
     priority = "normal",
+    ...rest
   },
 ) {
   const m = {
@@ -23,6 +24,7 @@ export function message(
     ref,
     deadline,
     priority,
+    ...rest,
     read: false,
     status: "open",
   };

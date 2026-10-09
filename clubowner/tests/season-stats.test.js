@@ -8,6 +8,7 @@ import { migrateSave } from "../src/core/migrations.js";
 import { validateSave } from "../src/core/validation.js";
 import { SEASON_STAT_KEYS } from "../src/services/seasonStats.js";
 import { seasonDay } from "../src/services/season.js";
+import { SAVE_VERSION } from "../src/core/game.js";
 
 const dismiss = (s) => pendingActions(s).forEach((m) => resolveInfo(s, m.id));
 const tick = (s) => {
@@ -189,7 +190,7 @@ test("v18→v19 migration initializes season stats on active players", () => {
   assert.equal(v18.players[0].seasonGoals, undefined);
 
   const migrated = migrateSave(v18);
-  assert.equal(migrated.version, 23);
+  assert.equal(migrated.version, SAVE_VERSION);
   assert.ok(
     migrated.migrationNote.includes("إحصائيات الموسم 0.23"),
     "migration note should mention season stats 0.23",

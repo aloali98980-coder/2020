@@ -20,6 +20,7 @@ import { qualify } from "../src/services/competitions/qualification.js";
 import { advanceTime } from "../src/services/time.js";
 import { ALL_MARKETS } from "../src/data/worldMarkets.js";
 import { DIVISIONS, extendedClub } from "../src/data/expandedCatalog.js";
+import { SAVE_VERSION } from "../src/core/game.js";
 
 const game = () =>
   createGame({
@@ -65,7 +66,7 @@ const skipGone = (raw) => {
 
 test("all fifty markets get full domestic cups with loaded non-reserve entrants", () => {
   const s = game();
-  assert.equal(s.version, 23);
+  assert.equal(s.version, SAVE_VERSION);
   assert.deepEqual(Object.keys(DOMESTIC).sort(), [...ALL_MARKETS].sort());
   const cups = s.expansion.cups.filter((c) => c.kind === "domestic");
   assert.equal(cups.length, 50);
@@ -194,7 +195,7 @@ test("authentic v012 save migrates to 16 with its season-1 cups preserved", asyn
   if (skipGone(old)) return;
   assert.equal(old.version, 12);
   const s = migrateSave(old);
-  assert.equal(s.version, 23);
+  assert.equal(s.version, SAVE_VERSION);
   assert.equal(old.version, 12);
   assert(s.migrationNote.includes("0.13"));
   assert(s.migrationNote.includes("0.14"));

@@ -5,7 +5,11 @@ import { normalizeClauses, guaranteedWages } from "./contractClauses.js";
 import { assert, uid, addDays, clamp } from "../core/utils.js";
 import { message, closeThread } from "./inbox.js";
 import { post, obligation, wages } from "./finance.js";
+import { assertTransfersAllowed } from "./boardMandate.js";
+import { isTransferBanned } from "./blackFiles.js";
 export function submitOffer(s, playerId, terms) {
+  assertTransfersAllowed(s);
+  if (isTransferBanned(s)) throw new Error("منع قيد سارٍ — لا عمليات انتقال حتى ينتهي الحظر.");
   const p = s.players.find((p) => p.id === playerId);
   assertMarket(s, p);
   assert(!p?.loan, "اللاعب مُعار؛ لا يمكن شراء عقده في هذا النموذج.");
@@ -115,6 +119,7 @@ export function rejectNegotiation(s, id) {
   closeThread(s, id);
 }
 export function signPlayer(s, id, terms) {
+  assertTransfersAllowed(s);
   const n = s.negotiations.find((x) => x.id === id);
   assert(n && n.stage === "personal", "ابدأ باتفاق مع النادي أولًا.");
   const p = s.players.find((x) => x.id === n.playerId);
@@ -145,9 +150,17 @@ export function signPlayer(s, id, terms) {
     "تجاوز ميزانية المرتبات الشهرية.",
   );
   const clauses = normalizeClauses(terms);
-  const upfront = Math.round((n.fee * n.upfrontPercent) / 100),
-    agent = Math.round(n.fee * 0.03),
+  const commissionRate = s.blackFiles?.active?.agentOnPayroll ? 0.01 : 0.03;
+  let upfront = Math.round((n.fee * n.upfrontPercent) / 100);
+  let agent = Math.round(n.fee * commissionRate);
+  let total = upfront + agent + terms.bonus;
+  let rest = n.fee - upfront;
+  if (n.kind === "release-clause") {
+    upfront = n.fee;
+    agent = Math.round(n.fee * commissionRate);
     total = upfront + agent + terms.bonus;
+    rest = 0;
+  }
   assert(
     s.finance.cash >= total,
     "السيولة لا تكفي للمقدم ومكافأة التوقيع وعمولة الوكيل.",
@@ -155,11 +168,11 @@ export function signPlayer(s, id, terms) {
   n.seller = n.seller || p.clubId;
   if (Object.hasOwn(s.expansion?.budgets || {}, n.seller))
     s.expansion.budgets[n.seller] += upfront;
-  post(s, -upfront, "transfer", `مقدم شراء ${p.name}`, n.id + "-fee");
+  post(s, -upfront, "transfer", n.kind === "release-clause" ? `كسر شرط جزائي ${p.name}` : `مقدم شراء ${p.name}`, n.id + "-fee");
   post(s, -agent, "agent", `عمولة وكيل ${p.name}`, n.id + "-agent");
   post(s, -terms.bonus, "signing", `مكافأة توقيع ${p.name}`, n.id + "-bonus");
-  const rest = n.fee - upfront,
-    each = Math.floor(rest / 3);
+  if (n.kind === "release-clause") n.clausePaid = true;
+  const each = Math.floor(rest / 3);
   if (rest)
     for (let i = 1; i <= 3; i++)
       obligation(s, {

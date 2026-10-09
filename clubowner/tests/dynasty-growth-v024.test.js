@@ -70,6 +70,9 @@ test("personality traits form at age milestones as children move between stages"
 
 test("time advancement automatically advances child growth", () => {
   const s = createGame({ database: "current", leagues: ["eg"] });
+  // Cross a quiet month boundary without firing the separate September deadline-day event.
+  s.date = "2026-08-24";
+  s.startDate = s.date;
   const child = createDynastyChild(s, { name: "Growing Prospect", age: 13 });
   s.dynasty.children.push(child);
   s.events = [];

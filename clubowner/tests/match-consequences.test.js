@@ -1,5 +1,6 @@
 // 0.24 — match consequences: injuries, card suspensions, red card, form.
 import test from "node:test";
+import { SAVE_VERSION } from "../src/core/game.js";
 import assert from "node:assert/strict";
 import { createGame } from "../src/core/game.js";
 import { advanceTime } from "../src/services/time.js";
@@ -143,7 +144,7 @@ test("v18→v20 migration initializes match consequence fields", () => {
     retired: [],
   };
   const migrated = migrateSave(v18);
-  assert.equal(migrated.version, 23);
+  assert.equal(migrated.version, SAVE_VERSION);
   const p = migrated.players[0];
   // v19 fields
   assert.equal(p.seasonGoals, 0);

@@ -2,6 +2,7 @@ import { fixtures, sortedTable } from "./matches.js";
 import { CLUBS } from "../data/catalog.js";
 import { message } from "./inbox.js";
 import { SEASON_STAT_KEYS, initSeasonStats } from "./seasonStats.js";
+import { endSeasonBoardReview, startSeasonMandate } from "./boardMandate.js";
 
 // Save each player's season stats to the history entry before resetting.
 function archiveSeasonStats(s, entry) {
@@ -29,6 +30,8 @@ function resetSeasonStats(s) {
 
 export function seasonDay(s) {
   if (s.date < s.nextSeasonDate || s.fixtures.some((f) => !f.played)) return;
+  // 0.26: تصويت الجمعية العمومية على موسم انتهى لتوه، قبل أرشفته وقبل تصفير الإحصاءات.
+  endSeasonBoardReview(s);
   const entry = {
     number: s.seasonNumber,
     date: s.date,
@@ -58,4 +61,6 @@ export function seasonDay(s) {
     body: "تم أرشفة الترتيب السابق وإنشاء ١٤ جولة جديدة للدوري التجريبي. اللاعبون والعقود والمنشآت يستمرون؛ لا يوجد صعود أو هبوط في هذه النسخة.",
     category: "matches",
   });
+  // لائحة الموسم الجديد تُصدر الآن (وبعد انتهاء التصويت على الموسم الماضي).
+  startSeasonMandate(s);
 }

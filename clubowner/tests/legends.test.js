@@ -81,13 +81,13 @@ test("Legends catalogue: real retired names, resolvable clubs, editorial flags",
 });
 
 test("New saves ship v17 legends state; classic and expanded both validate", () => {
-  assert.equal(SAVE_VERSION, 23);
+  assert.equal(SAVE_VERSION, 24);
   const s = game();
   assert.deepEqual(s.legends, initLegends());
   assert.equal(s.legends.playerMode, true);
   validateSave(s);
   const classic = createGame({ clubId: "ahly" });
-  assert.equal(classic.version, 23);
+  assert.equal(classic.version, SAVE_VERSION);
   assert.deepEqual(classic.legends, initLegends());
   validateSave(classic);
   const c = signLegend(classic, "shobair", "gk", 1);
@@ -321,7 +321,7 @@ test("v16 and v15 saves migrate to v17 with an empty hall and no other change", 
   delete v16.legends;
   delete v16.migrationNote;
   const m = migrateSave(v16);
-  assert.equal(m.version, 23);
+  assert.equal(m.version, SAVE_VERSION);
   assert.equal(v16.version, 16);
   assert.deepEqual(m.legends, initLegends());
   assert(m.migrationNote.includes("0.17"));
@@ -333,7 +333,7 @@ test("v16 and v15 saves migrate to v17 with an empty hall and no other change", 
   delete v15.legends;
   delete v15.sponsorDeals;
   const m15 = migrateSave(v15);
-  assert.equal(m15.version, 23);
+  assert.equal(m15.version, SAVE_VERSION);
   assert.deepEqual(m15.sponsorDeals, []);
   assert.deepEqual(m15.legends, initLegends());
   validateSave(m15);

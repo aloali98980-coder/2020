@@ -13,8 +13,11 @@ import { internationalDay } from "./internationals.js";
 import { contractDay } from "./contractClauses.js";
 import { agingDay, retirementDay } from "./careers.js";
 import { staffDay } from "./staff.js";
-import { clubEventDay } from "./clubEvents.js";
+import { clubEventDay, flavorEventDay } from "./clubEvents.js";
 import { seasonDay } from "./season.js";
+import { boardDay } from "./boardMandate.js";
+import { blackFilesDay } from "./blackFiles.js";
+import { empireDay } from "./empire/day.js";
 import { addDays } from "../core/utils.js";
 import { message, pendingActions } from "./inbox.js";
 import { financeDay } from "./finance.js";
@@ -23,10 +26,11 @@ import { sponsorDay } from "./sponsors.js";
 import { transferReply } from "./transfers.js";
 import { matchDay } from "./matches.js";
 import { developmentDay } from "./development.js";
-import { academyJourneyDay, dynastyGrowthDay } from "./dynasty.js";
+import { deadlineDayTick } from "./deadlineDay.js";
+import { youthIntakeTick } from "./youthIntake.js";
+import { academyJourneyDay, dynastyGrowthDay, dynastyLifeDay } from "./dynasty.js";
 import { dynastyEventDay } from "./dynastyEvents.js";
 import { siblingConflictDay } from "./dynastyCareers.js";
-import { dynastyLifeDay } from "./dynasty.js";
 function eventsDay(s) {
   for (const e of s.events) {
     if (e.done || e.date > s.date) continue;
@@ -86,6 +90,9 @@ export function advanceTime(s, days = null) {
     dynastyLifeDay(s);
     retirementDay(s);
     staffDay(s);
+    boardDay(s);
+    blackFilesDay(s);
+    empireDay(s);
     if (!s.expansion) seasonDay(s);
     internationalDay(s);
     contractDay(s);
@@ -110,7 +117,12 @@ export function advanceTime(s, days = null) {
     managementDay(s);
     legendDay(s);
     aiTransferDay(s);
+    deadlineDayTick(s);
+    youthIntakeTick(s);
     eventsDay(s);
+    // النكهة أولًا ثم القرار: القرار (required) يُرسل أخيرًا فيصير على رأس البريد،
+    // والخبر القصير لا يوقف الزمن أبدًا لأنه required: false.
+    flavorEventDay(s);
     clubEventDay(s);
     if (pendingActions(s).length) return { advanced, blocked: true };
     if (

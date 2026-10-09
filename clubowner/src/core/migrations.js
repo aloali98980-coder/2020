@@ -12,6 +12,12 @@ import {
 } from "../services/careers.js";
 import { initSeasonStats } from "../services/seasonStats.js";
 import { migrateDynasty } from "../services/dynasty.js";
+import { initBoard } from "../services/boardMandate.js";
+import { initBlackFiles } from "../services/blackFiles.js";
+import { ensureReleaseClause } from "../services/releaseClause.js";
+import { boardTextAr } from "../data/boardTexts.js";
+import { initEmpire, storyForOldSave } from "../services/empire/wealth.js";
+import { empireText } from "../data/empireTexts.js";
 function migrateToFive(input) {
   if (input?.version === 4) {
     const s = structuredClone(input);
@@ -346,38 +352,109 @@ function migrateToTwenty(input) {
   return s;
 }
 
-// 0.24 (save v21): dynasty and generational succession. Existing family records and the
-// owner's age are normalized in place; empty old saves start the family at their first marriage/birth.
+// 0.26 (save v21): لائحة الجمعية العمومية — حالة المجلس وثقته وسجل المواسم.
+// الحفظة الأقدم تبدأ بثقة محايدة وبلا لائحة، وتُصدر لائحتها مع أول موسم جديد.
 function migrateToTwentyOne(input) {
   if (!input || input.version !== 20) return input;
-  const s = structuredClone(input);
+  const old = migrateToTwenty(input);
+  if (old?.version !== 20) return old;
+  const s = structuredClone(old);
   s.version = 21;
-  s.dynasty = migrateDynasty(s);
+  s.board ??= {
+    schema: 1,
+    confidence: 60,
+    failureStreak: 0,
+    successStreak: 0,
+    freezeUntil: null,
+    wageFactor: 1,
+    pendingBoost: 0,
+    nextRebuild: false,
+    mandate: null,
+    history: [],
+    meetings: [],
+  };
   s.migrationNote =
     (s.migrationNote || "") +
-    " الأجيال 0.24: حُفظ عمر المالك والأبناء وصفاتهم الحالية، وتبدأ منظومة العائلة تلقائيًا عند الزواج والإنجاب دون تغيير اللاعبين أو المالية.";
+    " " + boardTextAr("boardMigrationNote") + ".";
   return s;
 }
 
-// Save v22: normalize academy journey records and initialize the event/opinion timeline.
-// Existing v21 family members, academy history and owner age are migrated without touching club finances.
+// 0.28 (save v22): الملفات السوداء والشرط الجزائي.
+// الحفظة القديمة تبدأ بنظافة كاملة وشرط جزائي متدرج لكل لاعب نشط.
 function migrateToTwentyTwo(input) {
   if (!input || input.version !== 21) return input;
-  const s = structuredClone(input);
+  const old = migrateToTwentyOne(input);
+  if (old?.version !== 21) return old;
+  const s = structuredClone(old);
   s.version = 22;
-  s.dynasty = migrateDynasty(s);
+  s.blackFiles ??= {
+    suspicion: 0,
+    permanentRepPenalty: 0,
+    lastOperationDate: null,
+    lastOperationType: null,
+    cooldowns: {},
+    active: {
+      refereeBias: null,
+      bribedOpponent: null,
+      mediaWar: null,
+      agentOnPayroll: false,
+      agentSince: null,
+    },
+    transferBanUntil: null,
+    scandalCount: 0,
+    history: [],
+    titleStripped: false,
+    pendingAiBreaks: [],
+    charityTotal: 0,
+  };
+  // شرط جزائي لكل لاعب نشط
+  for (const p of s.players) {
+    if (p.status === "retired") continue;
+    p.contractTerms ??= { appearanceBonus: 0, goalBonus: 0, annualRaisePct: 0, releaseClause: 0, signedOn: s.date, lastRaiseYear: s.date.slice(0,4) };
+    if (typeof p.contractTerms.releaseClause !== "number") {
+      // نطاق بسيط حسب التقييم للحفظات المهاجرة — التفاصيل في releaseClause.js
+      const rating = p.rating || 60;
+      let min = 2000000, max = 5000000;
+      if (rating >= 70 && rating <= 74) { min = 5000000; max = 12000000; }
+      else if (rating >= 75 && rating <= 79) { min = 12000000; max = 30000000; }
+      else if (rating >= 80 && rating <= 84) { min = 30000000; max = 80000000; }
+      else if (rating >= 85) { min = 80000000; max = 150000000; }
+      // 25% بلا شرط
+      const rnd = Math.random();
+      p.contractTerms.releaseClause = rnd < 0.25 ? 0 : Math.round(min + (max - min) * ((rnd - 0.25) / 0.75));
+    }
+  }
   s.migrationNote =
     (s.migrationNote || "") +
-    " تحديث الأجيال: تمت تهيئة تقارير الأكاديمية وسجل الرأي العام والأحداث، مع الحفاظ على الأسرة والعمر واللاعبين والمالية.";
+    " الملفات السوداء 0.28: مؤشر شبهات 0-100% مع عواقب معلنة، وعمليات عبر الوسيط بتكلفة كبيرة واحتمال فشل، وشرط جزائي متدرج حسب التقييم مع مضاعفات؛ الحفظة القديمة تبدأ نظيفة.";
   return s;
 }
 
-// Save v23: add retirement offers, successor archives and continuing-generation checkpoints.
-// Dynasty state is normalized in place; club identity, player data and finances are not rewritten.
+// 0.29 (save v23): حياة الملياردير — ثروة شخصية منفصلة عن خزينة النادي.
+// الحفظة القديمة تُمنح قصتها تلقائيًا حسب الصعوبة (وريث/عصامي/مقامر)،
+// وخزينة النادي ودفاترها لا تُمسّ.
 function migrateToTwentyThree(input) {
   if (!input || input.version !== 22) return input;
-  const s = structuredClone(input);
+  const old = migrateToTwentyTwo(input);
+  if (old?.version !== 22) return old;
+  const s = structuredClone(old);
   s.version = 23;
+  s.empire ??= initEmpire(null, storyForOldSave(s));
+  s.migrationNote =
+    (s.migrationNote || "") + " " + empireText("storyMigrationNote") + ".";
+  return s;
+}
+
+// 0.24 dynasty/save schema v2: initialize family succession after the v23 empire migration.
+// The club ledger, personal empire, player identities and any legacy family records are preserved.
+function migrateToTwentyFour(input) {
+  if (!input || input.version !== 23) return input;
+  const s = structuredClone(input);
+  s.version = 24;
+  if (!s.board) initBoard(s);
+  if (!s.blackFiles) initBlackFiles(s);
+  s.empire ??= initEmpire(null, storyForOldSave(s));
+  ensureReleaseClause(s);
   s.dynasty = migrateDynasty(s);
   s.migrationNote =
     (s.migrationNote || "") +
@@ -386,12 +463,19 @@ function migrateToTwentyThree(input) {
 }
 
 export function migrateSave(input) {
-  if (!input || input.version === 23) return input;
-  if (input.version === 22) return migrateToTwentyThree(input);
+  if (!input || input.version === 24) return input;
+  if (input.version === 23) return migrateToTwentyFour(input);
+  if (input.version === 22)
+    return migrateToTwentyFour(migrateToTwentyThree(input));
   if (input.version === 21)
-    return migrateToTwentyThree(migrateToTwentyTwo(input));
+    return migrateToTwentyFour(migrateToTwentyThree(migrateToTwentyTwo(input)));
+  // Keep the established board, black-files and empire migrations; then add the dynasty schema.
   if (input.version === 20)
-    return migrateToTwentyThree(migrateToTwentyTwo(migrateToTwentyOne(input)));
+    return migrateToTwentyFour(
+      migrateToTwentyThree(
+        migrateToTwentyTwo(migrateToTwentyOne(input)),
+      ),
+    );
   const v17 = migrateToSeventeen(input);
   const v18 = v17?.version === 17 ? migrateToEighteen(v17) : v17;
   if (v18?.version !== 18) return v18;
@@ -399,5 +483,6 @@ export function migrateSave(input) {
   const v20 = migrateToTwenty(v19);
   const v21 = migrateToTwentyOne(v20);
   const v22 = migrateToTwentyTwo(v21);
-  return migrateToTwentyThree(v22);
+  const v23 = migrateToTwentyThree(v22);
+  return migrateToTwentyFour(v23);
 }

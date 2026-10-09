@@ -57,11 +57,15 @@ export function injuryDuration(rng) {
 
 /**
  * توليد توزيع البطاقات بشكل حتمي — يُشارك بين seasonStats وعواقب.
+ * في مباريات الديربي: توتر أعلى وبطاقات صفراء وحمراء أعلى قليلًا.
  * @returns {{ yellows: Player[], reds: Player[] }}
  */
-export function generateCardDistribution(xi, rng) {
-  const yellowCount = Math.floor(rng() * 3) + (rng() < 0.3 ? 1 : 0);
-  const redCount = rng() < 0.04 ? 1 : 0;
+export function generateCardDistribution(xi, rng, options = {}) {
+  const isDerby = !!options?.isDerby;
+  const yellowCount = isDerby
+    ? Math.floor(rng() * 3) + (rng() < 0.6 ? 2 : 1)
+    : Math.floor(rng() * 3) + (rng() < 0.3 ? 1 : 0);
+  const redCount = isDerby ? (rng() < 0.08 ? 1 : 0) : rng() < 0.04 ? 1 : 0;
   const yellows = [];
   const reds = [];
   for (let i = 0; i < yellowCount + redCount && xi.length; i++) {

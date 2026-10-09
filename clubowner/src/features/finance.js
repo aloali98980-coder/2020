@@ -17,6 +17,8 @@ import {
 } from "../services/finance.js";
 import { ownerCountry } from "../services/sponsors.js";
 import { addDays } from "../core/utils.js";
+import { getLanguage } from "../i18n/index.js";
+import { boardTextFor } from "../data/boardTexts.js";
 const cats = {
   vault: "الخزنة السرية",
   wages: "مرتبات",
@@ -35,6 +37,7 @@ const cats = {
   "legend-fee": "أسطورة · مقدم/تعويض",
   "legend-salary": "أسطورة · راتب",
   "legend-income": "أسطورة · حقوق صورة",
+  "board-support": boardTextFor("boardLedgerSupport", null, getLanguage()),
 };
 export function financeView(s, tab = "ledger") {
   const country = ownerCountry(s),

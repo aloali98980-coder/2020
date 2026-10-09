@@ -29,6 +29,7 @@ import {
 } from "../src/services/clubManagement.js";
 import { internationalDay } from "../src/services/internationals.js";
 import { findPerson } from "../src/services/retired.js";
+import { SAVE_VERSION } from "../src/core/game.js";
 const club = EXPANDED_CLUBS.find((c) => c.country === "en" && c.tier === 3);
 const game = () =>
   createGame({
@@ -190,7 +191,7 @@ test("Version 3 careers migrate without retrofitting competitions or replacing p
   const s = createGame({ database: "current" });
   s.version = 3;
   const t = migrateSave(s);
-  assert.equal(t.version, 23);
+  assert.equal(t.version, SAVE_VERSION);
   assert.equal(t.expansion, undefined);
   assert.deepEqual(t.players, s.players);
   validateSave(t);

@@ -24,6 +24,7 @@ import { marketOpen } from "../src/services/market.js";
 import { promotionMoves } from "../src/services/promotion.js";
 import { rankLeague } from "../src/services/leagueTable.js";
 import { advanceTime } from "../src/services/time.js";
+import { SAVE_VERSION } from "../src/core/game.js";
 const cid = DIVISIONS.find((d) => d.id === "eg-3-d").clubs[0];
 function toDate(s, target) {
   while (s.date < target) {
@@ -94,7 +95,7 @@ test("Egypt fresh membership, stable old IDs and no invented fourth tier", () =>
   assert(ds[1].clubs.includes("ismaily"));
   assert(!ds.some((d) => d.tier === 4));
   const s = game();
-  assert.equal(s.version, 23);
+  assert.equal(s.version, SAVE_VERSION);
   assert(
     s.players
       .filter((p) =>
