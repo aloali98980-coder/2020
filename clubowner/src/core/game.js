@@ -1,5 +1,6 @@
 import { initTalent } from "../services/talent/state.js";
 import { initLegends } from "../services/legends.js";
+import { ensureSportsCity } from "../services/sportsCity.js";
 import { initDynasty } from "../services/dynasty.js";
 import { initEmpire } from "../services/empire/wealth.js";
 import { extendedClub } from "../data/expandedCatalog.js";
@@ -17,7 +18,7 @@ import { signSponsor } from "../services/sponsors.js";
 import { initBoard, startSeasonMandate } from "../services/boardMandate.js";
 import { initBlackFiles } from "../services/blackFiles.js";
 import { ensureReleaseClause } from "../services/releaseClause.js";
-export const SAVE_VERSION = 24;
+export const SAVE_VERSION = 25;
 export function createGame({
   clubId = "ahly",
   owner = "مالك النادي",
@@ -134,6 +135,7 @@ export function createGame({
   }
   s.legends = initLegends();
   s.dynasty = initDynasty(s);
+  ensureSportsCity(s);
   const own = s.players.filter((p) => p.clubId === clubId);
   if (own.length < 11)
     throw new Error(

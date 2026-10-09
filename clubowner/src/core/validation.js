@@ -1,3 +1,5 @@
+import { CITY_FACILITIES } from "../data/sportsCityFacilities.js";
+import { CAPACITY_TIERS } from "../services/sportsCity.js";
 import { validateTalent } from "./talentValidation.js";
 import { validateLegends } from "./legendsValidation.js";
 import { validateDynasty } from "./dynastyValidation.js";
@@ -495,6 +497,13 @@ export function validateSave(s) {
   validateBoard(s);
   validateBlackFiles(s);
   validateEmpire(s);
+  const city = s.sportsCity, stadium = city?.stadium;
+  check(city && Array.isArray(city.facilities) && city.facilities.length <= CITY_FACILITIES.length &&
+    new Set(city.facilities).size === city.facilities.length && city.facilities.every(x => CITY_FACILITIES.some(f => f.id === x)) &&
+    stadium && Number.isInteger(stadium.tier) && stadium.tier >= 0 && stadium.tier < CAPACITY_TIERS.length &&
+    (!stadium.project || (Number.isInteger(stadium.project.tier) && stadium.project.tier > stadium.tier && stadium.project.tier < CAPACITY_TIERS.length && isoDate(stadium.project.end))) &&
+    Array.isArray(city.eventsSeen) && city.eventsSeen.length <= 100 && Array.isArray(city.news) && city.news.length <= 40 &&
+    (!city.broadcasts || (Array.isArray(city.broadcasts) && city.broadcasts.length <= 30)), "حالة المدينة الرياضية غير سليمة.");
   validateExpansion(s);
   validateTalent(s);
   validateLegends(s);

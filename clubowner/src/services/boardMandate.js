@@ -103,7 +103,7 @@ export const youthMinutes = (s) =>
 export const completedProjects = (s, baseline) =>
   (s.facilities || []).filter(
     (f) => f.level > (baseline?.facilityLevels?.[f.id] ?? f.level),
-  ).length;
+  ).length + (s.sportsCity?.facilities || []).filter(id => !(baseline?.cityFacilities || []).includes(id)).length;
 export const signedYoung = (s, baseline) => {
   const known = new Set(baseline?.youthIds || []);
   return ownYouth(s).filter((p) => !known.has(p.id)).length;

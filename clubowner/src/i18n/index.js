@@ -11,6 +11,7 @@ import { BOARD_PHRASES } from "./phrases-board.js";
 import { DRAMA_MOMENTS_PHRASES } from "./phrases-drama-moments.js";
 import { BLACK_PHRASES } from "./phrases-black.js";
 import { EMPIRE_PHRASES } from "./phrases-empire.js";
+import { SPORTS_CITY_PHRASES } from "./phrases-sports-city.js";
 import { DYNASTY_PHRASES } from "./phrases-dynasty.js";
 import {
   ACADEMY_FOCUSES,
@@ -62,6 +63,7 @@ for (const extra of [
   EMPIRE_PHRASES,
   // Dynasty phrases are generated from the family, academy and succession systems.
   DYNASTY_PHRASES,
+  SPORTS_CITY_PHRASES,
 ])
   for (const [ar, pair] of Object.entries(extra))
     if (!DICTIONARY[ar])

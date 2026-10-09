@@ -1,3 +1,5 @@
+import { realisticAttendance } from "./sportsCity.js";
+import { cityEffects } from "./cityFacilities.js";
 import { ownFixtures } from "./calendar.js";
 import { extendedClub } from "../data/expandedCatalog.js";
 import { getDerbyInfo } from "./derby.js";
@@ -142,8 +144,14 @@ export function ticketForecast(s, fixture = null) {
     gross += catGross;
     return { id: cat.id, name: cat.name, paying: catPaying, gross: catGross };
   });
+  const limit = s.sportsCity ? realisticAttendance(s, f) : s.capacity;
+  const total = Math.min(s.capacity, paying + subscribed);
+  const ratio = total > limit ? limit / total : 1;
+  paying = Math.floor(paying * ratio);
+  gross = Math.round(gross * ratio);
+  for (const row of breakdown) { row.paying = Math.floor(row.paying * ratio); row.gross = Math.round(row.gross * ratio); }
   return {
-    attendance: Math.min(s.capacity, paying + subscribed),
+    attendance: Math.min(limit, total),
     paying,
     gross,
     breakdown,
@@ -158,7 +166,7 @@ export function sellSubscriptions(s) {
     (f) => f.home === s.clubId && !f.played,
   ).length;
   assert(home >= 5, "عدد المباريات المتبقية غير كافٍ.");
-  const count = Math.floor(s.capacity * clamp(s.fanSupport / 600, 0.04, 0.18));
+  const count = Math.floor((s.sportsCity ? realisticAttendance(s) : s.capacity) * clamp(s.fanSupport / 600, 0.04, 0.18) * (1 + (s.sportsCity ? (cityEffects(s).totals.seasonTickets || 0) * .05 : 0)));
   const price = Math.round(s.ticketPrice * home * 0.75);
   c.seasonTickets = count;
   c.seasonTicketPrice = price;
@@ -175,8 +183,10 @@ export function matchCommerce(s, f) {
   const c = s.commerce,
     forecast = ticketForecast(s, f);
   f.attendance = forecast.attendance;
+  if (s.sportsCity) { const st=s.sportsCity.stadium; st.lastAttendance=f.attendance; st.lastDerbyDate=f.isDerby?s.date:null; st.record=Math.max(st.record||0,f.attendance); }
   f.ticketBreakdown = forecast.breakdown;
   c.matchPremium = 0;
+  if(s.sportsCity && cityEffects(s).totals.matchIncome) post(s,f.attendance*cityEffects(s).totals.matchIncome*4,"city-parking","موقف المدينة",f.id+"-city-parking");
   post(
     s,
     forecast.gross,
@@ -279,10 +289,11 @@ export function commerceDay(s) {
         ),
       );
       c.inventory -= sold;
+      const shopMultiplier = s.sportsCity?.facilities?.includes("officialShop") ? 2 : 1;
       merchandiseCost = sold * c.shirtCost;
       post(
         s,
-        sold * c.shirtPrice,
+        sold * c.shirtPrice * shopMultiplier,
         "merchandise",
         "مبيعات قمصان: " + sold,
         "shirts-" + s.date,
