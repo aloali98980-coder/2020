@@ -11,6 +11,10 @@ import {
   STAFF_POOL_MAX_AGE_DAYS,
 } from "../services/careers.js";
 import { initSeasonStats } from "../services/seasonStats.js";
+import { migrateDynasty } from "../services/dynasty.js";
+import { initBoard } from "../services/boardMandate.js";
+import { initBlackFiles } from "../services/blackFiles.js";
+import { ensureReleaseClause } from "../services/releaseClause.js";
 import { boardTextAr } from "../data/boardTexts.js";
 import { initEmpire, storyForOldSave } from "../services/empire/wealth.js";
 import { empireText } from "../data/empireTexts.js";
@@ -441,14 +445,36 @@ function migrateToTwentyThree(input) {
   return s;
 }
 
+// 0.24 dynasty/save schema v2: initialize family succession after the v23 empire migration.
+// The club ledger, personal empire, player identities and any legacy family records are preserved.
+function migrateToTwentyFour(input) {
+  if (!input || input.version !== 23) return input;
+  const s = structuredClone(input);
+  s.version = 24;
+  if (!s.board) initBoard(s);
+  if (!s.blackFiles) initBlackFiles(s);
+  s.empire ??= initEmpire(null, storyForOldSave(s));
+  ensureReleaseClause(s);
+  s.dynasty = migrateDynasty(s);
+  s.migrationNote =
+    (s.migrationNote || "") +
+    " تحديث الخلافة: تمت إضافة التقاعد وتعيين الوريث وسجل الإرث واستمرار الأجيال مع الحفاظ على الأسرة واللاعبين والمالية.";
+  return s;
+}
+
 export function migrateSave(input) {
-  if (!input || input.version === 23) return input;
-  if (input.version === 22) return migrateToTwentyThree(input);
-  if (input.version === 21) return migrateToTwentyThree(migrateToTwentyTwo(input));
-  // حفظة 0.25 (النسخة 20) حديثة بالفعل: تُرقّى مباشرة بلا إعادة تشغيل سلسلة أقدم.
+  if (!input || input.version === 24) return input;
+  if (input.version === 23) return migrateToTwentyFour(input);
+  if (input.version === 22)
+    return migrateToTwentyFour(migrateToTwentyThree(input));
+  if (input.version === 21)
+    return migrateToTwentyFour(migrateToTwentyThree(migrateToTwentyTwo(input)));
+  // Keep the established board, black-files and empire migrations; then add the dynasty schema.
   if (input.version === 20)
-    return migrateToTwentyThree(
-      migrateToTwentyTwo(migrateToTwentyOne(input)),
+    return migrateToTwentyFour(
+      migrateToTwentyThree(
+        migrateToTwentyTwo(migrateToTwentyOne(input)),
+      ),
     );
   const v17 = migrateToSeventeen(input);
   const v18 = v17?.version === 17 ? migrateToEighteen(v17) : v17;
@@ -457,5 +483,6 @@ export function migrateSave(input) {
   const v20 = migrateToTwenty(v19);
   const v21 = migrateToTwentyOne(v20);
   const v22 = migrateToTwentyTwo(v21);
-  return migrateToTwentyThree(v22);
+  const v23 = migrateToTwentyThree(v22);
+  return migrateToTwentyFour(v23);
 }

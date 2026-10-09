@@ -64,6 +64,25 @@ import {
   scoutAssignment,
 } from "./services/staff.js";
 import { retirementDecision } from "./services/careers.js";
+import {
+  enrollDynastyAcademy,
+  haveChild,
+  leaveDynastyAcademy,
+  marryOwner,
+  setAcademyFocus,
+  setAcademyMentor,
+  setAcademyPosition,
+  setDynastyHeir,
+  setSuccessionEligibility,
+  resolveRetirementOffer,
+  setUpbringing,
+} from "./services/dynasty.js";
+import { resolveDynastyEvent } from "./services/dynastyEvents.js";
+import {
+  promoteDynastyPlayer,
+  reconcileSiblings,
+  setCareerPath,
+} from "./services/dynastyCareers.js";
 import { resolveClubEvent } from "./services/clubEvents.js";
 import { sourcesView } from "./features/dataSources.js";
 import { guaranteedWages } from "./services/contractClauses.js";
@@ -76,6 +95,7 @@ import "./styles/responsive.css";
 import "./styles/readability.css";
 import "./styles/tokens.css";
 import "./styles/motion.css";
+import "./styles/dynasty.css";
 import { createGame } from "./core/game.js";
 import { getState, setState, commit, isSaving } from "./core/store.js";
 import { saveGame, loadGame, exportGame, importGame } from "./services/save.js";
@@ -149,6 +169,7 @@ import { financeView } from "./features/finance.js";
 import { boardView } from "./features/board.js";
 import { worldView } from "./features/world.js";
 import { settingsView } from "./features/settings.js";
+import { dynastyView } from "./features/dynasty.js";
 import {
   legendsView,
   legendDetailModal,
@@ -285,6 +306,7 @@ function render() {
     black: () => blackFilesView(s),
     empire: () => empireView(s, ui.empireTab),
     legends: () => legendsView(s, ui.legendFilters),
+    dynasty: () => dynastyView(s),
     settings: () => settingsView(s),
     database: () => databaseView(),
     careers: () => careersView(s, ui.talentPlayer),
@@ -899,10 +921,19 @@ const actions = {
     render();
   },
   "open-message": async (el) => {
+    const dynastyDecision = getState().inbox.some(
+      (message) =>
+        message.id === el.dataset.id &&
+        ["dynasty-event", "dynasty-retirement"].includes(message.kind),
+    );
     await apply((s) => {
       const m = s.inbox.find((m) => m.id === el.dataset.id);
       if (m) m.read = true;
     });
+    if (dynastyDecision) {
+      navigate("dynasty");
+      return;
+    }
     ui.message = el.dataset.id;
     ui.route = "inbox";
     ui.inboxFilter = "all";
@@ -1264,6 +1295,53 @@ const actions = {
     }
   },
 
+  "dynasty-career-path": async (el) =>
+    await apply(
+      (s) => setCareerPath(s, el.dataset.id, el.dataset.path),
+      tr("تم تسجيل المسار الذي اختاره الابن.", "The child's chosen career path has been recorded.", "Le parcours choisi par l’enfant a été enregistré."),
+    ),
+  "dynasty-heir-set": async (el) =>
+    await apply(
+      (s) => setDynastyHeir(s, el.dataset.id),
+      tr("تم تسجيل الوريث وإعداد مستندات الخلافة.", "The heir has been recorded and succession documents prepared.", "L’héritier est enregistré et les documents de succession sont préparés."),
+    ),
+  "dynasty-succession-eligibility": async (el) =>
+    await apply(
+      (s) => setSuccessionEligibility(s, el.dataset.id, el.dataset.eligible === "true"),
+      tr("تم تحديث أهلية الخلافة.", "Succession eligibility has been updated.", "L’éligibilité à la succession a été mise à jour."),
+    ),
+  "dynasty-retirement-choice": async (el) =>
+    await apply(
+      (s) => resolveRetirementOffer(s, el.dataset.id, el.dataset.decision),
+      tr("تم تسجيل قرار التقاعد والخلافة.", "The retirement and succession decision has been recorded.", "La décision de retraite et de succession a été enregistrée."),
+    ),
+  "dynasty-sibling-reconcile": async (el) =>
+    await apply(
+      (s) => reconcileSiblings(s, el.dataset.id),
+      tr("تحسنت العلاقة بين الإخوة بعد جلسة المصالحة.", "Sibling relationships improved after the reconciliation.", "Les relations entre frères et sœurs se sont améliorées après la réconciliation."),
+    ),
+  "dynasty-academy-graduate": async (el) =>
+    await apply(
+      (s) => promoteDynastyPlayer(s, el.dataset.id),
+      tr("انضم خريج الأكاديمية إلى قائمة الفريق الأول.", "An academy graduate joined the first-team squad.", "Un diplômé de l’académie a rejoint l’effectif professionnel."),
+    ),
+  "dynasty-event-choice": async (el) =>
+    await apply(
+      (s) => resolveDynastyEvent(s, el.dataset.id, el.dataset.choice),
+      tr("سُجل قرار الأسرة، وعاد الوقت للتقدم.", "The family decision is recorded; time can advance again.", "La décision familiale est enregistrée ; le temps peut reprendre."),
+    ),
+  "dynasty-academy-enroll": async (el) => {
+    const position = document.getElementById(`dynasty-academy-position-${el.dataset.id}`)?.value || "CM";
+    await apply(
+      (s) => enrollDynastyAcademy(s, el.dataset.id, position),
+      tr("بدأت رحلة الأكاديمية. تظهر التقارير مع تقدم الأشهر.", "The academy journey has begun. Reports appear as months pass.", "Le parcours à l’académie commence. Les rapports apparaîtront au fil des mois."),
+    );
+  },
+  "dynasty-academy-leave": async (el) =>
+    await apply(
+      (s) => leaveDynastyAcademy(s, el.dataset.id),
+      tr("غادر الابن الأكاديمية؛ بقي سجله محفوظًا.", "The child left the academy; their record was preserved.", "L’enfant a quitté l’académie ; son dossier est conservé."),
+    ),
   "close-modal": closeModal,
 };
 document.addEventListener("click", async (e) => {
@@ -1297,7 +1375,23 @@ document.addEventListener("submit", async (e) => {
   e.preventDefault();
   if (isSaving() || actionBusy) return;
   try {
-        if (form.id === "auth-login-form") {
+    if (form.id === "dynasty-marriage-form") {
+      const partner = form.elements.partner.value;
+      await apply(
+        (s) => marryOwner(s, partner),
+        tr("بدأت حياة أسرية جديدة.", "A new family journey has begun.", "Une nouvelle vie de famille commence."),
+      );
+      return;
+    }
+    if (form.id === "dynasty-child-form") {
+      const name = form.elements.childName.value;
+      await apply(
+        (s) => haveChild(s, name),
+        tr("سُجل الميلاد، وبدأت رحلة النمو.", "The birth was recorded; the growth journey has begun.", "La naissance est enregistrée ; le parcours de croissance commence."),
+      );
+      return;
+    }
+    if (form.id === "auth-login-form") {
       const id = form.elements.identifier.value;
       const pass = form.elements.password.value;
       try {
@@ -1542,6 +1636,30 @@ document.addEventListener("keydown", (e) => {
 document.addEventListener("change", async (e) => {
   if (isSaving() || actionBusy) return;
   try {
+    if (e.target.dataset.dynastyUpbringing) {
+      const childId = e.target.dataset.dynastyUpbringing;
+      const style = e.target.value;
+      await apply((s) => setUpbringing(s, childId, style));
+      return;
+    }
+    if (e.target.dataset.dynastyAcademyFocus) {
+      const childId = e.target.dataset.dynastyAcademyFocus;
+      const focus = e.target.value;
+      await apply((s) => setAcademyFocus(s, childId, focus));
+      return;
+    }
+    if (e.target.dataset.dynastyAcademyPosition) {
+      const childId = e.target.dataset.dynastyAcademyPosition;
+      const position = e.target.value;
+      await apply((s) => setAcademyPosition(s, childId, position));
+      return;
+    }
+    if (e.target.dataset.dynastyAcademyMentor) {
+      const childId = e.target.dataset.dynastyAcademyMentor;
+      const mentorId = e.target.value;
+      await apply((s) => setAcademyMentor(s, childId, mentorId || null));
+      return;
+    }
     if (e.target.id === "talent-training-player") {
       ui.talentPlayer = e.target.value;
       const plan = getState().talent.training[ui.talentPlayer] || {

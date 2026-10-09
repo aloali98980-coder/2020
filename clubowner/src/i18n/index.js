@@ -11,6 +11,14 @@ import { BOARD_PHRASES } from "./phrases-board.js";
 import { DRAMA_MOMENTS_PHRASES } from "./phrases-drama-moments.js";
 import { BLACK_PHRASES } from "./phrases-black.js";
 import { EMPIRE_PHRASES } from "./phrases-empire.js";
+import { DYNASTY_PHRASES } from "./phrases-dynasty.js";
+import {
+  ACADEMY_FOCUSES,
+  CHILD_STAGES,
+  DYNASTY_PATHS,
+  DYNASTY_TRAITS,
+  UPBRINGING_STYLES,
+} from "../data/dynasty.js";
 import egyptPyramid from "../data/egyptPyramid.json" with { type: "json" };
 import { ROSTERS } from "../data/packs/current-2026.js";
 import { worldNameMap } from "../data/packs/world.js";
@@ -18,6 +26,22 @@ import { LEGENDS } from "../data/legends.js";
 import { MARKETS } from "../data/worldMarkets.js";
 // 0.19: phrase modules are merged in order; earlier hand-tuned entries win. A string value means
 // "same wording in English and French" (brands, codes, transliterated names).
+const dynastyCopies = [
+  ...CHILD_STAGES.map((stage) => stage.label),
+  ...DYNASTY_TRAITS.flatMap((trait) => [trait.label, trait.description]),
+  ...DYNASTY_PATHS.flatMap((path) => [path.label, path.bonus]),
+  ...UPBRINGING_STYLES.map((style) => style.label),
+  ...ACADEMY_FOCUSES.map((focus) => focus.label),
+];
+const normalizedDynastyPhrase = (value) => String(value).trim().replace(/[.؛:!؟…،,]+$/, "");
+for (const copy of dynastyCopies) {
+  const key = normalizedDynastyPhrase(copy.ar);
+  if (!DICTIONARY[key]) DICTIONARY[key] = [copy.en, copy.fr];
+}
+for (const [ar, pair] of Object.entries(DYNASTY_PHRASES)) {
+  const key = normalizedDynastyPhrase(ar);
+  if (!DICTIONARY[key]) DICTIONARY[key] = pair;
+}
 for (const extra of [
   NARRATIVES,
   UI_PHRASES,
@@ -36,6 +60,8 @@ for (const extra of [
   BLACK_PHRASES,
   // 0.29: empire life (two fortunes, living, assets, family, investments, rivals, charity)
   EMPIRE_PHRASES,
+  // Dynasty phrases are generated from the family, academy and succession systems.
+  DYNASTY_PHRASES,
 ])
   for (const [ar, pair] of Object.entries(extra))
     if (!DICTIONARY[ar])

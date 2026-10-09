@@ -28,6 +28,9 @@ import { matchDay } from "./matches.js";
 import { developmentDay } from "./development.js";
 import { deadlineDayTick } from "./deadlineDay.js";
 import { youthIntakeTick } from "./youthIntake.js";
+import { academyJourneyDay, dynastyGrowthDay, dynastyLifeDay } from "./dynasty.js";
+import { dynastyEventDay } from "./dynastyEvents.js";
+import { siblingConflictDay } from "./dynastyCareers.js";
 function eventsDay(s) {
   for (const e of s.events) {
     if (e.done || e.date > s.date) continue;
@@ -80,6 +83,11 @@ export function advanceTime(s, days = null) {
     s.remainingDays--;
     advanced++;
     agingDay(s);
+    dynastyGrowthDay(s);
+    siblingConflictDay(s);
+    academyJourneyDay(s);
+    dynastyEventDay(s);
+    dynastyLifeDay(s);
     retirementDay(s);
     staffDay(s);
     boardDay(s);

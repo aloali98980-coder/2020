@@ -77,7 +77,7 @@ index 5803740..b37b07b 100644
 +> **مرحلة التطوير 0.26 — «تحديث الدراما» (٦):** لائحة الجمعية العمومية — لائحة مطالب بثلاثة محاور (رياضي/مالي/تطويري) تُصدر مع بداية كل موسم بحسب حجم النادي وطموحه، بشاشة تتبع حي لكل بند؛ مراجعة منتصف تلقائية (رسالة ثقة أو إنذار أصفر بمهلة)، وتصويت ثقة نهائي بمكافآت حقيقية (دعم مالي وميزانية تعاقدات وحب جماهير) أو سلم عواقب متدرج محدود بثلاث درجات (خصم مراتب، تجميد انتقالات، انسحاب راعٍ، احتجاج جماهيري) — و**المالك لا يُقال أبدًا**، فكل العواقب مالية وجماهيرية وإدارية. `SAVE_VERSION` 21 بترحيل تلقائي. [التفاصيل](docs/FEATURES-0.26.md).
 +
  > **مرحلة التطوير 0.25 — «تحديث الدراما»:** نظام الأحداث الموسّع: ٧٠ حدث قرار بخيارات وعواقب مختلفة حقيقية (لاعبون، غرفة الملابس، جماهير، مالي وإداري، صحافة، وموسمية) + ١١٥ خبر نكهة قصير لا يوقف الزمن، كلها مربوطة بالأنظمة القائمة (إحصائيات الموسم، عواقب المباريات والإصابات، نتائج الديربي، الجدول والجولات الأخيرة) وبثلاث لغات — دون حقول حالة جديدة ودون تغيير آلية «حدث واحد مفتوح». [التفاصيل](docs/FEATURES-0.25.md).
- 
+
  > **مرحلة التطوير 0.24 — «Empire FC»:** هوية اللعبة الجديدة بالاسم الإنجليزي Empire FC (ابنِ إمبراطوريتك)، شاشة بداية نظيفة تتكلم لغة اللاعبين بدل لغة التطوير، وصفحات المصادر والتراخيص بالهوية الملكية الجديدة. [التفاصيل](docs/FEATURES-0.24.md).
 diff --git a/clubowner/docs/FEATURES-0.26.md b/clubowner/docs/FEATURES-0.26.md
 new file mode 100644
@@ -204,7 +204,7 @@ index 11a6876..38fc4b8 100644
    { id: "transfers", name: "سوق الانتقالات", icon: "transfer" },
    { id: "database", name: "قاعدة اللاعبين", icon: "search" },
 @@ -27,7 +28,7 @@ const byId = (id) => LINKS.find((l) => l.id === id);
- 
+
  // 0.22: القائمة تُعرض في مجموعات منطقية بدل قائمة واحدة طويلة.
  export const NAV_GROUPS = [
 -  { caption: "نظرة عامة", items: ["dashboard", "inbox"] },
@@ -250,7 +250,7 @@ index 6335079..66804f8 100644
 @@ -345,11 +346,41 @@ function migrateToTwenty(input) {
    return s;
  }
- 
+
 +// 0.26 (save v21): لائحة الجمعية العمومية — حالة المجلس وثقته وسجل المواسم.
 +// الحفظة الأقدم تبدأ بثقة محايدة وبلا لائحة، وتُصدر لائحتها مع أول موسم جديد.
 +function migrateToTwentyOne(input) {
@@ -303,7 +303,7 @@ index 6f1e68d..4504072 100644
 +import { MAX_LADDER_TIER } from "../services/boardMandate.js";
 +import { boardTextAr } from "../data/boardTexts.js";
  import { isoDate } from "./isoDate.js";
- 
+
  // A save is untrusted input. Validate structure and relationships before replacing it.
 @@ -487,8 +490,110 @@ export function validateSave(s) {
      ),
@@ -2097,11 +2097,11 @@ index f1f0d52..c2fcaa2 100644
  import { message } from "./inbox.js";
  import { SEASON_STAT_KEYS, initSeasonStats } from "./seasonStats.js";
 +import { endSeasonBoardReview, startSeasonMandate } from "./boardMandate.js";
- 
+
  // Save each player's season stats to the history entry before resetting.
  function archiveSeasonStats(s, entry) {
 @@ -29,6 +30,8 @@ function resetSeasonStats(s) {
- 
+
  export function seasonDay(s) {
    if (s.date < s.nextSeasonDate || s.fixtures.some((f) => !f.played)) return;
 +  // 0.26: تصويت الجمعية العمومية على موسم انتهى لتوه، قبل أرشفته وقبل تصفير الإحصاءات.
@@ -2952,7 +2952,7 @@ index d232c49..5789190 100644
 +++ b/clubowner/tests/capacity-v020.test.js
 @@ -157,7 +157,7 @@ test("0.20 ownFixtures matches a filter over allFixtures and clubPowers matches
  });
- 
+
  test("0.20 new saves are v18 with an empty retiree archive; world-pack players carry no provenance copies", () => {
 -  assert.equal(SAVE_VERSION, 20);
 +  assert.equal(SAVE_VERSION, 21);
@@ -3019,11 +3019,11 @@ index 3a4e992..e1c559a 100644
  import { ALL_MARKETS } from "../src/data/worldMarkets.js";
  import { DIVISIONS, extendedClub } from "../src/data/expandedCatalog.js";
 +import { SAVE_VERSION } from "../src/core/game.js";
- 
+
  const game = () =>
    createGame({
 @@ -65,7 +66,7 @@ const skipGone = (raw) => {
- 
+
  test("all fifty markets get full domestic cups with loaded non-reserve entrants", () => {
    const s = game();
 -  assert.equal(s.version, 20);
@@ -3049,11 +3049,11 @@ index cc694f4..e8e508f 100644
  } from "../src/services/sponsors.js";
  import { convertEGP, moneyLocal } from "../src/ui/format.js";
 +import { SAVE_VERSION } from "../src/core/game.js";
- 
+
  const game = () =>
    createGame({
 @@ -107,7 +108,7 @@ test("offers mix two owner-country locals with one rotating global", () => {
- 
+
  test("signing a local sponsor posts upfront plus eleven obligations", () => {
    const s = game();
 -  assert.equal(s.version, 20);
@@ -3081,7 +3081,7 @@ index b4449bd..73f0887 100644
  import { createGame } from "../src/core/game.js";
  import { migrateSave } from "../src/core/migrations.js";
 @@ -242,12 +243,12 @@ test("coach renewal extends tenure and expiry vacates the job", () => {
- 
+
  test("v15 save migrates to 16 with economy defaults and history intact", () => {
    const s = game();
 -  assert.equal(s.version, 20);
@@ -3143,7 +3143,7 @@ index c563f38..05275c2 100644
 +++ b/clubowner/tests/legends.test.js
 @@ -81,13 +81,13 @@ test("Legends catalogue: real retired names, resolvable clubs, editorial flags",
  });
- 
+
  test("New saves ship v17 legends state; classic and expanded both validate", () => {
 -  assert.equal(SAVE_VERSION, 20);
 +  assert.equal(SAVE_VERSION, 21);
@@ -3225,11 +3225,11 @@ index 04f1e24..e367d7f 100644
  } from "../src/services/fifa/engine.js";
  import { policy } from "../src/services/competitions/presets.js";
 +import { SAVE_VERSION } from "../src/core/game.js";
- 
+
  const game = () =>
    createGame({
 @@ -143,7 +144,7 @@ test("prize review: fifa stays single-leg so per-fixture equals per-tie", () =>
- 
+
  test("qualification review: disjoint continental lists, documented overlaps", () => {
    const s = game();
 -  assert.equal(s.version, 20);
@@ -3255,12 +3255,12 @@ index a2cf294..9022da0 100644
  import { SEASON_STAT_KEYS } from "../src/services/seasonStats.js";
  import { seasonDay } from "../src/services/season.js";
 +import { SAVE_VERSION } from "../src/core/game.js";
- 
+
  const dismiss = (s) => pendingActions(s).forEach((m) => resolveInfo(s, m.id));
  const tick = (s) => {
 @@ -189,7 +190,7 @@ test("v18→v19 migration initializes season stats on active players", () => {
    assert.equal(v18.players[0].seasonGoals, undefined);
- 
+
    const migrated = migrateSave(v18);
 -  assert.equal(migrated.version, 20);
 +  assert.equal(migrated.version, SAVE_VERSION);
@@ -3305,11 +3305,11 @@ index 2e50a4b..0ab2ecb 100644
  test('Large transfer table renders <=50 rows and filtering sees the entire database',()=>{const s=createGame({database:'world',leagues:ALL_MARKETS});const html=playersView(s,true,{});assert.equal((html.match(/<tr>/g)||[]).length,51);assert(playersView(s,true,{search:'Haaland'}).includes('Haaland'));assert(databaseView().includes('CC BY-SA'));});
 -test('v2 migration changes schema only, never replaces old players or ratings',()=>{const s=createGame({database:'current'});s.version=2;delete s.squadLimit;const before=s.players.map(p=>[p.id,p.name,p.rating]);const migrated=migrateSave(s);assert.equal(migrated.version,20);assert.deepEqual(migrated.players.map(p=>[p.id,p.name,p.rating]),before);assert.equal(s.version,2);validateSave(migrated);});
 +test('v2 migration changes schema only, never replaces old players or ratings',()=>{const s=createGame({database:'current'});s.version=2;delete s.squadLimit;const before=s.players.map(p=>[p.id,p.name,p.rating]);const migrated=migrateSave(s);assert.equal(migrated.version,SAVE_VERSION);assert.deepEqual(migrated.players.map(p=>[p.id,p.name,p.rating]),before);assert.equal(s.version,2);validateSave(migrated);});
- 
+
 -test('An actual shipped v0.2-engine fixture migrates without changing identities or finances',async()=>{const {readFile}=await import('node:fs/promises');const old=JSON.parse(await readFile(new URL('./fixtures/actual-v02.json',import.meta.url),'utf8'));const next=migrateSave(old);validateSave(next);assert.equal(old.version,2);assert.equal(next.version,20);assert.deepEqual(next.players.map(p=>[p.id,p.name,p.rating]),old.players.map(p=>[p.id,p.name,p.rating]));assert.equal(next.date,old.date);assert.equal(next.finance.cash,old.finance.cash);});
 +test('An actual shipped v0.2-engine fixture migrates without changing identities or finances',async()=>{const {readFile}=await import('node:fs/promises');const old=JSON.parse(await readFile(new URL('./fixtures/actual-v02.json',import.meta.url),'utf8'));const next=migrateSave(old);validateSave(next);assert.equal(old.version,2);assert.equal(next.version,SAVE_VERSION);assert.deepEqual(next.players.map(p=>[p.id,p.name,p.rating]),old.players.map(p=>[p.id,p.name,p.rating]));assert.equal(next.date,old.date);assert.equal(next.finance.cash,old.finance.cash);});
  test('Published birthdays are used while absent DOB remains explicitly modelled',()=>{const p=worldPlayers(ALL_MARKETS);const haaland=p.find(x=>x.nameLatin==='Erling Haaland');assert.equal(haaland.birthDate,'2000-07-21');assert.equal(haaland.age,26);assert.equal(haaland.ageEstimated,false);assert.equal(p.filter(x=>x.ageEstimated).length,WORLD_MANIFEST.unknownBirthDates);const est=p.filter(x=>x.ageEstimated);assert(est.every(x=>x.age>=18&&x.age<=36));const mean=est.reduce((a,x)=>a+x.age,0)/est.length;assert(mean>24&&mean<27,'estimated ages should spread around a realistic mean, got '+mean);assert(new Set(est.map(x=>x.age)).size>10);assert.deepEqual(est.slice(0,50).map(x=>x.age),worldPlayers(ALL_MARKETS).filter(x=>x.ageEstimated).slice(0,50).map(x=>x.age));});
- 
+
  // 0.18 — roster supplement, star profiles, conflict resolution
 diff --git a/package.json b/package.json
 index 73e8197..53131d1 100644
@@ -3324,6 +3324,5 @@ index 73e8197..53131d1 100644
    "description": "جذر يمثل النشر إلى Cloudflare — الكود الفعلي داخل clubowner/. يعمل مع: npm install && npm run build && npx wrangler deploy من الجذر مباشرة.",
    "scripts": {
      "build": "cd clubowner && npm install --ignore-scripts --no-audit --no-fund && npm run build",
--- 
+--
 2.39.5
-

@@ -1,5 +1,6 @@
 import { validateTalent } from "./talentValidation.js";
 import { validateLegends } from "./legendsValidation.js";
+import { validateDynasty } from "./dynastyValidation.js";
 import { extendedClub } from "../data/expandedCatalog.js";
 import { validateExpansion } from "./expansionValidation.js";
 import { ALL_MARKETS } from "../data/worldMarkets.js";
@@ -497,6 +498,7 @@ export function validateSave(s) {
   validateExpansion(s);
   validateTalent(s);
   validateLegends(s);
+  validateDynasty(s);
   return s;
 }
 
