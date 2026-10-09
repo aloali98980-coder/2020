@@ -17,6 +17,7 @@ import { initBoard } from "../services/boardMandate.js";
 import { initBlackFiles } from "../services/blackFiles.js";
 import { ensureReleaseClause } from "../services/releaseClause.js";
 import { boardTextAr } from "../data/boardTexts.js";
+import { ensureStaffCorp } from "../services/staff/staffCorp.js";
 import { initEmpire, storyForOldSave } from "../services/empire/wealth.js";
 import { empireText } from "../data/empireTexts.js";
 function migrateToFive(input) {
@@ -463,7 +464,30 @@ function migrateToTwentyFour(input) {
   return s;
 }
 
+// 0.30 (save v26): الإدارة الشاملة — طاقم افتراضي متوسط + مقر صغير.
+// الحفظات القديمة تُرحَّل تلقائيًا دون كسر: اللاعبون والمالية والعقود لا تُمسّ.
 export function migrateSave(input) {
+  if (!input || input.version === 26) return input;
+  if (input.version === 25) {
+    const s = structuredClone(input);
+    s.version = 26;
+    ensureStaffCorp(s);
+    s.migrationNote =
+      (s.migrationNote || "") +
+      " الإدارة الشاملة 0.30: طاقم إداري افتراضي متوسط المهارة مع مقر صغير؛ وسّع هيكلك من شاشة الإدارة الشاملة.";
+    return s;
+  }
+  const v25 = migrateSaveToTwentyFive(input);
+  if (v25?.version !== 25) return v25;
+  v25.version = 26;
+  ensureStaffCorp(v25);
+  v25.migrationNote =
+    (v25.migrationNote || "") +
+    " الإدارة الشاملة 0.30: طاقم إداري افتراضي متوسط المهارة مع مقر صغير؛ وسّع هيكلك من شاشة الإدارة الشاملة.";
+  return v25;
+}
+
+function migrateSaveToTwentyFive(input) {
   if (!input || input.version === 25) return input;
   if (input.version === 24) {
     const s = structuredClone(input);

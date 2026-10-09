@@ -7,6 +7,7 @@ import { reservedSquadSize } from "./employment.js";
 import { wages } from "./finance.js";
 import { message, closeThread } from "./inbox.js";
 import { staffSkill } from "./staff.js";
+import { academyPotentialBonus, academyScoutBonus, applyCurriculumTilt } from "./staff/academy.js";
 import { extendedClub } from "../data/expandedCatalog.js";
 
 export const YOUTH_INTAKE_FIXED_DATE = "03-20";
@@ -49,7 +50,7 @@ export function generateYouthIntake(s) {
   const count = clamp(3 + Math.floor(academyLevel / 2), 3, 5);
   const candidates = [];
 
-  const scoutError = Math.max(2, 9 - academyLevel - Math.floor(staffBonus / 30));
+  const scoutError = Math.max(2, 9 - academyLevel - Math.floor(staffBonus / 30) - academyScoutBonus(s));
 
   for (let i = 0; i < count; i++) {
     const position = POSITIONS[(s.seasonNumber * 4 + i) % POSITIONS.length];
@@ -59,6 +60,8 @@ export function generateYouthIntake(s) {
     p.age = 16 + (i % 2);
     p.ageReference = p.age;
     p.birthDate = `${Number(s.date.slice(0, 4)) - p.age}-01-15`;
+    p.potential = clamp(p.potential + academyPotentialBonus(s), 1, 99);
+    applyCurriculumTilt(s, p);
 
     const potMin = Math.max(Math.round(p.rating), Math.floor(p.potential - scoutError));
     const potMax = Math.min(99, Math.ceil(p.potential + scoutError));

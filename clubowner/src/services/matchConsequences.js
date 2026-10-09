@@ -4,6 +4,7 @@
 
 import { addDays, clamp } from "../core/utils.js";
 import { message } from "./inbox.js";
+import { fitnessFactor } from "./staff/effects.js";
 
 // ── 1. إصابات ──────────────────────────────────────────────────────────────
 
@@ -37,10 +38,11 @@ export function injuryDurationTextFr(days) {
  * احتمال الإصابة: يعتمد على تعب اللاعب (fitness منخفض) + دقائق تراكمية كثيرة.
  * الصيغة: 3% أساسي × معامل التعب × معامل اللياقة.
  */
-export function injuryProbability(p) {
+export function injuryProbability(p, factor = 1) {
   const fatigue = 1 + Math.min((p.seasonMinutes || 0) / 3000, 1.5);
   const lowFit = 1 + Math.max(0, (70 - (p.fitness || 70))) / 100;
-  return clamp(0.03 * fatigue * lowFit, 0.005, 0.12);
+  // 0.30: مدرب اللياقة يخفض الاحتمال عبر factor (افتراضي ١ يُبقي السلوك القديم).
+  return clamp(0.03 * fatigue * lowFit * factor, 0.005, 0.12);
 }
 
 /**
@@ -157,7 +159,7 @@ export function applyMatchConsequences(s, f, cards, rng) {
 
   // ── إصابات ──
   for (const p of xi) {
-    const prob = injuryProbability(p);
+    const prob = injuryProbability(p, fitnessFactor(s));
     if (rng() < prob) {
       const days = injuryDuration(rng);
       const type = INJURY_TYPES[Math.floor(rng() * INJURY_TYPES.length)];

@@ -709,4 +709,31 @@ function validateEmpire(s) {
       Array.isArray(e.log) && e.log.length <= 60,
     "سجلات حياة الملياردير غير سليمة.",
   );
+  // 0.30: الإدارة الشاملة — هيكل إلزامي بعد الترحيل، بحدود حجم صارمة.
+  const c = s.staffCorp;
+  check(
+    c && c.schema === 1 &&
+      c.hq && Number.isInteger(c.hq.level) && c.hq.level >= 0 && c.hq.level <= 5 &&
+      Array.isArray(c.employees) && c.employees.length <= 25 &&
+      Array.isArray(c.market) && c.market.length <= 9 &&
+      Array.isArray(c.poach) && c.poach.length <= 25 &&
+      c.meeting && Array.isArray(c.meeting.requests) &&
+      c.sporting && c.marketing && c.scouts && c.academy && c.social && c.legal && c.financeOffice,
+    "الإدارة الشاملة غير سليمة.",
+  );
+  check(
+    c.employees.every(
+      (x) =>
+        id(x.id) && text(x.name?.ar) && Number.isFinite(x.skill) && x.skill >= 0 && x.skill <= 100 &&
+        Number.isSafeInteger(x.wage) && x.wage >= 0 && isoDate(x.contractEnd) &&
+        Number.isFinite(x.loyalty) && x.loyalty >= 0 && x.loyalty <= 100 &&
+        Number.isInteger(x.level) && x.level >= 1 && x.level <= 5,
+    ) &&
+      c.market.every(
+        (m) =>
+          typeof m.key === "string" && text(m.name?.ar) && Number.isFinite(m.skill) &&
+          Number.isSafeInteger(m.wageAsk) && m.wageAsk >= 0 && isoDate(m.expires),
+      ),
+    "سجلات موظفي الإدارة الشاملة غير سليمة.",
+  );
 }
