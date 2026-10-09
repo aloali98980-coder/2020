@@ -4,7 +4,7 @@ import { tr } from "../i18n/index.js";
 import { money, num, esc } from "../ui/format.js";
 import { STAFF_ROLES, HQ_LEVELS, staffText, SPORTING_PHILOSOPHIES, SCOUT_REGIONS, REGION_IDS } from "../data/staffCatalog.js";
 import {
-  ensureStaffCorp, corpEmployees, roleNameAr, hqCap, corpPayroll,
+  ensureStaffCorp, corpEmployees, hqCap, corpPayroll,
 } from "../services/staff/staffCorp.js";
 import { sportingDirector, autoCap } from "../services/staff/sporting.js";
 import { gkSkillOf, fitnessSkillOf, doctorSkillOf, fitnessFactor, gkGainBonus } from "../services/staff/effects.js";
@@ -25,6 +25,25 @@ const empName = (e, lang) => (lang === "ar" ? e.name.ar : e.name.en);
 
 const bar = (v) =>
   `<span class="meter"><i style="width:${Math.max(0, Math.min(100, v))}%"></i></span>`;
+
+const orgNode = (s, role, lang) => {
+  const staff = corpEmployees(s).filter((e) => e.role === role);
+  const title = roleName(role, lang);
+  return `<div class="org-node"><strong>${esc(title)}</strong>${staff.length
+    ? staff.map((e) => `<span data-no-translate>${esc(empName(e, lang))} · ${l("ولاء", "Loyalty", "Loyauté")} ${num(e.loyalty)}٪</span>`).join("")
+    : `<span class="vacant">${l("شاغر", "Vacant", "Vacant")}</span>`}</div>`;
+};
+function orgTree(s, lang) {
+  const executives = ["sporting", "marketing", "finance", "lawyer"];
+  const football = ["coach", "doctor", "fitness", "gk", "scout", "academy"];
+  const support = ["social", "assistant"];
+  return `<div class="org-tree" aria-label="${l("الشجرة التنظيمية", "Organisation chart", "Organigramme")}">
+    <div class="org-node org-owner"><small>${l("الرئيس والمالك", "Chair & owner", "Président-propriétaire")}</small><strong data-no-translate>${esc(s.owner)}</strong></div>
+    <div class="org-branch"><h4>${l("الإدارة العليا", "Executive team", "Direction générale")}</h4><div class="org-children">${executives.map((r) => orgNode(s, r, lang)).join("")}</div></div>
+    <div class="org-branch"><h4>${l("الكرة والأداء", "Football & performance", "Football et performance")}</h4><div class="org-children">${football.map((r) => orgNode(s, r, lang)).join("")}</div></div>
+    <div class="org-branch"><h4>${l("الاتصال والمساندة", "Communications & support", "Communication et soutien")}</h4><div class="org-children">${support.map((r) => orgNode(s, r, lang)).join("")}</div></div>
+  </div>`;
+}
 
 function orgTab(s, lang) {
   const c = ensureStaffCorp(s);
@@ -54,6 +73,7 @@ function orgTab(s, lang) {
       </span></div>`;
   }).join("");
   return `<h3>${l("الهيكل التنظيمي", "Organisation Chart", "Organigramme")} (${num(c.employees.length)}/${num(hqCap(s))}) · ${l("الرواتب", "Payroll", "Salaires")}: ${money(corpPayroll(s))}</h3>
+  ${orgTree(s, lang)}
   ${poach ? `<div class="poach-list">${poach}</div>` : ""}
   <table class="staff-table"><thead><tr><th>${l("الموظف", "Employee", "Employé")}</th><th>${l("الدور", "Role", "Rôle")}</th><th>${l("المهارة", "Skill", "Compétence")}</th><th>${l("الولاء", "Loyalty", "Loyauté")}</th><th>${l("الراتب", "Wage", "Salaire")}</th><th>${l("الدرجة", "Grade", "Grade")}</th><th>${l("العقد حتى", "Contract until", "Contrat jusqu’au")}</th><th></th></tr></thead><tbody>${rows || `<tr><td colspan="8">${l("لا موظفين بعد.", "No employees yet.", "Aucun employé.")}</td></tr>`}</tbody></table>`;
 }
@@ -83,19 +103,26 @@ function marketTab(s, lang) {
   <div class="market-list">${cards || `<p>${l("السوق فارغ حاليًا.", "Market is empty.", "Marché vide.")}</p>`}</div>`;
 }
 
-function meetingTab(s) {
+function meetingTab(s, lang) {
   const c = ensureStaffCorp(s);
   const rows = c.meeting.requests.map((r) => {
     const e = corpEmployees(s).find((x) => x.id === r.from);
-    return `<tr><td data-no-translate>${esc(e?.name.ar || "—")}</td><td>${esc(roleNameAr(r.role))}</td>
-    <td>${esc(r.text)} — ${money(r.amount)}</td><td>${r.status === "open"
+    const reportValue = r.report?.money ? money(r.report.value) : num(r.report?.value ?? 0);
+    const report = r.report
+      ? `<strong>${esc(staffText(r.report.label, lang))}: ${reportValue}</strong><small>${esc(staffText(r.report.note, lang))}</small>`
+      : l("لا يوجد تقرير", "No report", "Aucun rapport");
+    const request = `${staffText(r.text, lang)} — ${money(r.amount)}`;
+    const authority = staffText(r.authority, lang);
+    const granted = c.authorities?.[r.role]?.until >= s.date;
+    return `<tr><td data-no-translate>${esc(lang === "ar" ? e?.name.ar || "—" : e?.name.en || "—")}</td><td>${esc(roleName(r.role, lang))}</td>
+    <td>${report}</td><td>${esc(request)}<small>${l("التفويض المطلوب", "Requested authority", "Pouvoir demandé")}: ${esc(authority)}${granted ? ` · ${l("ممنوح حتى", "Granted until", "Accordé jusqu’au")} ${esc(c.authorities[r.role].until)}` : ""}</small></td><td>${r.status === "open"
       ? `<button class="btn small primary" data-action="staff-req" data-id="${r.id}" data-how="yes">${l("موافقة", "Approve", "Approuver")}</button>
          <button class="btn small danger" data-action="staff-req" data-id="${r.id}" data-how="no">${l("رفض", "Reject", "Refuser")}</button>`
       : r.status === "approved" ? l("اعتُمد ✓", "Approved ✓", "Approuvé ✓") : l("رُفض ✗", "Rejected ✗", "Rejeté ✗")}</td></tr>`;
   }).join("");
   return `<h3>${l("اجتماع المجلس الشهري", "Monthly Board Meeting", "Conseil mensuel")} (${esc(c.meeting.month || "—")})</h3>
-  <table class="staff-table"><thead><tr><th>${l("المدير", "Director", "Directeur")}</th><th>${l("الدور", "Role", "Rôle")}</th><th>${l("الطلب", "Request", "Demande")}</th><th></th></tr></thead>
-  <tbody>${rows || `<tr><td colspan="4">${l("لا طلبات هذا الشهر.", "No requests this month.", "Aucune demande ce mois-ci.")}</td></tr>`}</tbody></table>`;
+  <table class="staff-table"><thead><tr><th>${l("المدير", "Director", "Directeur")}</th><th>${l("الدور", "Role", "Rôle")}</th><th>${l("تقرير المدير", "Director’s report", "Rapport du directeur")}</th><th>${l("طلب الميزانية والتفويض", "Budget & authority request", "Demande de budget et de pouvoir")}</th><th></th></tr></thead>
+  <tbody>${rows || `<tr><td colspan="5">${l("لا طلبات هذا الشهر.", "No requests this month.", "Aucune demande ce mois-ci.")}</td></tr>`}</tbody></table>`;
 }
 
 function hqTab(s) {
@@ -179,6 +206,6 @@ export function staffView(s, tab = "org", lang = "ar") {
     : tab === "sporting" ? sportingTab(s, lang)
     : tab === "tech" ? techTab(s)
     : tab === "scouts" ? scoutsTab(s, lang)
-    : tab === "meeting" ? meetingTab(s) : tab === "hq" ? hqTab(s) : orgTab(s, lang);
+    : tab === "meeting" ? meetingTab(s, lang) : tab === "hq" ? hqTab(s) : orgTab(s, lang);
   return `<section class="staff-corp"><div class="tabs">${tabs}</div><div class="tab-body">${body}</div></section>`;
 }

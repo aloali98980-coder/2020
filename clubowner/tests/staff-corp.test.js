@@ -16,6 +16,8 @@ import { startHqUpgrade, hqDay } from "../src/services/staff/hq.js";
 import { STAFF_ROLES, HQ_LEVELS, FAMOUS_STAFF, marketWage } from "../src/data/staffCatalog.js";
 import { EVENT_CATALOG } from "../src/data/eventCatalog.js";
 import { resolveClubEvent } from "../src/services/clubEvents.js";
+import { staffView } from "../src/features/staff.js";
+import { setLanguage } from "../src/i18n/index.js";
 
 const game = () => createGame({ database: "demo" });
 const rich = (s) => {
@@ -77,7 +79,10 @@ test("التفاوض: قبول عادل → تعيين، و٣ جولات ثم ر
   startNegotiation(s, cand.key);
   const r = negotiate(s, { wage: cand.wageAsk, years: cand.yearsAsk, bonus: cand.bonusAsk });
   assert.equal(r.result, "accepted");
-  assert.ok(corpEmployees(s).some((e) => e.name.ar === cand.name.ar));
+  const hired = corpEmployees(s).find((e) => e.name.ar === cand.name.ar);
+  assert.ok(hired);
+  assert.equal(hired.bonusPct, cand.bonusAsk, "مكافأة العقد المتفاوض عليها محفوظة");
+  assert.equal(hired.contractEnd, addDays(s.date, cand.yearsAsk * 365));
   assert.equal(s.staffCorp.negotiation, null);
   // مرشح ثانٍ بعروض بخيلة: عرض مضاد ثم رفض نهائي.
   fireEmployee(s, corpEmployees(s).find((e) => e.role === "gk").id);
@@ -91,6 +96,37 @@ test("التفاوض: قبول عادل → تعيين، و٣ جولات ثم ر
   assert.equal(last, "rejected");
   assert.ok(!s.staffCorp.market.some((m) => m.key === c2.key));
   validateSave(s);
+});
+
+test("سعة المقر تمنع التعيين بلا عقد معلّق تالف، ثم تفتح مقعدًا بعد الترقية", () => {
+  const s = game();
+  const cand = plantCandidate(s, "lawyer", 70);
+  startNegotiation(s, cand.key);
+  assert.throws(() => negotiate(s, { wage: cand.wageAsk, years: cand.yearsAsk, bonus: cand.bonusAsk }), /المقر ممتلئ/);
+  assert.equal(s.staffCorp.negotiation.status, "open", "رفض السعة لا يحسم التفاوض");
+  assert.equal(s.staffCorp.employees.length, hqCap(s));
+  rich(s);
+  const project = startHqUpgrade(s);
+  cand.expires = addDays(project.end, 30);
+  s.date = project.end;
+  hqDay(s);
+  const hired = negotiate(s, { wage: cand.wageAsk, years: cand.yearsAsk, bonus: cand.bonusAsk });
+  assert.equal(hired.result, "accepted");
+  assert.equal(s.staffCorp.employees.length, 7);
+  assert.ok(s.staffCorp.employees.length < hqCap(s));
+  validateSave(s);
+});
+
+test("الهيكل يعرض شجرة فعلية لكل وحدة مع الموظفين والشواغر", () => {
+  const s = game();
+  setLanguage("en");
+  const html = staffView(s, "org", "en");
+  setLanguage("ar");
+  assert.match(html, /org-tree/);
+  assert.match(html, /Executive team/);
+  assert.match(html, /Sporting Director/);
+  assert.match(html, /Team Doctor/);
+  assert.match(html, /Vacant/);
 });
 
 test("فصل/تجديد/ترقية/زيادة بعواقب مالية وولاء", () => {
@@ -146,12 +182,14 @@ test("اجتماع المجلس: طلبات حقيقية — اعتماد يدف
   s.date = "2026-10-01";
   const mt = boardMeetingMonth(s);
   assert.ok(mt.requests.length >= 3);
+  assert.ok(mt.requests.every((x) => x.report?.label?.ar && x.report?.note?.en && x.authority?.fr), "كل مدير يرفع تقريرًا ويطلب تفويضًا بثلاث لغات");
   const r = mt.requests[0];
   const emp = corpEmployees(s).find((e) => e.id === r.from);
   const cash = s.finance.cash;
   resolveMeetingRequest(s, r.id, true);
   assert.equal(r.status, "approved");
   assert.equal(s.finance.cash, cash - r.amount);
+  assert.ok(s.staffCorp.authorities[r.role].until > s.date, "التفويض المعتمد محدد المدة");
   assert.ok(emp.loyalty >= 60);
   const r2 = mt.requests[1];
   const e2 = corpEmployees(s).find((e) => e.id === r2.from);
