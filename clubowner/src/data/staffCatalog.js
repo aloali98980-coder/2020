@@ -93,18 +93,25 @@ export const ACADEMY_CURRICULA = Object.freeze({
 
 // ── حملات التسويق ───────────────────────────────────────────────────────────
 export const CAMPAIGN_TYPES = Object.freeze({
-  season: { name: L("حملة الموسم", "Season Campaign", "Campagne de saison"), days: 45, desc: L("تذاكر وقمصان الموسم الجديد.", "New-season tickets and shirts.", "Billets et maillots de la saison.") },
-  signing: { name: L("حملة اللاعب الجديد", "New Signing Campaign", "Campagne de recrue"), days: 30, desc: L("تقديم صفقة كبيرة للجماهير والرعاة.", "Unveiling a major signing to fans and sponsors.", "Présentation d’une recrue majeure aux supporters et sponsors.") },
-  derby: { name: L("حملة الديربي", "Derby Campaign", "Campagne du derby"), days: 14, desc: L("أسبوع الديربي: تفاعل مضاعف وحضور قياسي.", "Derby week: doubled engagement and record crowds.", "Semaine du derby : engagement doublé, affluence record.") },
+  season: { name: L("حملة الموسم", "Season Campaign", "Campagne de saison"), days: 45, fans: 3, desc: L("تذاكر وقمصان الموسم الجديد.", "New-season tickets and shirts.", "Billets et maillots de la saison.") },
+  signing: { name: L("حملة اللاعب الجديد", "New Signing Campaign", "Campagne de recrue"), days: 30, fans: 2, desc: L("تقديم صفقة كبيرة للجماهير والرعاة.", "Unveiling a major signing to fans and sponsors.", "Présentation d’une recrue majeure aux supporters et sponsors.") },
+  derby: { name: L("حملة الديربي", "Derby Campaign", "Campagne du derby"), days: 14, fans: 4, desc: L("أسبوع الديربي: تفاعل مضاعف وحضور قياسي.", "Derby week: doubled engagement and record crowds.", "Semaine du derby : engagement doublé, affluence record.") },
 });
 
 // ── محتوى السوشيال ميديا ────────────────────────────────────────────────────
 export const SOCIAL_CONTENTS = Object.freeze({
-  training: { name: L("كواليس التدريب", "Training Access", "Dans les coulisses"), cost: 50000, fans: 1 },
-  interview: { name: L("لقاء حصري", "Exclusive Interview", "Interview exclusive"), cost: 30000, fans: 1 },
-  behind: { name: L("يوم مع اللاعبين", "A Day With the Players", "Un jour avec les joueurs"), cost: 100000, fans: 2 },
-  fanday: { name: L("يوم الجماهير", "Fans Day", "Journée des supporters"), cost: 200000, fans: 3 },
-  charity: { name: L("مبادرة خيرية", "Charity Drive", "Action caritative"), cost: 150000, fans: 2 },
+  training: { name: L("كواليس التدريب", "Training Access", "Dans les coulisses"), cost: 50000, fans: 1, eng: 4 },
+  interview: { name: L("لقاء حصري", "Exclusive Interview", "Interview exclusive"), cost: 30000, fans: 1, eng: 3 },
+  behind: { name: L("يوم مع اللاعبين", "A Day With the Players", "Un jour avec les joueurs"), cost: 100000, fans: 2, eng: 5 },
+  fanday: { name: L("يوم الجماهير", "Fans Day", "Journée des supporters"), cost: 200000, fans: 3, eng: 6 },
+  charity: { name: L("مبادرة خيرية", "Charity Drive", "Action caritative"), cost: 150000, fans: 2, eng: 5 },
+});
+
+// ── أزمات السوشيال ميديا ──────────────────────────────────────────────────
+export const SOCIAL_CRISES = Object.freeze({
+  tweet: { name: L("تغريدة غبية", "Reckless Tweet", "Tweet déplacé"), desc: L("تغريدة مسيئة من حساب لاعب أشعلت الجماهير.", "An offensive player tweet enraged the fans.", "Un tweet offensant d’un joueur a enflammé les supporters.") },
+  video: { name: L("فيديو مسيء", "Damaging Video", "Vidéo compromettante"), desc: L("فيديو مسرّب من غرفة الملابس ينتشر كالنار.", "A leaked dressing-room video is spreading fast.", "Une vidéo fuitée du vestiaire se propage comme une traînée de poudre.") },
+  fight: { name: L("اشتباك جماهيري", "Fan Clash", "Affrontement de supporters"), desc: L("اشتباك بين جماهيرك ومنافس يُحمَّل ناديك مسؤوليته.", "A clash with rival fans is being pinned on your club.", "Un affrontement avec des supporters rivaux est imputé à votre club.") },
 });
 
 // ── القضايا القانونية ───────────────────────────────────────────────────────

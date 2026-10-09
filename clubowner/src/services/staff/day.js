@@ -10,6 +10,9 @@ import { hqDay } from "./hq.js";
 import { sportingMonth, sportingDay } from "./sporting.js";
 import { doctorDay, doctorMonth } from "./effects.js";
 import { scoutMonth } from "./scouts.js";
+import { marketingDay, marketingMonth } from "./marketing.js";
+import { socialDay, socialMonth } from "./social.js";
+import { academyWatchMonth } from "./academy.js";
 
 export function staffCorpDay(s) {
   const c = ensureStaffCorp(s);
@@ -17,6 +20,8 @@ export function staffCorpDay(s) {
   hqDay(s);
   sportingDay(s);
   doctorDay(s);
+  marketingDay(s);
+  socialDay(s);
   if (s.date.endsWith("-01")) {
     loyaltyMonth(s);
     refreshStaffMarket(s);
@@ -24,6 +29,9 @@ export function staffCorpDay(s) {
     sportingMonth(s);
     doctorMonth(s);
     scoutMonth(s);
+    marketingMonth(s);
+    socialMonth(s);
+    academyWatchMonth(s);
     // الخطف الشهري: كل موظف مستهدف باحتماله الخاص.
     for (const emp of corpEmployees(s)) {
       if (c.poach.some((o) => o.status === "open" && o.empId === emp.id)) continue;
