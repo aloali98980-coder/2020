@@ -22,7 +22,8 @@ import { ensureStaffCorp } from "../services/staff/staffCorp.js";
 import { initPolitics } from "../services/politics/state.js";
 import { initBetting } from "../services/betting/state.js";
 import { initStockMarket } from "../services/stockMarket/state.js";
-export const SAVE_VERSION = 33;
+import { initClubEmpire } from "../services/clubEmpire/state.js";
+export const SAVE_VERSION = 34;
 export function createGame({
   clubId = "ahly",
   owner = "مالك النادي",
@@ -191,5 +192,7 @@ export function createGame({
   initBetting(s);
   // 0.37: بورصة الأندية — كل نادٍ له تسعير أولي، ومحفظة المالك تبدأ فارغة.
   initStockMarket(s);
+  // 0.38: إمبراطور الأندية — السوق يعمل والمحفظة تبدأ بلا أندية إضافية.
+  initClubEmpire(s);
   return s;
 }
