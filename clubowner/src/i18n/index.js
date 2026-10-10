@@ -17,6 +17,7 @@ import { POLITICS_PHRASES } from "./phrases-politics.js";
 import { DYNASTY_PHRASES } from "./phrases-dynasty.js";
 import { BETTING_PHRASES } from "./phrases-betting.js";
 import { STOCK_MARKET_PHRASES } from "../data/stockMarketTexts.js";
+import { STOCK_MARKET_EVENT_PHRASES } from "../data/stockMarketEvents.js";
 import {
   ACADEMY_FOCUSES,
   CHILD_STAGES,
@@ -72,8 +73,9 @@ for (const extra of [
   STAFF_PHRASES,
   POLITICS_PHRASES,
   BETTING_PHRASES,
-  // 0.37: club exchange and monthly price engine.
+  // 0.37: club exchange, trading, regulation and conditional market events.
   STOCK_MARKET_PHRASES,
+  STOCK_MARKET_EVENT_PHRASES,
 ])
   for (const [ar, pair] of Object.entries(extra))
     if (!DICTIONARY[ar])

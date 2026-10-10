@@ -52,6 +52,11 @@ function blankBetting() {
     pendingInsider: null,
     exposure: 0,
     marketValue: 0,
+    listed: false,
+    stockListingId: null,
+    publicOwnershipPct: 0,
+    founderOwnershipPct: 100,
+    ipoProceeds: 0,
     sponsorLeague: false,
     lastMonthProfit: 0,
     history: [],
@@ -93,6 +98,11 @@ function upgradeBetting(s) {
   b.pendingInsider ??= null;
   b.exposure ??= 0;
   b.marketValue ??= 0;
+  b.listed ??= false;
+  b.stockListingId ??= null;
+  b.publicOwnershipPct ??= 0;
+  b.founderOwnershipPct ??= 100;
+  b.ipoProceeds ??= 0;
   b.sponsorLeague ??= false;
   b.lastMonthProfit ??= 0;
   b.history ??= [];

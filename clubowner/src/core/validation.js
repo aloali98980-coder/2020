@@ -17,6 +17,7 @@ import { isoDate } from "./isoDate.js";
 import { OWNER_STORIES, LIFESTYLES, TRANSFER_CAP } from "../services/empire/wealth.js";
 import { CASE_KINDS, CASE_STAGES } from "../data/staffCatalog.js";
 import { validatePolitics } from "./politicsValidation.js";
+import { validateStockMarket } from "./stockMarketValidation.js";
 
 // A save is untrusted input. Validate structure and relationships before replacing it.
 const id = (value) =>
@@ -500,6 +501,7 @@ export function validateSave(s) {
   validateBlackFiles(s);
   validateEmpire(s);
   validatePolitics(s);
+  validateStockMarket(s);
   const city = s.sportsCity, stadium = city?.stadium;
   check(city && Array.isArray(city.facilities) && city.facilities.length <= CITY_FACILITIES.length &&
     new Set(city.facilities).size === city.facilities.length && city.facilities.every(x => CITY_FACILITIES.some(f => f.id === x)) &&

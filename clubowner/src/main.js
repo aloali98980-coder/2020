@@ -1,4 +1,5 @@
 import "./styles/sportsCity.css";
+import "./styles/stockMarket.css";
 import { buildCityFacility } from "./services/cityFacilities.js";
 import { startStadium, chooseOldGround, nameStadium, stadiumQuote } from "./services/sportsCity.js";
 import { startIntake, chooseCandidate } from "./services/talent/academy.js";
@@ -170,6 +171,7 @@ import {
   sponsorDealResult,
 } from "./features/sponsors.js";
 import { financeView } from "./features/finance.js";
+import { stockMarketView } from "./features/stockMarket.js";
 import { boardView } from "./features/board.js";
 import { staffView } from "./features/staff.js";
 import {
@@ -300,6 +302,9 @@ const ui = {
   legendFilters: { ...DEFAULT_LEGEND_FILTERS },
   legendOffer: {},
   empireTab: "wealth",
+  marketTab: "overview",
+  marketListing: null,
+  marketQuery: "",
   staffTab: "org",
   politicsTab: "overview",
   palette: { open: false, q: "", sel: 0, items: [] },
@@ -363,6 +368,12 @@ function render() {
     facilities: () => facilitiesView(s),
     sponsors: () => sponsorsView(s),
     finance: () => financeView(s, ui.financeTab),
+    market: () =>
+      stockMarketView(s, {
+        tab: ui.marketTab,
+        selectedId: ui.marketListing,
+        query: ui.marketQuery,
+      }),
     board: () => boardView(s),
     politics: () => politicsView(s, ui.politicsTab),
     staff: () => staffView(s, ui.staffTab, getLanguage()),
@@ -623,6 +634,241 @@ function authModalContent(activeTab = "login", error = "") {
 }
 
 const actions = {
+  "market-tab": (el) => {
+    ui.marketTab = el.dataset.id || "overview";
+    render();
+  },
+  "market-buy": async (el) => {
+    const quantity = Number(document.getElementById("market-trade-quantity")?.value);
+    const { buyShares } = await import("./services/stockMarket/trading.js");
+    await apply(
+      (s) => buyShares(s, el.dataset.id, quantity),
+      tr(
+        "تم شراء الأسهم من ثروتك الشخصية.",
+        "Shares bought from your personal wealth.",
+        "Actions achetées avec votre fortune personnelle.",
+      ),
+    );
+  },
+  "market-sell": async (el) => {
+    const quantity = Number(document.getElementById("market-trade-quantity")?.value);
+    const { sellShares } = await import("./services/stockMarket/trading.js");
+    await apply(
+      (s) => sellShares(s, el.dataset.id, quantity),
+      tr(
+        "تم بيع الأسهم وإعادة العائد إلى ثروتك.",
+        "Shares sold and proceeds returned to your wealth.",
+        "Actions vendues et produit reversé à votre fortune.",
+      ),
+    );
+  },
+  "market-plan-secret": async (el) => {
+    const { planInsideInformation } = await import(
+      "./services/stockMarket/insider.js"
+    );
+    await apply(
+      (s) => planInsideInformation(s, el.dataset.id, el.dataset.kind),
+      tr(
+        "سُجلت المعلومة السرية قبل الإعلان.",
+        "The secret information was recorded before disclosure.",
+        "L’information secrète a été enregistrée avant publication.",
+      ),
+    );
+  },
+  "market-insider-buy": async (el) => {
+    const quantity = Number(
+      document.getElementById(`inside-qty-${el.dataset.id}`)?.value,
+    );
+    const { tradeOnInsideInformation } = await import(
+      "./services/stockMarket/insider.js"
+    );
+    await apply(
+      (s) => tradeOnInsideInformation(s, el.dataset.id, "buy", quantity),
+      tr(
+        "تداولت قبل الإعلان؛ الهيئة قد تربط التوقيت بك.",
+        "You traded before disclosure; the regulator may connect the timing to you.",
+        "Vous avez négocié avant publication ; le régulateur peut relier le timing à vous.",
+      ),
+    );
+  },
+  "market-insider-sell": async (el) => {
+    const quantity = Number(
+      document.getElementById(`inside-qty-${el.dataset.id}`)?.value,
+    );
+    const { tradeOnInsideInformation } = await import(
+      "./services/stockMarket/insider.js"
+    );
+    await apply(
+      (s) => tradeOnInsideInformation(s, el.dataset.id, "sell", quantity),
+      tr(
+        "تداولت قبل الإعلان؛ الهيئة قد تربط التوقيت بك.",
+        "You traded before disclosure; the regulator may connect the timing to you.",
+        "Vous avez négocié avant publication ; le régulateur peut relier le timing à vous.",
+      ),
+    );
+  },
+  "market-pump-dump": async (el) => {
+    const quantity = Number(
+      document.getElementById("market-manip-quantity")?.value,
+    );
+    const budget = Number(document.getElementById("market-rumor-budget")?.value);
+    const { startPumpAndDump } = await import(
+      "./services/stockMarket/manipulation.js"
+    );
+    await apply(
+      (s) => startPumpAndDump(s, el.dataset.id, quantity, budget),
+      tr(
+        "بدأت حملة السوق؛ الربح كبير والجريمة أكبر إن كُشفت.",
+        "The market campaign started; the profit is huge and so is the crime if exposed.",
+        "La campagne de marché a commencé ; le gain est énorme, tout comme le crime s’il est découvert.",
+      ),
+    );
+  },
+  "market-bear-rumor": async (el) => {
+    const budget = Number(document.getElementById("market-rumor-budget")?.value);
+    const { launchRumorCampaign } = await import(
+      "./services/stockMarket/manipulation.js"
+    );
+    await apply(
+      (s) =>
+        launchRumorCampaign(s, el.dataset.id, {
+          direction: "bear",
+          budget,
+        }),
+      tr(
+        "انطلقت حرب الشائعات الهابطة.",
+        "The bearish rumour war has begun.",
+        "La guerre de rumeurs baissières a commencé.",
+      ),
+    );
+  },
+  "market-short-poach": async (el) => {
+    const quantity = Number(
+      document.getElementById("market-manip-quantity")?.value,
+    );
+    const { shortBeforePoach } = await import(
+      "./services/stockMarket/manipulation.js"
+    );
+    await apply(
+      (s) => shortBeforePoach(s, el.dataset.id, quantity),
+      tr(
+        "بعت المنافس على المكشوف قبل خطة خطف نجمه.",
+        "You shorted the rival before the star-poaching plan.",
+        "Vous avez vendu le rival à découvert avant le projet de recruter sa star.",
+      ),
+    );
+  },
+  "market-dump": async (el) => {
+    const { dumpCampaign } = await import(
+      "./services/stockMarket/manipulation.js"
+    );
+    await apply(
+      (s) => dumpCampaign(s, el.dataset.id),
+      tr(
+        "بعت بعد التضخيم؛ أثر العملية صار في ملف الهيئة.",
+        "You sold after the pump; the operation is now in the regulator’s file.",
+        "Vous avez vendu après le gonflement ; l’opération figure désormais au dossier du régulateur.",
+      ),
+    );
+  },
+  "market-close-short": async (el) => {
+    const { closeShortPosition } = await import(
+      "./services/stockMarket/manipulation.js"
+    );
+    await apply(
+      (s) => closeShortPosition(s, el.dataset.id),
+      tr(
+        "أُغلق مركز البيع المكشوف.",
+        "Short position closed.",
+        "Position vendeuse clôturée.",
+      ),
+    );
+  },
+  "market-audit": async () => {
+    const { runMarketAudit } = await import(
+      "./services/stockMarket/regulation.js"
+    );
+    await apply(
+      (s) => runMarketAudit(s, { source: "voluntary" }),
+      tr(
+        "اكتمل التدقيق الرقابي.",
+        "The regulatory audit is complete.",
+        "L’audit réglementaire est terminé.",
+      ),
+    );
+  },
+  "market-case-response": async (el) => {
+    const { respondToMarketInvestigation } = await import(
+      "./services/stockMarket/regulation.js"
+    );
+    await apply(
+      (s) =>
+        respondToMarketInvestigation(
+          s,
+          el.dataset.id,
+          el.dataset.response,
+        ),
+      tr(
+        "حُسم التحقيق وسُجلت العقوبة.",
+        "The investigation was resolved and the sanction recorded.",
+        "L’enquête est close et la sanction enregistrée.",
+      ),
+    );
+  },
+  "market-betting-ipo": async () => {
+    const percent = Number(document.getElementById("market-betting-ipo-percent")?.value);
+    const discount = Number(document.getElementById("market-betting-ipo-discount")?.value);
+    const { launchBettingIPO } = await import("./services/stockMarket/ipo.js");
+    await apply(
+      (s) => launchBettingIPO(s, { percent, discount }),
+      tr(
+        "تم إدراج شركة المراهنات وإيداع الحصيلة في ثروتك الشخصية.",
+        "The betting company was listed and proceeds entered your personal wealth.",
+        "La société de paris a été cotée et le produit a rejoint votre fortune personnelle.",
+      ),
+    );
+  },
+  "market-betting-secondary": async () => {
+    const percent = Number(document.getElementById("market-betting-secondary-percent")?.value);
+    const { secondaryBettingOffering } = await import("./services/stockMarket/ipo.js");
+    await apply(
+      (s) => secondaryBettingOffering(s, percent),
+      tr(
+        "بعت حصة إضافية من الشركة عبر السوق.",
+        "You sold an additional company stake through the market.",
+        "Vous avez vendu une participation supplémentaire sur le marché.",
+      ),
+    );
+  },
+  "market-club-ipo": async () => {
+    const percent = Number(document.getElementById("market-club-ipo-percent")?.value);
+    const discount = Number(document.getElementById("market-club-ipo-discount")?.value);
+    const { listOwnClub } = await import("./services/stockMarket/ipo.js");
+    await apply(
+      (s) => listOwnClub(s, { percent, discount }),
+      tr(
+        "دخلت حصيلة الاكتتاب خزينة النادي وأصبح للجماهير ضغط ربعي.",
+        "IPO proceeds entered the club treasury and fans now exert quarterly pressure.",
+        "Le produit de l’introduction a rejoint la trésorerie et les supporters exercent désormais une pression trimestrielle.",
+      ),
+    );
+  },
+  "market-event-choice": async (el) => {
+    const { resolveStockMarketEvent } = await import("./services/stockMarket/events.js");
+    await apply(
+      (s) => resolveStockMarketEvent(s, el.dataset.id),
+      tr(
+        "حُسم حدث السوق وسُجل أثره.",
+        "The market event was resolved and its effect recorded.",
+        "L’événement de marché est résolu et son effet enregistré.",
+      ),
+    );
+  },
+  "market-select": (el) => {
+    ui.marketListing = el.dataset.id || null;
+    render();
+    document.querySelector(".market-focus-card")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  },
   // خزنة المالك السرية: مفاتيحها أرقام الإصدار (أسفل القائمة الجانبية + سطر EMPIRE FC في شيت «المزيد» + شارة «عن اللعبة»).
   "secret-vault": () =>
     openModal(
@@ -2192,6 +2438,16 @@ document.addEventListener("input", (e) => {
   if (e.target.closest("#offer-form,#contract-form")) updateCalculations();
   if (e.target.id === "palette-input") {
     paletteQuery(e.target.value);
+    return;
+  }
+  if (e.target.id === "market-search") {
+    const value = e.target.value,
+      pos = e.target.selectionStart;
+    ui.marketQuery = value;
+    render();
+    const input = document.getElementById("market-search");
+    input?.focus();
+    input?.setSelectionRange(pos, pos);
     return;
   }
   if (e.target.id === "player-search") {
