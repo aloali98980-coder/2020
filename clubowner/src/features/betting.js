@@ -1,4 +1,4 @@
-// شاشة إمبراطورية المراهنات 0.36 — الشراء والتأسيس والتراخيص (المجموعة 1).
+// شاشة إمبراطورية المراهنات 0.36 — الشراء/التأسيس/التراخيص + الإدارة + المنظم والشيطاني.
 import { icon } from "../components/icons.js";
 import { badge } from "../components/shared.js";
 import { money, num, esc } from "../ui/format.js";
@@ -11,6 +11,7 @@ import {
   ONLINE_LEVELS,
 } from "../data/bettingCatalog.js";
 import { BETTING_TEXTS } from "../data/bettingTexts.js";
+import { RESPONSIBLE_COSTS } from "../services/betting/compliance.js";
 
 const t = (k) => {
   const x = BETTING_TEXTS[k];
@@ -149,6 +150,41 @@ export function bettingView(s) {
       <div class="panel-head"><h3>🏷️ منافسون</h3></div>
       <div class="report-list">
         ${(b.competitors || []).map((co) => `<div class="report-row"><b>${lang(co.name)}</b><span>${num(co.customers)} عميل</span><span>سمعة ${co.reputation}</span><button class="btn secondary" data-action="betting-buy-competitor" data-id="${co.id}">شراء</button></div>`).join("")}
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head"><h3>${icon("shield")} المنظم والامتثال</h3>${badge("مخاطر " + (b.compliance.auditRisk || 0) + "%", (b.compliance.auditRisk || 0) > 60 ? "danger" : "")}</div>
+      <p class="muted">تدقيق كل ~90 يوم · غرامات تراكمية ${money(b.compliance.finesTotal || 0)} · إيقافات ${b.compliance.suspensions || 0} · القادم ${b.compliance.nextAudit || "—"}</p>
+      <div class="lifestyle-grid">
+        ${[0,1,2,3].map((lvl) => `
+          <label class="lifestyle-option ${b.compliance.responsibleLevel === lvl ? "selected" : ""}">
+            <input type="radio" name="betting-responsible" value="${lvl}" ${b.compliance.responsibleLevel === lvl ? "checked" : ""} data-action="betting-responsible" data-level="${lvl}">
+            <strong>${t("responsibleLabel")} ${lvl} — ${RESPONSIBLE_COSTS[lvl] ? money(RESPONSIBLE_COSTS[lvl]) + "/شهر" : "بلا"}</strong>
+            <small>${lvl === 0 ? "بلا حماية" : lvl === 1 ? "حماية أساسية" : lvl === 2 ? "تحمي الترخيص" : "احترافي — أقل مخاطر"}</small>
+          </label>`).join("")}
+      </div>
+    </section>
+
+    <section class="panel" style="border:1px solid #b91c1c">
+      <div class="panel-head"><h3>😈 الشغل الشيطاني — رهان داخلي بمعلومة مسربة</h3>${b.pendingInsider ? badge("رهان معلق", "danger") : ""}</div>
+      ${b.pendingInsider ? `<div class="report-row"><b>معلق ${money(b.pendingInsider.amount)} × ${b.pendingInsider.multiplier}</b><span>مخاطرة ${b.pendingInsider.risk}% · كشف ${Math.round(b.pendingInsider.detectionChance*100)}%</span><span>${b.pendingInsider.fixtureId}</span></div><p class="muted">تعرف التشكيل والإصابات! انتظر نتيجة المباراة.</p>` : ""}
+      <p class="muted">سلايدر مخاطرة/ربح: رهانات صغيرة آمنة نسبيًا ← all-in بأرباح خيالية. الانكشاف = سحب الترخيص + فضيحة شبهات كبرى + عزل من الرئاسة + دمار المسيرة! كومبو رشوة لاعبين (ملفات سوداء) + رهانات شركتك = ملايين… أو حريق شامل.</p>
+      <div class="transfer-grid">
+        <div class="transfer-box">
+          <label>المبلغ (من الثروة الشخصية) — تملك ${money(s.empire?.personal || 0)}</label>
+          <input type="number" id="betting-insider-amount" min="100000" step="100000" placeholder="500000" value="500000">
+        </div>
+        <div class="transfer-box">
+          <label>مخاطرة/ربح: <span id="betting-risk-val">30%</span> — مضاعف <span id="betting-mult-val">2.4×</span> — كشف <span id="betting-detect-val">~22%</span></label>
+          <input type="range" id="betting-risk" min="0" max="100" step="5" value="30" data-action="betting-risk-slide">
+          <small>يسار آمن، يمين خيالي لكن مدمر إن انكشف</small>
+        </div>
+      </div>
+      <button class="btn danger" data-action="betting-insider" ${b.licenseStatus !== "active" ? "disabled" : ""}>😈 راهن على مباراة فريقك</button>
+      ${s.blackFiles?.active?.bribedOpponent ? `<small class="red">⚠️ لديك رشوة نشطة (${s.blackFiles.active.bribedOpponent.fixtureId}) — الكومبو يضاعف الربح والكشف!</small>` : ""}
+      <div class="report-list" style="margin-top:8px">
+        ${(b.insiderHistory || []).slice(-5).map((h) => `<div class="report-row"><b>${h.date} ${h.exposed ? "⛔ انكشف" : h.won ? "✅ ربح" : "❌ خسارة"} ${money(h.amount)} × ${h.multiplier}</b><span>${h.hasBribe ? "كومبو" : ""} مخاطرة ${h.risk}%</span></div>`).join("")}
       </div>
     </section>
   </div>`;

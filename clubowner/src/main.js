@@ -1497,6 +1497,27 @@ const actions = {
     const { buyCompetitor } = await import("./services/betting/management.js");
     await apply((s) => buyCompetitor(s, el.dataset.id), tr("تم الاستحواذ على المنافس.", "Competitor acquired.", "Concurrent acquis."));
   },
+  "betting-responsible": async (el) => {
+    const { setResponsibleLevel } = await import("./services/betting/compliance.js");
+    await apply((s) => setResponsibleLevel(s, Number(el.dataset.level)), tr("تم تحديث اللعب المسؤول.", "Responsible gaming updated.", "Jeu responsable mis à jour."));
+  },
+  "betting-insider": async () => {
+    const amt = Math.round(Number(document.getElementById("betting-insider-amount")?.value) || 0);
+    const risk = Math.round(Number(document.getElementById("betting-risk")?.value) || 0);
+    const { placeInsiderBet } = await import("./services/betting/insider.js");
+    await apply((s) => placeInsiderBet(s, amt, risk), tr("تم رهن داخلي بانتظار المباراة.", "Insider bet placed, awaiting match.", "Pari d'initié placé, en attente du match."));
+  },
+  "betting-risk-slide": async (el) => {
+    const risk = Number(el.value) || 0;
+    const mult = (1.2 + (risk/100)*4).toFixed(1);
+    const detect = Math.round((0.04 + (risk/100)*0.58)*100);
+    const rv = document.getElementById("betting-risk-val");
+    const mv = document.getElementById("betting-mult-val");
+    const dv = document.getElementById("betting-detect-val");
+    if (rv) rv.textContent = risk + "%";
+    if (mv) mv.textContent = mult + "×";
+    if (dv) dv.textContent = "~" + detect + "%";
+  },
   more: async () =>
     openModal(
       `<h2>إدارة النادي</h2>${NAV_GROUPS.map(
