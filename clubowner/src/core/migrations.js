@@ -266,8 +266,7 @@ export function migrateToEighteen(s) {
     let p = s.players[i];
     if (p.status === "retired") {
       if (!known.has(p.id)) {
-        p.retiredOn ??=
-          p.careerHistory?.find((h) => h.type === "retired")?.date || s.date;
+        p.retiredOn ??= p.careerHistory?.find((h) => h.type === "retired")?.date || s.date;
         retiring.push(p);
         known.add(p.id);
       }
@@ -278,8 +277,7 @@ export function migrateToEighteen(s) {
     if (Number.isFinite(p.developmentRate))
       p.developmentRate = Math.round(p.developmentRate * 1000) / 1000;
     if (Array.isArray(p.agingHistory)) {
-      const keep =
-        p.clubId === s.clubId ? AGING_HISTORY_KEEP_OWN : AGING_HISTORY_KEEP;
+      const keep = p.clubId === s.clubId ? AGING_HISTORY_KEEP_OWN : AGING_HISTORY_KEEP;
       p.agingHistory = p.agingHistory
         .slice(-keep)
         .map((h) => ({ date: h.date, rating: h.rating }));
@@ -296,8 +294,7 @@ export function migrateToEighteen(s) {
     const r = retiredById.get(c.personId);
     c.formerClubId ??= r?.previousClubId ?? null;
     c.since ??= r?.retiredOn ?? s.date;
-    if (c.status === "employed" || c.formerClubId === s.clubId)
-      keepStaff.push(c);
+    if (c.status === "employed" || c.formerClubId === s.clubId) keepStaff.push(c);
     else if (
       pool < STAFF_POOL_LIMIT &&
       daysBetween(c.since, s.date) < STAFF_POOL_MAX_AGE_DAYS
@@ -380,7 +377,8 @@ function migrateToTwentyOne(input) {
     meetings: [],
   };
   s.migrationNote =
-    (s.migrationNote || "") + " " + boardTextAr("boardMigrationNote") + ".";
+    (s.migrationNote || "") +
+    " " + boardTextAr("boardMigrationNote") + ".";
   return s;
 }
 
@@ -415,36 +413,18 @@ function migrateToTwentyTwo(input) {
   // شرط جزائي لكل لاعب نشط
   for (const p of s.players) {
     if (p.status === "retired") continue;
-    p.contractTerms ??= {
-      appearanceBonus: 0,
-      goalBonus: 0,
-      annualRaisePct: 0,
-      releaseClause: 0,
-      signedOn: s.date,
-      lastRaiseYear: s.date.slice(0, 4),
-    };
+    p.contractTerms ??= { appearanceBonus: 0, goalBonus: 0, annualRaisePct: 0, releaseClause: 0, signedOn: s.date, lastRaiseYear: s.date.slice(0,4) };
     if (typeof p.contractTerms.releaseClause !== "number") {
       // نطاق بسيط حسب التقييم للحفظات المهاجرة — التفاصيل في releaseClause.js
       const rating = p.rating || 60;
-      let min = 2000000,
-        max = 5000000;
-      if (rating >= 70 && rating <= 74) {
-        min = 5000000;
-        max = 12000000;
-      } else if (rating >= 75 && rating <= 79) {
-        min = 12000000;
-        max = 30000000;
-      } else if (rating >= 80 && rating <= 84) {
-        min = 30000000;
-        max = 80000000;
-      } else if (rating >= 85) {
-        min = 80000000;
-        max = 150000000;
-      }
+      let min = 2000000, max = 5000000;
+      if (rating >= 70 && rating <= 74) { min = 5000000; max = 12000000; }
+      else if (rating >= 75 && rating <= 79) { min = 12000000; max = 30000000; }
+      else if (rating >= 80 && rating <= 84) { min = 30000000; max = 80000000; }
+      else if (rating >= 85) { min = 80000000; max = 150000000; }
       // 25% بلا شرط
       const rnd = Math.random();
-      p.contractTerms.releaseClause =
-        rnd < 0.25 ? 0 : Math.round(min + (max - min) * ((rnd - 0.25) / 0.75));
+      p.contractTerms.releaseClause = rnd < 0.25 ? 0 : Math.round(min + (max - min) * ((rnd - 0.25) / 0.75));
     }
   }
   s.migrationNote =
@@ -619,7 +599,9 @@ function migrateSaveToTwentyFour(input) {
   // Keep the established board, black-files and empire migrations; then add the dynasty schema.
   if (input.version === 20)
     return migrateToTwentyFour(
-      migrateToTwentyThree(migrateToTwentyTwo(migrateToTwentyOne(input))),
+      migrateToTwentyThree(
+        migrateToTwentyTwo(migrateToTwentyOne(input)),
+      ),
     );
   const v17 = migrateToSeventeen(input);
   const v18 = v17?.version === 17 ? migrateToEighteen(v17) : v17;

@@ -30,11 +30,7 @@ import {
   inductRetiree,
   MAX_LEGEND_PLAYERS,
 } from "../src/services/legends.js";
-import {
-  legendsView,
-  legendDetailModal,
-  filteredLegends,
-} from "../src/features/legends.js";
+import { legendsView, legendDetailModal, filteredLegends } from "../src/features/legends.js";
 
 const game = (clubId) =>
   createGame({
@@ -63,24 +59,12 @@ test("Legends catalogue: real retired names, resolvable clubs, editorial flags",
     assert(l.name && l.nameLatin && l.bio && l.countryName, l.id);
     assert(l.biographyUrl.startsWith("https://en.wikipedia.org/wiki/"), l.id);
     assert.equal(l.sourceStatus, "legend-editorial");
-    assert.equal(
-      l.clubIds.length,
-      l.clubs.length,
-      `${l.id}: ${l.clubs.join(",")}`,
-    );
+    assert.equal(l.clubIds.length, l.clubs.length, `${l.id}: ${l.clubs.join(",")}`);
     assert.equal(l.rivalIds.length, l.rivals.length, l.id);
-    for (const id of [...l.clubIds, ...l.rivalIds])
-      assert(extendedClub(id), `${l.id} → ${id}`);
+    for (const id of [...l.clubIds, ...l.rivalIds]) assert(extendedClub(id), `${l.id} → ${id}`);
     assert.equal(l.group, legendGroup(l.position));
     assert(LEGEND_GROUPS[l.group].positions.includes(l.position));
-    for (const k of [
-      "pace",
-      "passing",
-      "shooting",
-      "defending",
-      "stamina",
-      "decisions",
-    ])
+    for (const k of ["pace", "passing", "shooting", "defending", "stamina", "decisions"])
       assert(l.attributes[k] >= 20 && l.attributes[k] <= 99, `${l.id}.${k}`);
     assert(["icon", "legend", "star"].includes(l.tier.id));
   }
@@ -138,10 +122,7 @@ test("Quotes are pure and deterministic: affiliation discount, rival refusal, re
   weak.reputation = 80;
   assert.equal(legendQuote(weak, "elkhatib", "attack", 1).status, "accepted");
   const player = legendQuote(s, "elkhatib", "player", 1);
-  assert(
-    player.fee > aff.fee * 2,
-    "player comeback costs far more than a coaching role",
-  );
+  assert(player.fee > aff.fee * 2, "player comeback costs far more than a coaching role");
   setLegendPlayerMode(s, false);
   assert.equal(legendQuote(s, "elkhatib", "player", 1).status, "refused");
   setLegendPlayerMode(s, true);
@@ -156,10 +137,7 @@ test("Signing a legend coach: fee posted once, one per role, match bonus and slo
   const q = legendQuote(s, "elkhatib", "attack", 2);
   const c = signLegend(s, "elkhatib", "attack", 2);
   assert.equal(s.finance.cash, cash - q.fee);
-  assert.equal(
-    s.finance.ledger.filter((e) => e.key === `legend-fee-${c.id}`).length,
-    1,
-  );
+  assert.equal(s.finance.ledger.filter((e) => e.key === `legend-fee-${c.id}`).length, 1);
   assert.equal(c.kind, "coach");
   assert.equal(c.end, "2028-09-23");
   assert(s.inbox.some((m) => m.kind === "legend-signed" && m.ref === c.id));
@@ -168,23 +146,13 @@ test("Signing a legend coach: fee posted once, one per role, match bonus and slo
   assert.throws(() => signLegend(s, "hazememam", "midfield", 1), /غريم/);
   const bonus = legendMatchBonus(s);
   assert(bonus > 0.3 && bonus < 0.5, String(bonus));
-  const striker = s.players.find(
-    (p) => p.clubId === s.clubId && p.position === "ST",
-  );
-  const keeper = s.players.find(
-    (p) => p.clubId === s.clubId && p.position === "GK",
-  );
-  const foreign = s.players.find(
-    (p) => p.clubId !== s.clubId && p.position === "ST",
-  );
+  const striker = s.players.find((p) => p.clubId === s.clubId && p.position === "ST");
+  const keeper = s.players.find((p) => p.clubId === s.clubId && p.position === "GK");
+  const foreign = s.players.find((p) => p.clubId !== s.clubId && p.position === "ST");
   assert.equal(legendWearFactor(s, striker), 0.88);
   assert.equal(legendWearFactor(s, keeper), 1);
   assert.equal(legendWearFactor(s, foreign), 1);
-  assert(
-    legendBeneficiaries(s, c).every((p) =>
-      LEGEND_GROUPS.attack.positions.includes(p.position),
-    ),
-  );
+  assert(legendBeneficiaries(s, c).every((p) => LEGEND_GROUPS.attack.positions.includes(p.position)));
   validateSave(s);
 });
 
@@ -203,17 +171,13 @@ test("Monthly legend day: idempotent salary, capped attribute gains, ambassador 
     advanceTime(s, 1);
   }
   assert.equal(s.date, "2026-10-01");
-  const salaries = s.finance.ledger.filter(
-    (e) => e.category === "legend-salary" && e.date === s.date,
-  );
+  const salaries = s.finance.ledger.filter((e) => e.category === "legend-salary" && e.date === s.date);
   assert.equal(salaries.length, 2);
   assert.deepEqual(
     salaries.map((e) => -e.amount).sort(),
     [coach.salary, amb.salary].sort(),
   );
-  const income = s.finance.ledger.find(
-    (e) => e.category === "legend-income" && e.date === s.date,
-  );
+  const income = s.finance.ledger.find((e) => e.category === "legend-income" && e.date === s.date);
   assert(income && income.amount > 0 && income.amount < amb.salary);
   assert.equal(amb.income, income.amount);
   assert.equal(amb.sessions, 1);
@@ -225,21 +189,13 @@ test("Monthly legend day: idempotent salary, capped attribute gains, ambassador 
     assert(p.attributes.defending <= 99);
     assert(p.rating <= Math.max(p.potential, p.rating));
   }
-  const before = s.finance.ledger.filter(
-    (e) => e.category === "legend-salary",
-  ).length;
+  const before = s.finance.ledger.filter((e) => e.category === "legend-salary").length;
   while (s.date < "2026-12-01") {
     settle(s);
     advanceTime(s, 1);
   }
-  assert.equal(
-    s.finance.ledger.filter((e) => e.category === "legend-salary").length,
-    before + 4,
-  );
-  assert(
-    coach.sessions >= 1,
-    "three months of sessions should hit at least one keeper",
-  );
+  assert.equal(s.finance.ledger.filter((e) => e.category === "legend-salary").length, before + 4);
+  assert(coach.sessions >= 1, "three months of sessions should hit at least one keeper");
   assert(coach.lastEffect && coach.lastEffect.date === "2026-12-01");
   assert.equal(amb.sessions, 3);
   validateSave(s);
@@ -256,21 +212,11 @@ test("Fantasy comeback: legend plays for the club, retires when the contract end
   assert.equal(p.potential, 88);
   assert.equal(p.sourceStatus, "legend-editorial");
   assert.equal(p.fictional, false);
-  assert.equal(
-    s.players.filter((x) => x.clubId === s.clubId).length,
-    squad + 1,
-  );
+  assert.equal(s.players.filter((x) => x.clubId === s.clubId).length, squad + 1);
   validateSave(s);
   signLegend(s, "hossamhassan", "player", 1);
-  assert.throws(
-    () => signLegend(s, "elkhatib", "player", 1),
-    new RegExp(String(MAX_LEGEND_PLAYERS)),
-  );
-  for (
-    let day = 0;
-    day < 372 && s.legends.contracts[0].status === "active";
-    day++
-  ) {
+  assert.throws(() => signLegend(s, "elkhatib", "player", 1), new RegExp(String(MAX_LEGEND_PLAYERS)));
+  for (let day = 0; day < 372 && s.legends.contracts[0].status === "active"; day++) {
     settle(s);
     advanceTime(s, 1);
   }
@@ -280,16 +226,9 @@ test("Fantasy comeback: legend plays for the club, retires when the contract end
   assert.equal(p.status, "retired");
   assert.equal(p.clubId, "retired");
   assert(p.appearances > 5, `legend should actually play: ${p.appearances}`);
-  assert(
-    s.legends.hall.some(
-      (h) => h.playerId === p.id && h.legendId === "aboutrika",
-    ),
-  );
+  assert(s.legends.hall.some((h) => h.playerId === p.id && h.legendId === "aboutrika"));
   assert(s.inbox.some((m) => m.kind === "legend-inducted" && m.ref === p.id));
-  assert(
-    !s.staff.some((x) => x.personId === p.id),
-    "legends never become generic staff candidates",
-  );
+  assert(!s.staff.some((x) => x.personId === p.id), "legends never become generic staff candidates");
   validateSave(s);
 });
 
@@ -322,11 +261,7 @@ test("Coaching contracts expire on their own and free the role", () => {
   const t = structuredClone(s);
   t.date = "2027-09-24";
   legendDay(t);
-  assert.equal(
-    t.legends.contracts[0].status,
-    "active",
-    "still active on the last day",
-  );
+  assert.equal(t.legends.contracts[0].status, "active", "still active on the last day");
   t.date = "2027-09-25";
   legendDay(t);
   const ended = t.legends.contracts[0];
@@ -345,31 +280,17 @@ test("Hall of legacy: natural retirements at the owner's club are inducted by me
   const star = own[0];
   star.appearances = 120;
   star.careerInterest = 99;
-  star.retirementPlan = {
-    date: s.date,
-    announced: s.date,
-    prepared: false,
-    extensionAsked: false,
-  };
+  star.retirementPlan = { date: s.date, announced: s.date, prepared: false, extensionAsked: false };
   const bench = own[1];
   bench.appearances = 3;
   bench.goals = 0;
   bench.rating = 60;
   bench.careerInterest = 99;
-  bench.retirementPlan = {
-    date: s.date,
-    announced: s.date,
-    prepared: false,
-    extensionAsked: false,
-  };
+  bench.retirementPlan = { date: s.date, announced: s.date, prepared: false, extensionAsked: false };
   retirementDay(s);
   assert(s.legends.hall.some((h) => h.playerId === star.id));
   assert(!s.legends.hall.some((h) => h.playerId === bench.id));
-  assert.equal(
-    inductRetiree(s, star, s.clubId),
-    false,
-    "no duplicate induction",
-  );
+  assert.equal(inductRetiree(s, star, s.clubId), false, "no duplicate induction");
   const foreign = s.players.find((p) => p.clubId !== s.clubId);
   foreign.appearances = 300;
   assert.equal(inductRetiree(s, foreign, foreign.clubId), false);
@@ -404,10 +325,7 @@ test("v16 and v15 saves migrate to v17 with an empty hall and no other change", 
   assert.equal(v16.version, 16);
   assert.deepEqual(m.legends, initLegends());
   assert(m.migrationNote.includes("0.17"));
-  assert.deepEqual(
-    m.players.map((p) => [p.id, p.rating]),
-    s.players.map((p) => [p.id, p.rating]),
-  );
+  assert.deepEqual(m.players.map((p) => [p.id, p.rating]), s.players.map((p) => [p.id, p.rating]));
   assert.equal(m.finance.cash, s.finance.cash);
   validateSave(m);
   const v15 = structuredClone(s);
@@ -427,27 +345,18 @@ test("Legends screen renders catalogue, filters, contracts, hall and disclaimers
   let html = legendsView(s);
   assert(html.includes("قاعة الأساطير"));
   assert(html.includes("legend-player-mode"));
-  assert(html.includes('data-action="legend-detail"'));
+  assert(html.includes("data-action=\"legend-detail\""));
   assert(html.includes("لا توجد عقود أساطير بعد"));
   assert(html.includes("تقديرات تحريرية"));
   assert(html.includes("محمود الخطيب"));
   const c = signLegend(s, "elkhatib", "attack", 1);
   signLegend(s, "aboutrika", "player", 1);
-  html = legendsView(s, {
-    country: "eg",
-    group: "attack",
-    tier: "all",
-    page: 1,
-  });
+  html = legendsView(s, { country: "eg", group: "attack", tier: "all", page: 1 });
   assert(html.includes("أساطير تحت التعاقد"));
   assert(html.includes(`data-id="${c.id}"`));
   assert(html.includes("يستفيد"));
   assert(html.includes("عودة كلاعب"));
-  const mine = filteredLegends(s, {
-    country: "all",
-    group: "all",
-    tier: "mine",
-  });
+  const mine = filteredLegends(s, { country: "all", group: "all", tier: "mine" });
   assert(mine.length >= 8 && mine.every((l) => l.clubIds.includes("ahly")));
   const eg = filteredLegends(s, { country: "eg", group: "gk", tier: "all" });
   assert(eg.every((l) => l.country === "eg" && l.position === "GK"));
@@ -456,10 +365,7 @@ test("Legends screen renders catalogue, filters, contracts, hall and disclaimers
   assert(modal.includes("عصام الحضري"));
   assert(modal.includes("مدرب حراس المرمى"));
   assert(modal.includes("توقيع العقد"));
-  const refused = legendDetailModal(s, "gaafar", {
-    role: "midfield",
-    years: 1,
-  });
+  const refused = legendDetailModal(s, "gaafar", { role: "midfield", years: 1 });
   assert(refused.includes("disabled"));
   assert(refused.includes("غريم"));
   const signed = legendDetailModal(s, "elkhatib", {});
@@ -467,8 +373,7 @@ test("Legends screen renders catalogue, filters, contracts, hall and disclaimers
 });
 
 test("legends: staff salaries appear in the 30-day forecast, finance labels and data-sources note", async () => {
-  const { forecast, legendPayroll } =
-    await import("../src/services/finance.js");
+  const { forecast, legendPayroll } = await import("../src/services/finance.js");
   const { financeView } = await import("../src/features/finance.js");
   const { sourcesView } = await import("../src/features/dataSources.js");
   const s = game();
@@ -479,12 +384,7 @@ test("legends: staff salaries appear in the 30-day forecast, finance labels and 
   signLegend(s, "hossamhassan", "player", 1);
   // Coaches and ambassadors are payroll; comeback players are already in wages().
   assert.equal(legendPayroll(s), coach.salary + ambassador.salary);
-  assert.equal(
-    forecast(s).out - before,
-    coach.salary +
-      ambassador.salary +
-      s.players.find((p) => p.legendId === "hossamhassan").salary,
-  );
+  assert.equal(forecast(s).out - before, coach.salary + ambassador.salary + s.players.find((p) => p.legendId === "hossamhassan").salary);
   const html = financeView(s);
   assert(html.includes("رواتب الأساطير"));
   assert(html.includes("أسطورة · مقدم/تعويض"));

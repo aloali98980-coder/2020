@@ -88,24 +88,16 @@ test("time progression raises a required retirement decision; continuing postpon
   const offer = s.dynasty.retirementOffer;
   assert(offer);
   assert.equal(offer.forced, false);
-  assert(
-    pendingActions(s).some((action) => action.kind === "dynasty-retirement"),
-  );
+  assert(pendingActions(s).some((action) => action.kind === "dynasty-retirement"));
   resolveRetirementOffer(s, offer.id, "continue");
   assert.equal(s.dynasty.owner.retirementAge, 66);
   assert.equal(s.dynasty.retirementOffer, null);
-  assert.equal(
-    pendingActions(s).some((action) => action.kind === "dynasty-retirement"),
-    false,
-  );
+  assert.equal(pendingActions(s).some((action) => action.kind === "dynasty-retirement"), false);
 
   setOwnerAge(s, 85);
   const forced = dynastyLifeDay(s);
   assert.equal(forced.forced, true);
-  assert.throws(
-    () => resolveRetirementOffer(s, forced.id, "continue"),
-    /سن التقاعد الإلزامي/,
-  );
+  assert.throws(() => resolveRetirementOffer(s, forced.id, "continue"), /سن التقاعد الإلزامي/);
   const forcedSuccession = resolveRetirementOffer(s, forced.id, "retire");
   assert.equal(forcedSuccession.usedDistantRelative, true);
   validateSave(s);
@@ -115,11 +107,7 @@ test("retirement transfers generations, keeps a dynasty loop, and uses a distant
   const s = createGame({ database: "current", leagues: ["eg"] });
   const heir = createDynastyChild(s, { name: "Amina Heir", age: 30 });
   s.dynasty.children.push(heir);
-  const grandchild = createDynastyChild(s, {
-    name: "Next Generation",
-    age: 5,
-    parentId: heir.id,
-  });
+  const grandchild = createDynastyChild(s, { name: "Next Generation", age: 5, parentId: heir.id });
   heir.offspring.push(grandchild);
   setDynastyHeir(s, heir.id);
   setOwnerAge(s, 65);
@@ -146,10 +134,7 @@ test("retirement transfers generations, keeps a dynasty loop, and uses a distant
   assert(offer);
   const fallbackSuccession = resolveRetirementOffer(s, offer.id, "retire");
   assert.equal(fallbackSuccession.usedDistantRelative, true);
-  assert.equal(
-    s.dynasty.familyArchive.at(-1).successionSource,
-    "distant-relative",
-  );
+  assert.equal(s.dynasty.familyArchive.at(-1).successionSource, "distant-relative");
   assert.match(s.dynasty.owner.name, /Cousin/);
   assert.equal(s.dynasty.generation, 3);
   assert.equal(s.dynasty.children.length, 0);
@@ -169,11 +154,7 @@ test("v22 saves migrate to the retirement-ready schema without changing club dat
   delete old.dynasty.lastOwnerMonth;
   delete old.dynasty.lastLegacyMonth;
   const cash = old.finance.cash;
-  const players = old.players.map((player) => [
-    player.id,
-    player.name,
-    player.rating,
-  ]);
+  const players = old.players.map((player) => [player.id, player.name, player.rating]);
   const migrated = migrateSave(old);
   assert.equal(SAVE_VERSION, 31);
   assert.equal(migrated.version, 31);
@@ -182,10 +163,7 @@ test("v22 saves migrate to the retirement-ready schema without changing club dat
   assert.equal(migrated.dynasty.lastOwnerMonth, null);
   assert.equal(migrated.dynasty.lastLegacyMonth, null);
   assert.equal(migrated.finance.cash, cash);
-  assert.deepEqual(
-    migrated.players.map((player) => [player.id, player.name, player.rating]),
-    players,
-  );
+  assert.deepEqual(migrated.players.map((player) => [player.id, player.name, player.rating]), players);
   validateSave(migrated);
 });
 
@@ -194,11 +172,7 @@ test("retirement and legacy controls render in Arabic, English and French", () =
   const heir = createDynastyChild(s, { name: "UI Heir", age: 26 });
   s.dynasty.children.push(heir);
   setDynastyHeir(s, heir.id);
-  s.dynasty.retirementOffer = {
-    id: "retirement-ui",
-    openedOn: s.date,
-    forced: false,
-  };
+  s.dynasty.retirementOffer = { id: "retirement-ui", openedOn: s.date, forced: false };
   const originalLanguage = getLanguage();
   try {
     for (const [language, expected] of [
@@ -210,10 +184,7 @@ test("retirement and legacy controls render in Arabic, English and French", () =
       const html = dynastyView(s);
       assert(html.includes(expected));
       assert(html.includes('data-action="dynasty-retirement-choice"'));
-      assert(
-        html.includes('data-action="dynasty-heir-set"') === false,
-        "the current heir is already appointed",
-      );
+      assert(html.includes('data-action="dynasty-heir-set"') === false, "the current heir is already appointed");
     }
   } finally {
     setLanguage(originalLanguage);

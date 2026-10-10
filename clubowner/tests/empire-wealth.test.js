@@ -40,11 +40,7 @@ test("القصص الثلاث: ثروات افتتاحية مختلفة ودَي
   assert.equal(gamb.empire.personal, 15_000_000);
   assert.equal(gamb.empire.debt, 10_000_000);
   // القصة المجهولة تسقط إلى العصامي بأمان.
-  const unknown = createGame({
-    clubId: "ahly",
-    database: "demo",
-    ownerStory: "xx",
-  });
+  const unknown = createGame({ clubId: "ahly", database: "demo", ownerStory: "xx" });
   assert.equal(unknown.empire.story, "selfmade");
   assert.equal(unknown.empire.personal, OWNER_STORIES.selfmade.wealth);
 });
@@ -213,8 +209,7 @@ test("storyForOldSave حتمية وتتبع الصعوبة", () => {
 
 test("التكامل: تقدم ٤٠ يومًا عبر بداية شهر يظل صالحًا", async () => {
   const s = game();
-  const { pendingActions, resolveInfo } =
-    await import("../src/services/inbox.js");
+  const { pendingActions, resolveInfo } = await import("../src/services/inbox.js");
   const { EVENT_CATALOG } = await import("../src/data/eventCatalog.js");
   const { resolveClubEvent } = await import("../src/services/clubEvents.js");
   const { retirementDecision } = await import("../src/services/careers.js");

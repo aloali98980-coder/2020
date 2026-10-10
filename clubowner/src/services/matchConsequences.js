@@ -9,27 +9,11 @@ import { fitnessFactor } from "./staff/effects.js";
 // ── 1. إصابات ──────────────────────────────────────────────────────────────
 
 const INJURY_TYPES = [
-  {
-    textAr: "التواء الكاحل",
-    textEn: "Ankle sprain",
-    textFr: "Entorse de la cheville",
-  },
-  {
-    textAr: "تمزق عضلي",
-    textEn: "Muscle tear",
-    textFr: "Déchirure musculaire",
-  },
-  {
-    textAr: "إصابة في الركبة",
-    textEn: "Knee injury",
-    textFr: "Blessure au genou",
-  },
+  { textAr: "التواء الكاحل", textEn: "Ankle sprain", textFr: "Entorse de la cheville" },
+  { textAr: "تمزق عضلي", textEn: "Muscle tear", textFr: "Déchirure musculaire" },
+  { textAr: "إصابة في الركبة", textEn: "Knee injury", textFr: "Blessure au genou" },
   { textAr: "كدمة قوية", textEn: "Heavy bruise", textFr: "Contusion sévère" },
-  {
-    textAr: "شد في الفخذ",
-    textEn: "Thigh strain",
-    textFr: "Clou de la cuisse",
-  },
+  { textAr: "شد في الفخذ", textEn: "Thigh strain", textFr: "Clou de la cuisse" },
 ];
 
 export function injuryDurationText(days) {
@@ -56,7 +40,7 @@ export function injuryDurationTextFr(days) {
  */
 export function injuryProbability(p, factor = 1) {
   const fatigue = 1 + Math.min((p.seasonMinutes || 0) / 3000, 1.5);
-  const lowFit = 1 + Math.max(0, 70 - (p.fitness || 70)) / 100;
+  const lowFit = 1 + Math.max(0, (70 - (p.fitness || 70))) / 100;
   // 0.30: مدرب اللياقة يخفض الاحتمال عبر factor (افتراضي ١ يُبقي السلوك القديم).
   return clamp(0.03 * fatigue * lowFit * factor, 0.005, 0.12);
 }
@@ -67,7 +51,7 @@ export function injuryProbability(p, factor = 1) {
 export function injuryDuration(rng) {
   const roll = rng();
   if (roll < 0.55) return 2 + Math.floor(rng() * 4); // 2-5 أيام
-  if (roll < 0.9) return 6 + Math.floor(rng() * 9); // 6-14 يوم
+  if (roll < 0.90) return 6 + Math.floor(rng() * 9); // 6-14 يوم
   return 15 + Math.floor(rng() * 76); // 15-90 يوم
 }
 
@@ -86,8 +70,7 @@ export function generateCardDistribution(xi, rng, options = {}) {
     : Math.floor(rng() * 3) + (rng() < 0.3 ? 1 : 0);
   let redCount = isDerby ? (rng() < 0.08 ? 1 : 0) : rng() < 0.04 ? 1 : 0;
   if (refereePolicy === "strict") yellowCount++;
-  else if (refereePolicy === "lenient")
-    yellowCount = Math.max(0, yellowCount - 1);
+  else if (refereePolicy === "lenient") yellowCount = Math.max(0, yellowCount - 1);
   const yellows = [];
   const reds = [];
   for (let i = 0; i < yellowCount + redCount && xi.length; i++) {
@@ -133,15 +116,14 @@ export function updateForm(p, matchRating) {
  * @returns {{ redCardPenalty: number }} — عقوبة النقص العددي (للاستخدام في strength)
  */
 export function applyMatchConsequences(s, f, cards, rng, options = {}) {
-  const xi =
-    Array.isArray(f.lineup) && f.lineup.length
-      ? f.lineup
-          .map((x) => {
-            const p = s.players.find((y) => y.id === x.playerId);
-            return p && p.status !== "retired" ? p : null;
-          })
-          .filter(Boolean)
-      : [];
+  const xi = Array.isArray(f.lineup) && f.lineup.length
+    ? f.lineup
+        .map((x) => {
+          const p = s.players.find((y) => y.id === x.playerId);
+          return p && p.status !== "retired" ? p : null;
+        })
+        .filter(Boolean)
+    : [];
   if (!xi.length) return { redCardPenalty: 0 };
 
   const home = f.home === s.clubId;
@@ -155,7 +137,7 @@ export function applyMatchConsequences(s, f, cards, rng, options = {}) {
   const suspensionThreshold = Number.isSafeInteger(options.suspensionThreshold)
     ? Math.max(2, Math.min(8, options.suspensionThreshold))
     : YELLOW_SUSPENSION_THRESHOLD;
-  for (const p of cards.yellows || []) {
+  for (const p of (cards.yellows || [])) {
     p.seasonYellowByComp = (p.seasonYellowByComp || 0) + 1;
     if (p.seasonYellowByComp >= suspensionThreshold) {
       p.yellowCardSuspensions = (p.yellowCardSuspensions || 0) + 1;
@@ -170,7 +152,7 @@ export function applyMatchConsequences(s, f, cards, rng, options = {}) {
   }
 
   // ── بطاقة حمراء: إيقاف المباراة القادمة + نقص عددي ──
-  for (const p of cards.reds || []) {
+  for (const p of (cards.reds || [])) {
     p.suspendedUntil = addDays(s.date, 8);
     redCardPenalty += 8;
     message(s, {
@@ -198,10 +180,9 @@ export function applyMatchConsequences(s, f, cards, rng, options = {}) {
 
   // ── فورمة ──
   for (const p of xi) {
-    const rating =
-      Math.round(
-        (5.9 + (p.rating - 60) / 22 + delta + (rng() * 0.9 - 0.45)) * 10,
-      ) / 10;
+    const rating = Math.round(
+      (5.9 + (p.rating - 60) / 22 + delta + (rng() * 0.9 - 0.45)) * 10
+    ) / 10;
     updateForm(p, Math.max(4, Math.min(10, rating)));
   }
 

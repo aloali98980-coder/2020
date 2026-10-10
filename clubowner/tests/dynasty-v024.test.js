@@ -49,12 +49,7 @@ test("v20 migration preserves the current owner age and existing children's ages
       traits: ["hardworking", "قيادي"],
       isHeir: true,
     },
-    {
-      id: "legacy-child",
-      name: "Legacy Child",
-      age: 8,
-      stats: { talent: 56, discipline: 71, ambition: 49 },
-    },
+    { id: "legacy-child", name: "Legacy Child", age: 8, stats: { talent: 56, discipline: 71, ambition: 49 } },
   ];
   const ids = old.players.map((player) => player.id);
   const cash = old.finance.cash;
@@ -66,49 +61,26 @@ test("v20 migration preserves the current owner age and existing children's ages
   assert.equal(migrated.dynasty.familyName, "Nassar");
   assert.equal(migrated.dynasty.children[0].age, 16);
   assert.equal(migrated.dynasty.children[0].stage, "teen");
-  assert.deepEqual(migrated.dynasty.children[0].stats, {
-    talent: 79,
-    discipline: 64,
-    ambition: 82,
-  });
-  assert.deepEqual(migrated.dynasty.children[0].traits, [
-    "hardworking",
-    "leader",
-  ]);
+  assert.deepEqual(migrated.dynasty.children[0].stats, { talent: 79, discipline: 64, ambition: 82 });
+  assert.deepEqual(migrated.dynasty.children[0].traits, ["hardworking", "leader"]);
   assert.equal(migrated.dynasty.heirId, "legacy-teen");
   assert.equal(migrated.dynasty.children[1].age, 8);
   assert.equal(migrated.finance.cash, cash);
-  assert.deepEqual(
-    migrated.players.map((player) => player.id),
-    ids,
-  );
+  assert.deepEqual(migrated.players.map((player) => player.id), ids);
   validateSave(migrated);
-  assert.strictEqual(
-    migrateSave(migrated),
-    migrated,
-    "current save migration is idempotent",
-  );
+  assert.strictEqual(migrateSave(migrated), migrated, "current save migration is idempotent");
 });
 
 test("v20 migration normalizes academy progress without discarding an existing child", () => {
   const old = createGame({ database: "current", leagues: ["eg"] });
   old.version = 20;
   delete old.dynasty;
-  old.children = [
-    {
-      id: "legacy-academy-child",
-      name: "Legacy Academy Child",
-      age: 14,
-      academy: {
-        enrolled: true,
-        enteredOn: old.date,
-        focus: "technical",
-        form: 72,
-        matches: [],
-        reports: [],
-      },
-    },
-  ];
+  old.children = [{
+    id: "legacy-academy-child",
+    name: "Legacy Academy Child",
+    age: 14,
+    academy: { enrolled: true, enteredOn: old.date, focus: "technical", form: 72, matches: [], reports: [] },
+  }];
   const migrated = migrateSave(old);
   const child = migrated.dynasty.children[0];
   assert.equal(child.age, 14);
@@ -145,15 +117,9 @@ test("v21 migration supplies the expanded academy and event fields without chang
   assert.equal(migrated.dynasty.publicBalance, 73);
   assert.equal(migrated.dynasty.children[0].age, 15);
   assert.equal(migrated.dynasty.children[0].academy.position, "CM");
-  assert.equal(
-    migrated.dynasty.children[0].academy.lastTrainingMonth,
-    old.date.slice(0, 7),
-  );
+  assert.equal(migrated.dynasty.children[0].academy.lastTrainingMonth, old.date.slice(0, 7));
   assert.equal(migrated.finance.cash, cash);
-  assert.deepEqual(
-    migrated.players.map((player) => player.id),
-    playerIds,
-  );
+  assert.deepEqual(migrated.players.map((player) => player.id), playerIds);
   validateSave(migrated);
 });
 
@@ -199,28 +165,12 @@ test("child stats grow from upbringing choices and personality traits, with a mo
   assert.equal(growChild(s, football), true);
   assert.equal(growChild(s, student), true);
   assert.equal(growChild(s, diligent), true);
-  assert(
-    football.stats.talent > student.stats.talent,
-    "football focus builds talent",
-  );
-  assert(
-    student.stats.discipline > football.stats.discipline,
-    "education builds discipline",
-  );
-  assert(
-    diligent.stats.talent > student.stats.talent,
-    "creative and hardworking traits improve development",
-  );
-  assert(
-    diligent.stats.discipline > student.stats.discipline,
-    "hardworking trait improves discipline",
-  );
+  assert(football.stats.talent > student.stats.talent, "football focus builds talent");
+  assert(student.stats.discipline > football.stats.discipline, "education builds discipline");
+  assert(diligent.stats.talent > student.stats.talent, "creative and hardworking traits improve development");
+  assert(diligent.stats.discipline > student.stats.discipline, "hardworking trait improves discipline");
   const snapshot = structuredClone(diligent.stats);
-  assert.equal(
-    growChild(s, diligent),
-    false,
-    "a child cannot receive duplicate monthly growth",
-  );
+  assert.equal(growChild(s, diligent), false, "a child cannot receive duplicate monthly growth");
   assert.deepEqual(diligent.stats, snapshot);
   validateSave(s);
 });
@@ -250,15 +200,8 @@ test("the family starts through marriage and birth; newborn stats remain within 
   assert.equal(s.dynasty.spouse, "Partner");
   assert.equal(child.age, 0);
   assert.equal(child.stage, "infant");
-  assert(
-    Object.values(child.stats).every((value) => value >= 0 && value <= 100),
-  );
-  assert.throws(() =>
-    haveChild(
-      createGame({ database: "current", leagues: ["eg"] }),
-      "No parents",
-    ),
-  );
+  assert(Object.values(child.stats).every((value) => value >= 0 && value <= 100));
+  assert.throws(() => haveChild(createGame({ database: "current", leagues: ["eg"] }), "No parents"));
   validateSave(s);
 });
 
@@ -283,11 +226,7 @@ test("academy enrollment has age and path gates, position/focus choices, and exp
   validateSave(s);
   leaveDynastyAcademy(s, child.id);
   assert.equal(child.academy.enrolled, false);
-  assert.equal(
-    child.academy.mentorId,
-    veteran.id,
-    "leaving preserves the academy record",
-  );
+  assert.equal(child.academy.mentorId, veteran.id, "leaving preserves the academy record");
   validateSave(s);
 });
 
@@ -304,8 +243,7 @@ test("academy months produce training reports and fixtures with a one-report mon
   const initialRating = child.academy.rating;
   const initialTalent = child.stats.talent;
   let nextDate = s.date;
-  while (nextDate.slice(0, 7) === s.date.slice(0, 7))
-    nextDate = addDays(nextDate, 1);
+  while (nextDate.slice(0, 7) === s.date.slice(0, 7)) nextDate = addDays(nextDate, 1);
   s.date = nextDate;
   dynastyGrowthDay(s);
   academyJourneyDay(s);
@@ -318,11 +256,7 @@ test("academy months produce training reports and fixtures with a one-report mon
   assert.equal(child.academy.trialReady, true);
   const snapshot = structuredClone(child.academy);
   academyJourneyDay(s);
-  assert.deepEqual(
-    child.academy,
-    snapshot,
-    "a child receives at most one report per month",
-  );
+  assert.deepEqual(child.academy, snapshot, "a child receives at most one report per month");
   validateSave(s);
 });
 
@@ -350,28 +284,19 @@ test("time advancement automatically runs dynasty growth and the academy journey
 
 test("academy mentors add a measurable training benefit", () => {
   const first = createGame({ database: "current", leagues: ["eg"] });
-  const child = createDynastyChild(first, {
-    name: "Mentored",
-    age: 14,
-    stats: { talent: 70, discipline: 70, ambition: 60 },
-  });
+  const child = createDynastyChild(first, { name: "Mentored", age: 14, stats: { talent: 70, discipline: 70, ambition: 60 } });
   first.dynasty.children.push(child);
   const second = structuredClone(first);
   const secondChild = second.dynasty.children[0];
-  const veteran = first.players.find(
-    (player) => player.clubId === first.clubId,
-  );
-  const otherVeteran = second.players.find(
-    (player) => player.id === veteran.id,
-  );
+  const veteran = first.players.find((player) => player.clubId === first.clubId);
+  const otherVeteran = second.players.find((player) => player.id === veteran.id);
   veteran.appearances = otherVeteran.appearances = 200;
   veteran.rating = otherVeteran.rating = 80;
   enrollDynastyAcademy(first, child.id, "CM");
   enrollDynastyAcademy(second, secondChild.id, "CM");
   setAcademyMentor(first, child.id, veteran.id);
   let nextDate = first.date;
-  while (nextDate.slice(0, 7) === first.date.slice(0, 7))
-    nextDate = addDays(nextDate, 1);
+  while (nextDate.slice(0, 7) === first.date.slice(0, 7)) nextDate = addDays(nextDate, 1);
   first.date = second.date = nextDate;
   dynastyGrowthDay(first);
   dynastyGrowthDay(second);
@@ -389,20 +314,13 @@ test("the dynasty page and academy controls have Arabic, English and French text
   s.dynasty.children.push(child);
   const originalLanguage = getLanguage();
   try {
-    for (const [language, title] of [
-      ["ar", "الأجيال"],
-      ["en", "Dynasty"],
-      ["fr", "Dynastie"],
-    ]) {
+    for (const [language, title] of [["ar", "الأجيال"], ["en", "Dynasty"], ["fr", "Dynastie"]]) {
       setLanguage(language);
       const html = dynastyView(s);
       assert(html.includes(title));
       assert(html.includes(`data-dynasty-upbringing="${child.id}"`));
       assert(html.includes(`dynasty-academy-position-${child.id}`));
-      assert(
-        html.includes("dynasty-child-form") === false,
-        "birth form is hidden before marriage",
-      );
+      assert(html.includes("dynasty-child-form") === false, "birth form is hidden before marriage");
     }
   } finally {
     setLanguage(originalLanguage);

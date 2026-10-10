@@ -13,10 +13,7 @@ import {
   dateFromDayNumber,
 } from "../src/core/utils.js";
 import { ageAt } from "../src/models/player.js";
-import {
-  provenance,
-  stripDerivedProvenance,
-} from "../src/models/provenance.js";
+import { provenance, stripDerivedProvenance } from "../src/models/provenance.js";
 import {
   inInternationalWindow,
   calendarIndex,
@@ -70,13 +67,9 @@ function tick(s, n) {
   return advanced;
 }
 const oldAddDays = (date, n) =>
-  new Date(Date.parse(date + "T12:00:00Z") + n * 86400000)
-    .toISOString()
-    .slice(0, 10);
+  new Date(Date.parse(date + "T12:00:00Z") + n * 86400000).toISOString().slice(0, 10);
 const oldBetween = (a, b) =>
-  Math.round(
-    (Date.parse(b + "T12:00:00Z") - Date.parse(a + "T12:00:00Z")) / 86400000,
-  );
+  Math.round((Date.parse(b + "T12:00:00Z") - Date.parse(a + "T12:00:00Z")) / 86400000);
 
 test("0.20 date arithmetic matches the Date-based implementation across centuries and leap days", () => {
   for (let n = dayNumber("1950-01-01"); n <= dayNumber("2150-12-31"); n += 1) {
@@ -84,26 +77,14 @@ test("0.20 date arithmetic matches the Date-based implementation across centurie
     assert.equal(d, new Date(n * 86400000).toISOString().slice(0, 10));
     assert.equal(dayNumber(d), n);
   }
-  for (const d of [
-    "2026-09-24",
-    "2024-02-29",
-    "2023-12-31",
-    "2100-02-28",
-    "2000-02-29",
-  ])
-    for (const n of [
-      -800, -365, -31, -1, 0, 1, 10, 28, 30, 45, 180, 365, 730, 1100,
-    ]) {
+  for (const d of ["2026-09-24", "2024-02-29", "2023-12-31", "2100-02-28", "2000-02-29"])
+    for (const n of [-800, -365, -31, -1, 0, 1, 10, 28, 30, 45, 180, 365, 730, 1100]) {
       assert.equal(addDays(d, n), oldAddDays(d, n));
       const b = oldAddDays(d, n);
       assert.equal(daysBetween(d, b), oldBetween(d, b));
       assert.equal(daysBetween(b, d), oldBetween(b, d));
     }
-  assert.equal(
-    addDays("2026-02-30", 1),
-    oldAddDays("2026-02-30", 1),
-    "lenient input behaves like before",
-  );
+  assert.equal(addDays("2026-02-30", 1), oldAddDays("2026-02-30", 1), "lenient input behaves like before");
   assert.throws(() => addDays(undefined, 1), RangeError);
   assert.throws(() => addDays("abc", 1), RangeError);
 });
@@ -114,13 +95,7 @@ test("0.20 ageAt matches the string-splitting formula and handles reference ages
       [by, bm, bd] = p.birthDate.split("-").map(Number);
     return y - by - (m < bm || (m === bm && d < bd) ? 1 : 0);
   };
-  for (const birth of [
-    "1988-12-18",
-    "2002-01-01",
-    "2000-02-29",
-    "1995-09-24",
-    "2008-06-30",
-  ]) {
+  for (const birth of ["1988-12-18", "2002-01-01", "2000-02-29", "1995-09-24", "2008-06-30"]) {
     const p = { birthDate: birth };
     for (let i = 0; i < 1500; i += 7) {
       const date = addDays("2026-09-24", i);
@@ -137,8 +112,7 @@ test("0.20 international windows and the integer fixture calendar behave like th
     ["03-20", "06-01", "09-05", "11-10"].some(
       (start) =>
         date.slice(5) >= start &&
-        date.slice(5) <=
-          oldAddDays(date.slice(0, 4) + "-" + start, 10).slice(5),
+        date.slice(5) <= oldAddDays(date.slice(0, 4) + "-" + start, 10).slice(5),
     );
   for (let i = 0; i < 366 * 3; i++) {
     const d = addDays("2026-01-01", i);
@@ -153,11 +127,7 @@ test("0.20 international windows and the integer fixture calendar behave like th
   // a is busy 10-01…10-05 and 10-06…10-10 → first free day for a-vs-d is 10-11? d busy 10-10…10-14 → 10-15
   assert.equal(availableDate(calendar, "a", "d", "2026-10-01"), "2026-10-15");
   assert.equal(availableDate(calendar, "x", "y", "2026-09-04"), "2026-09-04");
-  assert.equal(
-    availableDate(calendar, "x", "y", "2026-09-05"),
-    "2026-09-16",
-    "skips the September window",
-  );
+  assert.equal(availableDate(calendar, "x", "y", "2026-09-05"), "2026-09-16", "skips the September window");
   const f = { home: "x", away: "y", date: "2026-09-16" };
   calendar.reserve(f);
   assert.equal(availableDate(calendar, "x", "z", "2026-09-16"), "2026-09-19");
@@ -170,13 +140,8 @@ test("0.20 ownFixtures matches a filter over allFixtures and clubPowers matches 
   const expected = allFixtures(s)
     .filter((f) => f.home === s.clubId || f.away === s.clubId)
     .filter((f, i, arr) => arr.findIndex((x) => x.id === f.id) === i)
-    .sort((a, b) =>
-      a.date < b.date ? -1 : a.date > b.date ? 1 : a.id < b.id ? -1 : 1,
-    );
-  assert.deepEqual(
-    mine.map((f) => f.id),
-    expected.map((f) => f.id),
-  );
+    .sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : a.id < b.id ? -1 : 1));
+  assert.deepEqual(mine.map((f) => f.id), expected.map((f) => f.id));
   const powers = clubPowers(s.players);
   const groups = new Map();
   for (const p of s.players) {
@@ -198,44 +163,25 @@ test("0.20 new saves are v18 with an empty retiree archive; world-pack players c
   validateSave(s);
   const pack = s.players.filter((p) => p.id.startsWith("wp-"));
   assert.ok(pack.length > 300);
-  assert.ok(
-    pack.every(
-      (p) => p.sourceUrl === undefined && p.estimatedFields === undefined,
-    ),
-  );
+  assert.ok(pack.every((p) => p.sourceUrl === undefined && p.estimatedFields === undefined));
   assert.ok(pack.every((p) => provenance(p).sourceUrl?.startsWith("https://")));
   assert.ok(pack.every((p) => provenance(p).sourceLicense === "CC-BY-SA-4.0"));
-  assert.ok(
-    pack.some((p) => provenance(p).biographyUrl?.startsWith("https://")),
-  );
+  assert.ok(pack.some((p) => provenance(p).biographyUrl?.startsWith("https://")));
   const star = pack.find((p) => p.abilityMethod === "editorial-estimate");
   assert.ok(star, "editorial stars keep their explicit method");
   const plain = pack.find((p) => !p.abilityMethod);
   assert.equal(provenance(plain).abilityMethod, "seeded-role-age-estimate");
-  assert.ok(
-    pack.every(
-      (p) =>
-        Number.isInteger(Math.round(p.developmentRate * 1000)) &&
-        String(p.developmentRate).length <= 6,
-    ),
-  );
+  assert.ok(pack.every((p) => Number.isInteger(Math.round(p.developmentRate * 1000)) && String(p.developmentRate).length <= 6));
   const bytes = JSON.stringify(s.players).length / s.players.length;
   assert.ok(bytes < 1300, `bytes per player at creation ${bytes}`);
   const html = playerDetail(s, plain);
-  assert.ok(
-    html.includes(provenance(plain).sourceUrl.replace(/&/g, "&amp;")),
-    "profile still links the source page",
-  );
+  assert.ok(html.includes(provenance(plain).sourceUrl.replace(/&/g, "&amp;")), "profile still links the source page");
 });
 
 test("0.20 retirees leave s.players for a compact archive that profiles, staff and validation still resolve", () => {
   const s = game();
-  const own = s.players
-    .filter((p) => p.clubId === s.clubId && p.age >= 30)
-    .slice(0, 2);
-  const other = s.players
-    .filter((p) => p.clubId !== s.clubId && p.age >= 33)
-    .slice(0, 3);
+  const own = s.players.filter((p) => p.clubId === s.clubId && p.age >= 30).slice(0, 2);
+  const other = s.players.filter((p) => p.clubId !== s.clubId && p.age >= 33).slice(0, 3);
   for (const p of [...own, ...other]) announceRetirement(s, p);
   tick(s, 60);
   assert.ok(s.retired.length >= 5, "archive filled");
@@ -244,10 +190,7 @@ test("0.20 retirees leave s.players for a compact archive that profiles, staff a
     const r = findPerson(s, p.id);
     assert.equal(r.status, "retired");
     assert.equal(r.clubId, "retired");
-    assert.equal(
-      r.previousClubId,
-      p.clubId === "retired" ? p.previousClubId : p.clubId,
-    );
+    assert.equal(r.previousClubId, p.clubId === "retired" ? p.previousClubId : p.clubId);
     assert.ok(r.attributes && r.careerHistory.at(-1).type === "retired");
     assert.ok(!("agingHistory" in r) && !("contractTerms" in r));
     const html = playerDetail(s, r);
@@ -255,27 +198,11 @@ test("0.20 retirees leave s.players for a compact archive that profiles, staff a
   }
   assert.equal(retiredCount(s), s.retired.length);
   const candidates = s.staff.filter((c) => c.status === "available");
-  assert.ok(
-    candidates.every((c) => findPerson(s, c.personId)),
-    "staff candidates keep a resolvable person",
-  );
+  assert.ok(candidates.every((c) => findPerson(s, c.personId)), "staff candidates keep a resolvable person");
   validateSave(s);
   const json = JSON.stringify(s.retired[0]);
   assert.ok(json.length < 900, `compact retiree record ${json.length}`);
-  assert.equal(
-    Object.keys(
-      retiredRecord({
-        id: "x",
-        name: "n",
-        status: "retired",
-        clubId: "c",
-        rating: 61.234,
-        careerHistory: [],
-        attributes: {},
-      }),
-    ).includes("agingHistory"),
-    false,
-  );
+  assert.equal(Object.keys(retiredRecord({ id: "x", name: "n", status: "retired", clubId: "c", rating: 61.234, careerHistory: [], attributes: {} })).includes("agingHistory"), false);
 });
 
 test("0.20 archive pruning keeps own-club retirees and staff references", () => {
@@ -318,48 +245,19 @@ test("0.20 archive pruning keeps own-club retirees and staff references", () => 
     status: "expired",
   });
   s.talent.scouting.shortlist.push("ret-4");
-  s.talent.world.history.unshift({
-    date: "2026-10-01",
-    playerId: "ret-5",
-    type: "contract-expired",
-    clubId: buyer,
-  });
+  s.talent.world.history.unshift({ date: "2026-10-01", playerId: "ret-5", type: "contract-expired", clubId: buyer });
   const pinned = referencedPersonIds(s);
-  for (const id of ["ret-1", "ret-3", "ret-4", "ret-5"])
-    assert.ok(pinned.has(id), id);
-  const victim = {
-    ...s.players[0],
-    status: "retired",
-    clubId: "retired",
-    retiredOn: s.date,
-  };
+  for (const id of ["ret-1", "ret-3", "ret-4", "ret-5"]) assert.ok(pinned.has(id), id);
+  const victim = { ...s.players[0], status: "retired", clubId: "retired", retiredOn: s.date };
   s.players[0] = victim;
   archiveRetiree(s, victim);
   assert.ok(s.retired.length <= MAX_RETIRED);
-  assert.ok(
-    s.retired.some((r) => r.id === "ret-1"),
-    "staff-referenced retiree kept",
-  );
-  assert.ok(
-    s.retired.some((r) => r.id === "ret-3"),
-    "retiree named in an old bid kept",
-  );
-  assert.ok(
-    s.retired.some((r) => r.id === "ret-4"),
-    "shortlisted retiree kept",
-  );
-  assert.ok(
-    s.retired.some((r) => r.id === "ret-5"),
-    "retiree in world history kept",
-  );
-  assert.ok(
-    s.retired.some((r) => r.id === "ret-0"),
-    "own-club retiree kept",
-  );
-  assert.ok(
-    !s.retired.some((r) => r.id === "ret-2"),
-    "oldest AI retiree dropped",
-  );
+  assert.ok(s.retired.some((r) => r.id === "ret-1"), "staff-referenced retiree kept");
+  assert.ok(s.retired.some((r) => r.id === "ret-3"), "retiree named in an old bid kept");
+  assert.ok(s.retired.some((r) => r.id === "ret-4"), "shortlisted retiree kept");
+  assert.ok(s.retired.some((r) => r.id === "ret-5"), "retiree in world history kept");
+  assert.ok(s.retired.some((r) => r.id === "ret-0"), "own-club retiree kept");
+  assert.ok(!s.retired.some((r) => r.id === "ret-2"), "oldest AI retiree dropped");
   assert.ok(s.retired.at(-1).id === victim.id);
   validateSave(s);
 });
@@ -367,14 +265,10 @@ test("0.20 archive pruning keeps own-club retirees and staff references", () => 
 test("0.20 aging history stays capped and compact; the profile still shows the last months", () => {
   const s = game();
   tick(s, 200);
-  const ai = s.players.filter(
-    (p) => p.clubId !== s.clubId && p.agingHistory?.length,
-  );
+  const ai = s.players.filter((p) => p.clubId !== s.clubId && p.agingHistory?.length);
   assert.ok(ai.length > 100);
   assert.ok(ai.every((p) => p.agingHistory.length <= AGING_HISTORY_KEEP));
-  assert.ok(
-    ai.every((p) => Object.keys(p.agingHistory[0]).join() === "date,rating"),
-  );
+  assert.ok(ai.every((p) => Object.keys(p.agingHistory[0]).join() === "date,rating"));
   const html = playerDetail(s, ai[0]);
   assert.ok(html.includes("aging-history"));
   const perPlayer = JSON.stringify(s.players).length / s.players.length;
@@ -383,38 +277,24 @@ test("0.20 aging history stays capped and compact; the profile still shows the l
 
 test("0.20 world staff pool is bounded and stale outside candidates expire", () => {
   const s = game();
-  const outsiders = s.players.filter(
-    (p) => p.clubId !== s.clubId && p.age >= 32,
-  );
+  const outsiders = s.players.filter((p) => p.clubId !== s.clubId && p.age >= 32);
   for (const p of outsiders.slice(0, STAFF_POOL_LIMIT + 30)) {
     p.careerInterest = 10;
     announceRetirement(s, p);
   }
   tick(s, 50);
-  const pool = s.staff.filter(
-    (c) => c.status === "available" && c.formerClubId !== s.clubId,
-  );
+  const pool = s.staff.filter((c) => c.status === "available" && c.formerClubId !== s.clubId);
   assert.ok(pool.length <= STAFF_POOL_LIMIT, `pool ${pool.length}`);
   assert.ok(pool.every((c) => c.since && c.formerClubId));
   for (const c of pool) c.since = addDays(s.date, -800);
   tick(s, 32);
-  assert.equal(
-    s.staff.filter(
-      (c) =>
-        c.status === "available" &&
-        c.formerClubId !== s.clubId &&
-        c.since < addDays(s.date, -790),
-    ).length,
-    0,
-  );
+  assert.equal(s.staff.filter((c) => c.status === "available" && c.formerClubId !== s.clubId && c.since < addDays(s.date, -790)).length, 0);
   validateSave(s);
 });
 
 test("0.20 long-unattached free agents announce retirement instead of lingering forever", () => {
   const s = game();
-  const free = s.players
-    .filter((p) => p.clubId !== s.clubId && p.age >= 30 && p.age < 34)
-    .slice(0, 3);
+  const free = s.players.filter((p) => p.clubId !== s.clubId && p.age >= 30 && p.age < 34).slice(0, 3);
   for (const p of free) {
     p.clubId = "لاعب حر";
     p.clubName = "لاعب حر";
@@ -428,10 +308,7 @@ test("0.20 long-unattached free agents announce retirement instead of lingering 
   const start = s.date;
   while (!s.date.endsWith("-01")) tick(s, 1);
   worldTalentDay(s);
-  assert.ok(
-    free.every((p) => p.retirementPlan || p.clubId !== "لاعب حر"),
-    "old free agents plan retirement or got signed",
-  );
+  assert.ok(free.every((p) => p.retirementPlan || p.clubId !== "لاعب حر"), "old free agents plan retirement or got signed");
   assert.ok(!young.retirementPlan, "a young free agent keeps waiting");
   assert.ok(s.talent.world.retiredUnattached >= 1);
   assert.ok(s.date > start);
@@ -447,9 +324,7 @@ test("0.20 v17 saves migrate: retirees archived, provenance stripped, history ca
   delete v17.migrationNote;
   // Re-inflate the old per-player shape.
   for (const p of v17.players) {
-    Object.assign(p, provenance(p), {
-      abilityMethod: provenance(p).abilityMethod,
-    });
+    Object.assign(p, provenance(p), { abilityMethod: provenance(p).abilityMethod });
     p.agingHistory = Array.from({ length: 12 }, (_, i) => ({
       date: addDays("2025-01-01", i * 30),
       age: 25,
@@ -466,13 +341,7 @@ test("0.20 v17 saves migrate: retirees archived, provenance stripped, history ca
     p.retiredOn = "2026-10-20";
     p.salary = 0;
     p.value = 0;
-    p.careerHistory.push({
-      type: "retired",
-      date: "2026-10-20",
-      clubId: p.previousClubId,
-      appearances: 0,
-      goals: 0,
-    });
+    p.careerHistory.push({ type: "retired", date: "2026-10-20", clubId: p.previousClubId, appearances: 0, goals: 0 });
   }
   for (let i = 0; i < 90; i++)
     v17.staff.push({
@@ -497,37 +366,18 @@ test("0.20 v17 saves migrate: retirees archived, provenance stripped, history ca
   assert.ok(!m.players.some((p) => p.status === "retired"));
   assert.deepEqual(
     m.players.map((p) => [p.id, p.rating]),
-    s.players
-      .filter((p) => !retirees.some((r) => r.id === p.id))
-      .map((p) => [p.id, p.rating]),
+    s.players.filter((p) => !retirees.some((r) => r.id === p.id)).map((p) => [p.id, p.rating]),
   );
   assert.equal(m.finance.cash, s.finance.cash);
-  assert.ok(
-    m.players
-      .filter((p) => p.id.startsWith("wp-"))
-      .every((p) => p.sourceUrl === undefined),
-  );
-  assert.ok(
-    m.players.every(
-      (p) => p.agingHistory.length <= 12 && !("change" in p.agingHistory[0]),
-    ),
-  );
+  assert.ok(m.players.filter((p) => p.id.startsWith("wp-")).every((p) => p.sourceUrl === undefined));
+  assert.ok(m.players.every((p) => p.agingHistory.length <= 12 && !("change" in p.agingHistory[0])));
   assert.ok(m.players.every((p) => p.developmentRate === 1.147));
-  assert.ok(
-    m.staff.filter((c) => c.status === "available").length <= STAFF_POOL_LIMIT,
-  );
+  assert.ok(m.staff.filter((c) => c.status === "available").length <= STAFF_POOL_LIMIT);
   assert.ok(m.staff.every((c) => c.since && "formerClubId" in c));
-  assert.ok(
-    JSON.stringify(m).length < size17 * 0.8,
-    "migrated save is markedly smaller",
-  );
+  assert.ok(JSON.stringify(m).length < size17 * 0.8, "migrated save is markedly smaller");
   validateSave(m);
   assert.equal(migrateSave(m), m, "idempotent");
-  assert.equal(
-    migrateToEighteen({ version: 16 }).version,
-    16,
-    "only v17 input is handled here",
-  );
+  assert.equal(migrateToEighteen({ version: 16 }).version, 16, "only v17 input is handled here");
 });
 
 test("0.20 provenance stripping is conservative: explicit non-pack values are preserved", () => {
@@ -549,39 +399,22 @@ test("0.20 local save codec: content-defined batches, round trip with recomputed
   assert.equal(batches[0][0], 0);
   assert.equal(batches.at(-1)[1], s.players.length);
   assert.ok(batches.every(([a, b]) => b - a >= 1 && b - a <= 256));
-  for (let i = 1; i < batches.length; i++)
-    assert.equal(batches[i][0], batches[i - 1][1]);
+  for (let i = 1; i < batches.length; i++) assert.equal(batches[i][0], batches[i - 1][1]);
   const first = await encodeLocalSave(s);
   assert.equal(first.reused, 0);
   assert.equal(first.parts.length, batches.length);
-  assert.ok(
-    s.players.every((p) => p.age > 0),
-    "ages restored after encoding",
-  );
+  assert.ok(s.players.every((p) => p.age > 0), "ages restored after encoding");
   const again = await encodeLocalSave(s);
-  assert.equal(
-    again.reused,
-    first.parts.length,
-    "identical state reuses every batch",
-  );
+  assert.equal(again.reused, first.parts.length, "identical state reuses every batch");
   tick(s, 3);
   const later = await encodeLocalSave(s);
-  assert.ok(
-    later.reused >= later.parts.length - 4,
-    `birthdays alone do not dirty batches (${later.reused}/${later.parts.length})`,
-  );
+  assert.ok(later.reused >= later.parts.length - 4, `birthdays alone do not dirty batches (${later.reused}/${later.parts.length})`);
   s.players.splice(40, 1);
   const removed = await encodeLocalSave(s);
-  assert.ok(
-    removed.reused >= removed.parts.length - 2,
-    "removing a player only re-encodes its own batch",
-  );
+  assert.ok(removed.reused >= removed.parts.length - 2, "removing a player only re-encodes its own batch");
   const back = await decodeLocalSave(removed);
   assert.equal(back.players.length, s.players.length);
-  assert.deepEqual(
-    back.players.map((p) => p.age),
-    s.players.map((p) => p.age),
-  );
+  assert.deepEqual(back.players.map((p) => p.age), s.players.map((p) => p.age));
   assert.equal(JSON.stringify(back), JSON.stringify(s));
   validateSave(back);
   // legacy fixed-size parts are still readable
@@ -605,20 +438,14 @@ test("0.20 a season in a one-market world keeps the population level and stays u
   assert.ok(ms < 60, `ms per day ${ms.toFixed(1)}`);
   assert.ok(!s.players.some((p) => p.status === "retired"));
   assert.ok(s.retired.length > 0);
-  assert.ok(
-    Math.abs(s.players.length - startActive) < startActive * 0.08,
-    `population ${startActive} → ${s.players.length}`,
-  );
+  assert.ok(Math.abs(s.players.length - startActive) < startActive * 0.08, `population ${startActive} → ${s.players.length}`);
   const perPlayer = JSON.stringify(s.players).length / s.players.length;
   assert.ok(perPlayer < 1500, `bytes per player ${perPlayer}`);
   assert.ok(s.seasonNumber >= 2, "a season rolled over");
   for (const d of s.expansion.divisions)
     for (const id of d.clubs) {
       const baseline = extendedClub(id)?.cash || 50000000;
-      assert.ok(
-        s.expansion.budgets[id] >= baseline * 0.5,
-        `AI budget refreshed for ${id}`,
-      );
+      assert.ok(s.expansion.budgets[id] >= baseline * 0.5, `AI budget refreshed for ${id}`);
     }
   agingDay(s);
   retirementDay(s);
@@ -644,13 +471,8 @@ test("0.20 player objects keep V8 fast properties: no default ability method to 
   const s = game();
   const plain = s.players.filter((p) => !p.abilityMethod);
   assert.ok(plain.length > s.players.length * 0.8);
-  assert.ok(
-    plain.every((p) => !("abilityMethod" in p)),
-    "default method is never materialised",
-  );
-  const stars = s.players.filter(
-    (p) => p.abilityMethod === "editorial-estimate",
-  );
+  assert.ok(plain.every((p) => !("abilityMethod" in p)), "default method is never materialised");
+  const stars = s.players.filter((p) => p.abilityMethod === "editorial-estimate");
   assert.ok(stars.length > 0);
   const shapes = new Set(s.players.map((p) => Object.keys(p).join()));
   assert.ok(shapes.size <= 12, `player shapes ${shapes.size}`);

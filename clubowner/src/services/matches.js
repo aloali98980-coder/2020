@@ -3,25 +3,15 @@ import { roleEffect } from "./playerRoles.js";
 import { selectXI, tacticalEffects } from "./tactics.js";
 import { extendedClub } from "../data/expandedCatalog.js";
 import { matchCommerce } from "./commerce.js";
-import {
-  getDerbyInfo,
-  derbyPreMatchMessage,
-  derbyPostMatchMessage,
-} from "./derby.js";
+import { getDerbyInfo, derbyPreMatchMessage, derbyPostMatchMessage } from "./derby.js";
 import { CLUBS } from "../data/catalog.js";
 import { addDays, random, clamp } from "../core/utils.js";
 import { post } from "./finance.js";
 import { message } from "./inbox.js";
 import { legendMatchBonus } from "./legends.js";
 import { recordMatchStats } from "./seasonStats.js";
-import {
-  generateCardDistribution,
-  applyMatchConsequences,
-} from "./matchConsequences.js";
-import {
-  recordDisciplineIncident,
-  refereeSuspensionThreshold,
-} from "./politics/committees.js";
+import { generateCardDistribution, applyMatchConsequences } from "./matchConsequences.js";
+import { recordDisciplineIncident, refereeSuspensionThreshold } from "./politics/committees.js";
 export function fixtures(date) {
   let order = CLUBS.map((c) => c.id),
     out = [];
@@ -111,12 +101,8 @@ export function matchDay(
 
     // 0.28: black files active effects
     const bf = s.blackFiles;
-    const hasRefBias = Boolean(
-      bf?.active?.refereeBias && bf.active.refereeBias.until >= s.date,
-    );
-    const hasBribe = Boolean(
-      bf?.active?.bribedOpponent && bf.active.bribedOpponent.fixtureId === f.id,
-    );
+    const hasRefBias = Boolean(bf?.active?.refereeBias && bf.active.refereeBias.until >= s.date);
+    const hasBribe = Boolean(bf?.active?.bribedOpponent && bf.active.bribedOpponent.fixtureId === f.id);
 
     const derby = getDerbyInfo(f.home, f.away, s);
     if (derby.isDerby) {
@@ -127,14 +113,7 @@ export function matchDay(
         if (!s.derbyNotices) s.derbyNotices = {};
         if (!s.derbyNotices[f.id]) {
           s.derbyNotices[f.id] = true;
-          message(
-            s,
-            derbyPreMatchMessage(
-              extendedClub(s.clubId),
-              extendedClub(ourHome ? f.away : f.home),
-              derby,
-            ),
-          );
+          message(s, derbyPreMatchMessage(extendedClub(s.clubId), extendedClub(ourHome ? f.away : f.home), derby));
         }
       }
     }
@@ -226,24 +205,12 @@ export function matchDay(
       const derbyWinBoost = f.isDerby ? 7 : 3;
       const derbyLossPenalty = f.isDerby ? -6 : -4;
       s.fanSupport = clamp(
-        s.fanSupport +
-          (our > opp ? derbyWinBoost : our === opp ? 0 : derbyLossPenalty),
+        s.fanSupport + (our > opp ? derbyWinBoost : our === opp ? 0 : derbyLossPenalty),
         10,
         100,
       );
-      if (
-        !home &&
-        !f.neutral &&
-        s.sportsCity &&
-        !cityEffects(s).totals.awayStay
-      )
-        post(
-          s,
-          -35_000,
-          "away-accommodation",
-          "إقامة الفريق خارج ملعبه",
-          f.id + "-away-hotel",
-        );
+      if (!home && !f.neutral && s.sportsCity && !(cityEffects(s).totals.awayStay))
+        post(s,-35_000,"away-accommodation","إقامة الفريق خارج ملعبه",f.id+"-away-hotel");
       if (home && !f.neutral && s.commerce) matchCommerce(s, f);
       if (home && !f.neutral && !s.commerce) {
         const capacity = Math.floor(
@@ -263,9 +230,7 @@ export function matchDay(
           s,
           f.attendance * effectivePrice,
           "tickets",
-          f.isDerby
-            ? "إيراد تذاكر مباراة الديربي (أسعار مضاعفة)"
-            : "إيراد تذاكر المباراة",
+          f.isDerby ? "إيراد تذاكر مباراة الديربي (أسعار مضاعفة)" : "إيراد تذاكر المباراة",
           f.id + "-tickets",
         );
         post(
@@ -318,40 +283,21 @@ export function matchDay(
         }
       // 0.23+0.24: accumulate season stats + apply match consequences.
       // Cards are generated once and shared between both systems for determinism.
-      const xi =
-        Array.isArray(f.lineup) && f.lineup.length
-          ? f.lineup
-              .map((x) => s.players.find((y) => y.id === x.playerId))
-              .filter(Boolean)
-          : selectXI(s)
-              .filter((x) => x.p.status !== "retired")
-              .map((x) => x.p);
+      const xi = Array.isArray(f.lineup) && f.lineup.length
+        ? f.lineup.map((x) => s.players.find((y) => y.id === x.playerId)).filter(Boolean)
+        : selectXI(s).filter((x) => x.p.status !== "retired").map((x) => x.p);
       const politics = s.politics;
-      const refereePolicy =
-        politics?.committees?.referees?.policy || "balanced";
+      const refereePolicy = politics?.committees?.referees?.policy || "balanced";
       const suspensionThreshold = refereeSuspensionThreshold(politics);
-      const cards = generateCardDistribution(xi, () => random(s), {
-        isDerby: f.isDerby,
-        refereePolicy,
-      });
+      const cards = generateCardDistribution(xi, () => random(s), { isDerby: f.isDerby, refereePolicy });
       recordMatchStats(s, f, () => random(s), our, cards);
-      const { redCardPenalty } = applyMatchConsequences(
-        s,
-        f,
-        cards,
-        () => random(s),
-        {
-          suspensionThreshold,
-        },
-      );
-      for (const player of cards.reds || [])
-        recordDisciplineIncident(s, f, player);
+      const { redCardPenalty } = applyMatchConsequences(s, f, cards, () => random(s), { suspensionThreshold });
+      for (const player of (cards.reds || [])) recordDisciplineIncident(s, f, player);
       // Red card numerical disadvantage: reduce score with probability.
       if (!f.extraTime && redCardPenalty > 0 && random(s) < 0.3) {
-        f[our === "homeGoals" ? "homeGoals" : "awayGoals"] = Math.max(
-          0,
-          f[f.home === s.clubId ? "homeGoals" : "awayGoals"] - 1,
-        );
+        f[our === "homeGoals" ? "homeGoals" : "awayGoals"] = Math.max(0, f[
+          f.home === s.clubId ? "homeGoals" : "awayGoals"
+        ] - 1);
       }
       message(s, {
         title: `${f.isDerby ? "🔥 " : ""}${result} ${our}–${opp} | تقرير ${f.isDerby ? "الديربي" : "المباراة"}`,
@@ -359,17 +305,14 @@ export function matchDay(
         category: "matches",
       });
       if (f.isDerby) {
-        message(
-          s,
-          derbyPostMatchMessage(
-            extendedClub(s.clubId),
-            extendedClub(home ? f.away : f.home),
-            our > opp ? "win" : our === opp ? "draw" : "loss",
-            our,
-            opp,
-            derby,
-          ),
-        );
+        message(s, derbyPostMatchMessage(
+          extendedClub(s.clubId),
+          extendedClub(home ? f.away : f.home),
+          our > opp ? "win" : our === opp ? "draw" : "loss",
+          our,
+          opp,
+          derby
+        ));
       }
     }
   }

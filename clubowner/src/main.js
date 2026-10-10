@@ -1,11 +1,6 @@
 import "./styles/sportsCity.css";
 import { buildCityFacility } from "./services/cityFacilities.js";
-import {
-  startStadium,
-  chooseOldGround,
-  nameStadium,
-  stadiumQuote,
-} from "./services/sportsCity.js";
+import { startStadium, chooseOldGround, nameStadium, stadiumQuote } from "./services/sportsCity.js";
 import { startIntake, chooseCandidate } from "./services/talent/academy.js";
 import {
   requestMission,
@@ -136,7 +131,10 @@ import {
   deleteSlot,
   listSlots,
 } from "./services/slots.js";
-import { playedOwnFixtures, reportFor } from "./services/matchReport.js";
+import {
+  playedOwnFixtures,
+  reportFor,
+} from "./services/matchReport.js";
 import {
   submitOffer,
   acceptClub,
@@ -175,31 +173,16 @@ import { financeView } from "./features/finance.js";
 import { boardView } from "./features/board.js";
 import { staffView } from "./features/staff.js";
 import {
-  startNegotiation,
-  negotiate,
-  cancelNegotiation,
-  fireEmployee,
-  renewEmployee,
-  promoteEmployee,
-  raiseEmployee,
-  respondPoach,
-  resolveMeetingRequest,
+  startNegotiation, negotiate, cancelNegotiation, fireEmployee, renewEmployee,
+  promoteEmployee, raiseEmployee, respondPoach, resolveMeetingRequest,
 } from "./services/staff/staffCorp.js";
 import { startHqUpgrade } from "./services/staff/hq.js";
 import { fileLegalCase, resolveLegalCase } from "./services/staff/legal.js";
-import {
-  setPhilosophy,
-  setFreedom,
-  resolveDeal,
-} from "./services/staff/sporting.js";
+import { setPhilosophy, setFreedom, resolveDeal } from "./services/staff/sporting.js";
 import { assignScout } from "./services/staff/scouts.js";
 import { setCurriculum } from "./services/staff/academy.js";
 import { launchCampaign } from "./services/staff/marketing.js";
-import {
-  publishContent,
-  derbyCampaign,
-  resolveCrisis,
-} from "./services/staff/social.js";
+import { publishContent, derbyCampaign, resolveCrisis } from "./services/staff/social.js";
 import { worldView } from "./features/world.js";
 import { settingsView } from "./features/settings.js";
 import { dynastyView } from "./features/dynasty.js";
@@ -275,15 +258,7 @@ import {
 } from "./ui/modal.js";
 import { icon } from "./components/icons.js";
 import { badge, button, infoNote } from "./components/shared.js";
-import {
-  money,
-  num,
-  esc,
-  date,
-  setDigitsMode,
-  setDisplayCurrency,
-  cur,
-} from "./ui/format.js";
+import { money, num, esc, date, setDigitsMode, setDisplayCurrency, cur } from "./ui/format.js";
 import { ASSETS } from "./data/catalog.js";
 import { findPerson } from "./services/retired.js";
 import { APP_VERSION } from "./data/version.js";
@@ -292,10 +267,7 @@ import { getCupDraw } from "./services/cupDraw.js";
 import { cupDrawModal } from "./features/cupDraw.js";
 import { youthIntakeModal } from "./features/youthIntake.js";
 import { executeYouthIntakeDecisions } from "./services/youthIntake.js";
-import {
-  acceptDeadlineBid,
-  declineDeadlineBid,
-} from "./services/deadlineDay.js";
+import { acceptDeadlineBid, declineDeadlineBid } from "./services/deadlineDay.js";
 import { blackFilesView } from "./features/blackFiles.js";
 import * as BlackService from "./services/blackFiles.js";
 import * as ReleaseService from "./services/releaseClause.js";
@@ -443,12 +415,7 @@ function renderPalette() {
 }
 function openPalette() {
   if (!getState()) return;
-  ui.palette = {
-    open: true,
-    q: "",
-    sel: 0,
-    items: paletteItems(getState(), ""),
-  };
+  ui.palette = { open: true, q: "", sel: 0, items: paletteItems(getState(), "") };
   renderPalette();
 }
 function closePalette() {
@@ -614,9 +581,7 @@ function authModalContent(activeTab = "login", error = "") {
     <button type="button" class="auth-tab ${activeTab === "login" ? "active" : ""}" data-action="auth-tab-login">تسجيل الدخول</button>
     <button type="button" class="auth-tab ${activeTab === "register" ? "active" : ""}" data-action="auth-tab-register">إنشاء حساب جديد</button>
   </div>
-  ${
-    activeTab === "login"
-      ? `
+  ${activeTab === "login" ? `
     <form id="auth-login-form">
       <div class="form-grid">
         <label class="field">
@@ -633,8 +598,7 @@ function authModalContent(activeTab = "login", error = "") {
         ${button("إلغاء", "close-modal", "", "ghost")}
       </div>
     </form>
-  `
-      : `
+  ` : `
     <form id="auth-register-form">
       <div class="form-grid">
         <label class="field">
@@ -655,8 +619,7 @@ function authModalContent(activeTab = "login", error = "") {
         ${button("إلغاء", "close-modal", "", "ghost")}
       </div>
     </form>
-  `
-  }`;
+  `}`;
 }
 
 const actions = {
@@ -703,43 +666,23 @@ const actions = {
     const decisions = {};
     root.querySelectorAll(".youth-candidate-card").forEach((card) => {
       const pId = card.dataset.playerId;
-      const checked = card.querySelector(
-        `input[name="youth-dec-${pId}"]:checked`,
-      );
+      const checked = card.querySelector(`input[name="youth-dec-${pId}"]:checked`);
       if (pId && checked) decisions[pId] = checked.value;
     });
     await apply((s) => executeYouthIntakeDecisions(s, decisions));
     closeModal();
-    toast(
-      tr(
-        "تم اعتماد قرارات دفعة الناشئين بنجاح",
-        "Youth intake decisions confirmed successfully",
-        "Décisions de la promotion confirmées avec succès",
-      ),
-    );
+    toast(tr("تم اعتماد قرارات دفعة الناشئين بنجاح", "Youth intake decisions confirmed successfully", "Décisions de la promotion confirmées avec succès"));
   },
   "accept-deadline-bid": async (el) => {
     const id = el.dataset.id;
     await apply((s) => acceptDeadlineBid(s, id));
-    toast(
-      tr(
-        "تمت الموافقة على بيع اللاعب في اللحظات الأخيرة",
-        "Accepted last-minute player sale",
-        "Vente de dernière minute acceptée",
-      ),
-    );
+    toast(tr("تمت الموافقة على بيع اللاعب في اللحظات الأخيرة", "Accepted last-minute player sale", "Vente de dernière minute acceptée"));
     render();
   },
   "decline-deadline-bid": async (el) => {
     const id = el.dataset.id;
     await apply((s) => declineDeadlineBid(s, id));
-    toast(
-      tr(
-        "تم رفض العرض العاجل",
-        "Declined urgent offer",
-        "Offre urgente refusée",
-      ),
-    );
+    toast(tr("تم رفض العرض العاجل", "Declined urgent offer", "Offre urgente refusée"));
     render();
   },
   "business-open": async (el) => apply((s) => businessOpen(s, el.dataset.id)),
@@ -1026,19 +969,10 @@ const actions = {
       const { breakReleaseClause } = requireRelease();
       return breakReleaseClause(s, playerId);
     }, "تم كسر الشرط الجزائي — التفاوض مع اللاعب مباشرة.");
-    showContract(
-      `release-${getState().nextId - 1}-${playerId}`
-        .replace(/.*release-/, "release-")
-        .includes("release-")
-        ? ""
-        : "",
-      false,
-    );
+    showContract(`release-${getState().nextId-1}-${playerId}`.replace(/.*release-/, "release-").includes("release-") ? "" : "", false);
     // افتح عقد اللاعب عبر التفاوض الأخير
     const s = getState();
-    const last = [...s.negotiations]
-      .reverse()
-      .find((n) => n.playerId === playerId && n.stage === "personal");
+    const last = [...s.negotiations].reverse().find((n) => n.playerId === playerId && n.stage === "personal");
     if (last) showContract(last.id, false);
   },
   "loan-open": async (el) => openModal(loanForm(getState(), el.dataset.id)),
@@ -1382,58 +1316,33 @@ const actions = {
     render();
   },
   "staff-neg-start": async (el) =>
-    apply(
-      (s) => startNegotiation(s, el.dataset.id),
-      tr(
-        "بدأ التفاوض — ٣ جولات.",
-        "Negotiation started — 3 rounds.",
-        "Négociation lancée — 3 tours.",
-      ),
-    ),
-  "staff-neg-cancel": async () => apply((s) => cancelNegotiation(s)),
+    apply((s) => startNegotiation(s, el.dataset.id), tr("بدأ التفاوض — ٣ جولات.", "Negotiation started — 3 rounds.", "Négociation lancée — 3 tours.")),
+  "staff-neg-cancel": async () =>
+    apply((s) => cancelNegotiation(s)),
   "staff-fire": async (el) =>
-    apply(
-      (s) => fireEmployee(s, el.dataset.id),
-      tr("أُنهي العقد.", "Contract terminated.", "Contrat résilié."),
-    ),
+    apply((s) => fireEmployee(s, el.dataset.id), tr("أُنهي العقد.", "Contract terminated.", "Contrat résilié.")),
   "staff-renew": async (el) =>
-    apply(
-      (s) => renewEmployee(s, el.dataset.id, 2, 5),
-      tr("جُدد العقد سنتين.", "Renewed for 2 years.", "Renouvelé pour 2 ans."),
-    ),
+    apply((s) => renewEmployee(s, el.dataset.id, 2, 5), tr("جُدد العقد سنتين.", "Renewed for 2 years.", "Renouvelé pour 2 ans.")),
   "staff-promote": async (el) =>
-    apply(
-      (s) => promoteEmployee(s, el.dataset.id),
-      tr("تمت الترقية.", "Promoted.", "Promotion accordée."),
-    ),
+    apply((s) => promoteEmployee(s, el.dataset.id), tr("تمت الترقية.", "Promoted.", "Promotion accordée.")),
   "staff-raise": async (el) =>
-    apply(
-      (s) => raiseEmployee(s, el.dataset.id, 10),
-      tr("تمت الزيادة.", "Raise granted.", "Augmentation accordée."),
-    ),
+    apply((s) => raiseEmployee(s, el.dataset.id, 10), tr("تمت الزيادة.", "Raise granted.", "Augmentation accordée.")),
   "staff-poach": async (el) =>
     apply((s) => respondPoach(s, el.dataset.id, el.dataset.how)),
   "staff-req": async (el) =>
-    apply((s) =>
-      resolveMeetingRequest(s, el.dataset.id, el.dataset.how === "yes"),
-    ),
+    apply((s) => resolveMeetingRequest(s, el.dataset.id, el.dataset.how === "yes")),
   "staff-hq-up": async () =>
-    apply(
-      (s) => startHqUpgrade(s),
-      tr(
-        "بدأ بناء المقر.",
-        "HQ construction started.",
-        "Chantier du siège lancé.",
-      ),
-    ),
+    apply((s) => startHqUpgrade(s), tr("بدأ بناء المقر.", "HQ construction started.", "Chantier du siège lancé.")),
   "staff-legal-act": async (el) =>
     apply((s) => resolveLegalCase(s, el.dataset.id, el.dataset.how)),
-  "staff-phil": async (el) => apply((s) => setPhilosophy(s, el.dataset.id)),
+  "staff-phil": async (el) =>
+    apply((s) => setPhilosophy(s, el.dataset.id)),
   "staff-deal": async (el) =>
     apply((s) => resolveDeal(s, el.dataset.id, el.dataset.how === "yes")),
   "staff-social-content": async (el) =>
     apply((s) => publishContent(s, el.dataset.id)),
-  "staff-social-derby": async () => apply(derbyCampaign),
+  "staff-social-derby": async () =>
+    apply(derbyCampaign),
   "staff-social-crisis": async (el) =>
     apply((s) => resolveCrisis(s, el.dataset.how)),
   "world-tab": async (el) => {
@@ -1486,29 +1395,9 @@ const actions = {
     ui.empireTab = el.dataset.tab || "wealth";
     render();
   },
-  "city-build": async (el) =>
-    apply(
-      (s) => buildCityFacility(s, el.dataset.id),
-      tr("بُنيت المنشأة.", "Facility built.", "Installation construite."),
-    ),
-  "city-old": async (el) =>
-    apply(
-      (s) => chooseOldGround(s, el.dataset.id),
-      tr(
-        "تقرر مصير الملعب القديم.",
-        "Old ground allocated.",
-        "Ancien stade réaffecté.",
-      ),
-    ),
-  "city-name": async (el) =>
-    apply(
-      (s) => nameStadium(s, el.dataset.id),
-      tr(
-        "حُسمت حقوق الاسم.",
-        "Naming rights settled.",
-        "Droits de dénomination attribués.",
-      ),
-    ),
+  "city-build": async (el) => apply((s) => buildCityFacility(s, el.dataset.id), tr("بُنيت المنشأة.", "Facility built.", "Installation construite.")),
+  "city-old": async (el) => apply((s) => chooseOldGround(s, el.dataset.id), tr("تقرر مصير الملعب القديم.", "Old ground allocated.", "Ancien stade réaffecté.")),
+  "city-name": async (el) => apply((s) => nameStadium(s, el.dataset.id), tr("حُسمت حقوق الاسم.", "Naming rights settled.", "Droits de dénomination attribués.")),
   "empire-buy-asset": async (el) => {
     const { buyAsset } = await import("./services/empire/assets.js");
     await apply(
@@ -1551,21 +1440,15 @@ const actions = {
     const amount = Math.round(
       Number(document.getElementById("inv-amt-" + el.dataset.id)?.value),
     );
-    await apply(
-      (s) => withdraw(s, el.dataset.id, amount),
-      "تم سحب المبلغ إلى ثروتك.",
-    );
+    await apply((s) => withdraw(s, el.dataset.id, amount), "تم سحب المبلغ إلى ثروتك.");
   },
   "empire-donate": async () => {
     const { donatePersonal } = await import("./services/empire/charity.js");
-    const amount = Math.round(
-      Number(document.getElementById("charity-amt")?.value),
-    );
+    const amount = Math.round(Number(document.getElementById("charity-amt")?.value));
     await apply((s) => donatePersonal(s, amount), "تم التبرع وارتفعت سمعتك.");
   },
   "empire-charity-project": async (el) => {
-    const { startCharityProject } =
-      await import("./services/empire/charity.js");
+    const { startCharityProject } = await import("./services/empire/charity.js");
     await apply(
       (s) => startCharityProject(s, el.dataset.id),
       "بدأ العمل في مشروعك الخيري.",
@@ -1581,11 +1464,9 @@ const actions = {
                 `<button data-nav="${id}">${icon(NAV_BY_ID[id].icon, 24)}<span>${NAV_BY_ID[id].name}</span></button>`,
             )
             .join("")}</div></div>`,
-      ).join(
-        "",
-      )}<div class="more-foot"><span data-no-translate>EMPIRE FC</span><button type="button" class="badge vault-key" data-action="secret-vault">v${APP_VERSION}</button></div>`,
+      ).join("")}<div class="more-foot"><span data-no-translate>EMPIRE FC</span><button type="button" class="badge vault-key" data-action="secret-vault">v${APP_VERSION}</button></div>`,
     ),
-  "open-auth-modal": () => openModal(authModalContent("login")),
+    "open-auth-modal": () => openModal(authModalContent("login")),
   "auth-tab-login": () => openModal(authModalContent("login")),
   "auth-tab-register": () => openModal(authModalContent("register")),
   "cloud-logout": async () => {
@@ -1621,9 +1502,7 @@ const actions = {
       toast("جارٍ فحص الحفظات على السحابة…");
       const save = await fetchLatestCloudSave();
       if (!save) {
-        openModal(
-          `<h2>المزامنة السحابية</h2><p class="muted">لا توجد أي حفظة سحابية مسجلة لحسابك حتى الآن. يمكنك مزامنة ناديك الحالي أولًا.</p><div class="modal-actions">${button("حسنًا", "close-modal", "", "primary")}</div>`,
-        );
+        openModal(`<h2>المزامنة السحابية</h2><p class="muted">لا توجد أي حفظة سحابية مسجلة لحسابك حتى الآن. يمكنك مزامنة ناديك الحالي أولًا.</p><div class="modal-actions">${button("حسنًا", "close-modal", "", "primary")}</div>`);
         return;
       }
       const local = getState();
@@ -1683,18 +1562,14 @@ const actions = {
       toast("جارٍ جلب سجل الحفظات…");
       const saves = await listCloudSaves();
       if (!saves.length) {
-        openModal(
-          `<h2>سجل الحفظات السحابية</h2><p class="muted">لا توجد حفظات سحابية مسجلة بعد.</p><div class="modal-actions">${button("إغلاق", "close-modal", "", "primary")}</div>`,
-        );
+        openModal(`<h2>سجل الحفظات السحابية</h2><p class="muted">لا توجد حفظات سحابية مسجلة بعد.</p><div class="modal-actions">${button("إغلاق", "close-modal", "", "primary")}</div>`);
         return;
       }
       openModal(`
         <h2>سجل الحفظات السحابية</h2>
         <p class="muted">يتم الاحتفاظ بآخر ٥ حفظات لحسابك تلقائيًا. يمكنك استرجاع أي نسخة أو حذفها.</p>
         <div class="cloud-saves-container">
-          ${saves
-            .map(
-              (s) => `
+          ${saves.map(s => `
             <div class="cloud-save-item">
               <div class="cloud-save-info">
                 <strong>${s.metadata.clubName} · الموسم ${s.metadata.seasonNumber}</strong>
@@ -1706,9 +1581,7 @@ const actions = {
                 ${button("حذف", "delete-cloud-save", s.id, "danger small")}
               </div>
             </div>
-          `,
-            )
-            .join("")}
+          `).join("")}
         </div>
         <div class="modal-actions" style="margin-top: 15px;">
           ${button("إغلاق", "close-modal", "", "ghost")}
@@ -1733,92 +1606,49 @@ const actions = {
   "dynasty-career-path": async (el) =>
     await apply(
       (s) => setCareerPath(s, el.dataset.id, el.dataset.path),
-      tr(
-        "تم تسجيل المسار الذي اختاره الابن.",
-        "The child's chosen career path has been recorded.",
-        "Le parcours choisi par l’enfant a été enregistré.",
-      ),
+      tr("تم تسجيل المسار الذي اختاره الابن.", "The child's chosen career path has been recorded.", "Le parcours choisi par l’enfant a été enregistré."),
     ),
   "dynasty-heir-set": async (el) =>
     await apply(
       (s) => setDynastyHeir(s, el.dataset.id),
-      tr(
-        "تم تسجيل الوريث وإعداد مستندات الخلافة.",
-        "The heir has been recorded and succession documents prepared.",
-        "L’héritier est enregistré et les documents de succession sont préparés.",
-      ),
+      tr("تم تسجيل الوريث وإعداد مستندات الخلافة.", "The heir has been recorded and succession documents prepared.", "L’héritier est enregistré et les documents de succession sont préparés."),
     ),
   "dynasty-succession-eligibility": async (el) =>
     await apply(
-      (s) =>
-        setSuccessionEligibility(
-          s,
-          el.dataset.id,
-          el.dataset.eligible === "true",
-        ),
-      tr(
-        "تم تحديث أهلية الخلافة.",
-        "Succession eligibility has been updated.",
-        "L’éligibilité à la succession a été mise à jour.",
-      ),
+      (s) => setSuccessionEligibility(s, el.dataset.id, el.dataset.eligible === "true"),
+      tr("تم تحديث أهلية الخلافة.", "Succession eligibility has been updated.", "L’éligibilité à la succession a été mise à jour."),
     ),
   "dynasty-retirement-choice": async (el) =>
     await apply(
       (s) => resolveRetirementOffer(s, el.dataset.id, el.dataset.decision),
-      tr(
-        "تم تسجيل قرار التقاعد والخلافة.",
-        "The retirement and succession decision has been recorded.",
-        "La décision de retraite et de succession a été enregistrée.",
-      ),
+      tr("تم تسجيل قرار التقاعد والخلافة.", "The retirement and succession decision has been recorded.", "La décision de retraite et de succession a été enregistrée."),
     ),
   "dynasty-sibling-reconcile": async (el) =>
     await apply(
       (s) => reconcileSiblings(s, el.dataset.id),
-      tr(
-        "تحسنت العلاقة بين الإخوة بعد جلسة المصالحة.",
-        "Sibling relationships improved after the reconciliation.",
-        "Les relations entre frères et sœurs se sont améliorées après la réconciliation.",
-      ),
+      tr("تحسنت العلاقة بين الإخوة بعد جلسة المصالحة.", "Sibling relationships improved after the reconciliation.", "Les relations entre frères et sœurs se sont améliorées après la réconciliation."),
     ),
   "dynasty-academy-graduate": async (el) =>
     await apply(
       (s) => promoteDynastyPlayer(s, el.dataset.id),
-      tr(
-        "انضم خريج الأكاديمية إلى قائمة الفريق الأول.",
-        "An academy graduate joined the first-team squad.",
-        "Un diplômé de l’académie a rejoint l’effectif professionnel.",
-      ),
+      tr("انضم خريج الأكاديمية إلى قائمة الفريق الأول.", "An academy graduate joined the first-team squad.", "Un diplômé de l’académie a rejoint l’effectif professionnel."),
     ),
   "dynasty-event-choice": async (el) =>
     await apply(
       (s) => resolveDynastyEvent(s, el.dataset.id, el.dataset.choice),
-      tr(
-        "سُجل قرار الأسرة، وعاد الوقت للتقدم.",
-        "The family decision is recorded; time can advance again.",
-        "La décision familiale est enregistrée ; le temps peut reprendre.",
-      ),
+      tr("سُجل قرار الأسرة، وعاد الوقت للتقدم.", "The family decision is recorded; time can advance again.", "La décision familiale est enregistrée ; le temps peut reprendre."),
     ),
   "dynasty-academy-enroll": async (el) => {
-    const position =
-      document.getElementById(`dynasty-academy-position-${el.dataset.id}`)
-        ?.value || "CM";
+    const position = document.getElementById(`dynasty-academy-position-${el.dataset.id}`)?.value || "CM";
     await apply(
       (s) => enrollDynastyAcademy(s, el.dataset.id, position),
-      tr(
-        "بدأت رحلة الأكاديمية. تظهر التقارير مع تقدم الأشهر.",
-        "The academy journey has begun. Reports appear as months pass.",
-        "Le parcours à l’académie commence. Les rapports apparaîtront au fil des mois.",
-      ),
+      tr("بدأت رحلة الأكاديمية. تظهر التقارير مع تقدم الأشهر.", "The academy journey has begun. Reports appear as months pass.", "Le parcours à l’académie commence. Les rapports apparaîtront au fil des mois."),
     );
   },
   "dynasty-academy-leave": async (el) =>
     await apply(
       (s) => leaveDynastyAcademy(s, el.dataset.id),
-      tr(
-        "غادر الابن الأكاديمية؛ بقي سجله محفوظًا.",
-        "The child left the academy; their record was preserved.",
-        "L’enfant a quitté l’académie ; son dossier est conservé.",
-      ),
+      tr("غادر الابن الأكاديمية؛ بقي سجله محفوظًا.", "The child left the academy; their record was preserved.", "L’enfant a quitté l’académie ; son dossier est conservé."),
     ),
   "close-modal": closeModal,
 };
@@ -2030,32 +1860,17 @@ document.addEventListener("submit", async (e) => {
       return;
     }
     if (form.id === "city-stadium-form") {
-      const tier = Number(form.elements.tier.value),
-        route = form.elements.route.value,
-        district = form.elements.district.value,
-        design = form.elements.design.value;
+      const tier = Number(form.elements.tier.value), route = form.elements.route.value, district = form.elements.district.value, design = form.elements.design.value;
       const quote = stadiumQuote(getState(), tier, route, district, design);
-      if (
-        !confirm(
-          `${tr("التكلفة", "Cost", "Coût")}: ${quote.cost.toLocaleString()} · ${quote.days} ${tr("يوم", "days", "jours")}?`,
-        )
-      )
-        return;
-      await apply(
-        (s) => startStadium(s, { tier, route, district, design }),
-        tr("بدأ البناء.", "Construction started.", "Chantier commencé."),
-      );
+      if (!confirm(`${tr("التكلفة","Cost","Coût")}: ${quote.cost.toLocaleString()} · ${quote.days} ${tr("يوم","days","jours")}?`)) return;
+      await apply((s) => startStadium(s, {tier,route,district,design}), tr("بدأ البناء.","Construction started.","Chantier commencé."));
       return;
     }
     if (form.id === "dynasty-marriage-form") {
       const partner = form.elements.partner.value;
       await apply(
         (s) => marryOwner(s, partner),
-        tr(
-          "بدأت حياة أسرية جديدة.",
-          "A new family journey has begun.",
-          "Une nouvelle vie de famille commence.",
-        ),
+        tr("بدأت حياة أسرية جديدة.", "A new family journey has begun.", "Une nouvelle vie de famille commence."),
       );
       return;
     }
@@ -2063,11 +1878,7 @@ document.addEventListener("submit", async (e) => {
       const name = form.elements.childName.value;
       await apply(
         (s) => haveChild(s, name),
-        tr(
-          "سُجل الميلاد، وبدأت رحلة النمو.",
-          "The birth was recorded; the growth journey has begun.",
-          "La naissance est enregistrée ; le parcours de croissance commence.",
-        ),
+        tr("سُجل الميلاد، وبدأت رحلة النمو.", "The birth was recorded; the growth journey has begun.", "La naissance est enregistrée ; le parcours de croissance commence."),
       );
       return;
     }
@@ -2120,11 +1931,7 @@ document.addEventListener("submit", async (e) => {
     if (form.id === "staff-negotiate-form") {
       const t = Object.fromEntries(new FormData(form));
       await apply((s) =>
-        negotiate(s, {
-          wage: Number(t.wage),
-          years: Number(t.years),
-          bonus: Number(t.bonus),
-        }),
+        negotiate(s, { wage: Number(t.wage), years: Number(t.years), bonus: Number(t.bonus) }),
       );
       return;
     }
@@ -2137,13 +1944,11 @@ document.addEventListener("submit", async (e) => {
       return;
     }
     if (form.id === "staff-campaign-form") {
-      await apply((s) =>
-        launchCampaign(
-          s,
-          form.elements.campaignType.value,
-          Number(form.elements.budget.value),
-        ),
-      );
+      await apply((s) => launchCampaign(
+        s,
+        form.elements.campaignType.value,
+        Number(form.elements.budget.value),
+      ));
       return;
     }
     if (form.id === "staff-legal-file-form") {
@@ -2151,9 +1956,7 @@ document.addEventListener("submit", async (e) => {
       return;
     }
     if (form.id === "scout-region-form") {
-      await apply((s) =>
-        assignScout(s, form.dataset.id, form.elements.region.value || null),
-      );
+      await apply((s) => assignScout(s, form.dataset.id, form.elements.region.value || null));
       return;
     }
     if (form.id === "staff-hire-form") {
@@ -2169,14 +1972,17 @@ document.addEventListener("submit", async (e) => {
       closeModal();
     }
     if (form.id === "offer-form") {
-      await apply((s) => {
-        const r = submitOffer(s, form.dataset.player, {
-          fee: Number(form.elements.fee.value),
-          upfrontPercent: Number(form.elements.upfront.value),
-        });
-        markStep(s, "offer");
-        return r;
-      }, "العرض اتبعت. مرّر يومًا عشان يوصلك الرد.");
+      await apply(
+        (s) => {
+          const r = submitOffer(s, form.dataset.player, {
+            fee: Number(form.elements.fee.value),
+            upfrontPercent: Number(form.elements.upfront.value),
+          });
+          markStep(s, "offer");
+          return r;
+        },
+        "العرض اتبعت. مرّر يومًا عشان يوصلك الرد.",
+      );
       closeModal();
     }
     if (form.id === "loan-offer-form") {
@@ -2202,8 +2008,7 @@ document.addEventListener("submit", async (e) => {
         const selectedOption = form.elements.clauseLevel.selectedOptions[0];
         const levelClause = Number(selectedOption?.dataset?.clause || 0);
         if (levelClause === 0) releaseClause = 0;
-        else if (Math.abs(releaseClause - levelClause) < levelClause * 0.5)
-          releaseClause = levelClause;
+        else if (Math.abs(releaseClause - levelClause) < levelClause * 0.5) releaseClause = levelClause;
       }
       const terms = {
         salary: Number(form.elements.salary.value),
@@ -2281,15 +2086,18 @@ document.addEventListener("submit", async (e) => {
       closeModal();
     }
     if (form.id === "project-form") {
-      await apply((s) => {
-        const r = startProject(
-          s,
-          form.dataset.id,
-          form.elements.speed.value === "fast",
-        );
-        markStep(s, "facility");
-        return r;
-      }, "المشروع بدأ. موعد الاستلام واتفاق الدفع في البريد.");
+      await apply(
+        (s) => {
+          const r = startProject(
+            s,
+            form.dataset.id,
+            form.elements.speed.value === "fast",
+          );
+          markStep(s, "facility");
+          return r;
+        },
+        "المشروع بدأ. موعد الاستلام واتفاق الدفع في البريد.",
+      );
       closeModal();
     }
     if (form.id === "ticket-form") {
@@ -2417,8 +2225,9 @@ document.addEventListener("change", async (e) => {
       return;
     }
     if (e.target.dataset.child) {
-      const { setSchool, setAllowance } =
-        await import("./services/empire/family.js");
+      const { setSchool, setAllowance } = await import(
+        "./services/empire/family.js"
+      );
       const childId = e.target.dataset.child;
       const value = e.target.value;
       if (e.target.dataset.kind === "school")
@@ -2501,11 +2310,8 @@ document.addEventListener("change", async (e) => {
       if (clauseInput) clauseInput.value = clauseVal;
       const salaryInput = e.target.form?.elements?.salary;
       if (salaryInput && salaryFactor !== 1) {
-        const baseSalary = Number(
-          salaryInput.dataset.base || salaryInput.value,
-        );
-        if (!salaryInput.dataset.base)
-          salaryInput.dataset.base = salaryInput.value;
+        const baseSalary = Number(salaryInput.dataset.base || salaryInput.value);
+        if (!salaryInput.dataset.base) salaryInput.dataset.base = salaryInput.value;
         salaryInput.value = Math.round(baseSalary * salaryFactor);
       }
       updateCalculations();
@@ -2595,20 +2401,12 @@ document.addEventListener("change", async (e) => {
     if (e.target.id === "reduce-motion")
       await apply(
         (s) => (s.preferences.reduceMotion = e.target.checked),
-        tr(
-          "تم حفظ إعداد العرض.",
-          "Display setting saved.",
-          "Réglage d'affichage enregistré.",
-        ),
+        tr("تم حفظ إعداد العرض.", "Display setting saved.", "Réglage d'affichage enregistré."),
       );
     if (e.target.id === "num-format")
       await apply(
         (s) => (s.preferences.digits = e.target.value),
-        tr(
-          "تم حفظ نمط الأرقام.",
-          "Number style saved.",
-          "Style des chiffres enregistré.",
-        ),
+        tr("تم حفظ نمط الأرقام.", "Number style saved.", "Style des chiffres enregistré."),
       );
     if (e.target.closest("#offer-form,#contract-form")) updateCalculations();
   } catch (err) {
