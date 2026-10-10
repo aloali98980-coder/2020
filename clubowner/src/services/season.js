@@ -3,6 +3,8 @@ import { CLUBS } from "../data/catalog.js";
 import { message } from "./inbox.js";
 import { SEASON_STAT_KEYS, initSeasonStats } from "./seasonStats.js";
 import { endSeasonBoardReview, startSeasonMandate } from "./boardMandate.js";
+import { politicalSeasonEnd } from "./politics/campaign.js";
+import { associationSeasonEnd } from "./politics/associationFinance.js";
 
 // Save each player's season stats to the history entry before resetting.
 function archiveSeasonStats(s, entry) {
@@ -30,6 +32,10 @@ function resetSeasonStats(s) {
 
 export function seasonDay(s) {
   if (s.date < s.nextSeasonDate || s.fixtures.some((f) => !f.played)) return;
+  // 0.31: الانتخابات تُحسم عند نهاية موسم الحملة وقبل رفع عداد الموسم.
+  politicalSeasonEnd(s);
+  // 0.32: توزيع بث الاتحاد ومراجعة الحسابات قبل أرشفة الموسم.
+  associationSeasonEnd(s);
   // 0.26: تصويت الجمعية العمومية على موسم انتهى لتوه، قبل أرشفته وقبل تصفير الإحصاءات.
   endSeasonBoardReview(s);
   const entry = {

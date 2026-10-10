@@ -11,6 +11,7 @@ import { message } from "./inbox.js";
 import { legendMatchBonus } from "./legends.js";
 import { recordMatchStats } from "./seasonStats.js";
 import { generateCardDistribution, applyMatchConsequences } from "./matchConsequences.js";
+import { recordDisciplineIncident, refereeSuspensionThreshold } from "./politics/committees.js";
 export function fixtures(date) {
   let order = CLUBS.map((c) => c.id),
     out = [];
@@ -285,9 +286,13 @@ export function matchDay(
       const xi = Array.isArray(f.lineup) && f.lineup.length
         ? f.lineup.map((x) => s.players.find((y) => y.id === x.playerId)).filter(Boolean)
         : selectXI(s).filter((x) => x.p.status !== "retired").map((x) => x.p);
-      const cards = generateCardDistribution(xi, () => random(s), { isDerby: f.isDerby });
+      const politics = s.politics;
+      const refereePolicy = politics?.committees?.referees?.policy || "balanced";
+      const suspensionThreshold = refereeSuspensionThreshold(politics);
+      const cards = generateCardDistribution(xi, () => random(s), { isDerby: f.isDerby, refereePolicy });
       recordMatchStats(s, f, () => random(s), our, cards);
-      const { redCardPenalty } = applyMatchConsequences(s, f, cards, () => random(s));
+      const { redCardPenalty } = applyMatchConsequences(s, f, cards, () => random(s), { suspensionThreshold });
+      for (const player of (cards.reds || [])) recordDisciplineIncident(s, f, player);
       // Red card numerical disadvantage: reduce score with probability.
       if (!f.extraTime && redCardPenalty > 0 && random(s) < 0.3) {
         f[our === "homeGoals" ? "homeGoals" : "awayGoals"] = Math.max(0, f[

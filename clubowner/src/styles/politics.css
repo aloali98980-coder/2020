@@ -1,0 +1,755 @@
+.presidency-page {
+  display: grid;
+  gap: 18px;
+}
+.politics-tabs {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 5px 2px 10px;
+  scrollbar-width: thin;
+}
+.politics-tab {
+  flex: 0 0 auto;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  color: var(--muted);
+  background: var(--panel);
+  padding: 10px 14px;
+  font-size: 11px;
+  font-weight: 700;
+}
+.politics-tab:hover,
+.politics-tab.active {
+  color: var(--text);
+  border-color: var(--green);
+  background: var(--green) 12;
+}
+.politics-content {
+  display: grid;
+  gap: 16px;
+}
+.politics-stats {
+  margin-bottom: 2px;
+}
+.politics-bloc-chip,
+.politics-integrity-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 16px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--panel);
+  padding: 12px 15px;
+  color: var(--muted);
+  font-size: 11px;
+}
+.politics-bloc-chip b,
+.politics-integrity-foot b {
+  color: var(--text);
+}
+.politics-bloc-chip span:last-child {
+  margin-inline-start: auto;
+  color: var(--green);
+  font-weight: 800;
+}
+.politics-bloc-actions,
+.politics-overview-actions,
+.politics-actions-row,
+.politics-club-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.politics-overview-panel > p,
+.politics-campaign-panel > p {
+  color: var(--muted);
+  line-height: 1.9;
+}
+.politics-club-grid,
+.politics-candidates-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.politics-club-card,
+.politics-candidate-card {
+  display: grid;
+  gap: 10px;
+  padding: 15px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: var(--panel);
+  min-width: 0;
+}
+.politics-club-title,
+.politics-club-meta,
+.politics-meter,
+.politics-candidate-top,
+.politics-candidate-metrics,
+.politics-poll-list > div,
+.politics-promise-list > div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.politics-club-title strong,
+.politics-candidate-top > div {
+  min-width: 0;
+  flex: 1;
+}
+.politics-meter .progress-track,
+.politics-poll-list .progress-track {
+  flex: 1;
+}
+.politics-meter > b {
+  min-width: 38px;
+  text-align: end;
+  color: var(--green);
+}
+.politics-club-meta,
+.politics-candidate-metrics {
+  flex-wrap: wrap;
+  justify-content: space-between;
+  color: var(--muted);
+  font-size: 10.5px;
+}
+.politics-club-card > small,
+.politics-candidate-card > p,
+.politics-candidate-card > small {
+  color: var(--muted);
+  line-height: 1.8;
+}
+.politics-alliance-label,
+.politics-rival-club {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--gold) !important;
+}
+.politics-club-actions > .btn {
+  flex: 1 1 110px;
+  font-size: 10px;
+  padding: 8px;
+}
+.politics-candidate-top {
+  flex-wrap: wrap;
+}
+.politics-candidate-top strong,
+.politics-candidate-top small {
+  display: block;
+}
+.politics-candidate-top small {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 10px;
+}
+.politics-candidate-avatar,
+.politics-seal {
+  width: 39px;
+  height: 39px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  color: var(--green);
+  background: var(--green) 13;
+  border: 1px solid var(--green) 35;
+  font-weight: 800;
+}
+.politics-candidate-card.endorsed {
+  border-color: var(--green) 75;
+  background: linear-gradient(135deg, var(--panel), var(--green) 0a);
+}
+.politics-poll-list {
+  display: grid;
+  gap: 11px;
+}
+.politics-poll-list > div {
+  display: grid;
+  grid-template-columns: minmax(85px, 150px) minmax(80px, 1fr) 45px;
+  gap: 12px;
+  font-size: 11px;
+}
+.politics-poll-list > div > strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.politics-poll-list > div > b {
+  text-align: end;
+  color: var(--green);
+}
+.politics-fund-form,
+.politics-debate-form {
+  display: flex;
+  align-items: end;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 15px 0;
+  border-top: 1px solid var(--line);
+  margin-top: 12px;
+}
+.politics-fund-form .field,
+.politics-debate-form .field {
+  min-width: 160px;
+  flex: 1;
+}
+.politics-fund-form > small {
+  color: var(--muted);
+  font-size: 10px;
+  flex: 1 0 100%;
+}
+.politics-debate-form select,
+.politics-fund-form input {
+  width: 100%;
+}
+.politics-debate-result {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px;
+}
+.politics-debate-result.strong {
+  border-color: var(--green) 65;
+  color: var(--green);
+}
+.politics-debate-result.close {
+  border-color: var(--gold) 65;
+  color: var(--gold);
+}
+.politics-debate-result.disaster {
+  border-color: var(--red) 65;
+  color: var(--red);
+}
+.politics-promise-list,
+.politics-history-list,
+.politics-rival-strip {
+  display: grid;
+  gap: 9px;
+}
+.politics-promise-list > div {
+  flex-wrap: wrap;
+  justify-content: space-between;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 11px;
+}
+.politics-promise-list > div:last-child {
+  border-bottom: 0;
+}
+.politics-promise-list > div > span:nth-child(2) {
+  flex: 1;
+  color: var(--muted);
+  padding-inline: 10px;
+}
+.politics-history-list > div,
+.politics-rival-strip > div {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  border-bottom: 1px solid var(--line);
+  padding: 10px 0;
+  font-size: 11px;
+}
+.politics-history-list > div:last-child,
+.politics-rival-strip > div:last-child {
+  border-bottom: 0;
+}
+.politics-history-list small,
+.politics-rival-strip span {
+  color: var(--muted);
+  margin-inline-start: auto;
+}
+.politics-coming {
+  min-height: 230px;
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  text-align: center;
+  gap: 12px;
+}
+.politics-coming h2 {
+  margin: 0;
+}
+.politics-coming p {
+  max-width: 600px;
+  color: var(--muted);
+  line-height: 1.9;
+}
+.politics-integrity-foot {
+  justify-content: space-between;
+  background: transparent;
+}
+@media (max-width: 720px) {
+  .politics-club-grid,
+  .politics-candidates-grid {
+    grid-template-columns: 1fr;
+  }
+  .politics-poll-list > div {
+    grid-template-columns: minmax(70px, 105px) minmax(45px, 1fr) 39px;
+    gap: 7px;
+  }
+  .politics-fund-form > .btn,
+  .politics-debate-form > .btn {
+    width: 100%;
+  }
+  .politics-bloc-actions > .btn {
+    flex: 1 1 100%;
+  }
+}
+.politics-law-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  gap: 12px;
+}
+.politics-law-card,
+.politics-vote-log-item {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 14px;
+  background: var(--surface-2, var(--surface));
+}
+.politics-law-title,
+.politics-vote-result,
+.politics-finance-log,
+.politics-audit-result {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.politics-law-title h4,
+.politics-law-card p,
+.politics-finance-columns h4,
+.politics-audit-area h4,
+.politics-support-fund-controls h4 {
+  margin: 6px 0;
+}
+.politics-law-title small,
+.politics-law-card > small,
+.politics-vote-log-item small {
+  color: var(--muted);
+}
+.politics-law-card p,
+.politics-bill-panel > p {
+  color: var(--muted);
+  line-height: 1.7;
+}
+.politics-law-card > .btn {
+  width: 100%;
+  margin-top: 12px;
+}
+.politics-bargain-form,
+.politics-support-fund-controls {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr));
+  align-items: end;
+  gap: 10px;
+  margin-block: 14px;
+}
+.politics-support-fund-controls > form {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 12px;
+}
+.politics-bill-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+.politics-vote-result {
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-block: 14px;
+}
+.politics-vote-result > div {
+  display: grid;
+  gap: 4px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px;
+}
+.politics-vote-result span,
+.politics-formula,
+.politics-audit-result span,
+.politics-audit-result small {
+  color: var(--muted);
+  font-size: 11px;
+}
+.politics-dissent-list {
+  display: grid;
+  gap: 7px;
+  margin-block: 12px;
+}
+.politics-dissent-list > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.politics-dissent-list span {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 4px 9px;
+  font-size: 11px;
+}
+.politics-vote-log-item {
+  display: grid;
+  grid-template-columns: minmax(150px, 1fr) auto;
+  gap: 6px 12px;
+  margin-block: 8px;
+}
+.politics-vote-log-item > div {
+  display: grid;
+}
+.politics-vote-log-item > small:last-child {
+  grid-column: 1 / -1;
+  overflow-wrap: anywhere;
+}
+.politics-finance-stats {
+  margin-block: 12px;
+}
+.politics-formula {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  border-block: 1px solid var(--line);
+  padding: 10px 0;
+}
+.politics-finance-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 0.7fr);
+  gap: 18px;
+  margin-block: 16px;
+}
+.politics-finance-log {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 11px;
+}
+.politics-audit-result {
+  align-items: flex-start;
+  flex-direction: column;
+  border-inline-start: 3px solid var(--green);
+  padding: 10px;
+}
+.politics-audit-result.discrepancy {
+  border-inline-start-color: var(--red);
+}
+.politics-audit-area {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+}
+.politics-committee-grid,
+.politics-tournament-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-block: 14px;
+}
+.politics-committee-card,
+.politics-tournament-card {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface, var(--panel));
+  padding: 14px;
+}
+.politics-committee-card .panel-head,
+.politics-tournament-card .panel-head {
+  align-items: flex-start;
+  gap: 8px;
+}
+.politics-committee-card h3,
+.politics-tournament-card h3 {
+  margin: 3px 0 0;
+  overflow-wrap: anywhere;
+}
+.politics-committee-card > p,
+.politics-tournament-card > p,
+.politics-discipline-panel > p,
+.politics-tournament-section > p {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
+.politics-committee-policy,
+.politics-tournament-meta {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  border-block: 1px solid var(--line);
+  padding: 9px 0;
+  font-size: 11px;
+}
+.politics-committee-form,
+.politics-tournament-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 8px;
+  margin-top: 10px;
+}
+.politics-tournament-form {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) auto;
+  margin-block: 12px;
+}
+.politics-committee-form .field,
+.politics-tournament-form .field {
+  min-width: 0;
+}
+.politics-discipline-panel,
+.politics-tournament-section {
+  margin-top: 16px;
+}
+.politics-case-list,
+.politics-draw-list {
+  display: grid;
+  gap: 7px;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.politics-discipline-case {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid var(--line);
+  padding: 9px 0;
+}
+.politics-discipline-case > div:first-child {
+  display: grid;
+  gap: 4px;
+}
+.politics-discipline-case small,
+.politics-discipline-case > div:first-child + small {
+  color: var(--muted);
+}
+.politics-case-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.politics-case-actions .btn {
+  padding: 6px 9px;
+  font-size: 11px;
+}
+.politics-tournament-card h4 {
+  margin: 12px 0 4px;
+  font-size: 12px;
+}
+.politics-draw-list li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 7px;
+  font-size: 11px;
+}
+.politics-draw-list li span:last-child {
+  text-align: end;
+}
+.politics-champion {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px;
+  margin-top: 10px;
+  color: var(--gold);
+  font-size: 12px;
+}
+@media (max-width: 900px) {
+  .politics-committee-grid,
+  .politics-tournament-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 720px) {
+  .politics-committee-grid,
+  .politics-tournament-grid,
+  .politics-tournament-form {
+    grid-template-columns: 1fr;
+  }
+  .politics-committee-form {
+    grid-template-columns: 1fr;
+  }
+  .politics-finance-columns {
+    grid-template-columns: 1fr;
+  }
+  .politics-vote-log-item {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .politics-support-fund-controls > form,
+  .politics-bargain-form > .btn {
+    grid-column: 1 / -1;
+  }
+}
+
+.politics-governance-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 10px;
+  margin-block: 12px;
+}
+.politics-governance-form .field {
+  min-width: 0;
+}
+.politics-governance-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-block: 12px;
+}
+.politics-opposition-row,
+.politics-legacy-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 9px;
+  border-bottom: 1px solid var(--line);
+  padding: 10px 0;
+  font-size: 12px;
+}
+.politics-opposition-row > div:first-child,
+.politics-legacy-row > div:first-child {
+  display: grid;
+  gap: 4px;
+}
+.politics-opposition-row small,
+.politics-legacy-row small {
+  color: var(--muted);
+}
+.politics-confidence-meter {
+  display: grid;
+  gap: 6px;
+  margin-top: 12px;
+  font-size: 11px;
+}
+.politics-foreign-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+  margin-block: 14px;
+}
+.politics-foreign-card {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface, var(--panel));
+  padding: 12px;
+}
+.politics-foreign-card > div:first-child {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+  font-size: 11px;
+}
+.politics-foreign-card > div:first-child span,
+.politics-foreign-card > small {
+  color: var(--muted);
+}
+.politics-foreign-card .politics-meter {
+  margin-block: 10px;
+}
+.politics-foreign-history {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  border-bottom: 1px solid var(--line);
+  padding: 8px 0;
+  font-size: 11px;
+}
+.politics-honours {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-block: 12px;
+}
+.politics-trial-panel {
+  border-color: color-mix(in srgb, var(--red) 55%, var(--line));
+}
+.politics-trial-panel > .btn {
+  margin-inline-end: 7px;
+}
+@media (max-width: 960px) {
+  .politics-foreign-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (max-width: 720px) {
+  .politics-governance-form,
+  .politics-foreign-grid {
+    grid-template-columns: 1fr;
+  }
+  .politics-opposition-row,
+  .politics-legacy-row {
+    align-items: flex-start;
+  }
+}
+
+.politics-events-intro {
+  border-color: color-mix(in srgb, var(--gold) 28%, var(--line));
+}
+.politics-event-pending {
+  border-color: color-mix(in srgb, var(--gold) 65%, var(--line));
+  background: color-mix(in srgb, var(--gold) 6%, var(--panel));
+}
+.politics-event-pending > p {
+  max-width: 78ch;
+  line-height: 1.75;
+}
+.politics-event-choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin-block: 14px;
+}
+.politics-event-history-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 9px;
+  border-bottom: 1px solid var(--line);
+  padding: 11px 0;
+  font-size: 12px;
+}
+.politics-event-history-row > div {
+  display: grid;
+  gap: 4px;
+}
+.politics-event-history-row small {
+  color: var(--muted);
+}
+@media (max-width: 600px) {
+  .politics-event-choices {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+  .politics-event-choices .btn {
+    width: 100%;
+    white-space: normal;
+  }
+}

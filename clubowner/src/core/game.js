@@ -19,7 +19,8 @@ import { initBoard, startSeasonMandate } from "../services/boardMandate.js";
 import { initBlackFiles } from "../services/blackFiles.js";
 import { ensureReleaseClause } from "../services/releaseClause.js";
 import { ensureStaffCorp } from "../services/staff/staffCorp.js";
-export const SAVE_VERSION = 26;
+import { initPolitics } from "../services/politics/state.js";
+export const SAVE_VERSION = 31;
 export function createGame({
   clubId = "ahly",
   owner = "مالك النادي",
@@ -182,5 +183,7 @@ export function createGame({
   ensureReleaseClause(s);
   // 0.30: الإدارة الشاملة — طاقم افتراضي متوسط + مقر صغير من اليوم الأول.
   ensureStaffCorp(s);
+  // 0.31: رئاسة الاتحاد — خريطة محايدة وحملة مؤجلة أربع مواسم.
+  initPolitics(s);
   return s;
 }

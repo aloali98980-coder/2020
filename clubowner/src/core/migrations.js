@@ -18,6 +18,7 @@ import { initBlackFiles } from "../services/blackFiles.js";
 import { ensureReleaseClause } from "../services/releaseClause.js";
 import { boardTextAr } from "../data/boardTexts.js";
 import { ensureStaffCorp } from "../services/staff/staffCorp.js";
+import { initPolitics } from "../services/politics/state.js";
 import { initEmpire, storyForOldSave } from "../services/empire/wealth.js";
 import { empireText } from "../data/empireTexts.js";
 function migrateToFive(input) {
@@ -466,7 +467,7 @@ function migrateToTwentyFour(input) {
 
 // 0.30 (save v26): الإدارة الشاملة — طاقم افتراضي متوسط + مقر صغير.
 // الحفظات القديمة تُرحَّل تلقائيًا دون كسر: اللاعبون والمالية والعقود لا تُمسّ.
-export function migrateSave(input) {
+function migrateSaveToTwentySix(input) {
   if (!input || input.version === 26) return input;
   if (input.version === 25) {
     const s = structuredClone(input);
@@ -485,6 +486,92 @@ export function migrateSave(input) {
     (v25.migrationNote || "") +
     " الإدارة الشاملة 0.30: طاقم إداري افتراضي متوسط المهارة مع مقر صغير؛ وسّع هيكلك من شاشة الإدارة الشاملة.";
   return v25;
+}
+
+// 0.31 (save v27): political career. Existing owners remain outside the presidency,
+// receive a neutral league map, and face their first election next season.
+function migrateSaveToTwentySeven(input) {
+  if (!input || input.version === 27) return input;
+  const prior =
+    input.version === 26
+      ? structuredClone(input)
+      : migrateSaveToTwentySix(input);
+  if (prior?.version !== 26) return prior;
+  const s = prior;
+  s.version = 27;
+  initPolitics(s, { legacy: true });
+  s.migrationNote =
+    (s.migrationNote || "") +
+    " رئاسة الاتحاد 0.31: بدأت حفظتك خارج المنصب مع خريطة أندية محايدة وأول انتخابات في الموسم القادم؛ لا تغيير على النادي أو المال أو اللاعبين.";
+  return s;
+}
+
+// 0.32 (save v28): council charter and association finance containers. Preserve
+// the v27 map, campaign, rivals, and all pre-existing club data.
+function migrateSaveToTwentyEight(input) {
+  if (!input || input.version === 28) return input;
+  const prior =
+    input.version === 27
+      ? structuredClone(input)
+      : migrateSaveToTwentySeven(input);
+  if (prior?.version !== 27) return prior;
+  const s = prior;
+  s.version = 28;
+  initPolitics(s);
+  s.migrationNote =
+    (s.migrationNote || "") +
+    " رئاسة الاتحاد 0.32: أُضيف سجل المجلس والميزانية المالية مع الحفاظ على خريطة السياسة والحملة واللاعبين والأموال السابقة.";
+  return s;
+}
+
+// 0.33 (save v29): committee appointments, disciplinary reviews, and tournament records.
+// Upgrade only missing committee containers; do not reset prior chairs, ledgers, or cases.
+function migrateSaveToTwentyNine(input) {
+  if (!input || input.version === 29) return input;
+  const prior =
+    input.version === 28
+      ? structuredClone(input)
+      : migrateSaveToTwentyEight(input);
+  if (prior?.version !== 28) return prior;
+  const s = prior;
+  s.version = 29;
+  initPolitics(s);
+  s.migrationNote =
+    (s.migrationNote || "") +
+    " رئاسة الاتحاد 0.33: أُضيفت ملفات اللجان والبطولات؛ بدأت القرارات الجديدة من سجل محايد مع الحفاظ على حفظك السابق.";
+  return s;
+}
+
+// 0.34 (save v30): opposition, integrity, diplomacy, and presidential legacy.
+function migrateSaveToThirty(input) {
+  if (!input || input.version === 30) return input;
+  const prior =
+    input.version === 29
+      ? structuredClone(input)
+      : migrateSaveToTwentyNine(input);
+  if (prior?.version !== 29) return prior;
+  const s = prior;
+  s.version = 30;
+  initPolitics(s);
+  s.migrationNote =
+    (s.migrationNote || "") +
+    " رئاسة الاتحاد 0.34: أُضيفت سجلات المعارضة والنزاهة والعلاقات الخارجية والإرث، مع إبقاء الحالة السياسية المحفوظة كما هي.";
+  return s;
+}
+
+// 0.35 (save v31): recurring, choice-driven political events.
+export function migrateSave(input) {
+  if (!input || input.version === 31) return input;
+  const prior =
+    input.version === 30 ? structuredClone(input) : migrateSaveToThirty(input);
+  if (prior?.version !== 30) return prior;
+  const s = prior;
+  s.version = 31;
+  initPolitics(s);
+  s.migrationNote =
+    (s.migrationNote || "") +
+    " رئاسة الاتحاد 0.35: أُضيفت أحداث سياسية تفاعلية متجددة وسجل خياراتها، مع الحفاظ على قراراتك وسجلاتك السابقة.";
+  return s;
 }
 
 function migrateSaveToTwentyFive(input) {

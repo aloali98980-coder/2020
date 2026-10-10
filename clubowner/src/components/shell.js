@@ -11,6 +11,7 @@ const LINKS = [
   { id: "inbox", name: "البريد الوارد", icon: "inbox" },
   { id: "empire", name: "القصر", icon: "crown" },
   { id: "board", name: "الجمعية العمومية", icon: "crown" },
+  { id: "politics", name: "رئاسة الاتحاد", icon: "crown" },
   { id: "black", name: "الملفات السوداء", icon: "shield" },
   { id: "squad", name: "الفريق الأول", icon: "squad" },
   { id: "transfers", name: "سوق الانتقالات", icon: "transfer" },
@@ -35,6 +36,10 @@ export const NAV_GROUPS = [
   {
     caption: "نظرة عامة",
     items: ["dashboard", "inbox", "empire", "board", "black"],
+  },
+  {
+    caption: "السياسة والحوكمة",
+    items: ["politics"],
   },
   {
     caption: "كرة القدم",

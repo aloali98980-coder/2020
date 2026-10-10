@@ -99,6 +99,7 @@ import "./styles/readability.css";
 import "./styles/tokens.css";
 import "./styles/motion.css";
 import "./styles/dynasty.css";
+import "./styles/politics.css";
 import { createGame } from "./core/game.js";
 import { getState, setState, commit, isSaving } from "./core/store.js";
 import { saveGame, loadGame, exportGame, importGame } from "./services/save.js";
@@ -185,6 +186,56 @@ import { publishContent, derbyCampaign, resolveCrisis } from "./services/staff/s
 import { worldView } from "./features/world.js";
 import { settingsView } from "./features/settings.js";
 import { dynastyView } from "./features/dynasty.js";
+import { politicsView } from "./features/politics.js";
+import { POLITICAL_BLOCS } from "./data/politicsCatalog.js";
+import { formAlliance, politicalClub } from "./services/politics/state.js";
+import {
+  visitClub,
+  holdConference,
+  makeCampaignPromise,
+  fundCampaign,
+  debate as politicalDebate,
+  offerCandidateAlliance,
+} from "./services/politics/campaign.js";
+import {
+  bargainBill,
+  proposeBill,
+  resolveBill,
+} from "./services/politics/council.js";
+import {
+  createSupportFund,
+  grantFromSupportFund,
+  runFinancialAudit,
+} from "./services/politics/associationFinance.js";
+import {
+  appointCommitteeChair,
+  resolveDisciplineCase,
+  setCommitteePolicy,
+} from "./services/politics/committees.js";
+import {
+  createAssociationTournament,
+  playAssociationTournamentRound,
+} from "./services/politics/competitions.js";
+import {
+  addressOpposition,
+  holdConfidenceVote,
+} from "./services/politics/opposition.js";
+import {
+  conductIntegrityAudit,
+  openIntegrityInvestigation,
+  resolveIntegrityInvestigation,
+  submitAssetDeclaration,
+} from "./services/politics/integrity.js";
+import {
+  holdDiplomaticMission,
+  secureExecutiveSeat,
+  submitHostingBid,
+} from "./services/politics/foreign.js";
+import {
+  resignOffice,
+  resolveLegacyTrial,
+} from "./services/politics/legacy.js";
+import { resolvePoliticalEvent } from "./services/politics/events.js";
 import {
   legendsView,
   legendDetailModal,
@@ -250,6 +301,7 @@ const ui = {
   legendOffer: {},
   empireTab: "wealth",
   staffTab: "org",
+  politicsTab: "overview",
   palette: { open: false, q: "", sel: 0, items: [] },
 };
 let pendingImport = null;
@@ -312,6 +364,7 @@ function render() {
     sponsors: () => sponsorsView(s),
     finance: () => financeView(s, ui.financeTab),
     board: () => boardView(s),
+    politics: () => politicsView(s, ui.politicsTab),
     staff: () => staffView(s, ui.staffTab, getLanguage()),
     world: () =>
       s.expansion
@@ -692,6 +745,207 @@ const actions = {
     const s = getState();
     if (s) await apply((state) => markStep(state, "board"));
     navigate("board");
+  },
+  "politics-tab": async (el) => {
+    ui.politicsTab = el.dataset.id || "overview";
+    render();
+  },
+  "politics-event-choice": async (el) =>
+    apply(
+      (s) => resolvePoliticalEvent(s, el.dataset.id),
+      tr(
+        "حُسم الحدث وأضيفت آثاره إلى السجل السياسي.",
+        "The event was resolved and its effects were added to the political record.",
+        "L’événement est tranché et ses effets sont ajoutés au registre politique.",
+      ),
+    ),
+  "politics-visit": async (el) =>
+    apply(
+      (s) => visitClub(s, el.dataset.id),
+      tr(
+        "تمت الزيارة وسُجل أثرها على الموقف والميزانية الشخصية.",
+        "Visit recorded; its support and personal-budget effects are logged.",
+        "Visite enregistrée ; son effet sur le soutien et le budget personnel est consigné.",
+      ),
+    ),
+  "politics-conference": async (el) =>
+    apply(
+      (s) => holdConference(s, el.dataset.id),
+      tr(
+        "انتهى المؤتمر، وتغيرت مواقف أندية التكتل.",
+        "The conference ended; clubs in the bloc shifted their positions.",
+        "La conférence est terminée ; les positions des clubs du bloc ont évolué.",
+      ),
+    ),
+  "politics-promise": async (el) =>
+    apply(
+      (s) => {
+        const club = politicalClub(s, el.dataset.id);
+        if (!club)
+          throw new Error(
+            tr(
+              "النادي غير موجود في الخريطة السياسية.",
+              "That club is missing from the political map.",
+              "Ce club manque sur la carte politique.",
+            ),
+          );
+        return makeCampaignPromise(s, el.dataset.id, club.demandId);
+      },
+      tr(
+        "سُجل الوعد بمطلب محدد، وسيُحاسبك النادي عليه.",
+        "A specific promise was recorded; the club will hold you to it.",
+        "L’engagement est enregistré ; le club vous demandera des comptes.",
+      ),
+    ),
+  "politics-form-bloc": async (el) =>
+    apply(
+      (s) => {
+        const members = s.politics.clubs
+          .filter((club) => club.bloc === el.dataset.id)
+          .map((club) => club.clubId);
+        return formAlliance(
+          s,
+          members,
+          POLITICAL_BLOCS[el.dataset.id]?.ar || "تكتل الأندية",
+        );
+      },
+      tr(
+        "تأسس التكتل وأُسندت عضويته إلى الأندية المختارة.",
+        "The bloc was formed and its club membership recorded.",
+        "Le bloc est constitué et ses membres sont enregistrés.",
+      ),
+    ),
+  "politics-alliance": async (el) => {
+    const result = await apply((s) => offerCandidateAlliance(s, el.dataset.id));
+    toast(
+      result?.accepted
+        ? tr(
+            "قُبل التحالف الانتخابي وأُعلن التأييد.",
+            "The electoral alliance was accepted and publicly endorsed.",
+            "L’alliance électorale est acceptée et le soutien est annoncé.",
+          )
+        : tr(
+            "لم يقبل المنافس بعد؛ تحسنت العلاقة قليلًا وبقي باب التفاوض مفتوحًا.",
+            "The rival has not accepted yet; relations improved slightly and talks remain open.",
+            "L’adversaire n’a pas encore accepté ; la relation s’améliore légèrement et la négociation reste ouverte.",
+          ),
+    );
+  },
+  "politics-propose-law": async (el) =>
+    apply(
+      (s) => proposeBill(s, el.dataset.id),
+      tr(
+        "قُدّمت اللائحة إلى المجلس وبدأت المداولة.",
+        "The bill was introduced and council debate has begun.",
+        "Le texte est présenté et le débat du conseil commence.",
+      ),
+    ),
+  "politics-vote-bill": async (el) =>
+    apply(
+      (s) => resolveBill(s, el.dataset.id),
+      tr(
+        "سُجل الاقتراع العلني ونتيجة اللائحة.",
+        "The public ballot and bill result have been recorded.",
+        "Le scrutin public et le résultat du texte sont enregistrés.",
+      ),
+    ),
+  "politics-financial-audit": async () =>
+    apply(
+      (s) => runFinancialAudit(s),
+      tr(
+        "اكتملت مراجعة الحسابات وسُجلت نتيجتها.",
+        "The financial audit is complete and its result has been recorded.",
+        "L’audit financier est terminé et son résultat est enregistré.",
+      ),
+    ),
+  "politics-discipline-ruling": async (el) => {
+    const [caseId, verdict] = (el.dataset.id || "").split("|");
+    await apply(
+      (s) => resolveDisciplineCase(s, caseId, verdict),
+      tr(
+        "صدر قرار لجنة الانضباط ووُثق في السجل العام.",
+        "The disciplinary committee ruling was recorded in the public log.",
+        "La décision disciplinaire a été enregistrée au registre public.",
+      ),
+    );
+  },
+  "politics-tournament-advance": async (el) =>
+    apply(
+      (s) => playAssociationTournamentRound(s, el.dataset.id),
+      tr(
+        "اكتملت الجولة وسُجلت النتائج والترتيب أو المتأهلون.",
+        "The round is complete; results, standings or qualifiers are recorded.",
+        "La journée est terminée ; résultats, classement ou qualifiés sont enregistrés.",
+      ),
+    ),
+  "politics-confidence-vote": async () =>
+    apply(
+      (s) => holdConfidenceVote(s),
+      tr(
+        "اكتمل اقتراع الثقة بالأسماء وحُفظت نتيجته.",
+        "The named confidence vote is complete and its result is saved.",
+        "Le vote de confiance nominatif est terminé et son résultat est enregistré.",
+      ),
+    ),
+  "politics-integrity-declare": async () =>
+    apply(
+      (s) => submitAssetDeclaration(s),
+      tr(
+        "قُدم إقرار الأصول وأضيف إلى السجل العام.",
+        "The asset declaration was filed in the public record.",
+        "La déclaration d’actifs est inscrite au registre public.",
+      ),
+    ),
+  "politics-integrity-audit": async () =>
+    apply(
+      (s) => conductIntegrityAudit(s),
+      tr(
+        "اكتمل تدقيق النزاهة والتطابق المالي.",
+        "The integrity and financial audit is complete.",
+        "L’audit d’intégrité et de rapprochement financier est terminé.",
+      ),
+    ),
+  "politics-integrity-decision": async (el) => {
+    const [investigationId, decision] = (el.dataset.id || "").split("|");
+    await apply(
+      (s) => resolveIntegrityInvestigation(s, investigationId, decision),
+      tr(
+        "سُجل قرار التحقيق وأدلته في ملف الاتحاد.",
+        "The investigation ruling and evidence were recorded in the association file.",
+        "La décision d’enquête et les preuves sont inscrites au dossier de la fédération.",
+      ),
+    );
+  },
+  "politics-legacy-trial": async (el) => {
+    const response = el.dataset.id || "";
+    await apply(
+      (s) => resolveLegacyTrial(s, response),
+      tr(
+        "صدر الحكم النهائي وأُضيف إلى سجل الإرث.",
+        "The final ruling was added to the legacy record.",
+        "Le verdict final est ajouté au registre d’héritage.",
+      ),
+    );
+  },
+  "politics-office-resign": async () => {
+    if (
+      !confirm(
+        tr(
+          "هل تريد إنهاء ولايتك وتوثيق إرثك السياسي؟",
+          "End your term and archive your political legacy?",
+          "Mettre fin à votre mandat et archiver votre héritage politique ?",
+        ),
+      )
+    )
+      return;
+    await apply(
+      (s) => resignOffice(s),
+      tr(
+        "انتهت ولايتك وأُرشف سجلها.",
+        "Your term ended and its record was archived.",
+        "Votre mandat prend fin et son dossier est archivé.",
+      ),
+    );
   },
   "go-black": async () => {
     navigate("black");
@@ -1429,6 +1683,182 @@ document.addEventListener("submit", async (e) => {
   e.preventDefault();
   if (isSaving() || actionBusy) return;
   try {
+    if (form.id === "politics-campaign-fund") {
+      const amount = Math.round(Number(form.elements.amount.value));
+      await apply(
+        (s) => fundCampaign(s, amount),
+        tr(
+          "تم توثيق التمويل الشخصي للحملة.",
+          "Personal campaign funding has been recorded.",
+          "Le financement personnel de la campagne est enregistré.",
+        ),
+      );
+      return;
+    }
+    if (form.id === "politics-debate-form") {
+      const candidateId = form.elements.candidateId.value;
+      const strategy = form.elements.strategy.value;
+      await apply(
+        (s) => politicalDebate(s, candidateId, strategy),
+        tr(
+          "انتهت المناظرة العلنية وسُجل تقييمها في سجل الحملة.",
+          "The public debate is over; its result was added to the campaign record.",
+          "Le débat public est terminé ; son résultat figure au registre de campagne.",
+        ),
+      );
+      return;
+    }
+    if (form.id === "politics-bargain-form") {
+      const billId = form.elements.billId.value;
+      const clubId = form.elements.clubId.value;
+      const offer = form.elements.offer.value;
+      const amount = Math.round(Number(form.elements.amount.value));
+      const result = await apply((s) =>
+        bargainBill(s, billId, clubId, offer, amount),
+      );
+      toast(
+        result.accepted
+          ? tr(
+              "قُبل التفاهم وسُجل علنًا في ملف التصويت.",
+              "The compromise was accepted and publicly logged with the vote.",
+              "Le compromis est accepté et consigné publiquement avec le vote.",
+            )
+          : tr(
+              "لم يُقبل التنازل؛ سُجل موقف النادي وسيظهر في الاقتراع.",
+              "The concession did not match the club's demand; its position will appear in the vote.",
+              "La concession ne répond pas à la demande du club ; sa position figurera au vote.",
+            ),
+      );
+      return;
+    }
+    if (form.id === "politics-support-fund-form") {
+      const name = form.elements.name.value;
+      const amount = Math.round(Number(form.elements.amount.value));
+      const criteria = form.elements.criteria.value;
+      await apply(
+        (s) => createSupportFund(s, { name, amount, criteria }),
+        tr(
+          "حُجز رصيد صندوق الدعم وسُجل في دفتر الخزينة.",
+          "The support fund was reserved and recorded in the treasury ledger.",
+          "Le fonds de soutien est réservé et inscrit au registre de trésorerie.",
+        ),
+      );
+      return;
+    }
+    if (form.id === "politics-support-grant-form") {
+      const fundId = form.elements.fundId.value;
+      const clubId = form.elements.clubId.value;
+      const amount = Math.round(Number(form.elements.amount.value));
+      await apply(
+        (s) => grantFromSupportFund(s, fundId, clubId, amount),
+        tr(
+          "صُرفت المنحة وأُضيفت إلى حساب النادي.",
+          "The grant was issued and credited to the club account.",
+          "L’aide est versée et créditée au compte du club.",
+        ),
+      );
+      return;
+    }
+    if (form.id.startsWith("politics-chair-")) {
+      const committeeId = form.elements.committeeId.value;
+      const officialId = form.elements.officialId.value;
+      await apply(
+        (s) => appointCommitteeChair(s, committeeId, officialId),
+        tr(
+          "عُيّن رئيس اللجنة وسُجلت مؤهلاته.",
+          "The committee chair was appointed and their credentials recorded.",
+          "Le président de commission est nommé et ses qualifications sont enregistrées.",
+        ),
+      );
+      return;
+    }
+    if (form.id.startsWith("politics-policy-")) {
+      const committeeId = form.elements.committeeId.value;
+      const policy = form.elements.policy.value;
+      await apply(
+        (s) => setCommitteePolicy(s, committeeId, policy),
+        tr(
+          "اعتمدت سياسة اللجنة وستؤثر في المباريات والروزنامة.",
+          "The committee policy is set and will shape matches and the calendar.",
+          "La politique de la commission est adoptée et influencera les matchs et le calendrier.",
+        ),
+      );
+      return;
+    }
+    if (form.id === "politics-tournament-create-form") {
+      const templateId = form.elements.templateId.value;
+      const sponsorId = form.elements.sponsorId.value;
+      await apply(
+        (s) => createAssociationTournament(s, templateId, sponsorId),
+        tr(
+          "أُطلقت البطولة، وسُجل الراعي والجائزة والقرعة في دفتر الاتحاد.",
+          "The competition has launched; sponsor, prize and draw are in the association ledger.",
+          "La compétition est lancée ; sponsor, prix et tirage figurent au registre de la fédération.",
+        ),
+      );
+      return;
+    }
+    if (form.id === "politics-opposition-response-form") {
+      const responseId = form.elements.responseId.value;
+      await apply(
+        (s) => addressOpposition(s, responseId),
+        tr(
+          "سُجل ردك العلني وحدثت مؤشرات الشرعية والنزاهة.",
+          "Your public response was logged and legitimacy/integrity indicators were updated.",
+          "Votre réponse publique est consignée et les indicateurs de légitimité et d’intégrité sont actualisés.",
+        ),
+      );
+      return;
+    }
+    if (form.id === "politics-integrity-investigation-form") {
+      const subject = form.elements.subject.value;
+      await apply(
+        (s) => openIntegrityInvestigation(s, subject),
+        tr(
+          "فُتح تحقيق مستقل وحدد له موعد وأدلة أولية.",
+          "An independent review was opened with a due date and initial evidence.",
+          "Un examen indépendant est ouvert avec échéance et premières preuves.",
+        ),
+      );
+      return;
+    }
+    if (form.id === "politics-diplomatic-mission-form") {
+      const organizationId = form.elements.organizationId.value;
+      const missionType = form.elements.missionType.value;
+      await apply(
+        (s) => holdDiplomaticMission(s, organizationId, missionType),
+        tr(
+          "عادت البعثة بتحديث للعلاقات والنفوذ، وسُجلت تكلفتها.",
+          "The mission updated relations and influence; its cost was recorded.",
+          "La mission a renforcé les relations et l’influence ; son coût est consigné.",
+        ),
+      );
+      return;
+    }
+    if (form.id === "politics-hosting-bid-form") {
+      const eventId = form.elements.eventId.value;
+      await apply(
+        (s) => submitHostingBid(s, eventId),
+        tr(
+          "قُدم ملف الاستضافة؛ يصدر القرار بعد الموعد المسجل.",
+          "The hosting bid was filed; a decision will follow on its due date.",
+          "La candidature d’accueil est déposée ; une décision sera rendue à l’échéance.",
+        ),
+      );
+      return;
+    }
+    if (form.id === "politics-executive-seat-form") {
+      const organizationId = form.elements.organizationId.value;
+      await apply(
+        (s) => secureExecutiveSeat(s, organizationId),
+        tr(
+          "فزت بمقعد تنفيذي دولي لمدة أربع مواسم.",
+          "You secured an international executive seat for four seasons.",
+          "Vous obtenez un siège exécutif international pour quatre saisons.",
+        ),
+      );
+      return;
+    }
     if (form.id === "city-stadium-form") {
       const tier = Number(form.elements.tier.value), route = form.elements.route.value, district = form.elements.district.value, design = form.elements.design.value;
       const quote = stadiumQuote(getState(), tier, route, district, design);

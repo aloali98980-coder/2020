@@ -34,6 +34,7 @@ import { youthIntakeTick } from "./youthIntake.js";
 import { academyJourneyDay, dynastyGrowthDay, dynastyLifeDay } from "./dynasty.js";
 import { dynastyEventDay } from "./dynastyEvents.js";
 import { siblingConflictDay } from "./dynastyCareers.js";
+import { politicsDay } from "./politics/day.js";
 function eventsDay(s) {
   for (const e of s.events) {
     if (e.done || e.date > s.date) continue;
@@ -131,6 +132,7 @@ export function advanceTime(s, days = null) {
     // والخبر القصير لا يوقف الزمن أبدًا لأنه required: false.
     flavorEventDay(s);
     clubEventDay(s);
+    politicsDay(s);
     if (pendingActions(s).length) return { advanced, blocked: true };
     if (
       s.preferences.pauseMatches &&

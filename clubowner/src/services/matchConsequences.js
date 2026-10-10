@@ -64,10 +64,13 @@ export function injuryDuration(rng) {
  */
 export function generateCardDistribution(xi, rng, options = {}) {
   const isDerby = !!options?.isDerby;
-  const yellowCount = isDerby
+  const refereePolicy = options?.refereePolicy || "balanced";
+  let yellowCount = isDerby
     ? Math.floor(rng() * 3) + (rng() < 0.6 ? 2 : 1)
     : Math.floor(rng() * 3) + (rng() < 0.3 ? 1 : 0);
-  const redCount = isDerby ? (rng() < 0.08 ? 1 : 0) : rng() < 0.04 ? 1 : 0;
+  let redCount = isDerby ? (rng() < 0.08 ? 1 : 0) : rng() < 0.04 ? 1 : 0;
+  if (refereePolicy === "strict") yellowCount++;
+  else if (refereePolicy === "lenient") yellowCount = Math.max(0, yellowCount - 1);
   const yellows = [];
   const reds = [];
   for (let i = 0; i < yellowCount + redCount && xi.length; i++) {
@@ -112,7 +115,7 @@ export function updateForm(p, matchRating) {
  *
  * @returns {{ redCardPenalty: number }} — عقوبة النقص العددي (للاستخدام في strength)
  */
-export function applyMatchConsequences(s, f, cards, rng) {
+export function applyMatchConsequences(s, f, cards, rng, options = {}) {
   const xi = Array.isArray(f.lineup) && f.lineup.length
     ? f.lineup
         .map((x) => {
@@ -131,9 +134,12 @@ export function applyMatchConsequences(s, f, cards, rng) {
   let redCardPenalty = 0;
 
   // ── بطاقات صفراء: تراكم وإيقاف ──
+  const suspensionThreshold = Number.isSafeInteger(options.suspensionThreshold)
+    ? Math.max(2, Math.min(8, options.suspensionThreshold))
+    : YELLOW_SUSPENSION_THRESHOLD;
   for (const p of (cards.yellows || [])) {
     p.seasonYellowByComp = (p.seasonYellowByComp || 0) + 1;
-    if (p.seasonYellowByComp >= YELLOW_SUSPENSION_THRESHOLD) {
+    if (p.seasonYellowByComp >= suspensionThreshold) {
       p.yellowCardSuspensions = (p.yellowCardSuspensions || 0) + 1;
       p.suspendedUntil = addDays(s.date, 8); // أسبوع إيقاف
       p.seasonYellowByComp = 0;
