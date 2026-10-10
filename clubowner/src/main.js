@@ -1485,9 +1485,17 @@ const actions = {
     }, tr("تم تطوير المنصة.", "Platform upgraded.", "Plateforme améliorée."));
   },
   "betting-marketing-slide": async (el) => {
-    // تحديث فوري لحقل العرض فقط
     const v = document.getElementById("betting-marketing-val");
     if (v) v.textContent = el.value;
+  },
+  "betting-save-marketing": async (el) => {
+    const val = Number(document.getElementById("betting-marketing")?.value);
+    const { setMarketingSpend } = await import("./services/betting/state.js");
+    await apply((s) => setMarketingSpend(s, val), tr("تم تحديث الإنفاق التسويقي.", "Marketing updated.", "Marketing mis à jour."));
+  },
+  "betting-buy-competitor": async (el) => {
+    const { buyCompetitor } = await import("./services/betting/management.js");
+    await apply((s) => buyCompetitor(s, el.dataset.id), tr("تم الاستحواذ على المنافس.", "Competitor acquired.", "Concurrent acquis."));
   },
   more: async () =>
     openModal(

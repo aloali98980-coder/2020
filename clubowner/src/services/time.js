@@ -20,6 +20,7 @@ import { boardDay } from "./boardMandate.js";
 import { blackFilesDay } from "./blackFiles.js";
 import { empireDay } from "./empire/day.js";
 import { staffCorpDay } from "./staff/day.js";
+import { bettingDay } from "./betting/day.js";
 import { addDays } from "../core/utils.js";
 import { message, pendingActions } from "./inbox.js";
 import { financeDay } from "./finance.js";
@@ -98,6 +99,7 @@ export function advanceTime(s, days = null) {
     blackFilesDay(s);
     empireDay(s);
     staffCorpDay(s);
+    bettingDay(s);
     sportsCityDay(s);
     if (!s.expansion) seasonDay(s);
     internationalDay(s);
