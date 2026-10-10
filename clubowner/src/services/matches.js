@@ -12,6 +12,7 @@ import { legendMatchBonus } from "./legends.js";
 import { recordMatchStats } from "./seasonStats.js";
 import { generateCardDistribution, applyMatchConsequences } from "./matchConsequences.js";
 import { recordDisciplineIncident, refereeSuspensionThreshold } from "./politics/committees.js";
+import { resolveInsiderBet } from "./betting/insider.js";
 export function fixtures(date) {
   let order = CLUBS.map((c) => c.id),
     out = [];
@@ -314,6 +315,13 @@ export function matchDay(
           derby
         ));
       }
+      // 0.36: حسم الرهان الداخلي إن كان معلقًا على هذه المباراة
+      try {
+        const pend = s.betting?.pendingInsider;
+        if (pend && (pend.fixtureId === f.id || String(pend.fixtureId).startsWith("manual-"))) {
+          resolveInsiderBet(s, f);
+        }
+      } catch {}
     }
   }
 }

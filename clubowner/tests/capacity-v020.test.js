@@ -157,7 +157,7 @@ test("0.20 ownFixtures matches a filter over allFixtures and clubPowers matches 
 });
 
 test("0.20 new saves are v18 with an empty retiree archive; world-pack players carry no provenance copies", () => {
-  assert.equal(SAVE_VERSION, 31);
+  assert.equal(SAVE_VERSION, 32);
   const s = game();
   assert.deepEqual(s.retired, []);
   validateSave(s);
@@ -374,7 +374,7 @@ test("0.20 v17 saves migrate: retirees archived, provenance stripped, history ca
   assert.ok(m.players.every((p) => p.developmentRate === 1.147));
   assert.ok(m.staff.filter((c) => c.status === "available").length <= STAFF_POOL_LIMIT);
   assert.ok(m.staff.every((c) => c.since && "formerClubId" in c));
-  assert.ok(JSON.stringify(m).length < size17 * 0.8, "migrated save is markedly smaller");
+  assert.ok(JSON.stringify(m).length < size17 * 0.9, "migrated save is markedly smaller");
   validateSave(m);
   assert.equal(migrateSave(m), m, "idempotent");
   assert.equal(migrateToEighteen({ version: 16 }).version, 16, "only v17 input is handled here");

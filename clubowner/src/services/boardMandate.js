@@ -170,6 +170,22 @@ export function itemProgress(s, item, mandate) {
       const done = n >= item.target;
       return { current: n, target: item.target, done, ratio: ratio(n, item.target, done) };
     }
+    case "betting-ethics": {
+      // يفشل إذا تملك شركة مراهنات مع تضارب عالٍ (>40) أو إذا رعت شركتك الدوري وأنت رئيس الاتحاد
+      const hasBetting = Boolean(s.betting?.owned);
+      const score = hasBetting ? (() => {
+        let sc = 0;
+        if (s.betting.licenseTier === "global") sc += 22;
+        else if (s.betting.licenseTier === "continental") sc += 14;
+        else if (hasBetting) sc += 8;
+        if (s.betting.sponsorLeague) sc += 25;
+        if (s.politics?.office?.held) sc += 30;
+        if ((s.betting.customers || 0) > 150_000) sc += 10;
+        return sc;
+      })() : 0;
+      const done = !hasBetting || score < 40;
+      return { current: score, target: 40, done, ratio: done ? 1 : Math.max(0, (40 - score) / 40) };
+    }
     default:
       return { current: 0, target: item.target ?? 1, done: false, ratio: 0 };
   }

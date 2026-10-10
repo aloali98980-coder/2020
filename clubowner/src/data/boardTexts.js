@@ -222,6 +222,11 @@ export const BOARD_TEXTS = {
     en: "Sign a player aged {v} or younger",
     fr: "Recruter un joueur de {v} ans ou moins",
   },
+  itemBettingEthics: {
+    ar: "بند أخلاقي: لا تضارب بين النادي وشركة المراهنات (التضارب أقل من 40)",
+    en: "Ethics clause: no conflict between club and betting company (conflict below 40)",
+    fr: "Clause éthique : pas de conflit entre le club et la société de paris (conflit inférieur à 40)",
+  },
 
   // ── بداية الموسم ──────────────────────────────────────────────────────────
   mandateIssuedTitle: {

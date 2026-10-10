@@ -36,7 +36,7 @@ function readyCampaign(s) {
 
 test("new and migrated league maps include every club, neutral support, weighted votes and three blocs", () => {
   const s = newSave();
-  assert.equal(SAVE_VERSION, 31);
+  assert.equal(SAVE_VERSION, 32);
   assert.equal(s.politics.clubs.length, s.table.length);
   assert.deepEqual(
     new Set(s.politics.clubs.map((club) => club.bloc)),

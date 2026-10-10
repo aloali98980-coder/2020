@@ -15,6 +15,7 @@ import { SPORTS_CITY_PHRASES } from "./phrases-sports-city.js";
 import { STAFF_PHRASES } from "./phrases-staff.js";
 import { POLITICS_PHRASES } from "./phrases-politics.js";
 import { DYNASTY_PHRASES } from "./phrases-dynasty.js";
+import { BETTING_PHRASES } from "./phrases-betting.js";
 import {
   ACADEMY_FOCUSES,
   CHILD_STAGES,
@@ -69,6 +70,7 @@ for (const extra of [
   // 0.30: comprehensive staff management (org chart, market, HQ, events)
   STAFF_PHRASES,
   POLITICS_PHRASES,
+  BETTING_PHRASES,
 ])
   for (const [ar, pair] of Object.entries(extra))
     if (!DICTIONARY[ar])

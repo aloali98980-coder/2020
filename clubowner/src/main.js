@@ -1454,6 +1454,76 @@ const actions = {
       "بدأ العمل في مشروعك الخيري.",
     );
   },
+  "betting-buy": async (el) => {
+    const { buyBettingCompany } = await import("./services/betting/state.js");
+    await apply((s) => buyBettingCompany(s, el.dataset.id), tr("اشتريت شركة مراهنات.", "Betting company acquired.", "Société de paris acquise."));
+  },
+  "betting-found": async (el) => {
+    const { foundBettingCompany } = await import("./services/betting/state.js");
+    await apply((s) => foundBettingCompany(s, el.dataset.tier), tr("تأسست شركتك الجديدة.", "Your new company was founded.", "Votre nouvelle société a été fondée."));
+  },
+  "betting-upgrade-license": async (el) => {
+    const { upgradeLicense } = await import("./services/betting/state.js");
+    await apply((s) => upgradeLicense(s, el.dataset.tier), tr("تمت ترقية الترخيص.", "Licence upgraded.", "Licence améliorée."));
+  },
+  "betting-up-branch": async () => {
+    const { upgradeBranches } = await import("./services/betting/state.js");
+    await apply((s) => {
+      const b = s.betting;
+      if (!b) throw new Error("لا شركة");
+      return upgradeBranches(s, b.branches + 1);
+    }, tr("تمت توسعة الفروع.", "Branches expanded.", "Agences étendues."));
+  },
+  "betting-up-online": async () => {
+    const { upgradeOnline } = await import("./services/betting/state.js");
+    await apply((s) => {
+      const b = s.betting;
+      if (!b) throw new Error("لا شركة");
+      return upgradeOnline(s, b.onlineLevel + 1);
+    }, tr("تم تطوير المنصة.", "Platform upgraded.", "Plateforme améliorée."));
+  },
+  "betting-marketing-slide": async (el) => {
+    const v = document.getElementById("betting-marketing-val");
+    if (v) v.textContent = el.value;
+  },
+  "betting-save-marketing": async (el) => {
+    const val = Number(document.getElementById("betting-marketing")?.value);
+    const { setMarketingSpend } = await import("./services/betting/state.js");
+    await apply((s) => setMarketingSpend(s, val), tr("تم تحديث الإنفاق التسويقي.", "Marketing updated.", "Marketing mis à jour."));
+  },
+  "betting-buy-competitor": async (el) => {
+    const { buyCompetitor } = await import("./services/betting/management.js");
+    await apply((s) => buyCompetitor(s, el.dataset.id), tr("تم الاستحواذ على المنافس.", "Competitor acquired.", "Concurrent acquis."));
+  },
+  "betting-responsible": async (el) => {
+    const { setResponsibleLevel } = await import("./services/betting/compliance.js");
+    await apply((s) => setResponsibleLevel(s, Number(el.dataset.level)), tr("تم تحديث اللعب المسؤول.", "Responsible gaming updated.", "Jeu responsable mis à jour."));
+  },
+  "betting-insider": async () => {
+    const amt = Math.round(Number(document.getElementById("betting-insider-amount")?.value) || 0);
+    const risk = Math.round(Number(document.getElementById("betting-risk")?.value) || 0);
+    const { placeInsiderBet } = await import("./services/betting/insider.js");
+    await apply((s) => placeInsiderBet(s, amt, risk), tr("تم رهن داخلي بانتظار المباراة.", "Insider bet placed, awaiting match.", "Pari d'initié placé, en attente du match."));
+  },
+  "betting-risk-slide": async (el) => {
+    const risk = Number(el.value) || 0;
+    const mult = (1.2 + (risk/100)*4).toFixed(1);
+    const detect = Math.round((0.04 + (risk/100)*0.58)*100);
+    const rv = document.getElementById("betting-risk-val");
+    const mv = document.getElementById("betting-mult-val");
+    const dv = document.getElementById("betting-detect-val");
+    if (rv) rv.textContent = risk + "%";
+    if (mv) mv.textContent = mult + "×";
+    if (dv) dv.textContent = "~" + detect + "%";
+  },
+  "betting-sponsor-toggle": async () => {
+    const { sponsorLeagueToggle } = await import("./services/betting/conflict.js");
+    await apply((s) => sponsorLeagueToggle(s, !s.betting.sponsorLeague), tr("تم تحديث رعاية الدوري.", "League sponsorship updated.", "Parrainage de ligue mis à jour."));
+  },
+  "betting-regulate": async (el) => {
+    const { regulateBettingMarket } = await import("./services/betting/conflict.js");
+    await apply((s) => regulateBettingMarket(s, el.dataset.mode), tr("تم تحديث التشريع.", "Regulation updated.", "Réglementation mise à jour."));
+  },
   more: async () =>
     openModal(
       `<h2>إدارة النادي</h2>${NAV_GROUPS.map(
