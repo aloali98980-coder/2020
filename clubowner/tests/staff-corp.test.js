@@ -40,7 +40,7 @@ const plantCandidate = (s, role = "scout", skill = 70) => {
 };
 
 test("حفظة جديدة: طاقم افتراضي متوسط + مقر صغير + سوق معبأ", () => {
-  assert.equal(SAVE_VERSION, 33);
+  assert.equal(SAVE_VERSION, 34);
   const s = game();
   const c = s.staffCorp;
   assert.ok(c && c.schema === 1);
@@ -63,7 +63,7 @@ test("ترحيل v25: طاقم افتراضي دون مساس باللاعبين
   delete fresh.staffCorp;
   const players = fresh.players.length, cash = fresh.finance.cash;
   const m = migrateSave(fresh);
-  assert.equal(m.version, 33);
+  assert.equal(m.version, 34);
   assert.equal(m.players.length, players);
   assert.equal(m.finance.cash, cash);
   assert.equal(m.staffCorp.employees.length, 6);

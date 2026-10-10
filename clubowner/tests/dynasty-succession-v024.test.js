@@ -156,8 +156,8 @@ test("v22 saves migrate to the retirement-ready schema without changing club dat
   const cash = old.finance.cash;
   const players = old.players.map((player) => [player.id, player.name, player.rating]);
   const migrated = migrateSave(old);
-  assert.equal(SAVE_VERSION, 33);
-  assert.equal(migrated.version, 33);
+  assert.equal(SAVE_VERSION, 34);
+  assert.equal(migrated.version, 34);
   assert.equal(migrated.dynasty.schema, 2);
   assert.equal(migrated.dynasty.retirementOffer, null);
   assert.equal(migrated.dynasty.lastOwnerMonth, null);

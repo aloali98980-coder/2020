@@ -18,7 +18,7 @@ const game = () =>
 test("بورصة الأندية تهيئ سعرًا لكل نادٍ ومؤشرًا عامًا ومحفظة فارغة", () => {
   const s = game();
   const market = ensureStockMarket(s);
-  assert.equal(SAVE_VERSION, 33);
+  assert.equal(SAVE_VERSION, 34);
   assert.equal(
     market.listings.filter((listing) => listing.assetType === "club").length,
     s.table.length,
@@ -121,7 +121,7 @@ test("ترحيل v32 لا يمس الثروة أو النتائج ويضيف س�
   const table = structuredClone(old.table);
   const migrated = migrateSave(old);
   assert.equal(old.version, 32, "migration clones the old save");
-  assert.equal(migrated.version, 33);
+  assert.equal(migrated.version, 34);
   assert.equal(migrated.empire.personal, wealth);
   assert.deepEqual(migrated.table, table);
   assert.equal(migrated.stockMarket.listings.length, table.length);

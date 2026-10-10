@@ -59,9 +59,9 @@ test("v27 migration upgrades council and finance defaults without replacing poli
   old.politics.finance.clubAccounts = {};
   const originalBalance = old.politics.finance.balance;
   const upgraded = migrateSave(old);
-  assert.equal(SAVE_VERSION, 33);
+  assert.equal(SAVE_VERSION, 34);
   assert.equal(old.version, 27, "migration must clone its input");
-  assert.equal(upgraded.version, 33);
+  assert.equal(upgraded.version, 34);
   assert.equal(upgraded.politics.clubs[0].support, 73);
   assert.equal(upgraded.politics.election.season, old.politics.election.season);
   assert.equal(upgraded.politics.council.constitution.termLimit, null);
@@ -101,7 +101,7 @@ test("v28 migration adds committee fields while preserving existing appointments
   delete committees.competitions.appointedDate;
   delete committees.competitions.policyChangedDate;
   const upgraded = migrateSave(old);
-  assert.equal(upgraded.version, 33);
+  assert.equal(upgraded.version, 34);
   assert.equal(old.version, 28, "migration must clone its input");
   assert.equal(upgraded.politics.committees.referees.chairId, "tariq-badr");
   assert.equal(upgraded.politics.committees.referees.strikes, 2);
