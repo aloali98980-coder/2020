@@ -98,7 +98,9 @@ function resultCard(s, r) {
  * @returns {{ steps: string[], htIdx: number }}
  */
 export function buildHighlightsData(s, r) {
-  const events = (r.events || []).filter((e) => e.clubId === s.clubId || e.type === "goal");
+  // The highlights feed is the owned club's timeline; opponent goals remain
+  // represented by the running/final score instead of adding foreign event cards.
+  const events = (r.events || []).filter((e) => e.clubId === s.clubId);
   const first = events.filter((e) => e.min <= 45);
   const second = events.filter((e) => e.min > 45);
   const steps = [kickoffCard(s, r)];
