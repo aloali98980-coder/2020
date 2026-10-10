@@ -35,6 +35,8 @@ import { academyJourneyDay, dynastyGrowthDay, dynastyLifeDay } from "./dynasty.j
 import { dynastyEventDay } from "./dynastyEvents.js";
 import { siblingConflictDay } from "./dynastyCareers.js";
 import { politicsDay } from "./politics/day.js";
+import { bettingDay } from "./betting/day.js";
+import { stockMarketDay } from "./stockMarket/day.js";
 function eventsDay(s) {
   for (const e of s.events) {
     if (e.done || e.date > s.date) continue;
@@ -133,6 +135,8 @@ export function advanceTime(s, days = null) {
     flavorEventDay(s);
     clubEventDay(s);
     politicsDay(s);
+    bettingDay(s);
+    stockMarketDay(s);
     if (pendingActions(s).length) return { advanced, blocked: true };
     if (
       s.preferences.pauseMatches &&

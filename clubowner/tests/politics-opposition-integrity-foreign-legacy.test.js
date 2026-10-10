@@ -65,9 +65,9 @@ test("v29 migration fills governance fields neutrally and preserves existing int
   delete old.politics.legacy.trial.evidenceScore;
   delete old.politics.legacy.trial.response;
   const migrated = migrateSave(old);
-  assert.equal(SAVE_VERSION, 32);
+  assert.equal(SAVE_VERSION, 33);
   assert.equal(old.version, 29);
-  assert.equal(migrated.version, 32);
+  assert.equal(migrated.version, 33);
   assert.equal(migrated.politics.integrity.score, 76);
   assert.equal(migrated.politics.opposition.pressure, 21);
   assert.equal(migrated.politics.foreign.relations.CAF, 73);
