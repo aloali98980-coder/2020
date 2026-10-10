@@ -20,8 +20,8 @@ import { boardTextAr } from "../data/boardTexts.js";
 import { ensureStaffCorp } from "../services/staff/staffCorp.js";
 import { initPolitics } from "../services/politics/state.js";
 import { initEmpire, storyForOldSave } from "../services/empire/wealth.js";
-import { empireText } from "../data/empireTexts.js";
 import { initBetting } from "../services/betting/state.js";
+import { empireText } from "../data/empireTexts.js";
 function migrateToFive(input) {
   if (input?.version === 4) {
     const s = structuredClone(input);

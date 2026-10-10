@@ -28,6 +28,7 @@ import { FLAVOR_C } from "./events/flavor-rivals-refereeing-market.js";
 import { FLAVOR_DRAMA } from "./events/flavor-drama.js";
 import { FLAVOR_BLACK } from "./events/flavor-black.js";
 import { FLAVOR_EMPIRE } from "./events/flavor-empire.js";
+import { BETTING_DECISIONS } from "./events/decisions-betting.js";
 
 // ── الكتالوج الأصلي (0.18) — محفوظ كما هو لتوافق الحفظات ──────────────────
 export const LEGACY_DECISIONS = [
@@ -168,6 +169,7 @@ export const EVENT_CATALOG = [
   ...DRAMA_DECISIONS,
   ...BLACK_DECISIONS,
   ...EMPIRE_DECISIONS,
+  ...BETTING_DECISIONS,
 ];
 
 export const FLAVOR_CATALOG = [...FLAVOR_A, ...FLAVOR_B, ...FLAVOR_C, ...FLAVOR_DRAMA, ...FLAVOR_BLACK, ...FLAVOR_EMPIRE];
@@ -259,6 +261,7 @@ export const DECISION_GROUPS = Object.freeze([
   "media",
   "matchday",
   "empire",
+  "betting",
 ]);
 
 export const decisionById = (id) => EVENT_CATALOG.find((e) => e.id === id);

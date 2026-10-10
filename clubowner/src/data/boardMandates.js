@@ -90,6 +90,7 @@ export const ITEM_KINDS = {
   "youth-minutes": { axis: "development", critical: true, unit: "minutes", textKey: "itemYouthMinutes" },
   "facility-project": { axis: "development", critical: false, unit: "count", textKey: "itemFacilityProject" },
   "young-signing": { axis: "development", critical: false, unit: "age", textKey: "itemYoungSigning" },
+  "betting-ethics": { axis: "sporting", critical: true, unit: "count", textKey: "itemBettingEthics" },
 };
 export const AXES = ["sporting", "financial", "development"];
 export const AXIS_TEXT_KEYS = {
@@ -247,6 +248,10 @@ export function buildMandate(s, { seasonNumber, startDate, endDate, ambition, re
   });
   if (youthOf(s).length < 3) {
     items.push({ id: "young-signing", kind: "young-signing", target: 21, critical: false });
+  }
+  // بند أخلاقي للمراهنات: يظهر إذا كان النادي يملك شركة أو في 25% من الحالات كإجراء وقائي
+  if (s.betting?.owned || chance(`${s.clubId}:${seasonNumber}:betting-ethics`, 25)) {
+    items.push({ id: "betting-ethics", kind: "betting-ethics", target: 40, critical: true });
   }
 
   // المحور يُثبَّت على البند وقت التوليد (لا يُشتق وقت العرض) لأن الحفظة تخزّنه.

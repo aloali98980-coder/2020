@@ -4,6 +4,7 @@ import { ensureBetting, estimateMarketValue } from "./state.js";
 import { ensureEmpire, personalIncome } from "../empire/wealth.js";
 import { monthlyProfit, growCustomers, competitorAI } from "./management.js";
 import { regulatorTick } from "./compliance.js";
+import { bettingConflictDay } from "./conflict.js";
 
 export function bettingDay(s) {
   const b = ensureBetting(s);
@@ -50,6 +51,7 @@ export function bettingDay(s) {
 
   // المراجعة الرقابية والامتثال
   regulatorTick(s);
+  bettingConflictDay(s);
 
   // القيمة السوقية للاكتتاب لاحقًا
   estimateMarketValue(s);

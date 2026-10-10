@@ -270,7 +270,6 @@ import { executeYouthIntakeDecisions } from "./services/youthIntake.js";
 import { acceptDeadlineBid, declineDeadlineBid } from "./services/deadlineDay.js";
 import { blackFilesView } from "./features/blackFiles.js";
 import * as BlackService from "./services/blackFiles.js";
-import { bettingView } from "./features/betting.js";
 import * as ReleaseService from "./services/releaseClause.js";
 import { empireView } from "./features/empire.js";
 import {
@@ -376,7 +375,6 @@ function render() {
     press: () => pressView(s),
     black: () => blackFilesView(s),
     empire: () => empireView(s, ui.empireTab),
-    betting: () => bettingView(s),
     legends: () => legendsView(s, ui.legendFilters),
     dynasty: () => dynastyView(s),
     settings: () => settingsView(s),
@@ -1517,6 +1515,14 @@ const actions = {
     if (rv) rv.textContent = risk + "%";
     if (mv) mv.textContent = mult + "×";
     if (dv) dv.textContent = "~" + detect + "%";
+  },
+  "betting-sponsor-toggle": async () => {
+    const { sponsorLeagueToggle } = await import("./services/betting/conflict.js");
+    await apply((s) => sponsorLeagueToggle(s, !s.betting.sponsorLeague), tr("تم تحديث رعاية الدوري.", "League sponsorship updated.", "Parrainage de ligue mis à jour."));
+  },
+  "betting-regulate": async (el) => {
+    const { regulateBettingMarket } = await import("./services/betting/conflict.js");
+    await apply((s) => regulateBettingMarket(s, el.dataset.mode), tr("تم تحديث التشريع.", "Regulation updated.", "Réglementation mise à jour."));
   },
   more: async () =>
     openModal(

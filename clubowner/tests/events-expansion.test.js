@@ -577,6 +577,59 @@ addFixture("empireGambler", () =>
   }),
 );
 addFixture("gamblerFresh", () => createGame({ clubId: "ahly", database: "demo", ownerStory: "gambler" }));
+// ── تركيبات إمبراطورية المراهنات 0.36 ─────────────────────────────────────
+addFixture("bettingHigh", () =>
+  variant("variety", (s) => {
+    s.betting.owned = true;
+    s.betting.licenseTier = "global";
+    s.betting.name = { ar: "بت هاي", en: "Bet High", fr: "Bet High" };
+    s.betting.customers = 220_000;
+    s.betting.reputation = 85;
+    s.betting.branches = 4;
+    s.betting.onlineLevel = 4;
+    s.betting.sponsorLeague = true;
+    s.betting.compliance = { responsibleLevel: 2, auditRisk: 20, finesTotal: 0, suspensions: 0, nextAudit: addDays(s.date, 10) };
+    s.betting.pendingInsider = { amount: 500000, risk: 40, multiplier: 2.6, detectionChance: 0.3, fixtureId: s.fixtures[0].id, date: s.date, hasBribe: true };
+    s.blackFiles.suspicion = 65;
+    s.blackFiles.active.bribedOpponent = { fixtureId: s.fixtures[0].id, opponent: "zamalek", until: addDays(s.date, 5), date: s.date };
+    s.politics.office.held = true;
+    s.politics.office.since = s.date;
+    s.politics.office.legitimacy = 70;
+  }),
+);
+addFixture("bettingLow", () =>
+  variant("classic", (s) => {
+    s.betting.owned = true;
+    s.betting.licenseTier = "local";
+    s.betting.name = { ar: "بت لو", en: "Bet Low", fr: "Bet Low" };
+    s.betting.customers = 12_000;
+    s.betting.reputation = 25;
+    s.betting.branches = 1;
+    s.betting.onlineLevel = 1;
+    s.betting.sponsorLeague = false;
+    s.betting.compliance = { responsibleLevel: 0, auditRisk: 55, finesTotal: 6000000, suspensions: 1, nextAudit: addDays(s.date, 5) };
+    s.blackFiles.suspicion = 12;
+    s.politics.office.held = false;
+    // بلا رهان معلق — يختبر when hasPendingInsider
+    s.betting.pendingInsider = null;
+    s.blackFiles.active.bribedOpponent = null;
+  }),
+);
+addFixture("bettingMid", () =>
+  variant("classic", (s) => {
+    s.betting.owned = true;
+    s.betting.licenseTier = "continental";
+    s.betting.name = { ar: "بت ميد", en: "Bet Mid", fr: "Bet Mid" };
+    s.betting.customers = 80_000;
+    s.betting.reputation = 45;
+    s.betting.sponsorLeague = false;
+    s.betting.compliance = { responsibleLevel: 1, auditRisk: 35, finesTotal: 0, suspensions: 0, nextAudit: addDays(s.date, 40) };
+    s.blackFiles.suspicion = 35;
+    s.politics.office.held = false;
+    s.betting.licenseStatus = "suspended";
+    s.betting.suspensionUntil = addDays(s.date, 20);
+  }),
+);
 
 // ── ١) الحجم والمعرّفات ────────────────────────────────────────────────────
 test("1) الحجم المطلوب: ≥٥٠ حدث قرار و≥١٠٠ خبر نكهة، وكل المعرّفات فريدة وkebab-case", () => {

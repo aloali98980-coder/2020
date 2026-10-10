@@ -10,7 +10,6 @@ const LINKS = [
   { id: "dashboard", name: "مكتب المالك", icon: "home" },
   { id: "inbox", name: "البريد الوارد", icon: "inbox" },
   { id: "empire", name: "القصر", icon: "crown" },
-  { id: "betting", name: "إمبراطورية المراهنات", icon: "finance" },
   { id: "board", name: "الجمعية العمومية", icon: "crown" },
   { id: "politics", name: "رئاسة الاتحاد", icon: "crown" },
   { id: "black", name: "الملفات السوداء", icon: "shield" },
@@ -36,7 +35,7 @@ const byId = (id) => LINKS.find((l) => l.id === id);
 export const NAV_GROUPS = [
   {
     caption: "نظرة عامة",
-    items: ["dashboard", "inbox", "empire", "betting", "board", "black"],
+    items: ["dashboard", "inbox", "empire", "board", "black"],
   },
   {
     caption: "السياسة والحوكمة",

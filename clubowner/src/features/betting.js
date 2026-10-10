@@ -45,7 +45,7 @@ export function bettingView(s) {
             return `<div class="vehicle-card">
               <h4>${lang(tier.name)} — ${money(tier.fee + tier.setup)}</h4>
               <p class="muted">${lang(tier.desc)}</p>
-              <small>سمعة ≥ ${tier.minReputation} · شبهات < ${tier.maxSuspicion}% · صيانة ${money(tier.upkeep)}/${t("onlineLabel")}</small>
+              <small>سمعة ≥ ${tier.minReputation} · شبهات أقل من ${tier.maxSuspicion}% · صيانة ${money(tier.upkeep)}/${t("onlineLabel")}</small>
               <small>رسوم ترخيص ${money(tier.fee)} + تجهيز ${money(tier.setup)} · إطلاق ${tier.days} يوم</small>
               <button class="btn primary" data-action="betting-found" data-tier="${tier.id}" ${can ? "" : "disabled"}>${t("foundLabel")} ${lang(tier.name)}</button>
               ${can ? "" : `<small class="red">${t("needSuspicion")}</small>`}
@@ -109,7 +109,7 @@ export function bettingView(s) {
           const needSus = susp < tt.maxSuspicion;
           return `<div class="transfer-box">
             <h4>${lang(tt.name)}</h4>
-            <small>${money(tt.fee + tt.setup)} · سمعة ≥ ${tt.minReputation} · شبهات < ${tt.maxSuspicion}%</small>
+            <small>${money(tt.fee + tt.setup)} · سمعة ≥ ${tt.minReputation} · شبهات أقل من ${tt.maxSuspicion}%</small>
             ${isCurrent ? `<span class="badge gold">حالي</span>` : canUpgrade ? `<button class="btn secondary" data-action="betting-upgrade-license" data-tier="${id}" ${needRep && needSus ? "" : "disabled"}>ترقية</button>${!needRep ? `<small class="red">${t("needReputation")}</small>` : ""}${!needSus ? `<small class="red">${t("needSuspicion")}</small>` : ""}` : `<small class="muted">—</small>`}
           </div>`;
         }).join("")}
@@ -163,6 +163,25 @@ export function bettingView(s) {
             <strong>${t("responsibleLabel")} ${lvl} — ${RESPONSIBLE_COSTS[lvl] ? money(RESPONSIBLE_COSTS[lvl]) + "/شهر" : "بلا"}</strong>
             <small>${lvl === 0 ? "بلا حماية" : lvl === 1 ? "حماية أساسية" : lvl === 2 ? "تحمي الترخيص" : "احترافي — أقل مخاطر"}</small>
           </label>`).join("")}
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head"><h3>⚖️ تضارب المصالح</h3>${badge("تضارب " + (() => { let sc=0; if(b.licenseTier==="global") sc+=22; else if(b.licenseTier==="continental") sc+=14; else sc+=8; if(b.sponsorLeague) sc+=25; if(s.politics?.office?.held) sc+=30; return sc; })() + "/100", "")}</div>
+      <p class="muted">أنت رئيس الاتحاد وتنظم صناعة شركتك! جماهير متدينة تحتج 🌙 واللائحة تحمل بندًا أخلاقيًا.</p>
+      <div class="transfer-grid">
+        <div class="transfer-box">
+          <h4>رعاية الدوري</h4>
+          <p class="muted">${b.sponsorLeague ? "ترعى الدوري الذي تحكمه" : "لا رعاية حاليًا"}</p>
+          <button class="btn ${b.sponsorLeague ? "danger" : "primary"}" data-action="betting-sponsor-toggle">${b.sponsorLeague ? "إلغاء الرعاية" : "رعاية الدوري (4.2M)"}</button>
+        </div>
+        <div class="transfer-box">
+          <h4>التشريع — ربط مع 13</h4>
+          <p class="muted">تشدد على المنافسين؟ تخفف على نفسك؟</p>
+          <button class="btn secondary" data-action="betting-regulate" data-mode="tighten-on-rivals" ${s.politics?.office?.held ? "" : "disabled"}>تشديد على المنافسين</button>
+          <button class="btn secondary" data-action="betting-regulate" data-mode="loosen-for-self" ${s.politics?.office?.held ? "" : "disabled"}>تخفيف على نفسك</button>
+          ${!s.politics?.office?.held ? `<small class="muted">تحتاج رئاسة الاتحاد</small>` : ""}
+        </div>
       </div>
     </section>
 

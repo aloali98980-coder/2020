@@ -145,9 +145,9 @@ test("v30-to-v31 migration preserves political history and initializes the event
     lastMonth: "",
   };
   const migrated = migrateSave(old);
-  assert.equal(SAVE_VERSION, 31);
+  assert.equal(SAVE_VERSION, 32);
   assert.equal(old.version, 30);
-  assert.equal(migrated.version, 31);
+  assert.equal(migrated.version, 32);
   assert.equal(migrated.politics.legitimacy, 71);
   assert.equal(migrated.politics.foreign.relations.CAF, 66);
   assert.deepEqual(migrated.politics.eventState.history, []);
