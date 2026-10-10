@@ -1,6 +1,7 @@
 // شاشة «حياة الملياردير» 0.29 — اللعبة داخل اللعبة: ثروتان منفصلتان 💼💎،
 // معيشة، أصول، عائلة، استثمارات، منافسون، وخير.
 import { sportsCityView } from "./sportsCity.js";
+import { bettingView } from "./betting.js";
 import { icon } from "../components/icons.js";
 import { badge } from "../components/shared.js";
 import { money, num, cur, esc } from "../ui/format.js";
@@ -54,6 +55,7 @@ export const EMPIRE_TABS = [
   { id: "invest", key: "empireTabInvest", icon: "transfer" },
   { id: "rivals", key: "empireTabRivals", icon: "shield" },
   { id: "charity", key: "empireTabCharity", icon: "crown" },
+  { id: "betting", key: "betting", icon: "finance" },
   { id: "city", key: "empireTabCity", icon: "stadium" },
 ];
 
@@ -474,12 +476,14 @@ export function empireView(s, tab = "wealth") {
     <div class="empire-tabs" role="tablist">
       ${EMPIRE_TABS.map(
         (x) =>
-          `<button class="empire-tab ${active === x.id ? "active" : ""}" data-action="empire-tab" data-tab="${x.id}">${icon(x.icon, 16)} ${x.id === "city" ? tr("المدينة الرياضية", "Sports city", "Cité sportive") : t(x.key)}</button>`,
+          `<button class="empire-tab ${active === x.id ? "active" : ""}" data-action="empire-tab" data-tab="${x.id}">${icon(x.icon, 16)} ${x.id === "city" ? tr("المدينة الرياضية", "Sports city", "Cité sportive") : x.id === "betting" ? tr("شركة المراهنات", "Betting company", "Société de paris") : t(x.key)}</button>`,
       ).join("")}
     </div>
     <div class="empire-tab-body">${
       active === "city"
         ? sportsCityView(s)
+        : active === "betting"
+          ? bettingView(s)
         : active === "wealth"
         ? wealthTab(s)
         : active === "assets"

@@ -24,6 +24,7 @@ const LINKS = [
   { id: "sponsors", name: "الرعايات", icon: "sponsor" },
   { id: "commerce", name: "دخل النادي", icon: "finance" },
   { id: "finance", name: "الإدارة المالية", icon: "finance" },
+  { id: "market", name: "بورصة الأندية", icon: "finance" },
   { id: "world", name: "عالم الكرة", icon: "world" },
   { id: "legends", name: "قاعة الأساطير", icon: "crown" },
   { id: "dynasty", name: "الأجيال", icon: "crown" },
@@ -55,7 +56,7 @@ export const NAV_GROUPS = [
   },
   {
     caption: "الأعمال والمال",
-    items: ["facilities", "sponsors", "commerce", "finance"],
+    items: ["market", "facilities", "sponsors", "commerce", "finance"],
   },
   { caption: "عالم الكرة", items: ["world", "legends"] },
   { caption: "العائلة والإرث", items: ["dynasty"] },

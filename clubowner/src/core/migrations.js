@@ -21,6 +21,8 @@ import { ensureStaffCorp } from "../services/staff/staffCorp.js";
 import { initPolitics } from "../services/politics/state.js";
 import { initEmpire, storyForOldSave } from "../services/empire/wealth.js";
 import { initBetting } from "../services/betting/state.js";
+import { initStockMarket } from "../services/stockMarket/state.js";
+import { stockText } from "../data/stockMarketTexts.js";
 import { empireText } from "../data/empireTexts.js";
 function migrateToFive(input) {
   if (input?.version === 4) {
@@ -577,7 +579,7 @@ export function migrateSave31(input) {
 
 // 0.36 (save v32): إمبراطورية المراهنات — شركة مراهنات قابلة للشراء/التأسيس + سوق مراهنات عام.
 // الحفظات القديمة تُرحَّل تلقائيًا: لا شركة + سوق مراهنات يعمل، بلا كسر أي حفظ.
-export function migrateSave(input) {
+export function migrateSave32(input) {
   if (!input || input.version === 32) return input;
   const prior = input.version === 31 ? structuredClone(input) : migrateSave31(input);
   if (prior?.version !== 31) return prior;
@@ -588,6 +590,20 @@ export function migrateSave(input) {
   s.migrationNote =
     (s.migrationNote || "") +
     " إمبراطورية المراهنات 0.36: أُضيفت شركات مراهنات قابلة للشراء أو التأسيس بدرجات ترخيص وسمعة وامتثال، وسوق مراهنات عام يعمل دون الحاجة لشركة؛ الحفظة القديمة بلا شركة.";
+  return s;
+}
+
+// 0.37 (save v33): بورصة الأندية — أسعار أولية لكل أندية الحفظة ومحفظة فارغة.
+// لا يُخصم شيء من الثروة الشخصية أثناء الترحيل، ولا تتغير نتائج أو قوائم قديمة.
+export function migrateSave(input) {
+  if (!input || input.version === 33) return input;
+  const prior = input.version === 32 ? structuredClone(input) : migrateSave32(input);
+  if (prior?.version !== 32) return prior;
+  const s = prior;
+  s.version = 33;
+  initBetting(s);
+  initStockMarket(s);
+  s.migrationNote = (s.migrationNote || "") + " " + stockText("migrationNote");
   return s;
 }
 
