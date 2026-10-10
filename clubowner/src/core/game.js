@@ -20,7 +20,8 @@ import { initBlackFiles } from "../services/blackFiles.js";
 import { ensureReleaseClause } from "../services/releaseClause.js";
 import { ensureStaffCorp } from "../services/staff/staffCorp.js";
 import { initPolitics } from "../services/politics/state.js";
-export const SAVE_VERSION = 31;
+import { initBetting } from "../services/betting/state.js";
+export const SAVE_VERSION = 32;
 export function createGame({
   clubId = "ahly",
   owner = "مالك النادي",
@@ -185,5 +186,7 @@ export function createGame({
   ensureStaffCorp(s);
   // 0.31: رئاسة الاتحاد — خريطة محايدة وحملة مؤجلة أربع مواسم.
   initPolitics(s);
+  // 0.36: إمبراطورية المراهنات — لا شركة افتراضيًا، سوق يعمل، تمويل من الثروة الشخصية.
+  initBetting(s);
   return s;
 }

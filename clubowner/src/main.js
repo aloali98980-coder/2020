@@ -270,6 +270,7 @@ import { executeYouthIntakeDecisions } from "./services/youthIntake.js";
 import { acceptDeadlineBid, declineDeadlineBid } from "./services/deadlineDay.js";
 import { blackFilesView } from "./features/blackFiles.js";
 import * as BlackService from "./services/blackFiles.js";
+import { bettingView } from "./features/betting.js";
 import * as ReleaseService from "./services/releaseClause.js";
 import { empireView } from "./features/empire.js";
 import {
@@ -375,6 +376,7 @@ function render() {
     press: () => pressView(s),
     black: () => blackFilesView(s),
     empire: () => empireView(s, ui.empireTab),
+    betting: () => bettingView(s),
     legends: () => legendsView(s, ui.legendFilters),
     dynasty: () => dynastyView(s),
     settings: () => settingsView(s),
@@ -1453,6 +1455,39 @@ const actions = {
       (s) => startCharityProject(s, el.dataset.id),
       "بدأ العمل في مشروعك الخيري.",
     );
+  },
+  "betting-buy": async (el) => {
+    const { buyBettingCompany } = await import("./services/betting/state.js");
+    await apply((s) => buyBettingCompany(s, el.dataset.id), tr("اشتريت شركة مراهنات.", "Betting company acquired.", "Société de paris acquise."));
+  },
+  "betting-found": async (el) => {
+    const { foundBettingCompany } = await import("./services/betting/state.js");
+    await apply((s) => foundBettingCompany(s, el.dataset.tier), tr("تأسست شركتك الجديدة.", "Your new company was founded.", "Votre nouvelle société a été fondée."));
+  },
+  "betting-upgrade-license": async (el) => {
+    const { upgradeLicense } = await import("./services/betting/state.js");
+    await apply((s) => upgradeLicense(s, el.dataset.tier), tr("تمت ترقية الترخيص.", "Licence upgraded.", "Licence améliorée."));
+  },
+  "betting-up-branch": async () => {
+    const { upgradeBranches } = await import("./services/betting/state.js");
+    await apply((s) => {
+      const b = s.betting;
+      if (!b) throw new Error("لا شركة");
+      return upgradeBranches(s, b.branches + 1);
+    }, tr("تمت توسعة الفروع.", "Branches expanded.", "Agences étendues."));
+  },
+  "betting-up-online": async () => {
+    const { upgradeOnline } = await import("./services/betting/state.js");
+    await apply((s) => {
+      const b = s.betting;
+      if (!b) throw new Error("لا شركة");
+      return upgradeOnline(s, b.onlineLevel + 1);
+    }, tr("تم تطوير المنصة.", "Platform upgraded.", "Plateforme améliorée."));
+  },
+  "betting-marketing-slide": async (el) => {
+    // تحديث فوري لحقل العرض فقط
+    const v = document.getElementById("betting-marketing-val");
+    if (v) v.textContent = el.value;
   },
   more: async () =>
     openModal(

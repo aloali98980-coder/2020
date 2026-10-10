@@ -21,6 +21,7 @@ import { ensureStaffCorp } from "../services/staff/staffCorp.js";
 import { initPolitics } from "../services/politics/state.js";
 import { initEmpire, storyForOldSave } from "../services/empire/wealth.js";
 import { empireText } from "../data/empireTexts.js";
+import { initBetting } from "../services/betting/state.js";
 function migrateToFive(input) {
   if (input?.version === 4) {
     const s = structuredClone(input);
@@ -560,7 +561,7 @@ function migrateSaveToThirty(input) {
 }
 
 // 0.35 (save v31): recurring, choice-driven political events.
-export function migrateSave(input) {
+export function migrateSave31(input) {
   if (!input || input.version === 31) return input;
   const prior =
     input.version === 30 ? structuredClone(input) : migrateSaveToThirty(input);
@@ -571,6 +572,22 @@ export function migrateSave(input) {
   s.migrationNote =
     (s.migrationNote || "") +
     " رئاسة الاتحاد 0.35: أُضيفت أحداث سياسية تفاعلية متجددة وسجل خياراتها، مع الحفاظ على قراراتك وسجلاتك السابقة.";
+  return s;
+}
+
+// 0.36 (save v32): إمبراطورية المراهنات — شركة مراهنات قابلة للشراء/التأسيس + سوق مراهنات عام.
+// الحفظات القديمة تُرحَّل تلقائيًا: لا شركة + سوق مراهنات يعمل، بلا كسر أي حفظ.
+export function migrateSave(input) {
+  if (!input || input.version === 32) return input;
+  const prior = input.version === 31 ? structuredClone(input) : migrateSave31(input);
+  if (prior?.version !== 31) return prior;
+  const s = prior;
+  s.version = 32;
+  initPolitics(s);
+  initBetting(s);
+  s.migrationNote =
+    (s.migrationNote || "") +
+    " إمبراطورية المراهنات 0.36: أُضيفت شركات مراهنات قابلة للشراء أو التأسيس بدرجات ترخيص وسمعة وامتثال، وسوق مراهنات عام يعمل دون الحاجة لشركة؛ الحفظة القديمة بلا شركة.";
   return s;
 }
 
