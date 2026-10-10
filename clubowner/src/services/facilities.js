@@ -2,6 +2,7 @@ import { FACILITIES } from "../data/catalog.js";
 import { assert, uid, addDays } from "../core/utils.js";
 import { post, obligation } from "./finance.js";
 import { message } from "./inbox.js";
+import { addInsideInformation } from "./stockMarket/insider.js";
 export function projectQuote(f, fast = false) {
   const base = FACILITIES.find((x) => x.id === f.id);
   return {
@@ -49,6 +50,14 @@ export function startProject(s, id, fast = false) {
     body: `تم دفع ٤٠٪. الاستلام المتوقع ${project.end} مع سداد الباقي وإضافة تكلفة التشغيل.`,
     category: "facilities",
   });
+  if (s.stockMarket)
+    addInsideInformation(s, {
+      clubId: s.clubId,
+      kind: "facility",
+      publicOn: project.end,
+      sourceRef: `facility:${project.id}`,
+      source: "construction-office",
+    });
 }
 export function toggleFacilityStaff(s, id) {
   const f = s.facilities.find((x) => x.id === id);

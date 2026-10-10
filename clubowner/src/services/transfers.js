@@ -7,9 +7,11 @@ import { message, closeThread } from "./inbox.js";
 import { post, obligation, wages } from "./finance.js";
 import { assertTransfersAllowed } from "./boardMandate.js";
 import { isTransferBanned } from "./blackFiles.js";
+import { addInsideInformation } from "./stockMarket/insider.js";
 export function submitOffer(s, playerId, terms) {
   assertTransfersAllowed(s);
-  if (isTransferBanned(s)) throw new Error("منع قيد سارٍ — لا عمليات انتقال حتى ينتهي الحظر.");
+  if (isTransferBanned(s))
+    throw new Error("منع قيد سارٍ — لا عمليات انتقال حتى ينتهي الحظر.");
   const p = s.players.find((p) => p.id === playerId);
   assertMarket(s, p);
   assert(!p?.loan, "اللاعب مُعار؛ لا يمكن شراء عقده في هذا النموذج.");
@@ -64,15 +66,31 @@ export function submitOffer(s, playerId, terms) {
     category: "transfers",
     ref: n.id,
   });
+  // خبر الصفقة لا يزال داخل غرفة التفاوض؛ البورصة لن تراه قبل الإعلان.
+  if (s.stockMarket)
+    addInsideInformation(s, {
+      clubId: s.clubId,
+      kind: "transfer",
+      magnitude: 1 + Math.min(2, n.fee / 30_000_000),
+      publicOn: addDays(s.date, 3),
+      sourceRef: `negotiation:${n.id}`,
+      source: "private-negotiation",
+    });
   return n;
 }
 export function transferReply(s, id) {
   const n = s.negotiations.find((x) => x.id === id);
   if (!n || n.stage !== "waiting") return;
   const p = s.players.find((x) => x.id === n.playerId);
-  const relations = clamp(s.dynasty?.ownerBonuses?.playerRelations || 0, 0, 100);
+  const relations = clamp(
+    s.dynasty?.ownerBonuses?.playerRelations || 0,
+    0,
+    100,
+  );
   const acceptanceThreshold =
-    p.value * clamp(0.93 - relations / 100, 0.75, 0.93) * difficulty(s).transfer;
+    p.value *
+    clamp(0.93 - relations / 100, 0.75, 0.93) *
+    difficulty(s).transfer;
   n.counter =
     p.contractTerms?.releaseClause > 0 && n.fee >= p.contractTerms.releaseClause
       ? n.fee
@@ -168,7 +186,15 @@ export function signPlayer(s, id, terms) {
   n.seller = n.seller || p.clubId;
   if (Object.hasOwn(s.expansion?.budgets || {}, n.seller))
     s.expansion.budgets[n.seller] += upfront;
-  post(s, -upfront, "transfer", n.kind === "release-clause" ? `كسر شرط جزائي ${p.name}` : `مقدم شراء ${p.name}`, n.id + "-fee");
+  post(
+    s,
+    -upfront,
+    "transfer",
+    n.kind === "release-clause"
+      ? `كسر شرط جزائي ${p.name}`
+      : `مقدم شراء ${p.name}`,
+    n.id + "-fee",
+  );
   post(s, -agent, "agent", `عمولة وكيل ${p.name}`, n.id + "-agent");
   post(s, -terms.bonus, "signing", `مكافأة توقيع ${p.name}`, n.id + "-bonus");
   if (n.kind === "release-clause") n.clausePaid = true;

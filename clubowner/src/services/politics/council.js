@@ -1,6 +1,8 @@
 import { POLITICAL_LAWS } from "../../data/politicsLaws.js";
+import { addDays } from "../../core/utils.js";
 import { getLanguage, tr } from "../../i18n/index.js";
 import { message } from "../inbox.js";
+import { addInsideInformation } from "../stockMarket/insider.js";
 import { associationDevelopmentGrant } from "./associationFinance.js";
 import { adjustClubSupport, ensurePolitics } from "./state.js";
 
@@ -77,6 +79,14 @@ export function proposeBill(s, lawId) {
     outcome: null,
   };
   p.council.currentBill = bill;
+  if (s.stockMarket)
+    addInsideInformation(s, {
+      clubId: s.clubId,
+      kind: "federation-law",
+      publicOn: addDays(s.date, 7),
+      sourceRef: `bill:${bill.id}`,
+      source: "federation-presidency",
+    });
   return bill;
 }
 

@@ -1,6 +1,21 @@
-// إيقاع البورصة 0.37 — تحديث الأسعار في أول كل شهر دون التأثير في عشوائية المباريات.
+// إيقاع البورصة 0.37 — الأسرار، التسعير، التوزيعات، ثم عين الهيئة الرقابية.
 import { updateStockPrices } from "./engine.js";
+import {
+  publishDueInsideInformation,
+  refreshInsideKnowledge,
+} from "./insider.js";
+import { marketRegulationDay } from "./regulation.js";
+import { settlePortfolioDividends } from "./trading.js";
 
 export function stockMarketDay(s) {
-  return updateStockPrices(s);
+  refreshInsideKnowledge(s);
+  publishDueInsideInformation(s);
+  const pricing = updateStockPrices(s);
+  const dividends = pricing.updated
+    ? settlePortfolioDividends(s, pricing.month)
+    : null;
+  const regulation = marketRegulationDay(s);
+  return pricing.updated
+    ? { ...pricing, dividends, regulation }
+    : { ...pricing, regulation };
 }
