@@ -21,6 +21,8 @@ const SKIP = [
   /src\/data\/politicsCommittees\.js/,
   /src\/data\/politicsGovernance\.js/,
   /src\/data\/politicsEvents\.js/,
+  // Club-empire event records store explicit {ar,en,fr} objects.
+  /src\/data\/clubEmpireEvents\.js/,
 ];
 const files = [];
 (function walk(dir) {

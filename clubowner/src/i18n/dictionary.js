@@ -1087,4 +1087,8 @@ export const DICTIONARY = {
   ],
   "تعذر تنفيذ الإيداع": ["Could not complete the deposit.", "Impossible d’effectuer le dépôt."],
   "الخزنة السرية": ["The secret vault", "Le coffre secret"],
+  "إمبراطور الأندية 0.38: سوق الأندية يعمل ومحفظتك تبدأ بلا أندية إضافية؛ لم تتغير أموالك أو نتائجك": [
+    "Club Empire 0.38: the club market is active and your additional-club portfolio starts empty; your money and results are unchanged.",
+    "Empire des clubs 0.38 : le marché est actif et votre portefeuille de clubs supplémentaires est vide ; votre argent et vos résultats sont inchangés.",
+  ],
 };
