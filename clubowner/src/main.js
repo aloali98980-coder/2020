@@ -181,7 +181,8 @@ import {
   negotiateSponsor,
   answerSponsorDeal,
 } from "./services/sponsors.js";
-import { takeLoan, wages, secretDeposit } from "./services/finance.js";
+import { takeLoan, wages } from "./services/finance.js";
+import { vaultMove, VAULT_AMOUNTS, VAULT_TAPS, VAULT_TAP_WINDOW_MS, ensureVault } from "./services/vault.js";
 import { setupView } from "./features/setup.js";
 import { shell, NAV_GROUPS, NAV_BY_ID, navLabel } from "./components/shell.js";
 import { dashboardView } from "./features/dashboard.js";
@@ -709,6 +710,33 @@ function authModalContent(activeTab = "login", error = "") {
   `}`;
 }
 
+
+// ── الخزنة الموحدة: نافذة التحويل + دفتر الحركات الأخيرة ──────────────────
+let vaultTaps = [];
+function vaultModalHtml() {
+  const s = getState();
+  const log = s ? ensureVault(s).log : [];
+  const amountRow = (to) =>
+    VAULT_AMOUNTS.map((a) =>
+      button(`${money(a)} ${cur()}`, "vault-move", `${to}:${a}`, a >= 1_000_000_000 ? "primary" : "soft"),
+    ).join("");
+  const rows = log.length
+    ? log
+        .slice(0, 8)
+        .map(
+          (e) =>
+            `<li><span>${e.date}</span><span>${e.to === "club" ? tr("← إلى النادي", "→ to the club", "→ au club") : tr("→ إلى الشخصية", "→ to personal", "→ au personnel")}</span><b>${money(e.amount)} ${cur()}</b></li>`,
+        )
+        .join("")
+    : `<li class="muted">${tr("لا حركات بعد.", "No movements yet.", "Aucun mouvement pour l’instant.")}</li>`;
+  return `<h2>${tr("الخزنة الموحدة 🤫", "The unified vault 🤫", "Le coffre unifié 🤫")}</h2>
+    <p class="muted">${tr("تحويل داخلي بين خزينة النادي وخزنتك الشخصية. بلا حد شهري وبلا عقوبة.", "An internal transfer between the club treasury and your personal vault. No monthly cap and no penalty.", "Un transfert interne entre la trésorerie du club et votre coffre personnel. Sans plafond mensuel ni pénalité.")}</p>
+    <div class="vault-dest"><strong>${tr("إلى خزينة النادي", "To the club treasury", "Vers la trésorerie du club")}</strong><div class="modal-actions vault-grid">${amountRow("club")}</div></div>
+    <div class="vault-dest"><strong>${tr("إلى الخزنة الشخصية", "To your personal vault", "Vers votre coffre personnel")}</strong><div class="modal-actions vault-grid">${amountRow("personal")}</div></div>
+    <h3>${tr("الدفتر", "Ledger", "Registre")}</h3><ul class="vault-log">${rows}</ul>
+    <div class="modal-actions">${button(tr("إغلاق الخزنة", "Close the vault", "Fermer le coffre"), "modal-close", "", "ghost")}</div>`;
+}
+
 const actions = {
   "market-tab": (el) => {
     ui.marketTab = el.dataset.id || "overview";
@@ -945,17 +973,25 @@ const actions = {
     render();
     document.querySelector(".market-focus-card")?.scrollIntoView({ behavior: "smooth", block: "start" });
   },
-  // خزنة المالك السرية: مفاتيحها أرقام الإصدار (أسفل القائمة الجانبية + سطر EMPIRE FC في شيت «المزيد» + شارة «عن اللعبة»).
-  "secret-vault": () =>
-    openModal(
-      `<h2>${tr("خزنة المالك السرية 🤫", "The owner's secret vault 🤫", "Le coffre secret du propriétaire 🤫")}</h2><p class="muted">${tr("إيداع فوري بفلوس تجريبية لمن يعرف المكان. يُسجَّل في الدفاتر مثل أي تدفق نقدية فتبقى الإدارة المالية صادقة.", "An instant injection of play money for those who know the spot. It is posted to the ledger like any cash flow, so the books stay honest.", "Une injection instantanée d’argent fictif pour qui connaît l’endroit. Inscrite au registre comme tout flux, la comptabilité reste honnête.")}</p><div class="modal-actions vault-grid">${button(`${money(10000000)} ${cur()}`, "vault-deposit", "10000000", "soft")}${button(`${money(100000000)} ${cur()}`, "vault-deposit", "100000000", "secondary")}${button(`${money(1000000000)} ${cur()}`, "vault-deposit", "1000000000", "primary")}</div><div class="modal-actions">${button(tr("إغلاق الخزنة", "Close the vault", "Fermer le coffre"), "modal-close", "", "ghost")}</div>`,
-    ),
-  "vault-deposit": async (el) => {
-    const amount = Number(el.dataset.id);
-    await apply((s) => secretDeposit(s, amount));
+  // الخزنة الموحدة 0.43: تُفتح بخمس نقرات متتالية خلال 3 ثوانٍ على شارة الإصدار (لا نقرة واحدة).
+  "secret-vault": () => {
+    const now = Date.now();
+    vaultTaps = vaultTaps.filter((t) => now - t <= VAULT_TAP_WINDOW_MS);
+    vaultTaps.push(now);
+    if (vaultTaps.length < VAULT_TAPS) return;
+    vaultTaps = [];
+    openModal(vaultModalHtml());
+  },
+  "vault-move": async (el) => {
+    const [to, amountRaw] = String(el.dataset.id).split(":");
+    const amount = Number(amountRaw);
+    await apply((s) => vaultMove(s, { to, amount }));
     toast(
-      `${tr("تم إيداع", "Deposited", "Déposé")} ${money(amount)} ${cur()} ${tr("في خزينة النادي 🤫", "into the club treasury 🤫", "dans la trésorerie du club 🤫")}`,
+      to === "club"
+        ? `${tr("تم تحويل", "Moved", "Transféré")} ${money(amount)} ${cur()} ${tr("إلى خزينة النادي", "to the club treasury", "vers la trésorerie du club")}`
+        : `${tr("تم تحويل", "Moved", "Transféré")} ${money(amount)} ${cur()} ${tr("إلى خزنتك الشخصية", "to your personal vault", "vers votre coffre personnel")}`,
     );
+    openModal(vaultModalHtml());
   },
   "modal-close": () => closeModal(),
   "instant-friendly": async () => {
