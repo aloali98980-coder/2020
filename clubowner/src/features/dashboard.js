@@ -17,6 +17,7 @@ import { netWorth } from "../services/empire/wealth.js";
 import { dismissalRisk } from "../services/empire/transfers.js";
 import { pendingActions } from "../services/inbox.js";
 import { sortedTable } from "../services/matches.js";
+import { morningHeadlines } from "../services/morningHeadlines.js";
 import { FACILITIES } from "../data/catalog.js";
 
 // تفاصيل ثانوية خلف ⓘ: لا تزاحم الشاشة، وتُفتح بنقرة.
@@ -182,6 +183,7 @@ export function dashboardView(s) {
   )}
   ${alertsView(s, deadline, pending)}
   ${onboardingView(s)}
+  ${headlinesView(s)}
   ${tiles}
   <div class="dash-grid">
     ${nextWidget}
@@ -192,6 +194,37 @@ export function dashboardView(s) {
     ${empireCardView(s)}
     ${conditional}
   </div>`;
+}
+
+// عناوين الصباح 📰: 5–7 أخبار مرتبة، كل واحد سطر يُقرأ في دقيقة. الفارغ لا يظهر.
+const HEADLINE_KIND = () => ({
+  decision: tr("قرار", "Decision", "Décision"),
+  match: tr("نتيجة", "Result", "Résultat"),
+  fixture: tr("قريبًا", "Soon", "Bientôt"),
+  press: tr("صحافة", "Press", "Presse"),
+  mail: tr("بريد", "Mail", "Courrier"),
+});
+function headlinesView(s) {
+  const items = morningHeadlines(s);
+  if (!items.length) return "";
+  const kinds = HEADLINE_KIND();
+  const rows = items
+    .map((h) => {
+      const attrs =
+        h.kind === "decision" || h.kind === "mail"
+          ? `data-action="open-message" data-id="${h.ref}"`
+          : h.kind === "match"
+            ? `data-action="match-report" data-id="${h.ref}"`
+            : "";
+      const inner = `<span class="badge outline">${kinds[h.kind]}</span><span>${esc(h.title)}</span><small class="muted">${shortDate(h.date)}</small>`;
+      return attrs ? `<button class="headline-row" ${attrs}>${inner}</button>` : `<div class="headline-row">${inner}</div>`;
+    })
+    .join("");
+  return `<section class="panel dash-widget headlines-card" data-widget="headlines">
+    <div class="panel-head"><h3>📰 ${tr("عناوين الصباح", "Morning headlines", "Gros titres du matin")}</h3>${info(`${tr("أهم", "The top", "Les")} ${num(items.length)} ${tr("أخبار لليوم، مرتبة بالأولوية: القرارات أولًا، ثم النتائج والمباريات القريبة، ثم الصحافة والبريد.", "stories of the day, ranked: decisions first, then results and near fixtures, then press and mail.", "infos du jour, classées : décisions d’abord, puis résultats et matchs proches, puis presse et courrier.")}`)}</div>
+    <div class="headlines-list">${rows}</div>
+    <button class="dash-widget-link" data-nav="inbox">${tr("كل البريد", "All mail", "Toute la boîte")} ${icon("arrow", 14)}</button>
+  </section>`;
 }
 
 // بطاقة القصر: رابط واحد داخلي (زر) بلا عنصر تفاعلي متداخل.

@@ -3095,3 +3095,14 @@ body.reduce-motion .hl-progress span { transition: none !important; }
     min-width: 42%;
   }
 }
+
+/* الدفعة 7 §2: عناوين الصباح — سطر واحد لكل خبر، يلتف على الشاشات الصغيرة. */
+.headlines-list { display: grid; gap: 6px; }
+.headline-row {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px;
+  width: 100%; padding: 8px 10px; border-radius: 10px; text-align: start;
+  background: transparent; border: 1px solid var(--line, rgba(127,127,127,.2)); color: inherit; font: inherit;
+}
+button.headline-row { cursor: pointer; }
+.headline-row > span:nth-child(2) { flex: 1 1 160px; min-width: 0; overflow-wrap: anywhere; }
+.headline-row small { white-space: nowrap; }
