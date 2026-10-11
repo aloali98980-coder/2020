@@ -228,6 +228,8 @@ import { legendLogView } from "./features/legendLog.js";
 import { seasonHarvestView } from "./features/seasonHarvest.js";
 import { markAbsenceSeen } from "./services/absence.js";
 import { setNotify } from "./services/settingsHub.js";
+import { setSectionInfoHidden, showAllSectionInfo } from "./services/sectionInfo.js";
+import { sectionInfoCard } from "./features/sectionInfo.js";
 import {
   irreversibleWarning,
   startVacation,
@@ -471,7 +473,11 @@ function render() {
     database: () => databaseView(),
     careers: () => careersView(s, ui.talentPlayer),
   };
-  app.innerHTML = shell(s, ui.route, (views[ui.route] || views.dashboard)());
+  app.innerHTML = shell(
+    s,
+    ui.route,
+    `${sectionInfoCard(s, ui.route)}${(views[ui.route] || views.dashboard)()}`,
+  );
   if (ui.route !== lastRenderedRoute)
     app.querySelector("#main-content")?.classList.add("page-enter");
   lastRenderedRoute = ui.route;
@@ -1093,6 +1099,9 @@ const actions = {
     if (draw) openModal(cupDrawModal(s, draw), true);
   },
   "go-awards": async () => navigate("awards"),
+  // 0.46 (القسم 7): إخفاء بطاقة التعريف لقسم، وإعادتها كلها من الإعدادات.
+  "info-hide": async (el) => apply((state) => setSectionInfoHidden(state, el.dataset.id, true)),
+  "info-show-all": async () => apply((state) => showAllSectionInfo(state), tr("تمت إعادة بطاقات الشرح.", "Info cards are back.", "Cartes d'information rétablies.")),
   // 0.46: «تم الاطلاع» يحدّث آخر زيارة فيختفي الملخص حتى غياب جديد.
   "absence-seen": async () => apply((state) => markAbsenceSeen(state)),
   // 0.46: وضع الإجازة وتقرير العودة.

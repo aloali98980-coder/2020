@@ -238,6 +238,11 @@ export function settingsView(s) {
       <div class="preference-row"><div><strong>${tr("ملخص «ماذا فاتك؟»", "“What did you miss?” summary", "Résumé « Ce que vous avez manqué »")}</strong></div>
         <label class="switch"><input type="checkbox" id="notify-absence" ${notifyEnabled(s, "absence") ? "checked" : ""}><span></span></label></div>
     </section>
+    <section class="panel settings-panel info-cards-panel">
+      <div class="panel-head"><h3>${icon("info")} ${tr("بطاقات الشرح", "Info cards", "Cartes d'information")}</h3></div>
+      <p class="muted">${tr("أخفيتها من أقسامها بزر «لا تظهر». يمكنك إعادتها كلها هنا.", "You hid some from their sections with “Hide”. You can bring them all back here.", "Vous en avez masqué depuis leurs sections avec « Masquer ». Vous pouvez toutes les rétablir ici.")}</p>
+      <button class="btn secondary" data-action="info-show-all">${tr("إظهار كل بطاقات الشرح", "Show all info cards", "Afficher toutes les cartes")}</button>
+    </section>
     <section class="panel settings-panel about-panel">
       <div class="panel-head">
         <h3>${icon("info")} ${tr("عن اللعبة", "About the game", "À propos du jeu")}</h3>
