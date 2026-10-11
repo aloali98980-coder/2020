@@ -12,7 +12,7 @@ import { sportingDirector, autoCap, effectiveFreedom, sportingDelegationActive }
 import { gkSkillOf, fitnessSkillOf, doctorSkillOf, fitnessFactor, gkGainBonus } from "../services/staff/effects.js";
 import { academyManagerSkill, academyPotentialBonus, academyScoutBonus } from "../services/staff/academy.js";
 import { sponsorMood } from "../services/staff/marketing.js";
-import { socialState, onlineShirtMultiplier } from "../services/staff/social.js";
+import { socialState, onlineShirtMultiplier, SOCIAL_PLATFORMS } from "../services/staff/social.js";
 import { legalSettlementCost } from "../services/staff/legal.js";
 import { financeOfficeSnapshot } from "../services/staff/financeOffice.js";
 import { ASSETS } from "../data/catalog.js";
@@ -364,6 +364,8 @@ function socialTab(s, lang) {
   }).join("");
   return `<h3>${l("السوشيال ميديا", "Social media", "Réseaux sociaux")}</h3>
     <div class="staff-metric-grid"><div class="staff-metric"><small>${l("المتابعون", "Followers", "Abonnés")}</small><strong>${num(st.followers)}</strong></div><div class="staff-metric"><small>${l("التفاعل", "Engagement", "Engagement")}</small><strong>${num(st.engagement)}%</strong></div><div class="staff-metric"><small>${l("مضاعف طلب القمصان", "Shirt-demand multiplier", "Multiplicateur de demande de maillots")}</small><strong>×${onlineShirtMultiplier(s).toFixed(2)}</strong></div></div>
+    <div class="social-platforms">${SOCIAL_PLATFORMS.map((pl) => `<div class="staff-metric"><small>${pl.name}</small><strong data-no-translate>${esc(pl.handle)}</strong><span>${num(st.platforms?.[pl.id] ?? Math.round((st.followers * pl.share) / 100))}</span></div>`).join("")}</div>
+    <p class="muted">${l("النشر التلقائي للروتيني شهريًا، والكبرى (ديربي، لقب، تعاقد نجم) تُنشر يدويًا من هنا.", "Routine posts go out automatically each month; major moments (derby, title, star signing) are published manually from here.", "Les publications de routine partent automatiquement chaque mois ; les moments clés (derby, titre, signature d’une star) se publient manuellement ici.")}</p>
     <h4>${l("نشر محتوى", "Publish content", "Publier du contenu")}</h4><div class="social-content-grid">${content}</div>
     <div class="social-derby"><strong>${l("حملة جماهيرية قبل الديربي", "Derby fan campaign", "Campagne avant le derby")}</strong><p>${nearMatch ? `${l("الموعد القريب", "Upcoming fixture", "Prochain match")}: ${esc(nearMatch.date)}` : l("لا ديربي خلال 7 أيام.", "No derby in the next 7 days.", "Aucun derby dans les 7 prochains jours.")}</p><button class="btn small primary" data-action="staff-social-derby" ${!nearMatch || derbyUsed || s.finance.cash < 300000 ? "disabled" : ""}>${l("إطلاق حملة الديربي", "Launch derby campaign", "Lancer la campagne du derby")} · ${money(300000)}</button>${derbyUsed ? `<small>${l("أطلقت حملة لهذا الديربي بالفعل.", "A campaign is already booked for this derby.", "Une campagne est déjà prévue pour ce derby.")}</small>` : ""}</div>
     ${crisis}<h4>${l("آخر المنشورات", "Recent posts", "Publications récentes")}</h4><ul class="staff-log">${posts || `<li>${l("لا منشورات بعد.", "No posts yet.", "Aucune publication.")}</li>`}</ul>`;

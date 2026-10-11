@@ -4,6 +4,31 @@ import { closeThread, message } from "../inbox.js";
 import { post } from "../finance.js";
 import { SOCIAL_CONTENTS, SOCIAL_CRISES } from "../../data/staffCatalog.js";
 import { ensureStaffCorp, corpSkill, srng } from "./staffCorp.js";
+import { tr } from "../../i18n/index.js";
+
+// 0.44 (القسم 5): المنصات الثلاث بأسمائها الحقيقية، وحسابات النادي الخيالية عليها.
+// توزيع المتابعين بين المنصات ثابت ويجمع إلى 100%.
+export const SOCIAL_PLATFORMS = Object.freeze([
+  { id: "x", name: "X", handle: "@EmpireFC", share: 40 },
+  { id: "instagram", name: "Instagram", handle: "@empire.fc", share: 35 },
+  { id: "tiktok", name: "TikTok", handle: "@empirefc_official", share: 25 },
+]);
+// المحتوى الروتيني ينشر تلقائيًا كل شهر. المحتوى الكبير (ديربي/لقب/تعاقد نجم) يُنشر يدويًا فقط.
+export const AUTO_ROUTINE_COST = 40_000;
+export const SPONSOR_PER_THOUSAND = 300;
+export const SPONSOR_MIN_FOLLOWERS = 100_000;
+
+export function platformSplit(total) {
+  const out = {};
+  let left = Math.max(0, Math.round(total));
+  SOCIAL_PLATFORMS.forEach((p, i) => {
+    const part = i === SOCIAL_PLATFORMS.length - 1 ? left : Math.round((Math.max(0, total) * p.share) / 100);
+    out[p.id] = part;
+    left -= part;
+  });
+  return out;
+}
+
 
 export const socialState = (s) => ensureStaffCorp(s).social;
 function ensureCrisisId(s, crisis) {
@@ -119,6 +144,20 @@ export function socialMonth(s) {
   const st = socialState(s);
   st.followers += s.reputation * 50;
   st.engagement = clamp(st.engagement + (st.engagement < 50 ? 3 : -3), 0, 100);
+  st.platforms = platformSplit(st.followers);
+  // النشر التلقائي للروتيني فقط: كلفة صغيرة وأثر صغير، والكبرى تبقى يدوية.
+  if (s.finance.cash >= AUTO_ROUTINE_COST) {
+    post(s, -AUTO_ROUTINE_COST, "social-content", tr("نشر تلقائي روتيني", "Routine auto-post", "Publication automatique de routine"), uid(s, "social-auto") + s.date);
+    st.autoPosts = (Number(st.autoPosts) || 0) + 1;
+    st.engagement = clamp(st.engagement + 1, 0, 100);
+  }
+  // الرعاة يدفعون حسب المتابعين والتفاعل (دخل متحقق، لا رقم ثابت).
+  if (st.followers >= SPONSOR_MIN_FOLLOWERS && st.engagement >= 30) {
+    const sponsor = Math.round((Math.min(st.followers, 5_000_000) / 1000) * SPONSOR_PER_THOUSAND * (st.engagement / 100));
+    if (sponsor > 0) {
+      post(s, sponsor, "social-sponsor", tr("رعاية رقمية بالمتابعين", "Digital sponsorship by followers", "Parrainage numérique selon les abonnés"), "soc-sponsor" + s.date);
+    }
+  }
   // مبيعات أونلاين مرتبطة بالمتابعين إن كان المتجر مفتوحًا.
   if ((s.commerce?.businesses || []).includes("shop")) {
     const skill = Math.max(corpSkill(s, "marketing"), corpSkill(s, "social"));
