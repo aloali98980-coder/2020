@@ -8441,4 +8441,173 @@ export const EVENT_PHRASES = {
     "Extra 10019",
     "Extra fr 10019",
   ],
+  // ── أحداث الدفعة 7 (القسم 1) ──
+  "أغنية جديدة للمدرجات": [
+    "A new chant for the stands",
+    "Un nouveau chant pour les tribunes",
+  ],
+  "أغنية الجماهير الجديدة": [
+    "The fans' new anthem",
+    "Le nouvel hymne des supporters",
+  ],
+  "مجموعة من المشجعين أعدّت أغنية جديدة للمدرجات وتطلب دعمك لتسجيلها. الأغنية قد ترفع الروح في الملعب، وقد تبقى مجرد فكرة": [
+    "A group of fans has written a new chant for the stands and asks you to back its recording. The song could lift the mood in the ground, or it could stay just an idea.",
+    "Un groupe de supporters a écrit un nouveau chant pour les tribunes et demande votre soutien pour l’enregistrer. Le titre pourrait relever l’ambiance au stade, ou rester une simple idée.",
+  ],
+  "تمويل التسجيل الرسمي": [
+    "Fund the official recording",
+    "Financer l’enregistrement officiel",
+  ],
+  "قبول الأغنية كما هي": [
+    "Accept the song as it is",
+    "Accepter le chant tel quel",
+  ],
+  "عدم التدخل": [
+    "Stay out of it",
+    "Ne pas intervenir",
+  ],
+  "رحلة مشجعين للمباراة الخارجية القادمة": [
+    "A supporters' trip to the next away match",
+    "Un déplacement de supporters pour le prochain match à l’extérieur",
+  ],
+  "حافلة مشجعي المباراة الخارجية": [
+    "Away-day supporters' bus",
+    "Bus des supporters pour le match à l’extérieur",
+  ],
+  "جمعية المشجعين تطلب تنظيم حافلة للمباراة الخارجية القادمة. التنظيم يكلّف مالًا، لكنه يملأ مدرجات الضيوف بوجوه النادي": [
+    "The supporters' association asks for a bus to the next away match. Organising it costs money, but it fills the away end with club faces.",
+    "L’association des supporters demande un bus pour le prochain match à l’extérieur. L’organisation coûte de l’argent, mais elle remplit le parcours des visiteurs de visages du club.",
+  ],
+  "تنظيم الحافلة": [
+    "Organise the bus",
+    "Organiser le bus",
+  ],
+  "الاعتماد على المشجعين أنفسهم": [
+    "Leave it to the fans themselves",
+    "Laisser les supporters s’organiser",
+  ],
+  "قدامى اللاعبين يرشدون الصغار": [
+    "Veterans mentor the young players",
+    "Les anciens guident les jeunes",
+  ],
+  "مرشدون من القدامى": [
+    "Veteran mentors",
+    "Des mentors parmi les anciens",
+  ],
+  "لاعبون كبار في السن يعرضون مرافقة الصغار في تدريبات الأسبوع. الأمر يحتاج تنظيمًا بسيطًا وحوافز صغيرة": [
+    "Senior players offer to pair up with the youngsters during the week's sessions. It needs simple organising and small incentives.",
+    "Des joueurs expérimentés proposent d’accompagner les jeunes pendant les entraînements de la semaine. Il faut une organisation simple et de petites incitations.",
+  ],
+  "إقرار البرنامج بحوافز صغيرة": [
+    "Approve the programme with small incentives",
+    "Valider le programme avec de petites incitations",
+  ],
+  "ترك الأمر للمدرب": [
+    "Leave it to the coach",
+    "Laisser la décision à l’entraîneur",
+  ],
+  "موسيقى غرفة الملابس قبل المباريات": [
+    "Dressing-room music before matches",
+    "Musique dans le vestiaire avant les matchs",
+  ],
+  "قائمة تشغيل غرفة الملابس": [
+    "The dressing-room playlist",
+    "La playlist du vestiaire",
+  ],
+  "اللاعبون يطلبون سماعات وقائمة تشغيل خاصة قبل المباراة. الطلب بسيط، لكن الأثر على الروح المعنوية يُلاحظ": [
+    "Players ask for speakers and a playlist of their own before matches. The request is simple, but its effect on morale is noticeable.",
+    "Les joueurs demandent des enceintes et une playlist à eux avant les matchs. La demande est simple, mais son effet sur le moral se remarque.",
+  ],
+  "شراء السماعات": [
+    "Buy the speakers",
+    "Acheter les enceintes",
+  ],
+  "تأجيل الطلب": [
+    "Postpone the request",
+    "Reporter la demande",
+  ],
+  "طلب صحفي لزيارة التدريب": [
+    "A journalist asks to visit training",
+    "Un journaliste demande à visiter l’entraînement",
+  ],
+  "صحفي يطلب زيارة التدريب": [
+    "A reporter wants to visit training",
+    "Un journaliste veut assister à l’entraînement",
+  ],
+  "مراسل رياضي يطلب زيارة مفتوحة لمركز التدريب. الزيارة تمنح القصة المطلوبة، لكنها تكشف أسلوب العمل أمام الجميع": [
+    "A sports reporter asks for an open visit to the training centre. The visit gives the story they want, but it also shows how the work is done in public.",
+    "Un journaliste sportif demande une visite ouverte du centre d’entraînement. Cette visite lui donnera son sujet, mais révélera aussi la méthode de travail devant tout le monde.",
+  ],
+  "زيارة مفتوحة": [
+    "An open visit",
+    "Visite ouverte",
+  ],
+  "زيارة محدودة بمسؤول الإعلام": [
+    "A limited visit with the media officer",
+    "Visite limitée avec le responsable des médias",
+  ],
+  "الاعتذار": [
+    "Decline politely",
+    "Décliner poliment",
+  ],
+  "فترة الشتاء ومعسكر اللياقة": [
+    "Winter period and fitness camp",
+    "Période hivernale et stage de condition physique",
+  ],
+  "معسكر الشتاء": [
+    "Winter camp",
+    "Stage d’hiver",
+  ],
+  "الطقس بارد والإرهاق يتسلل إلى الفريق. الجهاز يقترح معسكرًا قصيرًا أو راحة منظمة لاستعادة الجاهزية": [
+    "The weather is cold and fatigue is creeping into the squad. The staff suggest a short camp or organised rest to restore readiness.",
+    "Il fait froid et la fatigue s’installe dans l’effectif. Le staff propose un court stage ou un repos organisé pour retrouver la forme.",
+  ],
+  "معسكر قصير": [
+    "A short camp",
+    "Un court stage",
+  ],
+  "راحة منظمة": [
+    "Organised rest",
+    "Repos organisé",
+  ],
+  "جولة صيفية ودّية": [
+    "A summer friendly tour",
+    "Une tournée amicale estivale",
+  ],
+  "جولة الصيف الودية": [
+    "The summer friendly tour",
+    "La tournée amicale d’été",
+  ],
+  "شركة تنظيم تعرض جولة ودية في الصيف مقابل أجر. الجولة تملأ الخزينة وتزيد الشعبية، لكنها تُنهك اللاعبين": [
+    "An events company offers a paid summer friendly tour. The tour fills the coffers and boosts popularity, but it wears the players down.",
+    "Une société d’événementiel propose une tournée amicale estivale rémunérée. Elle renfloue les caisses et booste la popularité, mais épuise les joueurs.",
+  ],
+  "قبول الجولة": [
+    "Accept the tour",
+    "Accepter la tournée",
+  ],
+  "الحفاظ على الإعداد للموسم": [
+    "Keep the pre-season plan",
+    "Garder la préparation de saison",
+  ],
+  "لافتات الجماهير في المدرجات": [
+    "Banners in the stands",
+    "Banderoles dans les tribunes",
+  ],
+  "لافتات المدرجات": [
+    "Stand banners",
+    "Banderoles des tribunes",
+  ],
+  "لافتات انتقادية ظهرت في المدرجات. السماح بها يعني صراحة أكبر، ومنعها يعني توترًا مع المجموعات": [
+    "Critical banners have appeared in the stands. Allowing them means more openness; banning them means tension with the groups.",
+    "Des banderoles critiques sont apparues dans les tribunes. les autoriser signifie plus de franchise ; les interdire, des tensions avec les groupes.",
+  ],
+  "السماح بها": [
+    "Allow them",
+    "Les autoriser",
+  ],
+  "منعها داخل الملعب": [
+    "Ban them inside the ground",
+    "Les interdire dans le stade",
+  ],
 };

@@ -5,6 +5,7 @@ import {
   lastResultLost,
   ticketAtLeast,
   squadAtLeast,
+  repAtLeast,
   hasLegends,
   inWindow,
   all,
@@ -113,6 +114,7 @@ export const MEDIA_DECISIONS = [
   },
   {
     id: "school-program",
+    when: repAtLeast(40),
     group: "media",
     theme: "fans",
     topic: "مبادرة مجتمعية في مدارس الحي",
@@ -139,6 +141,7 @@ export const MEDIA_DECISIONS = [
   },
   {
     id: "kit-launch",
+    when: repAtLeast(50),
     group: "media",
     theme: "press",
     topic: "طريقة إطلاق القميص الجديد",

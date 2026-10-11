@@ -9,11 +9,19 @@
 // `when` بوابة عرض: إن كانت موجودة فلا يظهر الحدث إلا إذا تحققت في الحفظ،
 // فلا يُستدعى لاعب غير موجود ولا بطولة لست مشاركًا فيها.
 import {
+  all,
+  fansBelow,
+  fixtureWithin,
   hasActiveSponsor,
+  nextOwnFixture,
   hasMarket,
   hasRoom,
+  repAtLeast,
   scopeNonEmpty,
+  squadAtLeast,
+  ticketAtLeast,
 } from "./events/conditions.js";
+import { DECISIONS_B7 } from "./events/decisions-b7.js";
 import { MONEY_DECISIONS } from "./events/decisions-money.js";
 import { SQUAD_DECISIONS } from "./events/decisions-squad.js";
 import { MARKET_DECISIONS } from "./events/decisions-market.js";
@@ -34,6 +42,7 @@ import { BETTING_DECISIONS } from "./events/decisions-betting.js";
 export const LEGACY_DECISIONS = [
   {
     id: "community",
+    when: fansBelow(70),
     group: "media",
     topic: "يوم مفتوح للجماهير في مقر النادي",
     title: "يوم مفتوح للجماهير",
@@ -69,6 +78,7 @@ export const LEGACY_DECISIONS = [
   },
   {
     id: "maintenance",
+    when: (s) => (s.facilities || []).some((f) => f.level >= 2),
     group: "matchday",
     topic: "صيانة دورية لمنشآت النادي",
     title: "تقرير صيانة المنشآت",
@@ -123,6 +133,7 @@ export const LEGACY_DECISIONS = [
   },
   {
     id: "ticket-pressure",
+    when: all(ticketAtLeast(60), fansBelow(70)),
     group: "media",
     topic: "مبادرة جماهيرية لدعم الحضور",
     title: "الجمهور يطلب دعم الحضور",
@@ -135,6 +146,7 @@ export const LEGACY_DECISIONS = [
   },
   {
     id: "dressing-room",
+    when: squadAtLeast(18),
     group: "squad",
     topic: "نشاط جماعي لبناء التفاهم في غرفة الملابس",
     title: "اجتماع غرفة الملابس",
@@ -170,6 +182,7 @@ export const EVENT_CATALOG = [
   ...BLACK_DECISIONS,
   ...EMPIRE_DECISIONS,
   ...BETTING_DECISIONS,
+  ...DECISIONS_B7,
 ];
 
 export const FLAVOR_CATALOG = [...FLAVOR_A, ...FLAVOR_B, ...FLAVOR_C, ...FLAVOR_DRAMA, ...FLAVOR_BLACK, ...FLAVOR_EMPIRE];
