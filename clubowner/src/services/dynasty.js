@@ -1,4 +1,6 @@
 import { addDays, assert, clamp, random, uid } from "../core/utils.js";
+import { post } from "./finance.js";
+import { tr } from "../i18n/index.js";
 import { staffSkill } from "./staff.js";
 import { ageAt } from "../models/player.js";
 import { isoDate } from "../core/isoDate.js";
@@ -392,14 +394,106 @@ export function createDynastyChild(s, { name, age = 0, birthDate = null, parentI
   };
 }
 
-export function marryOwner(s, partnerName) {
+// الفرح (الدفعة 5): ثلاثة مستويات بتكلفة وأثر على سعادة الشريك. الزواج الثاني يُعرف بعدد الزيجات السابقة.
+export const WEDDING_TIERS = {
+  family: { cost: 500_000, happiness: 8 },
+  luxury: { cost: 3_000_000, happiness: 15 },
+  legendary: { cost: 12_000_000, happiness: 25 },
+};
+const DIVORCE_SCANDAL = 12;
+
+export function marryOwner(s, partnerName, { tier = "family", title = "" } = {}) {
   const d = s.dynasty || (s.dynasty = migrateDynasty(s));
   const partner = String(partnerName || "").trim().slice(0, 80);
   assert(partner.length > 0, "اكتب اسم الشريك أولًا.");
   assert(!d.owner.retired && d.owner.age >= 18, "الزواج غير متاح للمالك الحالي.");
   assert(!d.spouse, "المالك متزوج بالفعل.");
+  const level = WEDDING_TIERS[tier];
+  assert(level, "مستوى الفرح غير معروف.");
+  assert((s.finance?.cash || 0) >= level.cost, "الرصيد لا يكفي لهذا المستوى من الفرح.");
+  const today = saveDate(s);
+  const marriageNo = Number(d.marriageCount) || 0;
+  post(s, -level.cost, "wedding", tr("فرح العائلة", "Family wedding", "Mariage de famille"), `dynasty-wedding-${marriageNo}`);
   d.spouse = partner;
+  d.marriageCount = marriageNo + 1;
+  d.spouseProfile = {
+    name: partner,
+    title: String(title || "").trim().slice(0, 60),
+    tier,
+    happiness: clamp(50 + level.happiness, 0, 100),
+    weddingDate: today,
+    birthday: dateForAge(today, 32),
+    secondMarriage: marriageNo > 0,
+    lastAnniversaryYear: null,
+    lastBirthdayYear: null,
+  };
+  message(s, {
+    title:
+      marriageNo > 0
+        ? tr("زواج ثانٍ للمالك", "A second marriage for the owner", "Un second mariage pour le propriétaire")
+        : tr("زواج المالك", "The owner's wedding", "Le mariage du propriétaire"),
+    body: tr(
+      `احتفلت العائلة بفرح ${level.cost.toLocaleString("en-US")} على مستوى ${tier}. سعادة ${partner} بدأت عند ${d.spouseProfile.happiness}%.`,
+      `The family held a ${tier} wedding costing ${level.cost.toLocaleString("en-US")}. ${partner}'s happiness starts at ${d.spouseProfile.happiness}%.`,
+      `La famille a célébré un mariage ${tier} coûtant ${level.cost.toLocaleString("en-US")}. Le bonheur de ${partner} démarre à ${d.spouseProfile.happiness} %.`,
+    ),
+    category: "club",
+  });
   return d.spouse;
+}
+
+// الطلاق الأساسي: نصف النقد للطليق/ة وفضيحة عامة تخفض الصورة وثقة الجماهير.
+export function divorceOwner(s) {
+  const d = s.dynasty || (s.dynasty = migrateDynasty(s));
+  assert(d.spouse, "لا يوجد زواج قائم.");
+  const former = d.spouse;
+  const half = Math.max(0, Math.floor((s.finance?.cash || 0) / 2));
+  if (half > 0) post(s, -half, "divorce-settlement", tr("تسوية الطلاق", "Divorce settlement", "Règlement du divorce"), `dynasty-divorce-${d.marriageCount || 0}`);
+  d.publicBalance = clamp((d.publicBalance ?? 50) - DIVORCE_SCANDAL, 0, 100);
+  d.fanConfidence = clamp((d.fanConfidence ?? 50) - 5, 0, 100);
+  d.spouse = null;
+  d.spouseProfile = null;
+  d.divorces = (Number(d.divorces) || 0) + 1;
+  message(s, {
+    title: tr("طلاق وفضيحة إعلامية", "Divorce and media scandal", "Divorce et scandale médiatique"),
+    body: tr(
+      `انتهى زواج المالك من ${former}. دُفع نصف النقد تسوية، وتراجعت صورة العائلة وثقة الجماهير.`,
+      `The owner's marriage to ${former} has ended. Half of the cash went to the settlement, and the family's image and fan confidence fell.`,
+      `Le mariage du propriétaire avec ${former} a pris fin. La moitié des liquidités a servi de règlement ; l’image de la famille et la confiance des supporters ont baissé.`,
+    ),
+    category: "club",
+  });
+  return former;
+}
+
+// تذكير الذكرى وعيد ميلاد الشريك في البريد الداخلي (مرة لكل سنة).
+export function spouseCalendarDay(s) {
+  const d = s.dynasty;
+  const p = d?.spouseProfile;
+  if (!p) return null;
+  const today = saveDate(s);
+  const year = today.slice(0, 4);
+  const monthDay = today.slice(5);
+  if (p.weddingDate && p.weddingDate.slice(5) === monthDay && p.lastAnniversaryYear !== year && today > p.weddingDate) {
+    p.lastAnniversaryYear = year;
+    p.happiness = clamp(p.happiness + 3, 0, 100);
+    message(s, {
+      title: tr("ذكرى الزواج", "Wedding anniversary", "Anniversaire de mariage"),
+      body: tr(`اليوم ذكرى زواجكم من ${p.name}.`, `Today is your wedding anniversary with ${p.name}.`, `Aujourd’hui, c’est l’anniversaire de votre mariage avec ${p.name}.`),
+      category: "club",
+    });
+    return "anniversary";
+  }
+  if (p.birthday && p.birthday.slice(5) === monthDay && p.lastBirthdayYear !== year) {
+    p.lastBirthdayYear = year;
+    message(s, {
+      title: tr("عيد ميلاد الشريك", "Partner's birthday", "Anniversaire du partenaire"),
+      body: tr(`اليوم عيد ميلاد ${p.name}.`, `Today is ${p.name}'s birthday.`, `Aujourd’hui, c’est l’anniversaire de ${p.name}.`),
+      category: "club",
+    });
+    return "birthday";
+  }
+  return null;
 }
 
 export function haveChild(s, name) {
@@ -1090,6 +1184,7 @@ function retireCurrentOwner(s) {
 export function dynastyLifeDay(s) {
   const d = s.dynasty;
   if (!d) return null;
+  spouseCalendarDay(s);
   const today = saveDate(s);
   const month = today.slice(0, 7);
   const owner = d.owner;

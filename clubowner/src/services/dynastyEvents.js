@@ -170,6 +170,8 @@ function applyEventEffects(s, eventRecord, effects) {
       if (["talent", "discipline", "ambition"].includes(key) && Number.isFinite(delta))
         child.stats[key] = meter(child.stats[key] + delta);
   if (effects.ownerHealth) d.owner.health = meter(d.owner.health + effects.ownerHealth);
+  if (Number.isFinite(effects.spouseHappiness) && d.spouseProfile)
+    d.spouseProfile.happiness = meter(d.spouseProfile.happiness + effects.spouseHappiness);
   if (effects.ownerBonus && BONUS_KEYS.has(effects.ownerBonus))
     d.ownerBonuses[effects.ownerBonus] = meter(
       d.ownerBonuses[effects.ownerBonus] + (effects.ownerBonusDelta || 0),

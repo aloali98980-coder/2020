@@ -73,6 +73,7 @@ import {
   haveChild,
   leaveDynastyAcademy,
   marryOwner,
+  divorceOwner,
   setAcademyFocus,
   setAcademyMentor,
   setAcademyPosition,
@@ -2198,6 +2199,13 @@ const actions = {
       (s) => promoteDynastyPlayer(s, el.dataset.id),
       tr("انضم خريج الأكاديمية إلى قائمة الفريق الأول.", "An academy graduate joined the first-team squad.", "Un diplômé de l’académie a rejoint l’effectif professionnel."),
     ),
+  "dynasty-divorce": async (el) => {
+    if (!confirm(tr("تأكيد الطلاق؟ سيُدفع نصف النقد تسوية وتتأثر الصورة العامة.", "Confirm divorce? Half of the cash goes to the settlement and the public image suffers.", "Confirmer le divorce ? La moitié des liquidités sera versée et l’image publique en pâtira."))) return;
+    await apply(
+      (s) => divorceOwner(s),
+      tr("تم الطلاق وسُجلت التسوية.", "The divorce is final and the settlement is recorded.", "Le divorce est prononcé et le règlement enregistré."),
+    );
+  },
   "dynasty-event-choice": async (el) =>
     await apply(
       (s) => resolveDynastyEvent(s, el.dataset.id, el.dataset.choice),
@@ -2444,8 +2452,10 @@ document.addEventListener("submit", async (e) => {
     }
     if (form.id === "dynasty-marriage-form") {
       const partner = form.elements.partner.value;
+      const tier = form.elements.tier?.value || "family";
+      const spouseTitle = form.elements.spouseTitle?.value || "";
       await apply(
-        (s) => marryOwner(s, partner),
+        (s) => marryOwner(s, partner, { tier, title: spouseTitle }),
         tr("بدأت حياة أسرية جديدة.", "A new family journey has begun.", "Une nouvelle vie de famille commence."),
       );
       return;
