@@ -13,9 +13,10 @@ import { legendMatchBonus } from "./legends.js";
 import { recordMatchStats } from "./seasonStats.js";
 import { planOwnGoals } from "./goalModel.js";
 import { buildTimeline, compactTimeline } from "./matchTimeline.js";
+import { fitnessFactor } from "./staff/effects.js";
 
 const ourGoalsOf = (f, s) => (f.home === s.clubId ? f.homeGoals : f.awayGoals) || 0;
-import { applyMatchConsequences } from "./matchConsequences.js";
+import { applyMatchConsequences, injuryProbability, TIMELINE_INJURY_SCALE } from "./matchConsequences.js";
 import { recordDisciplineIncident, refereeSuspensionThreshold } from "./politics/committees.js";
 import { resolveInsiderBet } from "./betting/insider.js";
 import { fanAttendanceMultiplier, recordSupporterResult, supporterMatchBonus } from "./ultras.js";
@@ -357,6 +358,8 @@ export function matchDay(
         isDerby: f.isDerby,
         refereePolicy,
         extraTime: f.extraTime,
+        // 0.44: الإصابة تُدحرج داخل المخطط، فيُستبدل المصاب في دقيقته
+        injuryProb: (p) => TIMELINE_INJURY_SCALE * injuryProbability(p, fitnessFactor(s)),
       });
       const byIdAll = new Map([...lineupPlayers, ...bench].map((p) => [p.id, p]));
       // عقوبة النقص العددي تُطبَّق قبل توزيع الأهداف حتى لا تزيد الخطة على النتيجة النهائية
