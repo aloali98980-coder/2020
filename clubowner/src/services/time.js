@@ -16,6 +16,7 @@ import { agingDay, retirementDay } from "./careers.js";
 import { staffDay } from "./staff.js";
 import { clubEventDay, flavorEventDay } from "./clubEvents.js";
 import { seasonDay } from "./season.js";
+import { achievementsDay } from "./achievements.js";
 import { boardDay } from "./boardMandate.js";
 import { blackFilesDay } from "./blackFiles.js";
 import { empireDay } from "./empire/day.js";
@@ -126,6 +127,8 @@ export function advanceTime(s, days = null) {
     pyramidDay(s);
     // 0.42: نبض الجوائز بعد كل من seasonDay وrollover التوسعة (تخطي الشهر وطلبات الفائزين).
     awardsDay(s);
+    // 0.46: الإنجازات بعد الجوائز (فتح مرة واحدة + إشعار البريد).
+    achievementsDay(s);
     loanDayEnd(s, loanFixtures);
     commerceDay(s);
     managementDay(s);

@@ -10,10 +10,6 @@ export const hasEmpire = (s) => !!emp(s);
 export const ownsAsset = (assetId) => (s) =>
   (emp(s)?.assets || []).some((a) => a.assetId === assetId);
 
-export const ownsCategory = (cat) => (s) =>
-  (emp(s)?.assets || []).some(
-    (a) => a.assetId.split("-")[0] === cat || a.assetId.startsWith(cat),
-  );
 
 export const ownsAny = (ids) => (s) =>
   (emp(s)?.assets || []).some((a) => ids.includes(a.assetId));
@@ -32,7 +28,6 @@ export const fameAtLeast = (n) => (s) => (emp(s)?.fame || 0) >= n;
 export const lifestyleIs = (tier) => (s) => emp(s)?.lifestyle === tier;
 export const storyIs = (story) => (s) => emp(s)?.story === story;
 export const hasDebt = (s) => (emp(s)?.debt || 0) > 0;
-export const isMarried = (s) => emp(s)?.family?.status === "married";
 export const hasWife = (s) => !!emp(s)?.family?.wife;
 export const childrenAtLeast = (n) => (s) =>
   (emp(s)?.family?.children || []).length >= n;

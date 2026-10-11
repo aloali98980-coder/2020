@@ -12,7 +12,7 @@ import { sportingDirector, autoCap, effectiveFreedom, sportingDelegationActive }
 import { gkSkillOf, fitnessSkillOf, doctorSkillOf, fitnessFactor, gkGainBonus } from "../services/staff/effects.js";
 import { academyManagerSkill, academyPotentialBonus, academyScoutBonus } from "../services/staff/academy.js";
 import { sponsorMood } from "../services/staff/marketing.js";
-import { socialState, onlineShirtMultiplier } from "../services/staff/social.js";
+import { socialState, onlineShirtMultiplier, SOCIAL_PLATFORMS } from "../services/staff/social.js";
 import { legalSettlementCost } from "../services/staff/legal.js";
 import { financeOfficeSnapshot } from "../services/staff/financeOffice.js";
 import { ASSETS } from "../data/catalog.js";
@@ -44,7 +44,7 @@ const orgNode = (s, role, lang) => {
   const staff = corpEmployees(s).filter((e) => e.role === role);
   const title = roleName(role, lang);
   return `<div class="org-node"><strong>${esc(title)}</strong>${staff.length
-    ? staff.map((e) => `<span data-no-translate>${esc(empName(e, lang))} · ${l("ولاء", "Loyalty", "Loyauté")} ${num(e.loyalty)}٪</span>`).join("")
+    ? staff.map((e) => `<span data-no-translate>${esc(empName(e, lang))} · ${l("ولاء", "Loyalty", "Loyauté")} ${num(e.loyalty)}%</span>`).join("")
     : `<span class="vacant">${l("شاغر", "Vacant", "Vacant")}</span>`}</div>`;
 };
 function orgTree(s, lang) {
@@ -65,14 +65,14 @@ function orgTab(s, lang) {
     <td data-no-translate>${esc(empName(e, lang))}${e.fame === "famous" ? " ★" : ""}</td>
     <td>${esc(roleName(e.role, lang))}</td>
     <td>${num(e.skill)} ${bar(e.skill)}</td>
-    <td>${num(e.loyalty)}٪ ${bar(e.loyalty)}</td>
+    <td>${num(e.loyalty)}% ${bar(e.loyalty)}</td>
     <td>${money(e.wage)}</td>
     <td>${num(e.level)}</td>
     <td>${esc(e.contractEnd)}</td>
     <td class="row-actions">
       <button class="btn small" data-action="staff-renew" data-id="${e.id}">${l("تجديد", "Renew", "Renouveler")}</button>
       <button class="btn small" data-action="staff-promote" data-id="${e.id}">${l("ترقية", "Promote", "Promouvoir")}</button>
-      <button class="btn small" data-action="staff-raise" data-id="${e.id}">${l("+١٠٪", "+10%", "+10 %")}</button>
+      <button class="btn small" data-action="staff-raise" data-id="${e.id}">${l("+10%", "+10%", "+10 %")}</button>
       <button class="btn small danger" data-action="staff-fire" data-id="${e.id}">${l("فصل", "Dismiss", "Licencier")}</button>
     </td></tr>`).join("");
   const poach = c.poach.filter((o) => o.status === "open").map((o) => {
@@ -106,7 +106,7 @@ function marketTab(s, lang) {
       ${active ? `<form id="staff-negotiate-form" class="neg-form" data-key="${m.key}">
         <label>${l("راتب", "Wage", "Salaire")}<input type="number" name="wage" value="${n.offer.wage}" min="20000" step="1000" required></label>
         <label>${l("سنوات", "Years", "Ans")}<input type="number" name="years" value="${n.offer.years}" min="1" max="5" required></label>
-        <label>${l("مكافأة٪", "Bonus%", "Prime %")}<input type="number" name="bonus" value="${n.offer.bonus}" min="0" max="30" required></label>
+        <label>${l("مكافأة%", "Bonus%", "Prime %")}<input type="number" name="bonus" value="${n.offer.bonus}" min="0" max="30" required></label>
         <button class="btn primary small" type="submit">${l("قدّم العرض", "Make Offer", "Proposer")} (${num(n.round + 1)}/3)</button>
         <button class="btn small" type="button" data-action="staff-neg-cancel">${l("انسحاب", "Withdraw", "Retirer")}</button>
       </form>` : `<button class="btn small primary" data-action="staff-neg-start" data-id="${m.key}" ${n ? "disabled" : ""}>${l("تفاوض", "Negotiate", "Négocier")}</button>`}
@@ -177,7 +177,7 @@ function legalTab(s, lang) {
     const settlement = legalSettlementCost(item);
     const ready = s.date >= item.nextOn;
     const attempts = (item.stageResults || []).slice(-3).map((result) =>
-      `<li>${esc(staffText(CASE_STAGE_LABELS[result.stage] ? { ar: CASE_STAGE_LABELS[result.stage][0], en: CASE_STAGE_LABELS[result.stage][1], fr: CASE_STAGE_LABELS[result.stage][2] } : result.stage, lang))} · ${esc(result.date)} · ${num(result.chance)}٪ ${result.won ? l("نجاح", "success", "succès") : l("تعثر", "setback", "échec")}</li>`,
+      `<li>${esc(staffText(CASE_STAGE_LABELS[result.stage] ? { ar: CASE_STAGE_LABELS[result.stage][0], en: CASE_STAGE_LABELS[result.stage][1], fr: CASE_STAGE_LABELS[result.stage][2] } : result.stage, lang))} · ${esc(result.date)} · ${num(result.chance)}% ${result.won ? l("نجاح", "success", "succès") : l("تعثر", "setback", "échec")}</li>`,
     ).join("");
     return `<section class="staff-case-card"><div class="panel-head"><strong>${esc(staffText(kind?.name, lang))}</strong><span class="badge">${esc(staffText({ ar: CASE_STAGE_LABELS[item.stage]?.[0] || item.stage, en: CASE_STAGE_LABELS[item.stage]?.[1] || item.stage, fr: CASE_STAGE_LABELS[item.stage]?.[2] || item.stage }, lang))}</span></div>
       <p>${l("درجة الخطورة", "Severity", "Gravité")}: ${num(item.severity)}/3 · ${l("الجلسة", "Hearing", "Audience")}: ${esc(item.nextOn)} · ${l("أتعاب المرحلة", "Stage fee", "Frais de l’étape")}: ${money(fee)}</p>
@@ -202,7 +202,7 @@ function legalTab(s, lang) {
 
 const FINANCE_WARNING_LABELS = {
   "cash-deficit": ["الخزينة سالبة", "Cash is negative", "La trésorerie est négative"],
-  "projected-deficit": ["التوقع خلال ٣٠ يومًا سالب", "The 30-day forecast is negative", "La prévision à 30 jours est négative"],
+  "projected-deficit": ["التوقع خلال 30 يومًا سالب", "The 30-day forecast is negative", "La prévision à 30 jours est négative"],
   "payroll-over-budget": ["رواتب اللاعبين تتجاوز ميزانيتها", "Player payroll exceeds its budget", "La masse salariale des joueurs dépasse le budget"],
   "liability-pressure": ["الالتزامات مرتفعة مقارنة بالسيولة", "Liabilities are high relative to cash", "Les engagements sont élevés par rapport à la trésorerie"],
 };
@@ -217,7 +217,7 @@ function financeOfficeTab(s, lang) {
   const metric = (title, value) => `<div class="staff-metric"><small>${title}</small><strong>${value}</strong></div>`;
   return `<h3>${l("المكتب المالي", "Finance Office", "Bureau financier")}</h3>
     <p class="hint">${l("توقع متحرك للثلاثين يومًا المقبلة يجمع الالتزامات والإيرادات المجدولة والرواتب والتشغيل.", "A rolling 30-day forecast combines scheduled commitments and income, payroll, and operations.", "Une prévision glissante à 30 jours regroupe engagements, recettes prévues, salaires et fonctionnement.")}</p>
-    <div class="staff-metric-grid">${metric(l("الرصيد الحالي", "Current cash", "Trésorerie actuelle"), money(report.cash))}${metric(l("إيرادات مجدولة · ٣٠ يومًا", "Scheduled income · 30 days", "Recettes prévues · 30 jours"), money(report.income30))}${metric(l("مصروفات متوقعة · ٣٠ يومًا", "Forecast expenses · 30 days", "Dépenses prévues · 30 jours"), money(report.out30))}${metric(l("الرصيد المتوقع", "Projected cash", "Trésorerie prévue"), money(report.projectedCash))}${metric(l("الالتزامات المتبقية", "Outstanding liabilities", "Engagements restants"), money(report.liabilities))}${metric(l("إيرادات مستقبلية", "Future income", "Revenus futurs"), money(report.futureIncome))}</div>
+    <div class="staff-metric-grid">${metric(l("الرصيد الحالي", "Current cash", "Trésorerie actuelle"), money(report.cash))}${metric(l("إيرادات مجدولة · 30 يومًا", "Scheduled income · 30 days", "Recettes prévues · 30 jours"), money(report.income30))}${metric(l("مصروفات متوقعة · 30 يومًا", "Forecast expenses · 30 days", "Dépenses prévues · 30 jours"), money(report.out30))}${metric(l("الرصيد المتوقع", "Projected cash", "Trésorerie prévue"), money(report.projectedCash))}${metric(l("الالتزامات المتبقية", "Outstanding liabilities", "Engagements restants"), money(report.liabilities))}${metric(l("إيرادات مستقبلية", "Future income", "Revenus futurs"), money(report.futureIncome))}</div>
     <div class="staff-metric-grid">${metric(l("رواتب اللاعبين", "Player payroll", "Salaires des joueurs"), money(report.playerPayroll))}${metric(l("رواتب الجهاز الإداري", "Staff payroll", "Salaires de l’administration"), money(report.staffPayroll))}${metric(l("التشغيل", "Operations", "Fonctionnement"), money(report.operatingCosts))}${metric(l("صافي حركة الشهر", "Month-to-date net", "Solde du mois"), money(report.monthNet))}</div>
     ${warnings ? `<section class="staff-finance-warning"><strong>${l("تحذيرات مالية", "Financial warnings", "Alertes financières")}</strong><ul>${warnings}</ul></section>` : `<p class="hint">${l("لا توجد تحذيرات سيولة حاليًا.", "No liquidity warnings right now.", "Aucune alerte de trésorerie pour le moment.")}</p>`}
     <p class="hint">${report.audited ? l("المراجعة المالية مفوضة من المجلس حتى نهاية فترة التفويض.", "The board-authorized financial review is active.", "L’audit financier autorisé par le conseil est actif.") : l("يمكن للمدير المالي طلب تفويض مراجعة مؤقت من اجتماع المجلس.", "The finance director can request a temporary audit mandate at the board meeting.", "Le directeur financier peut demander un mandat d’audit temporaire au conseil.")}</p>
@@ -244,10 +244,10 @@ function sportingTab(s, lang) {
   <p>${l("الفلسفة", "Philosophy", "Philosophie")}: ${phils}</p>
   <p class="hint">${esc(lang === "ar" ? SPORTING_PHILOSOPHIES[sp.philosophy].desc.ar : lang === "fr" ? SPORTING_PHILOSOPHIES[sp.philosophy].desc.fr : SPORTING_PHILOSOPHIES[sp.philosophy].desc.en)}</p>
   <form id="staff-freedom-form" class="neg-form"><label>${l("الصلاحيات", "Authority", "Pouvoirs")}
-  <input type="range" name="freedom" min="0" max="100" step="5" value="${sp.freedom}"></label>
-  <span>${num(sp.freedom)}٪ ${sp.freedom >= 70 ? l("(حرية كاملة — ينفّذ بنفسه)", "(full authority — acts alone)", "(pleins pouvoirs — agit seul)") : l("(كل صفقة بإذنك)", "(every deal needs you)", "(chaque deal vous attend)")}</span>
+  <input type="range" name="freedom" min="0" max="100" step="5" value="${sp.freedom}" data-out="staff-freedom-val" data-unit="%"></label>
+  <span><b id="staff-freedom-val">${num(sp.freedom)}%</b> ${sp.freedom >= 70 ? l("(حرية كاملة — ينفّذ بنفسه)", "(full authority — acts alone)", "(pleins pouvoirs — agit seul)") : l("(كل صفقة بإذنك)", "(every deal needs you)", "(chaque deal vous attend)")}</span>
   <button class="btn small primary" type="submit">${l("حفظ", "Save", "Enregistrer")}</button></form>
-  <p class="hint">${l("الصلاحية الفعلية", "Effective authority", "Pouvoirs effectifs")}: ${num(effective)}٪${delegated ? ` · ${l("تفويض مؤقت من المجلس حتى", "Temporary board delegation until", "Délégation temporaire du conseil jusqu’au")} ${esc(authorityUntil)} (${l("تفويض المجلس يضيف ١٥ نقطة", "Board delegation adds 15 points", "La délégation ajoute 15 points")})` : ""}</p>
+  <p class="hint">${l("الصلاحية الفعلية", "Effective authority", "Pouvoirs effectifs")}: ${num(effective)}%${delegated ? ` · ${l("تفويض مؤقت من المجلس حتى", "Temporary board delegation until", "Délégation temporaire du conseil jusqu’au")} ${esc(authorityUntil)} (${l("تفويض المجلس يضيف 15 نقطة", "Board delegation adds 15 points", "La délégation ajoute 15 points")})` : ""}</p>
   <p>${l("سقف التنفيذ التلقائي", "Auto-execution cap", "Plafond d’action")} ${money(autoCap(s))} · ${l("ميزانية المجلس", "Board budget", "Budget du conseil")} ${money(sp.budget)}
   ${sp.rating ? ` · ${l("تقييم الموسم", "Season rating", "Note de saison")} ${num(sp.rating.rating)}/100` : ""}</p>
   ${st ? `<p>${l("الموسم", "Season", "Saison")}: ${num(st.proposed)} ${l("مقترحة", "proposed", "proposés")} · ${num(st.auto + st.approved)} ${l("منفذة", "done", "conclus")} · ${l("صافي", "net", "net")} ${money(st.earned - st.spent)}</p>` : ""}
@@ -262,7 +262,7 @@ function techTab(s) {
   return `<h3>${l("الطاقم الفني — تأثير رقمي حقيقي", "Technical staff — real numbers", "Staff technique — effets réels")}</h3>
   <table class="staff-table"><tbody>
   ${row("مدرب الحراس", "Goalkeeping coach", "Entraîneur des gardiens", `${num(gk)} ${bar(gk)} · ${l("مكسب التطور", "development gain", "gain de progression")} +${gkGainBonus(s)}`)}
-  ${row("مدرب اللياقة", "Fitness coach", "Préparateur physique", `${num(fit)} ${bar(fit)} · ${l("إصابات المباريات", "match injuries", "blessures")} ×${Math.round(fitnessFactor(s) * 100)}٪`)}
+  ${row("مدرب اللياقة", "Fitness coach", "Préparateur physique", `${num(fit)} ${bar(fit)} · ${l("إصابات المباريات", "match injuries", "blessures")} ×${Math.round(fitnessFactor(s) * 100)}%`)}
   ${row("طبيب الفريق", "Team doctor", "Médecin", `${num(doc)} ${bar(doc)} · ${l("شفاء شهري", "monthly healing", "soins mensuels")} ${Math.floor(doc / 30)} ${l("أيام", "days", "jours")} · ${doc >= 80 ? l("تشخيص دقيق", "precise diagnosis", "diagnostic précis") : doc >= 55 ? l("تشخيص جيد", "good diagnosis", "bon diagnostic") : l("تشخيص يخطئ!", "faulty diagnosis!", "diagnostic douteux !")}`)}
   </tbody></table>
   <p class="hint">${l("عيّن مدرب حراس ليتطور حراسك أسرع، ومدرب لياقة لتقل الإصابات، وطبيبًا ماهرًا ليشفى المصابون أسرع وبتشخيص سليم.", "Hire a goalkeeping coach for faster keeper growth, a fitness coach for fewer injuries, and a skilled doctor for faster, accurate healing.", "Recrutez un entraîneur des gardiens, un préparateur physique et un bon médecin pour des effets mesurables.")}</p>`;
@@ -282,7 +282,7 @@ function scoutsTab(s, lang) {
     const regionName = r.region && SCOUT_REGIONS[r.region]
       ? staffText(SCOUT_REGIONS[r.region].name, lang)
       : l("السوق العام", "Wider market", "Marché élargi");
-    return `<tr><td data-no-translate>${esc(r.name)}</td><td>${num(r.rating)}</td><td>${num(r.min)}-${num(r.max)}</td><td>${num(r.confidence)}٪</td><td>${esc(`${scoutName} · ${regionName}`)}</td><td>${esc(r.date)}</td></tr>`;
+    return `<tr><td data-no-translate>${esc(r.name)}</td><td>${num(r.rating)}</td><td>${num(r.min)}-${num(r.max)}</td><td>${num(r.confidence)}%</td><td>${esc(`${scoutName} · ${regionName}`)}</td><td>${esc(r.date)}</td></tr>`;
   }).join("");
   return `<h3>${l("الكشافون", "Scouts", "Recruteurs")}</h3>
   <table class="staff-table"><thead><tr><th>${l("الكشاف", "Scout", "Recruteur")}</th><th>${l("المهارة", "Skill", "Compétence")}</th><th>${l("المنطقة", "Region", "Zone")}</th><th></th></tr></thead>
@@ -329,7 +329,7 @@ function marketingTab(s, lang) {
       : mood < 40
         ? l("غاضب — عروض أضعف", "Unhappy — weaker offers", "Mécontent — offres réduites")
         : l("مستقر", "Steady", "Stable");
-    return `<article class="staff-sponsor-mood"><div><strong>${esc(sponsor?.name || item.sponsorId)}</strong><span>${esc(asset?.name || item.assetId)}</span></div><strong>${num(mood)}٪</strong><div class="mood-meter"><i style="width:${mood}%"></i></div><small>${status} · ${l("ينتهي", "Ends", "Expire le")} ${esc(item.end)}</small></article>`;
+    return `<article class="staff-sponsor-mood"><div><strong>${esc(sponsor?.name || item.sponsorId)}</strong><span>${esc(asset?.name || item.assetId)}</span></div><strong>${num(mood)}%</strong><div class="mood-meter"><i style="width:${mood}%"></i></div><small>${status} · ${l("ينتهي", "Ends", "Expire le")} ${esc(item.end)}</small></article>`;
   }).join("");
   const campaignOptions = Object.entries(CAMPAIGN_TYPES).map(([id, type]) =>
     `<option value="${id}">${esc(staffText(type.name, lang))} — ${esc(staffText(type.desc, lang))}</option>`).join("");
@@ -363,9 +363,11 @@ function socialTab(s, lang) {
     return `<li>${esc(label)} · ${esc(item.date)}</li>`;
   }).join("");
   return `<h3>${l("السوشيال ميديا", "Social media", "Réseaux sociaux")}</h3>
-    <div class="staff-metric-grid"><div class="staff-metric"><small>${l("المتابعون", "Followers", "Abonnés")}</small><strong>${num(st.followers)}</strong></div><div class="staff-metric"><small>${l("التفاعل", "Engagement", "Engagement")}</small><strong>${num(st.engagement)}٪</strong></div><div class="staff-metric"><small>${l("مضاعف طلب القمصان", "Shirt-demand multiplier", "Multiplicateur de demande de maillots")}</small><strong>×${onlineShirtMultiplier(s).toFixed(2)}</strong></div></div>
+    <div class="staff-metric-grid"><div class="staff-metric"><small>${l("المتابعون", "Followers", "Abonnés")}</small><strong>${num(st.followers)}</strong></div><div class="staff-metric"><small>${l("التفاعل", "Engagement", "Engagement")}</small><strong>${num(st.engagement)}%</strong></div><div class="staff-metric"><small>${l("مضاعف طلب القمصان", "Shirt-demand multiplier", "Multiplicateur de demande de maillots")}</small><strong>×${onlineShirtMultiplier(s).toFixed(2)}</strong></div></div>
+    <div class="social-platforms">${SOCIAL_PLATFORMS.map((pl) => `<div class="staff-metric"><small>${pl.name}</small><strong data-no-translate>${esc(pl.handle)}</strong><span>${num(st.platforms?.[pl.id] ?? Math.round((st.followers * pl.share) / 100))}</span></div>`).join("")}</div>
+    <p class="muted">${l("النشر التلقائي للروتيني شهريًا، والكبرى (ديربي، لقب، تعاقد نجم) تُنشر يدويًا من هنا.", "Routine posts go out automatically each month; major moments (derby, title, star signing) are published manually from here.", "Les publications de routine partent automatiquement chaque mois ; les moments clés (derby, titre, signature d’une star) se publient manuellement ici.")}</p>
     <h4>${l("نشر محتوى", "Publish content", "Publier du contenu")}</h4><div class="social-content-grid">${content}</div>
-    <div class="social-derby"><strong>${l("حملة جماهيرية قبل الديربي", "Derby fan campaign", "Campagne avant le derby")}</strong><p>${nearMatch ? `${l("الموعد القريب", "Upcoming fixture", "Prochain match")}: ${esc(nearMatch.date)}` : l("لا ديربي خلال ٧ أيام.", "No derby in the next 7 days.", "Aucun derby dans les 7 prochains jours.")}</p><button class="btn small primary" data-action="staff-social-derby" ${!nearMatch || derbyUsed || s.finance.cash < 300000 ? "disabled" : ""}>${l("إطلاق حملة الديربي", "Launch derby campaign", "Lancer la campagne du derby")} · ${money(300000)}</button>${derbyUsed ? `<small>${l("أطلقت حملة لهذا الديربي بالفعل.", "A campaign is already booked for this derby.", "Une campagne est déjà prévue pour ce derby.")}</small>` : ""}</div>
+    <div class="social-derby"><strong>${l("حملة جماهيرية قبل الديربي", "Derby fan campaign", "Campagne avant le derby")}</strong><p>${nearMatch ? `${l("الموعد القريب", "Upcoming fixture", "Prochain match")}: ${esc(nearMatch.date)}` : l("لا ديربي خلال 7 أيام.", "No derby in the next 7 days.", "Aucun derby dans les 7 prochains jours.")}</p><button class="btn small primary" data-action="staff-social-derby" ${!nearMatch || derbyUsed || s.finance.cash < 300000 ? "disabled" : ""}>${l("إطلاق حملة الديربي", "Launch derby campaign", "Lancer la campagne du derby")} · ${money(300000)}</button>${derbyUsed ? `<small>${l("أطلقت حملة لهذا الديربي بالفعل.", "A campaign is already booked for this derby.", "Une campagne est déjà prévue pour ce derby.")}</small>` : ""}</div>
     ${crisis}<h4>${l("آخر المنشورات", "Recent posts", "Publications récentes")}</h4><ul class="staff-log">${posts || `<li>${l("لا منشورات بعد.", "No posts yet.", "Aucune publication.")}</li>`}</ul>`;
 }
 

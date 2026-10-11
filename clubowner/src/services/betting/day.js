@@ -59,12 +59,3 @@ export function bettingDay(s) {
   return { month: mk, profit, customers: b.customers };
 }
 
-export function bettingMatchDay(s, fixture) {
-  // يُستدعى بعد كل مباراة للرهانات المعلقة (يُنفذ في insider.js)
-  const b = ensureBetting(s);
-  if (b.pendingInsider && b.pendingInsider.fixtureId === fixture?.id) {
-    // التفاصيل في insider.js — نؤجل التنفيذ هناك
-    return b.pendingInsider;
-  }
-  return null;
-}

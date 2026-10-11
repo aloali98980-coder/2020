@@ -1,19 +1,27 @@
 // Consequences are explicit and deterministic at decision time; not random punishment.
 //
 // 0.25 «نظام الأحداث الموسّع»: الكتالوج صار طبقتين —
-//   · EVENT_CATALOG  : أحداث قرارات (يتوقف الزمن حتى تحسمها) — ٧٠ حدثًا.
-//   · FLAVOR_CATALOG : أخبار نكهة قصيرة (لا قرار، لا توقيف للوقت) — ١١٥ خبرًا.
+//   · EVENT_CATALOG  : أحداث قرارات (يتوقف الزمن حتى تحسمها) — 70 حدثًا.
+//   · FLAVOR_CATALOG : أخبار نكهة قصيرة (لا قرار، لا توقيف للوقت) — 115 خبرًا.
 // الأحداث الثمانية الأولى هي الكتالوج الأصلي نفسه بالمعرّفات والنصوص ذاتها،
 // لأن الحفظات القديمة تحمل `clubDecisions[].type` و`lastClubEvent` بتلك المعرّفات.
 // كل حدث يحمل `topic` فريدًا: لا حدثان بنفس الفكرة، والاختبار يتحقق آليًا.
 // `when` بوابة عرض: إن كانت موجودة فلا يظهر الحدث إلا إذا تحققت في الحفظ،
 // فلا يُستدعى لاعب غير موجود ولا بطولة لست مشاركًا فيها.
 import {
+  all,
+  fansBelow,
+  fixtureWithin,
   hasActiveSponsor,
+  nextOwnFixture,
   hasMarket,
   hasRoom,
+  repAtLeast,
   scopeNonEmpty,
+  squadAtLeast,
+  ticketAtLeast,
 } from "./events/conditions.js";
+import { DECISIONS_B7 } from "./events/decisions-b7.js";
 import { MONEY_DECISIONS } from "./events/decisions-money.js";
 import { SQUAD_DECISIONS } from "./events/decisions-squad.js";
 import { MARKET_DECISIONS } from "./events/decisions-market.js";
@@ -34,6 +42,7 @@ import { BETTING_DECISIONS } from "./events/decisions-betting.js";
 export const LEGACY_DECISIONS = [
   {
     id: "community",
+    when: fansBelow(70),
     group: "media",
     topic: "يوم مفتوح للجماهير في مقر النادي",
     title: "يوم مفتوح للجماهير",
@@ -69,6 +78,7 @@ export const LEGACY_DECISIONS = [
   },
   {
     id: "maintenance",
+    when: (s) => (s.facilities || []).some((f) => f.level >= 2),
     group: "matchday",
     topic: "صيانة دورية لمنشآت النادي",
     title: "تقرير صيانة المنشآت",
@@ -123,6 +133,7 @@ export const LEGACY_DECISIONS = [
   },
   {
     id: "ticket-pressure",
+    when: all(ticketAtLeast(60), fansBelow(70)),
     group: "media",
     topic: "مبادرة جماهيرية لدعم الحضور",
     title: "الجمهور يطلب دعم الحضور",
@@ -135,6 +146,7 @@ export const LEGACY_DECISIONS = [
   },
   {
     id: "dressing-room",
+    when: squadAtLeast(18),
     group: "squad",
     topic: "نشاط جماعي لبناء التفاهم في غرفة الملابس",
     title: "اجتماع غرفة الملابس",
@@ -170,12 +182,13 @@ export const EVENT_CATALOG = [
   ...BLACK_DECISIONS,
   ...EMPIRE_DECISIONS,
   ...BETTING_DECISIONS,
+  ...DECISIONS_B7,
 ];
 
 export const FLAVOR_CATALOG = [...FLAVOR_A, ...FLAVOR_B, ...FLAVOR_C, ...FLAVOR_DRAMA, ...FLAVOR_BLACK, ...FLAVOR_EMPIRE];
 
 // فئات «تحديث الدراما» 0.25 الستّ التي طلبها صاحب المشروع. كل حدث قرار جديد أو مُوسَّم
-// يحمل `theme` منها، والاختبار يتحقق أن لكل فئة ≥٣ أحداث بخيارات وعواقب مختلفة.
+// يحمل `theme` منها، والاختبار يتحقق أن لكل فئة ≥3 أحداث بخيارات وعواقب مختلفة.
 // `theme` بيانات وصفية فقط: المحرك والآلية (حدث واحد مفتوح + الفاصل الزمني) لم يتغيرا.
 export const EVENT_THEMES = Object.freeze([
   "players",
@@ -241,7 +254,7 @@ export const FLAVOR_EFFECT_KEYS = Object.freeze([
   "personal",
 ]);
 
-// حدود «صغر الأثر» للنكهة: المال ≤ ٢٥ ألفًا، والجماهير ±٢، والمعنويات ±٢.
+// حدود «صغر الأثر» للنكهة: المال ≤ 25 ألفًا، والجماهير ±2، والمعنويات ±2.
 export const FLAVOR_LIMITS = Object.freeze({
   cash: 25000,
   fans: 2,
@@ -264,7 +277,5 @@ export const DECISION_GROUPS = Object.freeze([
   "betting",
 ]);
 
-export const decisionById = (id) => EVENT_CATALOG.find((e) => e.id === id);
-export const flavorById = (id) => FLAVOR_CATALOG.find((e) => e.id === id);
 export const flavorByCategory = (category) =>
   FLAVOR_CATALOG.filter((e) => e.category === category);

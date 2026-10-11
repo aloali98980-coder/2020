@@ -107,8 +107,3 @@ export function regulatorTick(s) {
   return { failed: true, fine, suspended: shouldSuspend };
 }
 
-export function forceAudit(s) {
-  const b = ensureBetting(s);
-  b.compliance.nextAudit = s.date;
-  return regulatorTick(s);
-}

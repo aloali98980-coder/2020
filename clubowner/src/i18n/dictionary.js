@@ -158,7 +158,7 @@ export const DICTIONARY = {
     "Choose the club whose story you will write",
     "Choisissez le club dont vous écrirez l’histoire",
   ],
-  "٤ أندية متاحة كبداية في النسخة التجريبية": [
+  "4 أندية متاحة كبداية في النسخة التجريبية": [
     "4 playable clubs in this version",
     "4 clubs jouables dans cette version",
   ],
@@ -207,7 +207,7 @@ export const DICTIONARY = {
   صعب: ["Hard", "Difficile"],
   "لغة الواجهة": ["Interface language", "Langue de l’interface"],
   "قاعدة البداية": ["Starting database", "Base de départ"],
-  "قوائم ٢٠٢٦/٢٧ — مراجعة أولية": [
+  "قوائم 2026/27 — مراجعة أولية": [
     "2026/27 squads — provisional snapshot",
     "Effectifs 2026/27 — relevé provisoire",
   ],
@@ -364,17 +364,17 @@ export const DICTIONARY = {
     "Négociation déjà en cours",
   ],
   "افتح البريد": ["Open inbox", "Ouvrir la messagerie"],
-  "المرحلة ١ من ٢ · التفاوض مع النادي": [
+  "المرحلة 1 من 2 · التفاوض مع النادي": [
     "Stage 1 of 2 · Club negotiations",
     "Étape 1 sur 2 · Négociation avec le club",
   ],
   "قيمة الانتقال — جنيه مصري": ["Transfer fee — EGP", "Indemnité — EGP"],
   "الدفعة المقدمة": ["Upfront payment", "Paiement initial"],
-  "٤٠٪ والباقي ٣ أقساط": ["40% now + 3 instalments", "40 % + 3 échéances"],
-  "٦٠٪ والباقي ٣ أقساط": ["60% now + 3 instalments", "60 % + 3 échéances"],
-  "١٠٠٪ دفعة واحدة": ["100% upfront", "100 % immédiatement"],
+  "40% والباقي 3 أقساط": ["40% now + 3 instalments", "40 % + 3 échéances"],
+  "60% والباقي 3 أقساط": ["60% now + 3 instalments", "60 % + 3 échéances"],
+  "100% دفعة واحدة": ["100% upfront", "100 % immédiatement"],
   "إرسال العرض": ["Send offer", "Envoyer l’offre"],
-  "المرحلة ٢ من ٢ · شروط اللاعب": [
+  "المرحلة 2 من 2 · شروط اللاعب": [
     "Stage 2 of 2 · Player terms",
     "Étape 2 sur 2 · Contrat du joueur",
   ],
@@ -408,13 +408,13 @@ export const DICTIONARY = {
     "Guaranteed contract cost",
     "Coût garanti du contrat",
   ],
-  "عمولة الوكيل (٣٪)": ["Agent fee (3%)", "Commission d’agent (3 %)"],
+  "عمولة الوكيل (3%)": ["Agent fee (3%)", "Commission d’agent (3 %)"],
   "مكافأة المشاركة — ج.م": [
     "Appearance bonus — EGP",
     "Prime de participation — EGP",
   ],
   "مكافأة الهدف — ج.م": ["Goal bonus — EGP", "Prime par but — EGP"],
-  "الزيادة السنوية ٪": ["Annual increase %", "Hausse annuelle %"],
+  "الزيادة السنوية %": ["Annual increase %", "Hausse annuelle %"],
   "شرط جزائي — ج.م (صفر = لا يوجد)": [
     "Release clause — EGP (0 = none)",
     "Clause libératoire — EGP (0 = aucune)",
@@ -474,7 +474,7 @@ export const DICTIONARY = {
   "تنفيذ قياسي": ["Standard construction", "Construction standard"],
   "تنفيذ معجّل": ["Accelerated construction", "Construction accélérée"],
   اقتصادي: ["Economical", "Économique"],
-  "+٢٠٪ تكلفة": ["+20% cost", "+20 % de coût"],
+  "+20% تكلفة": ["+20% cost", "+20 % de coût"],
   "اعتماد المشروع وبدء البناء": [
     "Approve and start construction",
     "Valider et lancer les travaux",
@@ -559,7 +559,7 @@ export const DICTIONARY = {
   "الرصيد الحالي": ["Current balance", "Solde actuel"],
   "متحصلات منذ البداية": ["Cash received to date", "Encaissements cumulés"],
   "مدفوعات منذ البداية": ["Cash paid to date", "Décaissements cumulés"],
-  "السيولة خلال ٣٠ يومًا": [
+  "السيولة خلال 30 يومًا": [
     "30-day cash forecast",
     "Prévision de trésorerie à 30 jours",
   ],
@@ -599,7 +599,7 @@ export const DICTIONARY = {
   القيمة: ["Amount", "Montant"],
   الحالة: ["Status", "État"],
   مسجّلة: ["Recorded", "Comptabilisé"],
-  "خلال ٣٠ يومًا": ["Within 30 days", "Sous 30 jours"],
+  "خلال 30 يومًا": ["Within 30 days", "Sous 30 jours"],
   "لا توجد حركات": ["No transactions", "Aucune opération"],
   مرتبات: ["Wages", "Salaires"],
   تشغيل: ["Operations", "Fonctionnement"],
@@ -631,7 +631,7 @@ export const DICTIONARY = {
   "الدوري المصري": ["Egyptian league", "Championnat égyptien"],
   "السوق الإنجليزي": ["English market", "Marché anglais"],
   "السوق السعودي": ["Saudi market", "Marché saoudien"],
-  "دوري تجريبي مصغّر · ٨ أندية": [
+  "دوري تجريبي مصغّر · 8 أندية": [
     "Experimental league · 8 clubs",
     "Ligue expérimentale · 8 clubs",
   ],
@@ -646,7 +646,7 @@ export const DICTIONARY = {
     "Experimental Egyptian league",
     "Ligue égyptienne expérimentale",
   ],
-  "٨ أندية · ١٤ جولة · ذهاب وعودة": [
+  "8 أندية · 14 جولة · ذهاب وعودة": [
     "8 clubs · 14 rounds · home and away",
     "8 clubs · 14 journées · aller-retour",
   ],
@@ -798,11 +798,11 @@ export const DICTIONARY = {
   ],
   الجماهير: ["Fans", "Supporters"],
   الفريق: ["Squad", "Effectif"],
-  "الموافقة على دورة ٢١ يومًا مقابل ١٠٠ ألف ج.م": [
+  "الموافقة على دورة 21 يومًا مقابل 100 ألف ج.م": [
     "Approve a 21-day course for EGP 100,000",
     "Valider 21 jours de formation pour 100 000 EGP",
   ],
-  "بدء مهمة ٧ أيام مقابل ٤٠ ألف ج.م": [
+  "بدء مهمة 7 أيام مقابل 40 ألف ج.م": [
     "Start a 7-day assignment for EGP 40,000",
     "Lancer une mission de 7 jours pour 40 000 EGP",
   ],
@@ -947,7 +947,7 @@ export const DICTIONARY = {
   أسطورة: ["Legend", "Légende"],
   "نجم تاريخي": ["Historic star", "Star historique"],
   "تحت التعاقد": ["Under contract", "Sous contrat"],
-  "من بيت النادي · خصم ٢٥٪": [
+  "من بيت النادي · خصم 25%": [
     "Club favourite · 25% off",
     "Enfant du club · −25 %",
   ],
@@ -1025,7 +1025,7 @@ export const DICTIONARY = {
   "شهريًا": ["per month", "par mois"],
   "مقدم مدفوع": ["Upfront paid", "Acompte versé"],
   "رواتب الأساطير شهريًا": ["Legends salaries monthly", "Salaires des légendes par mois"],
-  "مقابل الراتب، مع سمعة +٠٫١٥ وجماهير +١ شهريًا": [
+  "مقابل الراتب، مع سمعة +0٫15 وجماهير +1 شهريًا": [
     "on top of the salary, with reputation +0.15 and fans +1 monthly",
     "en plus du salaire, avec réputation +0,15 et fans +1 par mois",
   ],
@@ -1058,15 +1058,15 @@ export const DICTIONARY = {
     "Includes uniform performance bonuses paid automatically",
     "Inclut des primes de performance uniformes versées automatiquement",
   ],
-  "٥ ملايين": ["5 million", "5 millions"],
+  "5 ملايين": ["5 million", "5 millions"],
   "شهريًا، عقد سنتين؛ يحتاج مكانًا بالقائمة": [
     "monthly, two-year contract; requires a squad slot",
     "par mois, contrat de deux ans ; place requise dans l’effectif",
   ],
-  "٥٫٤ مليون": ["5.4 million", "5,4 millions"],
+  "5٫4 مليون": ["5.4 million", "5,4 millions"],
   "المستعير يدفع": ["The borrower pays", "L’emprunteur paie"],
   // 0.23 — شظايا بعد تحويل المبالغ النصية إلى money()
-  "بدء مهمة ٧ أيام مقابل": [
+  "بدء مهمة 7 أيام مقابل": [
     "Start a 7-day assignment for",
     "Lancer une mission de 7 jours pour",
   ],
@@ -1075,7 +1075,7 @@ export const DICTIONARY = {
   "دخل متوقع": ["expected income", "recette prévue"],
   "تأهيل لمسار مهني": ["Career-path qualification", "Qualification pour une carrière"],
   "21 يومًا": ["21 days", "21 jours"],
-  "الموافقة على دورة ٢١ يومًا مقابل": [
+  "الموافقة على دورة 21 يومًا مقابل": [
     "Approve a 21-day course for",
     "Approuver un stage de 21 jours pour",
   ],

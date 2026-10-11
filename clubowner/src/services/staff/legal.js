@@ -49,7 +49,7 @@ function fileMessage(s, item) {
   const fee = stageFee(item);
   message(s, {
     title: `قضية قانونية جديدة: ${CASE_KINDS[item.kind].name.ar}`,
-    body: `تم فتح القضية في مرحلة الاستئناف. موعد الجلسة: ${item.nextOn}. أتعاب المرحلة: ${fee.toLocaleString()}.`,
+    body: `تم فتح القضية في مرحلة الاستئناف. موعد الجلسة: ${item.nextOn}. أتعاب المرحلة: ${fee.toLocaleString("en-US")}.`,
     category: "club",
     kind: "staff-legal-case",
     ref: item.id,
@@ -207,7 +207,7 @@ export function resolveLegalCase(s, caseId, action = "contest") {
       adjustTransferBan(s, true);
     message(s, {
       title: "تمت تسوية القضية",
-      body: `أُغلقت قضية ${CASE_KINDS[item.kind].name.ar} بتسوية قدرها ${cost.toLocaleString()}.`,
+      body: `أُغلقت قضية ${CASE_KINDS[item.kind].name.ar} بتسوية قدرها ${cost.toLocaleString("en-US")}.`,
       category: "club",
       kind: "staff-legal-result",
       ref: item.id,

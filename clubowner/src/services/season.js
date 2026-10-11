@@ -48,6 +48,9 @@ export function seasonDay(s) {
   };
   archiveSeasonStats(s, entry);
   s.seasonHistory.push(entry);
+  // 0.46: البطولة تُسجَّل في إرث المالك (يغذي نقاط الإرث) عند نهاية الموسم.
+  if (entry.table?.[0]?.clubId === s.clubId && s.dynasty)
+    s.dynasty.titlesWon = Math.min(1_000_000, (s.dynasty.titlesWon || 0) + 1);
   s.seasonNumber++;
   resetSeasonStats(s);
   s.table = CLUBS.map((c) => ({
@@ -67,7 +70,7 @@ export function seasonDay(s) {
   s.nextSeasonDate = `${Number(s.date.slice(0, 4)) + 1}-07-01`;
   message(s, {
     title: "بداية موسم جديد",
-    body: "تم أرشفة الترتيب السابق وإنشاء ١٤ جولة جديدة للدوري التجريبي. اللاعبون والعقود والمنشآت يستمرون؛ لا يوجد صعود أو هبوط في هذه النسخة.",
+    body: "تم أرشفة الترتيب السابق وإنشاء 14 جولة جديدة للدوري التجريبي. اللاعبون والعقود والمنشآت يستمرون؛ لا يوجد صعود أو هبوط في هذه النسخة.",
     category: "matches",
   });
   // لائحة الموسم الجديد تُصدر الآن (وبعد انتهاء التصويت على الموسم الماضي).

@@ -2,13 +2,33 @@ import { getLanguage, tr } from "../i18n/index.js";
 import { DIFFICULTIES } from "../models/difficulty.js";
 import { heading, button, badge, infoNote } from "../components/shared.js";
 import { icon } from "../components/icons.js";
-import { date, num } from "../ui/format.js";
+import { date, num, esc } from "../ui/format.js";
 import { getSession, isAuthenticated } from "../services/auth.js";
 import { getDisplayCurrency, DISPLAY_CURRENCIES } from "../ui/format.js";
 import { CURRENCIES } from "../data/currencies.js";
 import { APP_VERSION } from "../data/version.js";
 import { listSlots, MAX_SAVE_SLOTS } from "../services/slots.js";
 import { audioSettingsFor } from "../services/audio.js";
+import { vacationCard } from "./protection.js";
+
+const info = (text) =>
+  `<details class="info-toggle"><summary aria-label="ⓘ">ⓘ</summary><p>${text}</p></details>`;
+import { notifyEnabled } from "../services/settingsHub.js";
+import { liveSources } from "../services/sources.js";
+
+// المصادر: حصرًا هنا، وأعدادها حية من البيانات.
+const sourcesPanel = (s) => {
+  const lang = getLanguage();
+  const rows = liveSources(s)
+    .map((x) => `<div class="staff-metric"><small>${esc(x.label[lang] || x.label.ar)}</small><strong>${num(x.count)}</strong></div>`)
+    .join("");
+  return `<section class="panel settings-panel sources-panel">
+      <div class="panel-head"><h3>${icon("info")} ${tr("المصادر", "Sources", "Sources")}</h3>
+        ${info(tr("أعداد حية تُحسب الآن من بياناتك وكتالوج اللعبة. أي رقم لا يمكن عدّه لا يُعرض.", "Live counts computed now from your data and the game catalogue. Anything that cannot be counted is not shown.", "Chiffres en direct calculés à partir de vos données et du catalogue. Tout élément non comptable n'est pas affiché."))}
+      </div>
+      <div class="staff-metric-grid">${rows}</div>
+    </section>`;
+};
 
 const themePref = () => {
   try {
@@ -41,7 +61,7 @@ function cloudPanel(s) {
 
   if (loggedIn && session?.user) {
     const lastSyncText = session.lastSync
-      ? new Date(session.lastSync).toLocaleString("ar-EG")
+      ? new Date(session.lastSync).toLocaleString("en-US")
       : "لم تتم المزامنة بعد";
 
     return `<section class="panel settings-panel cloud-panel">
@@ -75,7 +95,7 @@ function cloudPanel(s) {
       <h3>${icon("world")} الحساب والمزامنة السحابية</h3>
       ${badge("اختياري", "gold")}
     </div>
-    <p>احفظ مسيرتك سحابيًا لحمايتها من مسح المتصفح التلقائي على الآيفون والكمبيوتر، وتنقل بين أجهزتك بحرية. اللعب بدون حساب يظل متاحًا ومحليًا 100٪.</p>
+    <p>احفظ مسيرتك سحابيًا لحمايتها من مسح المتصفح التلقائي على الآيفون والكمبيوتر، وتنقل بين أجهزتك بحرية. اللعب بدون حساب يظل متاحًا ومحليًا 100%.</p>
     <div class="settings-actions" style="margin-top: 15px;">
       ${button(icon("crown", 17) + " تسجيل الدخول / إنشاء حساب", "open-auth-modal", "", "primary")}
     </div>
@@ -86,6 +106,8 @@ export function settingsView(s) {
   const audio = audioSettingsFor(s);
   return `${heading("إنت اللي بتحدد طريقة إدارتك", "الإعدادات والحفظ", "حافظ على مشوارك، واضبط إيقاع العالم.")}
   ${cloudPanel(s)}
+  ${vacationCard(s)}
+  ${sourcesPanel(s)}
   <section class="panel install-panel">
     <div>
       <span class="eyebrow">الآيفون والشاشة الرئيسية</span>
@@ -117,7 +139,7 @@ export function settingsView(s) {
         <h3>${icon("download")} حفظ اللعبة محليًا</h3>
         ${badge("على هذا المتصفح", "green")}
       </div>
-      <p>حفظ العالم يُصدّر مضغوطًا JSON.GZ، مع قبول JSON القديم. حد ١٦٠ MiB بعد فك الضغط و٨٠ MiB للملف المضغوط. كل قرار يُحفظ تلقائيًا على جهازك. مسح بيانات المتصفح أو تغيير الرابط قد يفقد الوصول للحفظة؛ صدّر نسخة احتياطية بشكل دوري.</p>
+      <p>حفظ العالم يُصدّر مضغوطًا JSON.GZ، مع قبول JSON القديم. حد 160 MiB بعد فك الضغط و80 MiB للملف المضغوط. كل قرار يُحفظ تلقائيًا على جهازك. مسح بيانات المتصفح أو تغيير الرابط قد يفقد الوصول للحفظة؛ صدّر نسخة احتياطية بشكل دوري.</p>
       <div class="save-card">
         <span class="save-file">${icon("shield", 28)}</span>
         <div>
@@ -166,9 +188,8 @@ export function settingsView(s) {
       <div class="preference-row">
         <div>
           <strong>${tr("نمط الأرقام", "Number style", "Style des chiffres")}</strong>
-          <small>${tr("هندية ١٢٣ أو غربية 123 في كل الشاشات", "Arabic-Indic ١٢٣ or Western 123 everywhere", "Indo-arabes ١٢٣ ou occidentaux 123")}</small>
+          <small>${tr("هندية 123 أو غربية 123 في كل الشاشات", "Arabic-Indic 123 or Western 123 everywhere", "Indo-arabes 123 ou occidentaux 123")}</small>
         </div>
-        <label class="field slim"><select id="num-format" aria-label="${tr("نمط الأرقام", "Number style", "Style des chiffres")}"><option value="arabic" ${s.preferences.digits !== "western" ? "selected" : ""}>${tr("هندية ١٢٣", "Arabic-Indic ١٢٣", "Indo-arabes ١٢٣")}</option><option value="western" ${s.preferences.digits === "western" ? "selected" : ""}>${tr("غربية 123", "Western 123", "Occidentaux 123")}</option></select></label>
       </div>
       <div class="preference-row">
         <div>
@@ -223,6 +244,20 @@ export function settingsView(s) {
         ${badge("مفعّل دائمًا", "green")}
       </div>
       <p class="fine-print">اليوم والأسبوع يتم تمريرهما يومًا بيوم. النظام يحتفظ بالأيام المتبقية عند التوقف.</p>
+    </section>
+    <section class="panel settings-panel notify-panel">
+      <div class="panel-head"><h3>${icon("info")} ${tr("الإشعارات", "Notifications", "Notifications")}</h3>
+        ${info(tr("تُحفظ مع الحفظ نفسه. إيقاف الإشعار لا يُلغي شيئًا من الحفظ، فقط يمنع الرسالة أو البطاقة.", "Saved with your save. Turning one off removes nothing from the save; it only hides the message or card.", "Enregistré avec la sauvegarde. Désactiver ne supprime rien : cela masque seulement le message ou la carte."))}
+      </div>
+      <div class="preference-row"><div><strong>${tr("فتح إنجاز", "Achievement unlocked", "Succès débloqué")}</strong></div>
+        <label class="switch"><input type="checkbox" id="notify-achievements" ${notifyEnabled(s, "achievements") ? "checked" : ""}><span></span></label></div>
+      <div class="preference-row"><div><strong>${tr("ملخص «ماذا فاتك؟»", "“What did you miss?” summary", "Résumé « Ce que vous avez manqué »")}</strong></div>
+        <label class="switch"><input type="checkbox" id="notify-absence" ${notifyEnabled(s, "absence") ? "checked" : ""}><span></span></label></div>
+    </section>
+    <section class="panel settings-panel info-cards-panel">
+      <div class="panel-head"><h3>${icon("info")} ${tr("بطاقات الشرح", "Info cards", "Cartes d'information")}</h3></div>
+      <p class="muted">${tr("أخفيتها من أقسامها بزر «لا تظهر». يمكنك إعادتها كلها هنا.", "You hid some from their sections with “Hide”. You can bring them all back here.", "Vous en avez masqué depuis leurs sections avec « Masquer ». Vous pouvez toutes les rétablir ici.")}</p>
+      <button class="btn secondary" data-action="info-show-all">${tr("إظهار كل بطاقات الشرح", "Show all info cards", "Afficher toutes les cartes")}</button>
     </section>
     <section class="panel settings-panel about-panel">
       <div class="panel-head">

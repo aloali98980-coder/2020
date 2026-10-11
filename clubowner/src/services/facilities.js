@@ -47,7 +47,7 @@ export function startProject(s, id, fast = false) {
   });
   message(s, {
     title: `بدأ مشروع ${f.name}`,
-    body: `تم دفع ٤٠٪. الاستلام المتوقع ${project.end} مع سداد الباقي وإضافة تكلفة التشغيل.`,
+    body: `تم دفع 40%. الاستلام المتوقع ${project.end} مع سداد الباقي وإضافة تكلفة التشغيل.`,
     category: "facilities",
   });
   if (s.stockMarket)

@@ -1,16 +1,15 @@
-// حياة الملياردير 0.29 — الثروتان المنفصلتان ومستوى المعيشة (المرحلة ٩ من تحديث الدراما).
+// حياة الملياردير 0.29 — الثروتان المنفصلتان ومستوى المعيشة (المرحلة 9 من تحديث الدراما).
 //
 // ثروة النادي 💼 تبقى في `s.finance` كما كانت دائمًا (دفاتر، قيود، التزامات).
 // الثروة الشخصية 💎 تعيش في `s.empire.personal` بأرقام صحيحة آمنة بالجنيه،
-// ولا يختلط الرصيدان أبدًا: التحويل بينهما حدث صريح بحدود شهرية ومراقبة
-// من الجمعية العمومية (رسالة بريد + شبهات عند السحب الكبير).
+// ولا يختلط الرصيدان أبدًا: التحويل بينهما حدث صريح. السحب الشخصي يخضع لقواعد
+// التحويلات الذكية (transfers.js): سقف حسب ثقة الجمعية وفاصل ثلاثة أشهر، والخارج عنها نهب.
 //
 // قصة المالك تُختار عند بدء لعبة جديدة، وتُشتق تلقائيًا للحفظات القديمة
 // من الصعوبة (مبتدئ/سهل ← وريث، متوسط ← عصامي، صعب ← مقامر).
 import { assert, clamp } from "../../core/utils.js";
 import { post } from "../finance.js";
 import { message } from "../inbox.js";
-import { addSuspicion } from "../blackFiles.js";
 import { empireText } from "../../data/empireTexts.js";
 
 // ── القصص والمستويات ────────────────────────────────────────────────────────
@@ -22,15 +21,13 @@ export const OWNER_STORIES = Object.freeze({
 
 export const LIFESTYLES = Object.freeze({
   frugal: Object.freeze({ cost: 250_000, prestige: 0, happyDrift: -2, fame: 0 }),
-  comfortable: Object.freeze({ cost: 800_000, prestige: 1, happyDrift: 0, fame: 0 }),
+  comfortable: Object.freeze({ cost: 500_000, prestige: 1, happyDrift: 0, fame: 0 }),
   luxury: Object.freeze({ cost: 2_200_000, prestige: 3, happyDrift: 2, fame: 1 }),
   legendary: Object.freeze({ cost: 6_000_000, prestige: 6, happyDrift: 4, fame: 2 }),
 });
 
-export const TRANSFER_CAP = 5_000_000;
-export const DEBT_INTEREST_PCT = 1; //٪ شهريًا على دين المقامر
-export const DRAW_SUSPICION_AT = 1_000_000; // سحب أكبر منه يرفع الشبهات
-export const DRAW_SUSPICION = 2;
+export const TRANSFER_CAP = 50_000_000; // أعلى سقف ثقة (انظر transfers.js)
+export const DEBT_INTEREST_PCT = 1; //% شهريًا على دين المقامر
 
 // قصة الحفظات القديمة: مشتقة من الصعوبة — حتمية وبلا اختيار متأخر.
 export function storyForOldSave(s) {
@@ -110,68 +107,6 @@ export function netWorth(s) {
   const e = s.empire;
   if (!e) return 0;
   return Math.max(0, e.personal + assetsSellValue(s) + portfolioValue(s) - e.debt);
-}
-
-// ── التحويلات بين الخزينتين ──────────────────────────────────────────────────
-function rollTransferMonth(s) {
-  const e = ensureEmpire(s);
-  const mk = monthKey(s.date);
-  if (e.transfers.month !== mk) {
-    e.transfers.month = mk;
-    e.transfers.toPersonal = 0;
-    e.transfers.toClub = 0;
-  }
-  return e.transfers;
-}
-
-export function transferRemaining(s, dir) {
-  const t = rollTransferMonth(s);
-  const used = dir === "toPersonal" ? t.toPersonal : t.toClub;
-  return Math.max(0, TRANSFER_CAP - used);
-}
-
-export function transferToPersonal(s, amount) {
-  const e = ensureEmpire(s);
-  assert(Number.isSafeInteger(amount) && amount > 0, empireText("transferInvalid"));
-  const t = rollTransferMonth(s);
-  assert(t.toPersonal + amount <= TRANSFER_CAP, empireText("transferCapReached"));
-  assert(s.finance.cash >= amount, empireText("transferNoClubCash"));
-  const key = `empire-draw:${s.date}:${t.toPersonal + amount}`;
-  post(s, -amount, "owner-draw", empireText("transferToPersonal"), key);
-  t.toPersonal += amount;
-  e.personal += amount;
-  t.log.push({ date: s.date, dir: "toPersonal", amount });
-  if (t.log.length > 40) t.log.splice(0, t.log.length - 40);
-  if (amount >= DRAW_SUSPICION_AT) {
-    addSuspicion(s, DRAW_SUSPICION);
-    message(s, {
-      title: empireText("drawNoticeTitle"),
-      body: empireText("drawNoticeBody"),
-      category: "board",
-    });
-  }
-  return e.personal;
-}
-
-export function transferToClub(s, amount) {
-  const e = ensureEmpire(s);
-  assert(Number.isSafeInteger(amount) && amount > 0, empireText("transferInvalid"));
-  const t = rollTransferMonth(s);
-  assert(t.toClub + amount <= TRANSFER_CAP, empireText("transferCapReached"));
-  assert(e.personal >= amount, empireText("transferNoPersonal"));
-  const key = `empire-support:${s.date}:${t.toClub + amount}`;
-  post(s, amount, "owner-support", empireText("transferToClub"), key);
-  t.toClub += amount;
-  e.personal -= amount;
-  e.prestige = clamp(e.prestige + 1, 0, 400);
-  t.log.push({ date: s.date, dir: "toClub", amount });
-  if (t.log.length > 40) t.log.splice(0, t.log.length - 40);
-  message(s, {
-    title: empireText("supportNoticeTitle"),
-    body: empireText("supportNoticeBody"),
-    category: "board",
-  });
-  return e.personal;
 }
 
 // ── مستوى المعيشة ────────────────────────────────────────────────────────────
@@ -264,6 +199,5 @@ export function settleWealthMonth(s) {
     e.debt += interest;
     e.monthTrack.expenses += 0; // الفائدة تراكم دين لا صرف نقدي
   }
-  rollTransferMonth(s);
   return chargeMonthlyLiving(s);
 }

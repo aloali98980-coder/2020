@@ -18,7 +18,7 @@ function reportCard(s, id) {
   const p = s.players.find((p) => p.id === id),
     r = s.talent.scouting.reports[id];
   if (!p) return "";
-  return `<article class="panel"><h4>${esc(p.name)} · ${esc(p.position)}</h4><p>${num(p.age)} سنة · ${esc(extendedClub(p.clubId)?.name || p.clubId)}</p>${r ? `<p>المستوى ${r.rating.join("–")} · الإمكانات ${r.potential.join("–")}<br>الثقة ${num(r.confidence)}٪ · ${num(r.visits)} متابعة<br>السعر المقدر ${money(r.fee[0])}–${money(r.fee[1])} · الراتب ${money(r.salary)}</p><small>بتاريخ ${date(r.date)}؛ السعر والحالة الحالية قد يتغيران.</small>` : "<p>لا تقرير حديث؛ افتح متابعة.</p>"}<div>${button("الملف", "player-detail", id, "small secondary")}${button("متابعة 21 يومًا — 60 ألف", "talent-follow", id, "small secondary")}${button(s.talent.scouting.shortlist.includes(id) ? "إزالة من المختصرة" : "إضافة للمختصرة", "talent-shortlist", id, "small ghost")}</div></article>`;
+  return `<article class="panel"><h4>${esc(p.name)} · ${esc(p.position)}</h4><p>${num(p.age)} سنة · ${esc(extendedClub(p.clubId)?.name || p.clubId)}</p>${r ? `<p>المستوى ${r.rating.join("–")} · الإمكانات ${r.potential.join("–")}<br>الثقة ${num(r.confidence)}% · ${num(r.visits)} متابعة<br>السعر المقدر ${money(r.fee[0])}–${money(r.fee[1])} · الراتب ${money(r.salary)}</p><small>بتاريخ ${date(r.date)}؛ السعر والحالة الحالية قد يتغيران.</small>` : "<p>لا تقرير حديث؛ افتح متابعة.</p>"}<div>${button("الملف", "player-detail", id, "small secondary")}${button("متابعة 21 يومًا — 60 ألف", "talent-follow", id, "small secondary")}${button(s.talent.scouting.shortlist.includes(id) ? "إزالة من المختصرة" : "إضافة للمختصرة", "talent-shortlist", id, "small ghost")}</div></article>`;
 }
 export function talentView(s,selectedPlayer) {
   if (!s.talent) return "";

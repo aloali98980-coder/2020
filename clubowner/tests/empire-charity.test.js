@@ -94,7 +94,7 @@ test("مشروع بلا رصيد كافٍ يُرفض", () => {
 });
 
 test("البخل: ثري بلا عطاء لأشهر يهاجمه الصحفيون شهريًا", () => {
-  const s = game(); // ثروة الوارث ٨٠ مليونًا ≥ عتبة البخل
+  const s = game(); // ثروة الوارث 80 مليونًا ≥ عتبة البخل
   assert.equal(s.empire.charity.lastGift, null);
   s.date = firstOfMonthAfter(addDays(s.startDate, STINGY_DAYS + 5));
   const fame = s.empire.fame;
@@ -122,7 +122,7 @@ test("البخل: العطاء الحديث أو الثروة الصغيرة ي�
   assert.equal(g.empire.charity.stingyStrikes, 0);
 });
 
-test("تبرعات النادي (المرحلة ٨) تبقى منفصلة عن التبرع الشخصي", () => {
+test("تبرعات النادي (المرحلة 8) تبقى منفصلة عن التبرع الشخصي", () => {
   const s = game();
   donatePersonal(s, 1_000_000);
   assert.equal(s.empire.charity.personalTotal, 1_000_000);

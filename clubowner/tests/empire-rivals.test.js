@@ -21,7 +21,7 @@ const game = (opts = {}) => {
   return s;
 };
 
-test("التوليد: ٧ منافسين من المجموع بثروات ضمن النطاق وحتمية البذرة", () => {
+test("التوليد: 7 منافسين من المجموع بثروات ضمن النطاق وحتمية البذرة", () => {
   const s = game();
   const list = ensureRivals(s);
   assert.equal(list.length, 7);
@@ -45,10 +45,10 @@ test("النمو الشهري: ثروات المنافسين تكبر", () => {
   empireDay(s);
   const after = ensureRivals(s).map((r) => r.wealth);
   const grew = after.filter((w, i) => w > before[i]).length;
-  assert.ok(grew >= 5, `نما ${grew} من ٧ منافسين`);
+  assert.ok(grew >= 5, `نما ${grew} من 7 منافسين`);
 });
 
-test("الترتيب: لوحة مرتبة تنازليًا تشملك، والترتيب = من هم فوقك + ١", () => {
+test("الترتيب: لوحة مرتبة تنازليًا تشملك، والترتيب = من هم فوقك + 1", () => {
   const s = game();
   s.empire.personal = 500_000_000;
   const rows = leaderboard(s);

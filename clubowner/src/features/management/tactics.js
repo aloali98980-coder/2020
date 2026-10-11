@@ -28,7 +28,7 @@ export function tacticsPanel(s) {
   ])}</div><h4>التشكيل المتوقع الآن</h4><div class="lineup-list">${selectXI(s)
     .map(
       (x) =>
-        `<div class="lineup-player"><b>${esc(x.slot)} · ${esc(x.p.name)}</b><span>مركزه ${esc(x.p.position)} · الملاءمة ${num(Math.round(x.fit * 100))}٪</span><label>الدور<select data-player-role="${esc(x.p.id)}">${Object.entries(
+        `<div class="lineup-player"><b>${esc(x.slot)} · ${esc(x.p.name)}</b><span>مركزه ${esc(x.p.position)} · الملاءمة ${num(Math.round(x.fit * 100))}%</span><label>الدور<select data-player-role="${esc(x.p.id)}">${Object.entries(
           PLAYER_ROLES,
         )
           .filter(([, r]) => r.positions.includes(x.p.position))
@@ -38,7 +38,7 @@ export function tacticsPanel(s) {
           )
           .join(
             "",
-          )}</select></label><small>ملاءمة الدور ${num(Math.round(roleEffect(s, x.p, x.slot).fit * 100))}٪</small></div>`,
+          )}</select></label><small>ملاءمة الدور ${num(Math.round(roleEffect(s, x.p, x.slot).fit * 100))}%</small></div>`,
     )
     .join(
       "",

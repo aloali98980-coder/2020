@@ -559,22 +559,6 @@ export function formAlliance(s, clubIds, name = "") {
   return record;
 }
 
-export function dissolveAlliance(s, allianceId) {
-  const p = ensurePolitics(s);
-  const alliance = p.alliances.find((row) => row.id === allianceId);
-  if (!alliance)
-    throw new Error(
-      tr(
-        "التكتل غير موجود.",
-        "The political bloc was not found.",
-        "Le bloc politique est introuvable.",
-      ),
-    );
-  for (const club of p.clubs)
-    if (club.allianceId === allianceId) club.allianceId = null;
-  p.alliances = p.alliances.filter((row) => row.id !== allianceId);
-  return alliance;
-}
 
 export function candidateById(s, candidateId) {
   return (

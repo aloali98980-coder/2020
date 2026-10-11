@@ -305,10 +305,6 @@ export function markCelebrationSeen(save, id) {
   return true;
 }
 
-export function celebrationTitle(record, language = "ar") {
-  const copy = eventCopy(record?.kind);
-  return `${local(copy.label, language)}${record?.name ? ` — ${record.name}` : ""}`;
-}
 
 export function clubCity(save) {
   return extendedClub(save.clubId)?.city || extendedClub(save.clubId)?.name || save.clubId;

@@ -71,7 +71,7 @@ export const EMPIRE_TEXTS = {
     fr: "Héritier",
   },
   storyHeirDesc: {
-    ar: "ورثت ٨٠ مليونًا عن عائلة عريقة، ودخل أوقاف ٦٠٠ ألف شهريًا. الاسم يفتح الأبواب… والعيون عليك.",
+    ar: "ورثت 80 مليونًا عن عائلة عريقة، ودخل أوقاف 600 ألف شهريًا. الاسم يفتح الأبواب… والعيون عليك.",
     en: "You inherited 80 million from an old dynasty, plus 600k a month in trust income. The name opens doors… and eyes are on you.",
     fr: "Vous avez hérité de 80 millions d'une vieille dynastie, plus 600 000 par mois de rentes. Le nom ouvre des portes… et attire les regards.",
   },
@@ -81,7 +81,7 @@ export const EMPIRE_TEXTS = {
     fr: "Self-made",
   },
   storySelfmadeDesc: {
-    ar: "بنيت ٤٠ مليونًا من الصفر بعرق صفقاتك، وعائد شركاتك ٣٥٠ ألفًا شهريًا. لا أحد يجرؤ على القول إنك اشتريت المجد.",
+    ar: "بنيت 40 مليونًا من الصفر بعرق صفقاتك، وعائد شركاتك 350 ألفًا شهريًا. لا أحد يجرؤ على القول إنك اشتريت المجد.",
     en: "You built 40 million from zero with your own deals, earning 350k a month from your companies. Nobody can say you bought glory.",
     fr: "Vous avez bâti 40 millions à partir de rien, avec 350 000 par mois venus de vos entreprises. Personne ne peut dire que vous avez acheté la gloire.",
   },
@@ -91,7 +91,7 @@ export const EMPIRE_TEXTS = {
     fr: "Flambeur",
   },
   storyGamblerDesc: {
-    ar: "في جيبك ١٥ مليونًا وعلى كتفك دين ١٠ ملايين بفائدة شهرية. تربح سريعًا وتخسر أسرع — والحياة تحب الجريئين.",
+    ar: "في جيبك 15 مليونًا وعلى كتفك دين 10 ملايين بفائدة شهرية. تربح سريعًا وتخسر أسرع — والحياة تحب الجريئين.",
     en: "15 million in your pocket, 10 million of debt on your shoulder at monthly interest. You win fast and lose faster — life loves the bold.",
     fr: "15 millions en poche, 10 millions de dette sur les épaules à intérêt mensuel. Vous gagnez vite et perdez plus vite — la vie aime les audacieux.",
   },
@@ -183,7 +183,7 @@ export const EMPIRE_TEXTS = {
     fr: "Transferts entre coffres",
   },
   transfersHint: {
-    ar: "حد أقصى ٥ ملايين في كل اتجاه شهريًا. السحب من خزينة النادي يمر على مرأى الجمعية العمومية ويغذّي الشبهات إن كبر.",
+    ar: "حد أقصى 5 ملايين في كل اتجاه شهريًا. السحب من خزينة النادي يمر على مرأى الجمعية العمومية ويغذّي الشبهات إن كبر.",
     en: "A cap of 5 million per direction each month. Drawing from the club treasury happens under the assembly's watch and feeds suspicion when large.",
     fr: "Plafond de 5 millions par sens chaque mois. Puiser dans la trésorerie du club se fait sous l'œil de l'assemblée et nourrit les soupçons si le montant est élevé.",
   },
@@ -471,7 +471,7 @@ export const EMPIRE_TEXTS = {
     en: "Giving from your personal fortune raises your reputation and lowers the suspicion index, and your charity projects carry your name. Long stinginess invites press attacks.",
     fr: "Donner sur votre fortune personnelle élève votre réputation et baisse l'indice de suspicion, et vos projets caritatifs portent votre nom. Une longue avarice attire les attaques de presse.",
   },
-  donateInvalid: { ar: "مبلغ التبرع بين ٥٠٠ ألف و٢٠ مليونًا.", en: "Donations range from 500k to 20M.", fr: "Les dons vont de 500 k à 20 M." },
+  donateInvalid: { ar: "مبلغ التبرع بين 500 ألف و20 مليونًا.", en: "Donations range from 500k to 20M.", fr: "Les dons vont de 500 k à 20 M." },
   donateNoFunds: { ar: "الثروة الشخصية لا تكفي لهذا التبرع.", en: "Your personal fortune cannot cover this donation.", fr: "Votre fortune personnelle ne couvre pas ce don." },
   personalDonateTitle: { ar: "تبرع من القلب", en: "A heartfelt donation", fr: "Un don venu du cœur" },
   personalDonateBody: { ar: "تبرعك الشخصي رفع سمعتك وخفض مؤشر الشبهات.", en: "Your personal donation raised your reputation and lowered the suspicion index.", fr: "Votre don personnel a élevé votre réputation et baissé l'indice de suspicion." },

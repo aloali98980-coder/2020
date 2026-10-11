@@ -1,5 +1,5 @@
 // الأكاديمية: منهج تدريب (تقنية/بدنية/تكتيكية) + جودة الدفعة + متابعة الناشئين والوريث.
-// الجودة = مستوى المنشأة + مدير الأكاديمية + مباني المدينة (ربط ١١ قائم) + المنهج.
+// الجودة = مستوى المنشأة + مدير الأكاديمية + مباني المدينة (ربط 11 قائم) + المنهج.
 import { assert, clamp } from "../../core/utils.js";
 import { message } from "../inbox.js";
 import { L, ACADEMY_CURRICULA } from "../../data/staffCatalog.js";
@@ -17,11 +17,11 @@ export function setCurriculum(s, id) {
   return id;
 }
 export const academyManagerSkill = (s) => corpSkill(s, "academy");
-// مكافأة الإمكانات للدفعة السنوية: ٠-٥ بمهارة المدير.
+// مكافأة الإمكانات للدفعة السنوية: 0-5 بمهارة المدير.
 export const academyPotentialBonus = (s) => Math.floor(academyManagerSkill(s) / 20);
 // دقة تقييم الدفعة: مدير ماهر يقلل خطأ الكشف.
 export const academyScoutBonus = (s) => Math.floor(academyManagerSkill(s) / 30);
-// ميل السمات حسب المنهج: سمات +٣ لكل ناشئ.
+// ميل السمات حسب المنهج: سمات +3 لكل ناشئ.
 export const CURRICULUM_ATTRS = Object.freeze({
   technique: ["passing", "decisions"],
   physical: ["pace", "stamina"],

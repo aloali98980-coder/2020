@@ -62,15 +62,15 @@ const EXTRA = {
     "The billionaire life logs are invalid.",
     "Les journaux de la vie de milliardaire sont invalides.",
   ],
-  "٨٠ مليونًا + ٦٠٠ ألف شهريًا": [
+  "80 مليونًا + 600 ألف شهريًا": [
     "80M + 600k/month",
     "80 M + 600 k/mois",
   ],
-  "٤٠ مليونًا + ٣٥٠ ألف شهريًا": [
+  "40 مليونًا + 350 ألف شهريًا": [
     "40M + 350k/month",
     "40 M + 350 k/mois",
   ],
-  "١٥ مليونًا + دين ١٠ ملايين": [
+  "15 مليونًا + دين 10 ملايين": [
     "15M + 10M debt",
     "15 M + 10 M de dette",
   ],

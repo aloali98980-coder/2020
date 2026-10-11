@@ -25,11 +25,11 @@ import { boardTextAr } from "../data/boardTexts.js";
 import { money, num } from "../ui/format.js";
 
 export const BOARD_CATEGORY = "board";
-// عتبات التصويت: تنفيذ كامل = كل البنود الحاسمة + ٨٥٪ من الوزن الموزون.
-// إخفاق جزئي = البنود الحاسمة تحققت أو ٦٠٪ وزنًا. إخفاق كبير = غير ذلك.
+// عتبات التصويت: تنفيذ كامل = كل البنود الحاسمة + 85% من الوزن الموزون.
+// إخفاق جزئي = البنود الحاسمة تحققت أو 60% وزنًا. إخفاق كبير = غير ذلك.
 export const PASS_SCORE = 0.85;
 export const PARTIAL_SCORE = 0.6;
-// اجتماع المنتصف: ثقة إن بلغ الإيقاع ٦٠٪ من الوزن، وإلا إنذار أصفر رسمي.
+// اجتماع المنتصف: ثقة إن بلغ الإيقاع 60% من الوزن، وإلا إنذار أصفر رسمي.
 export const MID_GOOD_SCORE = 0.6;
 // سقف سلم العواقب: لا درجة رابعة ولا إنهاء مسيرة.
 export const MAX_LADDER_TIER = 3;
@@ -445,26 +445,6 @@ function endVoteBody(s, e, effects) {
 }
 
 // ── وصف العاقبة/المكافأة (يستخدمه البريد وشاشة اللائحة) ─────────────────────
-export function effectText(s, effect) {
-  switch (effect.kind) {
-    case "investors":
-      return boardTextAr("cRewardInvestors", { money: money(effect.amount) });
-    case "budget":
-      return boardTextAr("cRewardBudget", { n: num(Math.round(effect.share * 100)) });
-    case "fans":
-      return boardTextAr("cRewardFans", { n: num(effect.amount) });
-    case "budget-cut":
-      return boardTextAr("cBudgetCut", { n: num(Math.round(effect.share * 100)) });
-    case "freeze":
-      return boardTextAr("cFreeze", { d: effect.until });
-    case "sponsor-out":
-      return boardTextAr("cSponsorOut");
-    case "protest":
-      return boardTextAr("cProtest", { n: num(Math.abs(effect.amount)) });
-    default:
-      return "";
-  }
-}
 
 // ── نداء اليوم: مراجعة المنتصف مرة واحدة عند حلول موعدها ────────────────────
 export function boardDay(s) {

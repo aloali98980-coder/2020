@@ -1,3 +1,4 @@
+import { noteResultNoise } from "./noiseMeter.js";
 import { cityEffects } from "./cityFacilities.js";
 import { roleEffect } from "./playerRoles.js";
 import { selectXI, tacticalEffects } from "./tactics.js";
@@ -6,11 +7,17 @@ import { matchCommerce } from "./commerce.js";
 import { getDerbyInfo, derbyPreMatchMessage, derbyPostMatchMessage } from "./derby.js";
 import { CLUBS } from "../data/catalog.js";
 import { addDays, random, clamp } from "../core/utils.js";
+import { tr } from "../i18n/index.js";
 import { post } from "./finance.js";
 import { message } from "./inbox.js";
 import { legendMatchBonus } from "./legends.js";
 import { recordMatchStats } from "./seasonStats.js";
-import { generateCardDistribution, applyMatchConsequences } from "./matchConsequences.js";
+import { planOwnGoals } from "./goalModel.js";
+import { buildTimeline, compactTimeline } from "./matchTimeline.js";
+import { fitnessFactor } from "./staff/effects.js";
+
+const ourGoalsOf = (f, s) => (f.home === s.clubId ? f.homeGoals : f.awayGoals) || 0;
+import { applyMatchConsequences, injuryProbability, TIMELINE_INJURY_SCALE } from "./matchConsequences.js";
 import { recordDisciplineIncident, refereeSuspensionThreshold } from "./politics/committees.js";
 import { resolveInsiderBet } from "./betting/insider.js";
 import { fanAttendanceMultiplier, recordSupporterResult, supporterMatchBonus } from "./ultras.js";
@@ -80,16 +87,73 @@ function strength(s, id) {
       : 0)
   );
 }
-function goals(s, power, opponent, home) {
-  const expected = clamp(
-    1.25 + (power - opponent) / 30 + (home ? 0.2 : 0),
-    0.25,
-    3.2,
-  );
-  let g = 0;
-  for (let i = 0; i < 6; i++) if (random(s) < expected / 6) g++;
-  return g;
+// ── نموذج النتائج 0.43 (مواصفة «النتائج المتوازنة» المقفولة) ─────────────────
+// متوسط ~4 أهداف للمباراة (أعلى من الدوريات الحقيقية عمدًا: دراما)، يزداد مع قوة الفريق.
+// فارق قوة 20 ← الأقوى ~60–65%، المفاجآت ~20–25%، الباقي تعادلات.
+// لا سقف صلب: الحد الأقصى لهدف فريق 14 (الذيل الكبير موجود)، والأرقام مقفولة في tests/engine-balance.test.js.
+export const GOAL_MODEL = Object.freeze({
+  base: 2, // λ لفريقين متكافئين → 4 أهداف للمباراة
+  sensitivity: 0.035, // حساسية القوة
+  floor: 0.8, // أرضية λ للضعيف (يحدّ الذيل الصفري)
+  ceiling: 2.5, // سقف λ للقوي (يحدّ فضائح القوي ضد الضعيف)
+  cap: 14, // أقصى هدف لفريق في مباراة
+  homeFactor: 1.03,
+});
+
+// بواسون بطريقة كنوث مع مولّد المحاكاة الحتمي
+function poissonDraw(rng, lam) {
+  const L = Math.exp(-lam);
+  let k = 0;
+  let p = 1;
+  do {
+    k++;
+    p *= rng();
+  } while (p > L && k <= GOAL_MODEL.cap + 1);
+  return Math.min(GOAL_MODEL.cap, k - 1);
 }
+
+// فضيحتان مقفولتان: قوي ضد ضعيف (فارق قوة 30+ وفارق أهداف 6+)، وكبار متقاربون (فارق قوة أقل من 15 وفارق أهداف 5+).
+export function scandalKind(power, opp, hg, ag) {
+  const gap = Math.abs((power || 0) - (opp || 0));
+  const margin = Math.abs((hg || 0) - (ag || 0));
+  if (gap >= 30 && margin >= 6) return "rout";
+  if (gap < 15 && margin >= 5) return "giants";
+  return null;
+}
+function scandalMessage(s, f, kind) {
+  const home = extendedClub(f.home).name;
+  const away = extendedClub(f.away).name;
+  const score = `${f.homeGoals}–${f.awayGoals}`;
+  if (kind === "giants")
+    message(s, {
+      title: tr("يوم أسود للكبار! 💥", "A black day for the giants! 💥", "Un jour noir pour les grands ! 💥"),
+      body: tr(
+        `${home} ${score} ${away}: انهيار مفاجئ لم يتوقعه أحد. طرد مبكر وأخطاء دفاعية تصدّرت الأخبار.`,
+        `${home} ${score} ${away}: a sudden collapse nobody expected. An early red card and defensive errors dominated the headlines.`,
+        `${home} ${score} ${away} : effondrement soudain que personne n'attendait. Expulsion précoce et erreurs défensives à la une.`,
+      ),
+      category: "matches",
+      kind: "info",
+    });
+  else
+    message(s, {
+      title: tr("سحق تاريخي! 📰", "Historic rout! 📰", "Déroute historique ! 📰"),
+      body: tr(
+        `${home} ${score} ${away}: نتيجة تُحكى للأحفاد. فريسة من فرق الدنيا تحوّلت إلى ذبح كامل.`,
+        `${home} ${score} ${away}: a result to tell the grandchildren. A total massacre of a weaker side.`,
+        `${home} ${score} ${away} : un résultat à raconter aux petits-enfants. Un massacre total face à plus faible.`,
+      ),
+      category: "matches",
+      kind: "info",
+    });
+}
+/** أهداف فريق واحد: power = قوته، opponent = قوة خصمه. */
+export function goals(s, power, opponent, home) {
+  const raw = GOAL_MODEL.base * Math.exp((GOAL_MODEL.sensitivity * ((power || 0) - (opponent || 0))) / 2);
+  const lam = clamp(raw, GOAL_MODEL.floor, GOAL_MODEL.ceiling) * (home ? GOAL_MODEL.homeFactor : 1);
+  return poissonDraw(() => random(s), lam);
+}
+
 export function matchDay(
   s,
   fixturesToPlay = s.fixtures,
@@ -270,41 +334,77 @@ export function matchDay(
         const moraleDelta = our > opp ? (f.isDerby ? 5 : 3) : -1;
         p.morale = clamp(p.morale + moraleDelta, 0, 100);
       });
-      if (team.length)
-        for (let i = 0; i < our; i++) {
-          const scorer = team[Math.floor(random(s) * team.length)];
-          scorer.goals++;
-          const bonus = scorer.contractTerms?.goalBonus || 0;
-          if (bonus)
-            post(
-              s,
-              -bonus,
-              "goal-bonus",
-              `مكافأة هدف ${scorer.name}`,
-              f.id + "-goal-" + i,
-            );
-        }
-      // 0.23+0.24: accumulate season stats + apply match consequences.
-      // Cards are generated once and shared between both systems for determinism.
-      const xi = Array.isArray(f.lineup) && f.lineup.length
-        ? f.lineup.map((x) => s.players.find((y) => y.id === x.playerId)).filter(Boolean)
-        : selectXI(s).filter((x) => x.p.status !== "retired").map((x) => x.p);
+      // 0.43: مخطط زمني واحد للمباراة: بطاقات وطرد وتبديلات، ثم الأهداف من يوم اللاعب على الأرض فقط.
+      const lineupPlayers = (Array.isArray(f.lineup) && f.lineup.length
+        ? f.lineup
+            .map((x) => s.players.find((y) => y.id === x.playerId))
+            .filter((p) => p && p.status !== "retired")
+        : selectXI(s).filter((x) => x.p.status !== "retired").map((x) => x.p));
+      const onStarting = new Set(lineupPlayers.map((p) => p.id));
+      const bench = s.players
+        .filter(
+          (p) =>
+            p.clubId === s.clubId &&
+            p.status !== "retired" &&
+            !onStarting.has(p.id) &&
+            !(p.injuryUntil && p.injuryUntil > s.date) &&
+            !(p.suspendedUntil && p.suspendedUntil >= s.date),
+        )
+        .sort((a, b) => b.rating - a.rating)
+        .slice(0, 5);
       const politics = s.politics;
       const refereePolicy = politics?.committees?.referees?.policy || "balanced";
       const suspensionThreshold = refereeSuspensionThreshold(politics);
-      const cards = generateCardDistribution(xi, () => random(s), { isDerby: f.isDerby, refereePolicy });
-      recordMatchStats(s, f, () => random(s), our, cards);
-      const { redCardPenalty } = applyMatchConsequences(s, f, cards, () => random(s), { suspensionThreshold });
-      for (const player of (cards.reds || [])) recordDisciplineIncident(s, f, player);
-      // Red card numerical disadvantage: reduce score with probability.
-      if (!f.extraTime && redCardPenalty > 0 && random(s) < 0.3) {
-        f[our === "homeGoals" ? "homeGoals" : "awayGoals"] = Math.max(0, f[
-          f.home === s.clubId ? "homeGoals" : "awayGoals"
-        ] - 1);
+      const tl = buildTimeline(lineupPlayers, bench, () => random(s), {
+        isDerby: f.isDerby,
+        refereePolicy,
+        extraTime: f.extraTime,
+        // 0.44: الإصابة تُدحرج داخل المخطط، فيُستبدل المصاب في دقيقته
+        injuryProb: (p) => TIMELINE_INJURY_SCALE * injuryProbability(p, fitnessFactor(s)),
+      });
+      const byIdAll = new Map([...lineupPlayers, ...bench].map((p) => [p.id, p]));
+      // عقوبة النقص العددي تُطبَّق قبل توزيع الأهداف حتى لا تزيد الخطة على النتيجة النهائية
+      const reds = tl.events.filter((e) => e.t === "r");
+      if (!f.extraTime && reds.length && random(s) < 0.3) {
+        const side = f.home === s.clubId ? "Home" : "Away";
+        const key = side === "Home" ? "homeGoals" : "awayGoals";
+        f[key] = Math.max(0, (f[key] || 0) - 1);
+        // المسابقات الأوروبية تحفظ النظامي بجانب النتيجة: نُبقيهما متطابقين
+        const regKey = side === "Home" ? "regulationHome" : "regulationAway";
+        if (Number.isFinite(f[regKey])) f[regKey] = Math.max(0, f[regKey] - 1);
       }
+      const ourFinal = ourGoalsOf(f, s);
+      const poolAt = (m) =>
+        [...tl.participants()]
+          .filter((id) => tl.onPitchAt(id, m))
+          .map((id) => ({ p: byIdAll.get(id) }))
+          .filter((x) => x.p);
+      if (ourFinal > 0) {
+        f.goalPlan = planOwnGoals(() => random(s), lineupPlayers.map((p) => ({ p })), ourFinal, f.extraTime, poolAt);
+        f.goalPlan.forEach((g, i) => {
+          const scorer = s.players.find((p) => p.id === g.s);
+          if (!scorer) return;
+          scorer.goals++;
+          const bonus = scorer.contractTerms?.goalBonus || 0;
+          if (bonus)
+            post(s, -bonus, "goal-bonus", `مكافأة هدف ${scorer.name}`, f.id + "-goal-" + i);
+        });
+      } else {
+        f.goalPlan = [];
+      }
+      f.timeline = compactTimeline(tl);
+      const cards = {
+        yellows: tl.events.filter((e) => e.t === "y").map((e) => byIdAll.get(e.p)).filter(Boolean),
+        reds: reds.map((e) => byIdAll.get(e.p)).filter(Boolean),
+      };
+      recordMatchStats(s, f, () => random(s), ourFinal, cards);
+      const { redCardPenalty } = applyMatchConsequences(s, f, cards, () => random(s), { suspensionThreshold });
+      noteResultNoise(s, f);
+      for (const player of cards.reds) recordDisciplineIncident(s, f, player);
+      void redCardPenalty;
       message(s, {
         title: `${f.isDerby ? "🔥 " : ""}${result} ${our}–${opp} | تقرير ${f.isDerby ? "الديربي" : "المباراة"}`,
-        body: `${extendedClub(f.home).name} ${f.homeGoals} — ${f.awayGoals} ${extendedClub(f.away).name}. ${f.neutral ? "مباراة على ملعب محايد؛ لا إيراد تذاكر ملعب ناديك." : home ? (f.isDerby ? "تم تسجيل تذاكر الديربي بأسعار مضاعفة ومصروفات التنظيم." : "تم تسجيل التذاكر ومصروفات التنظيم في الحسابات.") : "مباراة خارج ملعبك."} ${f.tactics ? `خطة ${f.tactics.formation} · ملاءمة المراكز ${f.tactics.fit}٪ · الضغط والإيقاع يؤثران على الفرص والإجهاد. ` : ""}المحاكاة احتمالية ومبسطة، وليست مباراة مرئية.`,
+        body: `${extendedClub(f.home).name} ${f.homeGoals} — ${f.awayGoals} ${extendedClub(f.away).name}. ${f.neutral ? "مباراة على ملعب محايد؛ لا إيراد تذاكر ملعب ناديك." : home ? (f.isDerby ? "تم تسجيل تذاكر الديربي بأسعار مضاعفة ومصروفات التنظيم." : "تم تسجيل التذاكر ومصروفات التنظيم في الحسابات.") : "مباراة خارج ملعبك."} ${f.tactics ? `خطة ${f.tactics.formation} · ملاءمة المراكز ${f.tactics.fit}% · الضغط والإيقاع يؤثران على الفرص والإجهاد. ` : ""}المحاكاة احتمالية ومبسطة، وليست مباراة مرئية.`,
         category: "matches",
       });
       if (f.isDerby) {
@@ -324,6 +424,13 @@ export function matchDay(
           resolveInsiderBet(s, f);
         }
       } catch {}
+    }
+    // 0.43: فضيحة النتيجة بعد كل التعديلات (عقوبة الطرد أولًا). تُسجَّل في المباراة،
+    // ومن طرف ناديك تصل نكهة إخبارية تلقائية.
+    const scandal = scandalKind(hp, ap, f.homeGoals, f.awayGoals);
+    if (scandal) {
+      f.scandal = scandal;
+      if (owns) scandalMessage(s, f, scandal);
     }
   }
 }

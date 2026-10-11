@@ -9,19 +9,16 @@ import { migrateSave } from "../src/core/migrations.js";
 import {
   OWNER_STORIES,
   LIFESTYLES,
-  TRANSFER_CAP,
   initEmpire,
   storyForOldSave,
   netWorth,
   portfolioValue,
-  transferToPersonal,
-  transferToClub,
-  transferRemaining,
   setLifestyle,
   repayDebt,
   chargeMonthlyLiving,
 } from "../src/services/empire/wealth.js";
 import { empireDay } from "../src/services/empire/day.js";
+import { takeFromClub, transferToClub } from "../src/services/empire/transfers.js";
 import { advanceTime } from "../src/services/time.js";
 
 const game = (opts = {}) => {
@@ -53,7 +50,7 @@ test("الفصل التام: خزينة النادي لا تختلط بالثر�
   s.finance.cash += 0;
   assert.equal(s.empire.personal, personalBefore);
   // التحويل يغير الطرفين بنفس المقدار تمامًا.
-  transferToPersonal(s, 2_000_000);
+  takeFromClub(s, 2_000_000);
   assert.equal(s.finance.cash, clubBefore - 2_000_000);
   assert.equal(s.empire.personal, personalBefore + 2_000_000);
   // القيد المحاسبي للنادي ما زال متماسكًا.
@@ -61,44 +58,12 @@ test("الفصل التام: خزينة النادي لا تختلط بالثر�
   assert.equal(s.finance.initialCash + sum, s.finance.cash);
 });
 
-test("التحويل بحدود شهرية في الاتجاهين", () => {
-  const s = game();
-  assert.equal(transferRemaining(s, "toPersonal"), TRANSFER_CAP);
-  transferToPersonal(s, TRANSFER_CAP);
-  assert.equal(transferRemaining(s, "toPersonal"), 0);
-  // تجاوز الحد مرفوض.
-  assert.throws(() => transferToPersonal(s, 1));
-  // الاتجاه الآخر مستقل بحدّه الخاص.
-  assert.equal(transferRemaining(s, "toClub"), TRANSFER_CAP);
-  transferToClub(s, 3_000_000);
-  assert.equal(transferRemaining(s, "toClub"), TRANSFER_CAP - 3_000_000);
-  // الشهر الجديد يفتح الحدود من جديد.
-  s.date = "2026-11-01";
-  assert.equal(transferRemaining(s, "toPersonal"), TRANSFER_CAP);
-  assert.equal(transferRemaining(s, "toClub"), TRANSFER_CAP);
-});
-
-test("السحب من النادي يمر على الجمعية ويرفع الشبهات حين يكبر", () => {
-  const s = game();
-  const small = game();
-  transferToPersonal(s, 2_000_000); // فوق عتبة المليون
-  transferToPersonal(small, 500_000); // تحت العتبة
-  assert.ok(
-    s.inbox.some(
-      (m) => m.category === "board" && /الجمعية/.test(m.title + m.body),
-    ),
-    "رسالة مراقبة الجمعية للسحب الكبير",
-  );
-  assert.ok(s.blackFiles.suspicion > 0, "الشبهات ارتفعت مع السحب الكبير");
-  assert.equal(small.blackFiles.suspicion, 0);
-});
-
 test("دعم النادي من الشخصي يرفع البرستيج ويُسجَّل في الدفاتر", () => {
   const s = game({ ownerStory: "heir" });
   const cashBefore = s.finance.cash;
   transferToClub(s, 4_000_000);
   assert.equal(s.finance.cash, cashBefore + 4_000_000);
-  assert.ok(s.finance.ledger.some((e) => e.category === "owner-support"));
+  assert.ok(s.finance.ledger.some((e) => e.category === "vault"));
   assert.equal(s.empire.prestige, initEmpire(null, "heir").prestige + 1);
 });
 
@@ -126,7 +91,7 @@ test("مصروف المعيشة الشهري يُخصم من الشخصي لا �
 test("الصرف فوق الدخل ينزف الثروة ثم يراكم الدين", () => {
   const s = game({ ownerStory: "gambler" });
   setLifestyle(s, "legendary");
-  s.empire.personal = 1_000_000; // أقل من مصروف الأسطوري (٦ ملايين)
+  s.empire.personal = 1_000_000; // أقل من مصروف الأسطوري (6 ملايين)
   const rec = chargeMonthlyLiving(s);
   assert.equal(rec.paid, 1_000_000);
   assert.equal(rec.shortfall, 5_000_000);
@@ -143,7 +108,7 @@ test("بداية الشهر: دخل القصة + فائدة الدين + الم�
   s.date = "2026-10-01";
   const result = empireDay(s);
   assert.ok(result, "التسوية الشهرية تعمل في اليوم الأول");
-  // دخل ١٥٠ ألفًا − معيشة ٢٥٠ ألفًا = −١٠٠ ألف، مع فائدة ١٪ تضاف للدين.
+  // دخل 150 ألفًا − معيشة 250 ألفًا = −100 ألف، مع فائدة 1% تضاف للدين.
   assert.equal(s.empire.personal, before + 150_000 - 250_000);
   assert.ok(s.empire.debt > debtBefore, "فائدة الدين تُضاف");
   // لا تسوية مرتين في نفس الشهر.
@@ -175,7 +140,7 @@ test("صافي الثروة: الشخصي + الاستثمارات − الدي�
   );
 });
 
-test("الترحيل: حفظة قديمة (نسخة ٢٢) تحصل على إمبراطورية تلقائيًا حسب الصعوبة", () => {
+test("الترحيل: حفظة قديمة (نسخة 22) تحصل على إمبراطورية تلقائيًا حسب الصعوبة", () => {
   for (const [difficulty, story] of [
     ["beginner", "heir"],
     ["easy", "heir"],
@@ -207,7 +172,7 @@ test("storyForOldSave حتمية وتتبع الصعوبة", () => {
   assert.equal(storyForOldSave({}), "selfmade");
 });
 
-test("التكامل: تقدم ٤٠ يومًا عبر بداية شهر يظل صالحًا", async () => {
+test("التكامل: تقدم 40 يومًا عبر بداية شهر يظل صالحًا", async () => {
   const s = game();
   const { pendingActions, resolveInfo } = await import("../src/services/inbox.js");
   const { EVENT_CATALOG } = await import("../src/data/eventCatalog.js");

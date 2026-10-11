@@ -1,4 +1,4 @@
-// مكتب المالية: تقارير شهرية متجددة، توقع سيولة ٣٠ يومًا، وتحذيرات قابلة للعرض.
+// مكتب المالية: تقارير شهرية متجددة، توقع سيولة 30 يومًا، وتحذيرات قابلة للعرض.
 import { addDays } from "../../core/utils.js";
 import {
   forecast,
@@ -75,7 +75,7 @@ export function financeOfficeDay(s) {
   if (report.warnings.length) {
     message(s, {
       title: "تحذير المكتب المالي الشهري",
-      body: `رُصدت ${report.warnings.length} مؤشرات مالية تحتاج مراجعة. الرصيد المتوقع خلال ٣٠ يومًا: ${report.projectedCash.toLocaleString()}.`,
+      body: `رُصدت ${report.warnings.length} مؤشرات مالية تحتاج مراجعة. الرصيد المتوقع خلال 30 يومًا: ${report.projectedCash.toLocaleString("en-US")}.`,
       category: "finance",
       kind: "staff-finance-warning",
     });

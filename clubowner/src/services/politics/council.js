@@ -336,15 +336,3 @@ export function resolveBill(s, billId) {
   return result;
 }
 
-export function lawStatus(s, lawId) {
-  const p = ensurePolitics(s);
-  const law = POLITICAL_LAWS[lawId];
-  if (!law) return null;
-  return {
-    law,
-    enacted: Boolean(p.council.laws[lawId]),
-    current:
-      p.council.currentBill?.lawId === lawId ? p.council.currentBill : null,
-    history: p.council.history.filter((record) => record.lawId === lawId),
-  };
-}

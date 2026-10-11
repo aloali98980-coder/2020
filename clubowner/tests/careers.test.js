@@ -149,9 +149,9 @@ test("Every event choice records concrete effects once; delayed income is collec
         status: "open",
         choice: null,
       });
-      // 0.25: الكتالوج صار ٧٠ حدثًا بمفردات أثر أوسع (youth بعدد، signing، incomeDays،
+      // 0.25: الكتالوج صار 70 حدثًا بمفردات أثر أوسع (youth بعدد، signing، incomeDays،
       // costLater). الاختبار يبقى كما هو في روحه — كل أثر يُسجَّل مرة واحدة بالضبط —
-      // لكنه يقرأ الأرقام من الخيار نفسه بدل ثابت ١٨٠٠٠٠.
+      // لكنه يقرأ الأرقام من الخيار نفسه بدل ثابت 180000.
       s.finance.cash = Math.max(s.finance.cash, 60000000);
       const cash = s.finance.cash,
         headcount = s.players.length;

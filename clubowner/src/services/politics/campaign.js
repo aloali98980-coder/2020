@@ -355,7 +355,7 @@ export function fundCampaign(s, amount) {
   )
     throw new Error(
       tr(
-        "يجب أن يكون التمويل بين مليون و٢٥ مليونًا.",
+        "يجب أن يكون التمويل بين مليون و25 مليونًا.",
         "Funding must be between one million and 25 million.",
         "Le financement doit être compris entre un et 25 millions.",
       ),

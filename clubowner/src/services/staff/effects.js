@@ -9,7 +9,7 @@ export const gkSkillOf = (s) => corpSkill(s, "gk");
 export const fitnessSkillOf = (s) => corpSkill(s, "fitness");
 export const doctorSkillOf = (s) => corpSkill(s, "doctor");
 
-// معامل إصابات المباريات: لياقة ٩٠ تخفض الاحتمال ٣٦٪ (أرضية ٠٫٦).
+// معامل إصابات المباريات: لياقة 90 تخفض الاحتمال 36% (أرضية 0٫6).
 export const fitnessFactor = (s) => clamp(1 - fitnessSkillOf(s) / 250, 0.6, 1);
 // مكسب تطور الحراس الشهري الإضافي + فرصة التطور.
 export const gkGainBonus = (s) => {
@@ -28,8 +28,8 @@ export function doctorDay(s) {
     const actual = daysBetween(s.date, p.injuryUntil);
     let shift = 0;
     if (skill >= 80) shift = 0;
-    else if (skill >= 55) shift = Math.floor(srng(s) * 3) - 1; // ±١
-    else shift = Math.floor(srng(s) * 9) - 4; // ±٤: دكتور تعبان
+    else if (skill >= 55) shift = Math.floor(srng(s) * 3) - 1; // ±1
+    else shift = Math.floor(srng(s) * 9) - 4; // ±4: دكتور تعبان
     const next = addDays(s.date, Math.max(1, actual + shift));
     p.injuryUntil = next;
     p.staffDx = next;
@@ -43,7 +43,7 @@ export function doctorDay(s) {
   }
   return diagnosed;
 }
-// الشفاء الشهري: كل ٣٠ مهارة ≈ يوم شفاء إضافي.
+// الشفاء الشهري: كل 30 مهارة ≈ يوم شفاء إضافي.
 export function doctorMonth(s) {
   const skill = doctorSkillOf(s);
   if (!skill) return 0;

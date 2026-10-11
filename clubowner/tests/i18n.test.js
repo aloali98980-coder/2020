@@ -66,11 +66,11 @@ test("translateText: exact phrases, punctuation tolerance and digits", () => {
   assert.equal(translateText("السيولة لا تكفي."), "Insufficient cash.");
   assert.equal(
     translateText(
-      "٥ ملايين جنيه دخلت الخزينة. إجمالي السداد ٥٫٤ مليون على ١٢ دفعة كل ٣٠ يومًا. النموذج تمويلي مبسط، وليس عرضًا بنكيًا حقيقيًا",
+      "5 ملايين جنيه دخلت الخزينة. إجمالي السداد 5٫4 مليون على 12 دفعة كل 30 يومًا. النموذج تمويلي مبسط، وليس عرضًا بنكيًا حقيقيًا",
     ),
     "EGP 5 million entered the treasury. Total repayment is 5.4 million over 12 instalments every 30 days. A simplified financing model, not a real bank offer",
   );
-  assert.equal(translateText("١٢ لاعب"), "12 player");
+  assert.equal(translateText("12 لاعب"), "12 player");
   assert.equal(translateText("Manchester City"), "Manchester City");
   setLanguage("fr");
   assert.equal(translateText("السيولة لا تكفي"), "Trésorerie insuffisante");
@@ -90,7 +90,7 @@ test("translateText: fragments around interpolated names and numbers", () => {
   );
   assert.equal(
     translateText(
-      "اعتزل بعد ١٢ مباراة و٣ هدفًا مع النادي. اسمه الآن على جدار القاعة",
+      "اعتزل بعد 12 مباراة و3 هدفًا مع النادي. اسمه الآن على جدار القاعة",
     ),
     "Retired after 12 matches and 3 goals for the club. His name is now on the hall’s wall",
   );
@@ -106,7 +106,7 @@ test("translateText: boundary rules — harakat, tatweel connector, punctuation-
   setLanguage("en");
   // "مقدم" must not match inside "مقدمًا" (tanween is part of the word).
   assert.equal(
-    translateText("استلمت ٢٥٪ مقدمًا، والباقي على ١١ دفعة كل ٣٠ يومًا."),
+    translateText("استلمت 25% مقدمًا، والباقي على 11 دفعة كل 30 يومًا."),
     "You received 25% upfront; the rest comes in 11 instalments every 30 days.",
   );
   // A key ending with the tatweel connector is glued to the next word.

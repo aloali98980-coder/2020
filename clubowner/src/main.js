@@ -74,6 +74,7 @@ import {
   haveChild,
   leaveDynastyAcademy,
   marryOwner,
+  divorceOwner,
   setAcademyFocus,
   setAcademyMentor,
   setAcademyPosition,
@@ -98,6 +99,9 @@ import "./styles/layout.css";
 import "./styles/features.css";
 import "./styles/responsive.css";
 import "./styles/readability.css";
+import "./styles/mobile.css";
+import "./styles/dashboard.css";
+import { applyPerformanceMode } from "./core/device.js";
 import "./styles/tokens.css";
 import "./styles/motion.css";
 import "./styles/dynasty.css";
@@ -182,9 +186,10 @@ import {
   negotiateSponsor,
   answerSponsorDeal,
 } from "./services/sponsors.js";
-import { takeLoan, wages, secretDeposit } from "./services/finance.js";
+import { takeLoan, wages } from "./services/finance.js";
+import { vaultMove, VAULT_AMOUNTS, VAULT_TAPS, VAULT_TAP_WINDOW_MS, ensureVault } from "./services/vault.js";
 import { setupView } from "./features/setup.js";
-import { shell, NAV_GROUPS, NAV_BY_ID, navLabel } from "./components/shell.js";
+import { shell, NAV_GROUPS, NAV_BY_ID, navLabel, toggleNavGroup } from "./components/shell.js";
 import { dashboardView } from "./features/dashboard.js";
 import { inboxView } from "./features/inbox.js";
 import {
@@ -218,6 +223,23 @@ import { launchCampaign } from "./services/staff/marketing.js";
 import { publishContent, derbyCampaign, resolveCrisis } from "./services/staff/social.js";
 import { worldView } from "./features/world.js";
 import { settingsView } from "./features/settings.js";
+import { achievementsView } from "./features/achievements.js";
+import { absenceBanner } from "./features/absence.js";
+import { legendLogView } from "./features/legendLog.js";
+import { seasonHarvestView } from "./features/seasonHarvest.js";
+import { markAbsenceSeen } from "./services/absence.js";
+import { setNotify } from "./services/settingsHub.js";
+import { setSectionInfoHidden, showAllSectionInfo } from "./services/sectionInfo.js";
+import { sectionInfoCard } from "./features/sectionInfo.js";
+import {
+  irreversibleWarning,
+  startVacation,
+  endVacation,
+} from "./services/protection.js";
+import {
+  irreversibleModal,
+  vacationReturnModal,
+} from "./features/protection.js";
 import { dynastyView } from "./features/dynasty.js";
 import { politicsView } from "./features/politics.js";
 import { POLITICAL_BLOCS } from "./data/politicsCatalog.js";
@@ -291,7 +313,7 @@ import {
 } from "./ui/modal.js";
 import { icon } from "./components/icons.js";
 import { badge, button, infoNote } from "./components/shared.js";
-import { money, num, esc, date, setDigitsMode, setDisplayCurrency, cur } from "./ui/format.js";
+import { money, num, esc, date, setDisplayCurrency, cur } from "./ui/format.js";
 import { ASSETS } from "./data/catalog.js";
 import { findPerson } from "./services/retired.js";
 import { APP_VERSION } from "./data/version.js";
@@ -313,12 +335,13 @@ import { blackFilesView } from "./features/blackFiles.js";
 import * as BlackService from "./services/blackFiles.js";
 import * as ReleaseService from "./services/releaseClause.js";
 import { empireView } from "./features/empire.js";
+import { setLifestyle, repayDebt } from "./services/empire/wealth.js";
 import {
-  transferToPersonal,
+  takeFromClub,
   transferToClub,
-  setLifestyle,
-  repayDebt,
-} from "./services/empire/wealth.js";
+  proposeProject,
+  drawStatus,
+} from "./services/empire/transfers.js";
 const requireBlack = () => BlackService;
 const requireRelease = () => ReleaseService;
 const app = document.getElementById("app");
@@ -379,11 +402,26 @@ matchMedia("(prefers-color-scheme: light)").addEventListener?.("change", () => {
       document.documentElement.dataset.theme = resolveTheme("system");
   } catch {}
 });
+// رندر متجمع لحقول البحث: يتجنب إعادة بناء الشاشة مع كل حرف على الهاتف.
+let searchRenderTimer = 0;
+function renderSearchSoon() {
+  clearTimeout(searchRenderTimer);
+  searchRenderTimer = setTimeout(() => {
+    const active = document.activeElement;
+    const id = active?.id;
+    const pos = active?.selectionStart ?? null;
+    render();
+    if (!id) return;
+    const input = document.getElementById(id);
+    if (!input) return;
+    input.focus();
+    if (pos !== null) input.setSelectionRange(pos, pos);
+  }, 120);
+}
 function render() {
   const s = getState();
   if (s) {
     // تفضيلات العرض تُطبق قبل بناء الشاشات: نمط الأرقام وتقليل الحركة.
-    setDigitsMode(s.preferences?.digits === "western" ? "western" : "arabic");
     document.body.classList.toggle(
       "reduce-motion",
       !!s.preferences?.reduceMotion,
@@ -403,7 +441,7 @@ function render() {
     return;
   }
   const views = {
-    dashboard: () => dashboardView(s),
+    dashboard: () => `${absenceBanner(s)}${dashboardView(s)}`,
     inbox: () => inboxView(s, ui.inboxFilter, ui.message),
     squad: () => playersView(s, false, ui.playerFilters),
     transfers: () => playersView(s, true, ui.playerFilters),
@@ -431,6 +469,9 @@ function render() {
     empire: () => empireView(s, ui.empireTab),
     legends: () => legendsView(s, ui.legendFilters),
     awards: () => awardsView(s),
+    achievements: () => achievementsView(s),
+    legacy: () => legendLogView(s),
+    harvest: () => seasonHarvestView(s),
     dynasty: () => dynastyView(s),
     settings: () => settingsView(s),
     database: () => databaseView(),
@@ -442,7 +483,11 @@ function render() {
       }),
     careers: () => careersView(s, ui.talentPlayer),
   };
-  app.innerHTML = shell(s, ui.route, (views[ui.route] || views.dashboard)());
+  app.innerHTML = shell(
+    s,
+    ui.route,
+    `${sectionInfoCard(s, ui.route)}${(views[ui.route] || views.dashboard)()}`,
+  );
   if (ui.route !== lastRenderedRoute)
     app.querySelector("#main-content")?.classList.add("page-enter");
   lastRenderedRoute = ui.route;
@@ -661,12 +706,12 @@ function updateCalculations() {
           Number(contract.elements.annualRaisePct.value),
         );
     document.getElementById("contract-summary").innerHTML =
-      `<div><span>المطلوب من الخزينة الآن</span><strong class="${now > s.finance.cash ? "red" : "green"}">${money(now)} ${cur()}</strong></div><div><span>إجمالي الالتزام خلال العقد</span><strong>${money(total)} ${cur()}</strong></div>${n ? `<div><span>عمولة الوكيل (٣٪)</span><b>${money(agent)} ${cur()}</b></div>` : ""}<small>يشمل ${renew ? "العقد الجديد والمكافأة" : "رسوم الانتقال والمرتب والمكافأة والوكيل"}. الرصيد المتاح ${money(s.finance.cash)} ${cur()}.</small>`;
+      `<div><span>المطلوب من الخزينة الآن</span><strong class="${now > s.finance.cash ? "red" : "green"}">${money(now)} ${cur()}</strong></div><div><span>إجمالي الالتزام خلال العقد</span><strong>${money(total)} ${cur()}</strong></div>${n ? `<div><span>عمولة الوكيل (3%)</span><b>${money(agent)} ${cur()}</b></div>` : ""}<small>يشمل ${renew ? "العقد الجديد والمكافأة" : "رسوم الانتقال والمرتب والمكافأة والوكيل"}. الرصيد المتاح ${money(s.finance.cash)} ${cur()}.</small>`;
   }
   if (offer) translateDOM(document.getElementById("offer-summary"));
   if (contract) {
     const summary = document.getElementById("contract-summary");
-    summary.innerHTML += `<small>${tr("التكلفة المضمونة تشمل الزيادة السنوية ولا تشمل مكافآت المشاركات والأهداف المتغيرة. وعد الأساسي: المشاركة في ٦٠٪ من المباريات خلال أول ٦٠ يومًا؛ المخالفة تخفض المعنويات ١٢ نقطة. الشرط الجزائي يسمح لك بدفعه عند شراء لاعب من السوق؛ بيع لاعبيك للمنافسين غير متاح بعد.", "Guaranteed cost includes annual raises but excludes variable appearance and goal bonuses. Regular role: appear in 60% of matches during the first 60 days or lose 12 morale. A market player’s release clause can be activated when buying; AI purchases of your players are not yet enabled.", "Le coût garanti inclut les hausses annuelles, pas les primes variables. Titulaire : participer à 60 % des matchs des 60 premiers jours, sinon perte de 12 points de moral. La clause d’un joueur du marché peut être activée à l’achat ; ventes à l’IA non disponibles.")}</small>`;
+    summary.innerHTML += `<small>${tr("التكلفة المضمونة تشمل الزيادة السنوية ولا تشمل مكافآت المشاركات والأهداف المتغيرة. وعد الأساسي: المشاركة في 60% من المباريات خلال أول 60 يومًا؛ المخالفة تخفض المعنويات 12 نقطة. الشرط الجزائي يسمح لك بدفعه عند شراء لاعب من السوق؛ بيع لاعبيك للمنافسين غير متاح بعد.", "Guaranteed cost includes annual raises but excludes variable appearance and goal bonuses. Regular role: appear in 60% of matches during the first 60 days or lose 12 morale. A market player’s release clause can be activated when buying; AI purchases of your players are not yet enabled.", "Le coût garanti inclut les hausses annuelles, pas les primes variables. Titulaire : participer à 60 % des matchs des 60 premiers jours, sinon perte de 12 points de moral. La clause d’un joueur du marché peut être activée à l’achat ; ventes à l’IA non disponibles.")}</small>`;
     translateDOM(summary);
   }
 }
@@ -707,7 +752,7 @@ function authModalContent(activeTab = "login", error = "") {
           <input type="text" name="username" required autocomplete="nickname" placeholder="الاسم الذي يظهر في حسابك">
         </label>
         <label class="field">
-          <span>كلمة المرور (٦ أحرف على الأقل)</span>
+          <span>كلمة المرور (6 أحرف على الأقل)</span>
           <input type="password" name="password" minlength="6" required autocomplete="new-password" placeholder="••••••••">
         </label>
       </div>
@@ -717,6 +762,44 @@ function authModalContent(activeTab = "login", error = "") {
       </div>
     </form>
   `}`;
+}
+
+
+// ── الخزنة الموحدة: نافذة التحويل + دفتر الحركات الأخيرة ──────────────────
+let vaultTaps = [];
+function vaultModalHtml() {
+  const s = getState();
+  const log = s ? ensureVault(s).log : [];
+  const amountRow = (to) =>
+    VAULT_AMOUNTS.map((a) =>
+      button(`${money(a)} ${cur()}`, "vault-move", `${to}:${a}`, a >= 1_000_000_000 ? "primary" : "soft"),
+    ).join("");
+  const rows = log.length
+    ? log
+        .slice(0, 8)
+        .map(
+          (e) =>
+            `<li><span>${e.date}</span><span>${e.to === "club" ? tr("← إلى النادي", "→ to the club", "→ au club") : tr("→ إلى الشخصية", "→ to personal", "→ au personnel")}</span><b>${money(e.amount)} ${cur()}</b></li>`,
+        )
+        .join("")
+    : `<li class="muted">${tr("لا حركات بعد.", "No movements yet.", "Aucun mouvement pour l’instant.")}</li>`;
+  return `<h2>${tr("الخزنة الموحدة 🤫", "The unified vault 🤫", "Le coffre unifié 🤫")}</h2>
+    <p class="muted">${tr("تحويل داخلي بين خزينة النادي وخزنتك الشخصية. التحويل إلى النادي بلا قيود، والسحب إلى الشخصي يخضع لسقف الثقة والفاصل الثلاثي.", "An internal transfer between the club treasury and your personal vault. Moves to the club are unrestricted; draws to personal follow the trust cap and the three-month gap.", "Un transfert interne entre la trésorerie du club et votre coffre personnel. Les versements au club sont libres ; les prélèvements vers le personnel suivent le plafond de confiance et l’intervalle de trois mois.")}</p>
+    <div class="vault-dest"><strong>${tr("إلى خزينة النادي", "To the club treasury", "Vers la trésorerie du club")}</strong><div class="modal-actions vault-grid">${amountRow("club")}</div></div>
+    <div class="vault-dest"><strong>${tr("إلى الخزنة الشخصية", "To your personal vault", "Vers votre coffre personnel")}</strong><div class="modal-actions vault-grid">${amountRow("personal")}</div></div>
+    <h3>${tr("الدفتر", "Ledger", "Registre")}</h3><ul class="vault-log">${rows}</ul>
+    <div class="modal-actions">${button(tr("إغلاق الخزنة", "Close the vault", "Fermer le coffre"), "modal-close", "", "ghost")}</div>`;
+}
+
+function lootModalHtml({ amount, project, status, from }) {
+  const reasons = status.reasonTexts.map((x) => `<li>${x}</li>`).join("");
+  const action = "loot-confirm";
+  const payload = `${amount}:${project || ""}:${from}`;
+  return `<h2>${tr("هذا نهب!", "This is looting!", "C’est du pillage !")}</h2>
+    <p>${tr("سحب", "Drawing", "Prélèvement de")} ${money(amount)} ${cur()} ${tr("خارج القواعد:", "outside the rules:", "hors des règles :")}</p>
+    <ul class="muted">${reasons}</ul>
+    <p>${tr("التنفيذ يرفع الحرارة (الشبهات) ويخفض ثقة الجمعية، ويفتح خطر الفصل.", "Proceeding raises heat (suspicion), lowers assembly trust and opens a dismissal risk.", "Poursuivre fait monter la pression (soupçons), baisse la confiance de l’assemblée et ouvre un risque de révocation.")}</p>
+    <div class="modal-actions">${button(tr("تنفيذ النهب", "Proceed with looting", "Poursuivre le pillage"), action, payload, "primary")}${button(tr("إلغاء", "Cancel", "Annuler"), "modal-close", "", "ghost")}</div>`;
 }
 
 const actions = {
@@ -955,17 +1038,51 @@ const actions = {
     render();
     document.querySelector(".market-focus-card")?.scrollIntoView({ behavior: "smooth", block: "start" });
   },
-  // خزنة المالك السرية: مفاتيحها أرقام الإصدار (أسفل القائمة الجانبية + سطر EMPIRE FC في شيت «المزيد» + شارة «عن اللعبة»).
-  "secret-vault": () =>
-    openModal(
-      `<h2>${tr("خزنة المالك السرية 🤫", "The owner's secret vault 🤫", "Le coffre secret du propriétaire 🤫")}</h2><p class="muted">${tr("إيداع فوري بفلوس تجريبية لمن يعرف المكان. يُسجَّل في الدفاتر مثل أي تدفق نقدية فتبقى الإدارة المالية صادقة.", "An instant injection of play money for those who know the spot. It is posted to the ledger like any cash flow, so the books stay honest.", "Une injection instantanée d’argent fictif pour qui connaît l’endroit. Inscrite au registre comme tout flux, la comptabilité reste honnête.")}</p><div class="modal-actions vault-grid">${button(`${money(10000000)} ${cur()}`, "vault-deposit", "10000000", "soft")}${button(`${money(100000000)} ${cur()}`, "vault-deposit", "100000000", "secondary")}${button(`${money(1000000000)} ${cur()}`, "vault-deposit", "1000000000", "primary")}</div><div class="modal-actions">${button(tr("إغلاق الخزنة", "Close the vault", "Fermer le coffre"), "modal-close", "", "ghost")}</div>`,
-    ),
-  "vault-deposit": async (el) => {
-    const amount = Number(el.dataset.id);
-    await apply((s) => secretDeposit(s, amount));
+  // الخزنة الموحدة 0.43: تُفتح بخمس نقرات متتالية خلال 3 ثوانٍ على شارة الإصدار (لا نقرة واحدة).
+  "secret-vault": () => {
+    const now = Date.now();
+    vaultTaps = vaultTaps.filter((t) => now - t <= VAULT_TAP_WINDOW_MS);
+    vaultTaps.push(now);
+    if (vaultTaps.length < VAULT_TAPS) return;
+    vaultTaps = [];
+    openModal(vaultModalHtml());
+  },
+  "vault-move": async (el) => {
+    const [to, amountRaw] = String(el.dataset.id).split(":");
+    const amount = Number(amountRaw);
+    if (to === "personal") {
+      const st = drawStatus(getState(), amount);
+      if (st.loot) {
+        openModal(lootModalHtml({ amount, project: null, status: st, from: "vault" }));
+        return;
+      }
+    }
+    await apply((s) => vaultMove(s, { to, amount }));
     toast(
-      `${tr("تم إيداع", "Deposited", "Déposé")} ${money(amount)} ${cur()} ${tr("في خزينة النادي 🤫", "into the club treasury 🤫", "dans la trésorerie du club 🤫")}`,
+      to === "club"
+        ? `${tr("تم تحويل", "Moved", "Transféré")} ${money(amount)} ${cur()} ${tr("إلى خزينة النادي", "to the club treasury", "vers la trésorerie du club")}`
+        : `${tr("تم تحويل", "Moved", "Transféré")} ${money(amount)} ${cur()} ${tr("إلى خزنتك الشخصية", "to your personal vault", "vers votre coffre personnel")}`,
     );
+    openModal(vaultModalHtml());
+  },
+  // تأكيد النهب صراحةً بعد تحذير «هذا نهب!» (data-id = المبلغ:المشروع)
+  "loot-confirm": async (el) => {
+    const [amountRaw, projectRaw, from] = String(el.dataset.id).split(":");
+    const amount = Number(amountRaw);
+    const project = projectRaw || null;
+    const text = tr("تم السحب، وسُجل النهب في الدفاتر.", "Drawn — the looting is recorded in the ledger.", "Prélevé — le pillage est enregistré dans le registre.");
+    if (from === "vault") {
+      await apply((s) => vaultMove(s, { to: "personal", amount, confirmLoot: true }), text);
+      openModal(vaultModalHtml());
+      return;
+    }
+    await apply((s) => takeFromClub(s, amount, { project, confirmLoot: true }), text);
+    closeModal();
+  },
+  // القائمة الجانبية: طي/فتح مجموعة وحفظ الحالة في المتصفح.
+  "nav-group-toggle": (el) => {
+    toggleNavGroup(el.dataset.id);
+    render();
   },
   "modal-close": () => closeModal(),
   "instant-friendly": async () => {
@@ -992,6 +1109,20 @@ const actions = {
     if (draw) openModal(cupDrawModal(s, draw), true);
   },
   "go-awards": async () => navigate("awards"),
+  // 0.46 (القسم 7): إخفاء بطاقة التعريف لقسم، وإعادتها كلها من الإعدادات.
+  "info-hide": async (el) => apply((state) => setSectionInfoHidden(state, el.dataset.id, true)),
+  "info-show-all": async () => apply((state) => showAllSectionInfo(state), tr("تمت إعادة بطاقات الشرح.", "Info cards are back.", "Cartes d'information rétablies.")),
+  // 0.46: «تم الاطلاع» يحدّث آخر زيارة فيختفي الملخص حتى غياب جديد.
+  "absence-seen": async () => apply((state) => markAbsenceSeen(state)),
+  // 0.46: وضع الإجازة وتقرير العودة.
+  "vacation-start": async () => apply((state) => startVacation(state), tr("بدأ وضع الإجازة.", "Holiday mode is on.", "Mode vacances activé.")),
+  "vacation-end": async () => {
+    let out = null;
+    await apply((state) => {
+      out = endVacation(state);
+    });
+    if (out) openModal(vacationReturnModal(out));
+  },
   "view-ceremony": async () => {
     const s = getState();
     const ceremony = s?.awards?.ceremony;
@@ -1455,7 +1586,7 @@ const actions = {
     openModal(hireStaffForm(getState(), el.dataset.id)),
   "staff-course": async (el) =>
     openModal(
-      `<h2>دورة تطوير</h2><p>${tr("٦ نقاط للمهارة الأساسية حتى حد ٩٥. لا تضمن الدورة زيادة المرتب.", "Adds 6 points to the main skill, up to 95. Salary is unchanged.", "Ajoute 6 points à la compétence principale, jusqu’à 95. Salaire inchangé.")}</p><div class="modal-actions">${button(`الموافقة على دورة ٢١ يومًا مقابل ${money(100000)} ${cur()}`, "confirm-staff-course", el.dataset.id, "primary")}</div>`,
+      `<h2>دورة تطوير</h2><p>${tr("6 نقاط للمهارة الأساسية حتى حد 95. لا تضمن الدورة زيادة المرتب.", "Adds 6 points to the main skill, up to 95. Salary is unchanged.", "Ajoute 6 points à la compétence principale, jusqu’à 95. Salaire inchangé.")}</p><div class="modal-actions">${button(`الموافقة على دورة 21 يومًا مقابل ${money(100000)} ${cur()}`, "confirm-staff-course", el.dataset.id, "primary")}</div>`,
     ),
   "confirm-staff-course": async (el) => {
     await apply((s) => trainStaff(s, el.dataset.id));
@@ -1659,6 +1790,27 @@ const actions = {
     updateCalculations();
   },
   "accept-club": async (el) => {
+    // 0.46: قرار لا رجعة فيه (نجم أو ملايين) يحتاج تأكيدًا صريحًا قبل التنفيذ.
+    const st = getState();
+    const neg = st?.negotiations.find((x) => x.id === el.dataset.id);
+    const warn = neg
+      ? irreversibleWarning(st, {
+          player: st.players.find((x) => x.id === neg.playerId),
+          fee: neg.counter || 0,
+        })
+      : null;
+    if (warn && !el.dataset.confirmed) {
+      openModal(
+        irreversibleModal({
+          title: tr("تأكيد الصفقة", "Confirm the deal", "Confirmer le transfert"),
+          warning: warn,
+          action: "accept-club",
+          id: el.dataset.id,
+        }),
+      );
+      return;
+    }
+    closeModal();
     await apply(
       (s) => acceptClub(s, el.dataset.id),
       "تم الاتفاق مع النادي. باقي عقد اللاعب.",
@@ -1693,7 +1845,7 @@ const actions = {
       sp = resolveSponsor(offer.sponsorId),
       asset = ASSETS.find((x) => x.id === offer.assetId);
     openModal(
-      `<span class="eyebrow">قبل الالتزام</span><h2>${sp.name} × ${asset.name}</h2><p class="muted">عقد ٣٦٠ يومًا بقيمة ${money(offer.amount)} ${cur()}، ومقدم ${money(Math.floor(offer.amount * 0.25))} ${cur()}. تشمل مكافآت أداء موحدة تُصرف تلقائيًا.</p><div class="effect-card"><h4>الحقوق والالتزامات</h4><p>سيتم حجز ${asset.name} طوال مدة العقد. ${offer.exclusive ? "العقد حصري لقطاع " + sp.sector + "؛ يمنع التعاقد مع منافس في نفس القطاع." : "بدون حصرية قطاع؛ مساحة الإعلان نفسها محجوزة لهذا الشريك فقط."}</p><small>الباقي على ١١ دفعة متساوية تقريبًا كل ٣٠ يومًا. الفسخ المبكر غير متاح في هذه النسخة.</small></div><div class="modal-actions"><button class="btn primary" data-action="sign-sponsor" data-id="${sp.id}" data-asset="${asset.id}">توقيع العقد واستلام المقدم ${icon("check", 17)}</button></div>`,
+      `<span class="eyebrow">قبل الالتزام</span><h2>${sp.name} × ${asset.name}</h2><p class="muted">عقد 360 يومًا بقيمة ${money(offer.amount)} ${cur()}، ومقدم ${money(Math.floor(offer.amount * 0.25))} ${cur()}. تشمل مكافآت أداء موحدة تُصرف تلقائيًا.</p><div class="effect-card"><h4>الحقوق والالتزامات</h4><p>سيتم حجز ${asset.name} طوال مدة العقد. ${offer.exclusive ? "العقد حصري لقطاع " + sp.sector + "؛ يمنع التعاقد مع منافس في نفس القطاع." : "بدون حصرية قطاع؛ مساحة الإعلان نفسها محجوزة لهذا الشريك فقط."}</p><small>الباقي على 11 دفعة متساوية تقريبًا كل 30 يومًا. الفسخ المبكر غير متاح في هذه النسخة.</small></div><div class="modal-actions"><button class="btn primary" data-action="sign-sponsor" data-id="${sp.id}" data-asset="${asset.id}">توقيع العقد واستلام المقدم ${icon("check", 17)}</button></div>`,
     );
   },
   "sign-sponsor": async (el) => {
@@ -1736,7 +1888,7 @@ const actions = {
     render();
   },
   "staff-neg-start": async (el) =>
-    apply((s) => startNegotiation(s, el.dataset.id), tr("بدأ التفاوض — ٣ جولات.", "Negotiation started — 3 rounds.", "Négociation lancée — 3 tours.")),
+    apply((s) => startNegotiation(s, el.dataset.id), tr("بدأ التفاوض — 3 جولات.", "Negotiation started — 3 rounds.", "Négociation lancée — 3 tours.")),
   "staff-neg-cancel": async () =>
     apply((s) => cancelNegotiation(s)),
   "staff-fire": async (el) =>
@@ -1771,7 +1923,7 @@ const actions = {
   },
   "loan-modal": async () =>
     openModal(
-      `<span class="eyebrow">تمويل تجريبي ثابت</span><h2>مساحة أكبر للسيولة… والتزام جديد</h2><div class="profile-stats"><div><small>المبلغ المستلم</small><strong>٥ ملايين ${cur()}</strong></div><div><small>إجمالي السداد</small><strong>٥٫٤ مليون ${cur()}</strong></div><div><small>الدفعة كل ٣٠ يومًا</small><strong>٤٥٠ ألف ${cur()}</strong></div></div><p class="muted">١٢ دفعة تشمل تكلفة تمويل ثابتة ٤٠٠ ألف جنيه. حد أقصى قرضان خلال الحفظة التجريبية. لا يتضمن نموذج فائدة مركبة أو شروط بنك حقيقي.</p>${infoNote("التمويل مش إيراد تشغيلي. القسط بيتسدد تلقائيًا حتى لو أدى لعجز في السيولة.")}<div class="modal-actions">${button("اعتماد التمويل", "take-loan", "", "primary")}</div>`,
+      `<span class="eyebrow">تمويل تجريبي ثابت</span><h2>مساحة أكبر للسيولة… والتزام جديد</h2><div class="profile-stats"><div><small>المبلغ المستلم</small><strong>5 ملايين ${cur()}</strong></div><div><small>إجمالي السداد</small><strong>5٫4 مليون ${cur()}</strong></div><div><small>الدفعة كل 30 يومًا</small><strong>450 ألف ${cur()}</strong></div></div><p class="muted">12 دفعة تشمل تكلفة تمويل ثابتة 400 ألف جنيه. حد أقصى قرضان خلال الحفظة التجريبية. لا يتضمن نموذج فائدة مركبة أو شروط بنك حقيقي.</p>${infoNote("التمويل مش إيراد تشغيلي. القسط بيتسدد تلقائيًا حتى لو أدى لعجز في السيولة.")}<div class="modal-actions">${button("اعتماد التمويل", "take-loan", "", "primary")}</div>`,
     ),
   "take-loan": async () => {
     await apply(takeLoan, "تم إيداع التمويل وجدولة الأقساط.");
@@ -1781,7 +1933,7 @@ const actions = {
     const s = getState(),
       prices = categoryPrices(s);
     openModal(
-      `<h2>تسعير تذاكر المباريات</h2><p class="muted">السعر الأعلى يرفع العائد لكل مشجع، لكنه يقلل الطلب. المقصورة أقل تأثرًا بالغلاء من العادية. أصحاب الاشتراكات يشغلون مقاعد العادية أولًا ولا يُحصّلون مرتين.</p><form id="ticket-form"><div class="form-grid"><label class="field"><span>العادية (70٪ من السعة)</span><input type="number" name="price" value="${s.ticketPrice}" min="50" max="500" required></label><label class="field"><span>الأولى (20٪ · 40–2000)</span><input type="number" name="first" value="${prices.first}" min="40" max="2000" required></label><label class="field"><span>المقصورة (10٪ · 100–5000)</span><input type="number" name="vip" value="${prices.vip}" min="100" max="5000" required></label><label class="field"><span>علاوة المباراة البيتية القادمة</span><select name="premium"><option value="0">بدون علاوة</option><option value="25">+٢٥٪ مباراة كبيرة</option><option value="50">+٥٠٪ قمة</option><option value="100">+١٠٠٪ ديربي ناري</option></select></label></div><div class="modal-actions"><button type="submit" class="btn primary">حفظ أسعار التذاكر</button></div></form>`,
+      `<h2>تسعير تذاكر المباريات</h2><p class="muted">السعر الأعلى يرفع العائد لكل مشجع، لكنه يقلل الطلب. المقصورة أقل تأثرًا بالغلاء من العادية. أصحاب الاشتراكات يشغلون مقاعد العادية أولًا ولا يُحصّلون مرتين.</p><form id="ticket-form"><div class="form-grid"><label class="field"><span>العادية (70% من السعة)</span><input type="number" name="price" value="${s.ticketPrice}" min="50" max="500" required></label><label class="field"><span>الأولى (20% · 40–2000)</span><input type="number" name="first" value="${prices.first}" min="40" max="2000" required></label><label class="field"><span>المقصورة (10% · 100–5000)</span><input type="number" name="vip" value="${prices.vip}" min="100" max="5000" required></label><label class="field"><span>علاوة المباراة البيتية القادمة</span><select name="premium"><option value="0">بدون علاوة</option><option value="25">+25% مباراة كبيرة</option><option value="50">+50% قمة</option><option value="100">+100% ديربي ناري</option></select></label></div><div class="modal-actions"><button type="submit" class="btn primary">حفظ أسعار التذاكر</button></div></form>`,
     );
   },
   "export-save": async () => {
@@ -1827,6 +1979,22 @@ const actions = {
   },
   "empire-sell-asset": async (el) => {
     const { sellAsset } = await import("./services/empire/assets.js");
+    // 0.46: بيع أصل بملايين لا رجعة فيه: تأكيد أولًا.
+    const st = getState();
+    const owned = st?.empire?.assets?.find((a) => a.id === el.dataset.id);
+    const warn = owned ? irreversibleWarning(st, { fee: owned.sellValue || 0 }) : null;
+    if (warn && !el.dataset.confirmed) {
+      openModal(
+        irreversibleModal({
+          title: tr("تأكيد بيع الأصل", "Confirm the sale", "Confirmer la vente"),
+          warning: warn,
+          action: "empire-sell-asset",
+          id: el.dataset.id,
+        }),
+      );
+      return;
+    }
+    closeModal();
     await apply(
       (s) => sellAsset(s, el.dataset.id),
       "تم بيع الأصل وإضافة قيمته إلى ثروتك.",
@@ -1904,7 +2072,7 @@ const actions = {
   },
   "betting-marketing-slide": async (el) => {
     const v = document.getElementById("betting-marketing-val");
-    if (v) v.textContent = el.value;
+    if (v) v.textContent = `${money(Number(el.value))} ${cur()}`;
   },
   "betting-save-marketing": async (el) => {
     const val = Number(document.getElementById("betting-marketing")?.value);
@@ -1951,7 +2119,7 @@ const actions = {
           `<div class="more-group"><small>${g.caption}</small><div class="more-grid">${g.items
             .map(
               (id) =>
-                `<button data-nav="${id}">${icon(NAV_BY_ID[id].icon, 24)}<span>${navLabel(id)}</span></button>`,
+                `<button data-nav="${id}" class="${ui.route === id ? "active" : ""}" ${ui.route === id ? 'aria-current="page"' : ""}>${icon(NAV_BY_ID[id].icon, 24)}<span>${navLabel(id)}</span></button>`,
             )
             .join("")}</div></div>`,
       ).join("")}<div class="more-foot"><span data-no-translate>EMPIRE FC</span><button type="button" class="badge vault-key" data-action="secret-vault">v${APP_VERSION}</button></div>`,
@@ -2057,14 +2225,14 @@ const actions = {
       }
       openModal(`
         <h2>سجل الحفظات السحابية</h2>
-        <p class="muted">يتم الاحتفاظ بآخر ٥ حفظات لحسابك تلقائيًا. يمكنك استرجاع أي نسخة أو حذفها.</p>
+        <p class="muted">يتم الاحتفاظ بآخر 5 حفظات لحسابك تلقائيًا. يمكنك استرجاع أي نسخة أو حذفها.</p>
         <div class="cloud-saves-container">
           ${saves.map(s => `
             <div class="cloud-save-item">
               <div class="cloud-save-info">
                 <strong>${s.metadata.clubName} · الموسم ${s.metadata.seasonNumber}</strong>
                 <small>${date(s.metadata.date)} · السيولة ${money(s.metadata.cash)} ${cur()} · ${s.metadata.device || "متصفح"}</small>
-                <small class="muted">المزامنة: ${new Date(s.updatedAt).toLocaleString("ar-EG")}</small>
+                <small class="muted">المزامنة: ${new Date(s.updatedAt).toLocaleString("en-US")}</small>
               </div>
               <div class="settings-actions">
                 ${button("استرجاع", "confirm-cloud-restore", s.id, "secondary small")}
@@ -2123,6 +2291,13 @@ const actions = {
       (s) => promoteDynastyPlayer(s, el.dataset.id),
       tr("انضم خريج الأكاديمية إلى قائمة الفريق الأول.", "An academy graduate joined the first-team squad.", "Un diplômé de l’académie a rejoint l’effectif professionnel."),
     ),
+  "dynasty-divorce": async (el) => {
+    if (!confirm(tr("تأكيد الطلاق؟ سيُدفع نصف النقد تسوية وتتأثر الصورة العامة.", "Confirm divorce? Half of the cash goes to the settlement and the public image suffers.", "Confirmer le divorce ? La moitié des liquidités sera versée et l’image publique en pâtira."))) return;
+    await apply(
+      (s) => divorceOwner(s),
+      tr("تم الطلاق وسُجلت التسوية.", "The divorce is final and the settlement is recorded.", "Le divorce est prononcé et le règlement enregistré."),
+    );
+  },
   "dynasty-event-choice": async (el) =>
     await apply(
       (s) => resolveDynastyEvent(s, el.dataset.id, el.dataset.choice),
@@ -2363,14 +2538,16 @@ document.addEventListener("submit", async (e) => {
     if (form.id === "city-stadium-form") {
       const tier = Number(form.elements.tier.value), route = form.elements.route.value, district = form.elements.district.value, design = form.elements.design.value;
       const quote = stadiumQuote(getState(), tier, route, district, design);
-      if (!confirm(`${tr("التكلفة","Cost","Coût")}: ${quote.cost.toLocaleString()} · ${quote.days} ${tr("يوم","days","jours")}?`)) return;
+      if (!confirm(`${tr("التكلفة","Cost","Coût")}: ${quote.cost.toLocaleString("en-US")} · ${quote.days} ${tr("يوم","days","jours")}?`)) return;
       await apply((s) => startStadium(s, {tier,route,district,design}), tr("بدأ البناء.","Construction started.","Chantier commencé."));
       return;
     }
     if (form.id === "dynasty-marriage-form") {
       const partner = form.elements.partner.value;
+      const tier = form.elements.tier?.value || "family";
+      const spouseTitle = form.elements.spouseTitle?.value || "";
       await apply(
-        (s) => marryOwner(s, partner),
+        (s) => marryOwner(s, partner, { tier, title: spouseTitle }),
         tr("بدأت حياة أسرية جديدة.", "A new family journey has begun.", "Une nouvelle vie de famille commence."),
       );
       return;
@@ -2544,8 +2721,14 @@ document.addEventListener("submit", async (e) => {
     }
     if (form.id === "empire-draw-form") {
       const amount = Math.round(Number(form.elements.amount.value));
+      const project = form.elements.project?.value || null;
+      const st = drawStatus(getState(), amount, { project });
+      if (st.loot) {
+        openModal(lootModalHtml({ amount, project, status: st, from: "empire" }));
+        return;
+      }
       await apply(
-        (s) => transferToPersonal(s, amount),
+        (s) => takeFromClub(s, amount, { project }),
         "تم التحويل من خزينة النادي إلى ثروتك الشخصية.",
       );
     }
@@ -2554,6 +2737,14 @@ document.addEventListener("submit", async (e) => {
       await apply(
         (s) => transferToClub(s, amount),
         "تم دعم خزينة النادي من ثروتك الشخصية.",
+      );
+    }
+    if (form.id === "empire-project-form") {
+      const title = form.elements.title.value;
+      const amount = Math.round(Number(form.elements.amount.value));
+      await apply(
+        (s) => proposeProject(s, { title, amount }),
+        tr("تم عرض المشروع على تصويت الجمعية.", "The project was put to the assembly vote.", "Le projet a été soumis au vote de l’assemblée."),
       );
     }
     if (form.id === "empire-repay-form") {
@@ -2608,7 +2799,7 @@ document.addEventListener("submit", async (e) => {
     if (form.id === "ticket-form") {
       const p = Number(form.elements.price.value);
       if (!Number.isInteger(p) || p < 50 || p > 500)
-        throw new Error("السعر من ٥٠ إلى ٥٠٠ جنيه.");
+        throw new Error("السعر من 50 إلى 500 جنيه.");
       const first = Number(form.elements.first.value),
         vip = Number(form.elements.vip.value),
         premium = Number(form.elements.premium.value);
@@ -2629,6 +2820,16 @@ document.addEventListener("submit", async (e) => {
   }
 });
 document.addEventListener("input", (e) => {
+  // الشرائح: data-action يوجّه السحب الحي إلى إجراء، و data-out يحدّث مخرجًا نصيًا مباشرة.
+  if (e.target.matches?.('input[type="range"][data-action]')) {
+    actions[e.target.dataset.action]?.(e.target);
+    return;
+  }
+  if (e.target.matches?.('input[type="range"][data-out]')) {
+    const out = document.getElementById(e.target.dataset.out);
+    if (out) out.textContent = `${num(Number(e.target.value))}${e.target.dataset.unit || ""}`;
+    return;
+  }
   if (e.target.id === "audio-volume") {
     const output = document.getElementById("audio-volume-value");
     if (output) output.value = `${Math.round(Number(e.target.value))}%`;
@@ -2639,34 +2840,21 @@ document.addEventListener("input", (e) => {
     paletteQuery(e.target.value);
     return;
   }
+  // البحث على الجوال: الحالة تتحدث فورًا، والرندر يتجمع (debounce) ويحفظ التركيز والمؤشر.
   if (e.target.id === "market-search") {
-    const value = e.target.value,
-      pos = e.target.selectionStart;
-    ui.marketQuery = value;
-    render();
-    const input = document.getElementById("market-search");
-    input?.focus();
-    input?.setSelectionRange(pos, pos);
+    ui.marketQuery = e.target.value;
+    renderSearchSoon();
     return;
   }
   if (e.target.id === "player-search") {
-    const value = e.target.value,
-      pos = e.target.selectionStart;
-    ui.playerFilters.search = value;
+    ui.playerFilters.search = e.target.value;
     ui.playerFilters.page = 0;
-    render();
-    const input = document.getElementById("player-search");
-    input.focus();
-    input.setSelectionRange(pos, pos);
+    renderSearchSoon();
   }
   if (e.target.id === "club-search") {
-    const value = e.target.value,
-      pos = e.target.selectionStart;
+    const value = e.target.value;
     ui.clubQuery = value;
-    render();
-    const input = document.getElementById("club-search");
-    input?.focus();
-    input?.setSelectionRange(pos, pos);
+    renderSearchSoon();
   }
 });
 // اختصارات البحث السريع: Ctrl/⌘+K للفتح والإغلاق، والأسهم وEnter للتنقل داخل النتائج.
@@ -2962,15 +3150,17 @@ document.addEventListener("change", async (e) => {
         (s) => (s.preferences.autoMatchReport = e.target.checked),
         tr("تم حفظ الإعداد.", "Setting saved.", "Réglage enregistré."),
       );
+    if (e.target.id === "notify-achievements" || e.target.id === "notify-absence") {
+      const key = e.target.id === "notify-achievements" ? "achievements" : "absence";
+      await apply(
+        (s) => setNotify(s, key, e.target.checked),
+        tr("تم حفظ الإشعار.", "Notification saved.", "Notification enregistrée."),
+      );
+    }
     if (e.target.id === "reduce-motion")
       await apply(
         (s) => (s.preferences.reduceMotion = e.target.checked),
         tr("تم حفظ إعداد العرض.", "Display setting saved.", "Réglage d'affichage enregistré."),
-      );
-    if (e.target.id === "num-format")
-      await apply(
-        (s) => (s.preferences.digits = e.target.value),
-        tr("تم حفظ نمط الأرقام.", "Number style saved.", "Style des chiffres enregistré."),
       );
     if (e.target.closest("#offer-form,#contract-form")) updateCalculations();
   } catch (err) {
@@ -2979,6 +3169,8 @@ document.addEventListener("change", async (e) => {
 });
 bindModalKeyboard();
 async function bootstrap() {
+  // 0.44: وضع الأداء الخفيف على الأجهزة الضعيفة قبل أول رسم
+  applyPerformanceMode();
   app.innerHTML = `<div style="padding:40px;text-align:center">جارٍ فتح الحفظة…</div>`;
   try {
     const loaded = await loadGame();

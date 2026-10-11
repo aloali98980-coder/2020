@@ -296,7 +296,7 @@ export function associationDevelopmentGrant(s, clubId, amount, billId) {
   if (!intMoney(amount) || amount < MIN_GRANT || amount > MAX_DIRECT_GRANT)
     throw new Error(
       tr(
-        "يجب أن تتراوح المنحة التفاوضية بين ١٠٠ ألف و١٠ ملايين.",
+        "يجب أن تتراوح المنحة التفاوضية بين 100 ألف و10 ملايين.",
         "A negotiated grant must be between 100,000 and 10,000,000.",
         "Une aide négociée doit être comprise entre 100 000 et 10 000 000.",
       ),
@@ -319,7 +319,7 @@ export function createSupportFund(
   if (!intMoney(amount) || amount < 1_000_000 || amount > MAX_FUND_AMOUNT)
     throw new Error(
       tr(
-        "يجب أن يتراوح رصيد صندوق الدعم بين مليون و٥٠ مليونًا.",
+        "يجب أن يتراوح رصيد صندوق الدعم بين مليون و50 مليونًا.",
         "A support fund must hold between 1,000,000 and 50,000,000.",
         "Un fonds de soutien doit contenir entre 1 000 000 et 50 000 000.",
       ),

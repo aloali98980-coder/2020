@@ -1,13 +1,10 @@
 import { getLanguage } from "../i18n/index.js";
 import { currencyFor, CURRENCIES } from "../data/currencies.js";
-// إعداد العرض: نمط الأرقام (هندية ٣٤٥ أو غربية 345) — فرع عرض فقط في Locale نفسه.
-let digitsMode = "arabic";
-export const setDigitsMode = (mode) => {
-  digitsMode = mode === "western" ? "western" : "arabic";
-};
+// الأرقام لاتينية 0-9 في كل اللغات (الإصدار 0.44): تنسيق Intl يفرض nu-latn دائمًا.
+export const setDigitsMode = () => {};
 const locale = () => {
   const base = ({ ar: "ar-EG", en: "en-GB", fr: "fr-FR" })[getLanguage()] || "ar-EG";
-  return digitsMode === "western" ? base + "-u-nu-latn" : base;
+  return base + "-u-nu-latn";
 };
 
 // 0.23: العملة المعروضة — تفضيل متصفح مستقل عن الحفظة. كل المبالغ تُحفظ وتُحاكى

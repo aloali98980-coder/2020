@@ -3095,3 +3095,33 @@ body.reduce-motion .hl-progress span { transition: none !important; }
     min-width: 42%;
   }
 }
+
+/* الدفعة 7 §2: عناوين الصباح — سطر واحد لكل خبر، يلتف على الشاشات الصغيرة. */
+.headlines-list { display: grid; gap: 6px; }
+.headline-row {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px;
+  width: 100%; padding: 8px 10px; border-radius: 10px; text-align: start;
+  background: transparent; border: 1px solid var(--line, rgba(127,127,127,.2)); color: inherit; font: inherit;
+}
+button.headline-row { cursor: pointer; }
+.headline-row > span:nth-child(2) { flex: 1 1 160px; min-width: 0; overflow-wrap: anywhere; }
+.headline-row small { white-space: nowrap; }
+
+/* الدفعة 7 §3: رقم القميص وأول الكلمات في ملف اللاعب. */
+.presentation-line { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-top: 8px; }
+.shirt-badge {
+  display: inline-grid; place-items: center; min-width: 40px; height: 40px; padding: 0 8px;
+  border-radius: 8px; font-weight: 800; font-size: 1.1rem; background: var(--gold, #d4a017); color: #111;
+}
+.first-words { margin: 0; flex: 1 1 220px; font-style: italic; overflow-wrap: anywhere; }
+.first-words small { display: block; font-style: normal; opacity: .7; }
+
+/* الدفعة 7 §4: مقياس الضجيج على لوحة القيادة. */
+.noise-row { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.noise-row strong { font-size: 1.6rem; }
+.noise-row small { font-size: .8rem; opacity: .7; }
+.noise-bar { height: 8px; border-radius: 999px; background: rgba(127,127,127,.2); overflow: hidden; margin-top: 8px; }
+.noise-bar span { display: block; height: 100%; background: var(--gold, #d4a017); transition: width .3s; }
+.noise-high .noise-bar span, .noise-card .noise-high strong { color: var(--red, #c0392b); }
+.noise-log { margin: 8px 0 0; padding-inline-start: 18px; font-size: .9rem; }
+.noise-log small { opacity: .7; }

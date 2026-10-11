@@ -447,6 +447,3 @@ export function playAssociationTournamentRound(s, tournamentId) {
   return tournament;
 }
 
-export const politicalTournamentTemplates = () =>
-  Object.values(POLITICAL_TOURNAMENTS);
-export const politicalSponsors = () => POLITICAL_SPONSORS;

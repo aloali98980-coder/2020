@@ -505,7 +505,13 @@ function recordClash(save, group, rivalId = null) {
   group.lastIncident = incident;
   group.incidentCount = (group.incidentCount || 0) + 1;
   group.protestUntil = addDays(save.date, 10);
-  post(save, -250_000, "ultras-fine", localizedText(save, "غرامة اشتباك جماهيري", "Supporter-clash fine", "Amende après affrontement de supporters"), uid(save, "ultras-fine"));
+  // 0.45: غرامة معقولة (100,000) ولا تتكرر قبل 60 يومًا لكل مجموعة؛ الحادثة تُسجَّل دائمًا.
+  const lastFine = group.lastFineDate;
+  const fineDue = !lastFine || addDays(lastFine, 60) <= save.date;
+  if (fineDue) {
+    group.lastFineDate = save.date;
+    post(save, -100_000, "ultras-fine", localizedText(save, "غرامة اشتباك جماهيري", "Supporter-clash fine", "Amende après affrontement de supporters"), uid(save, "ultras-fine"));
+  }
   save.reputation = clamp((save.reputation || 0) - 2, 0, 100);
   save.fanSupport = clamp((save.fanSupport || 0) - 5, 10, 100);
   if (rival) {
@@ -729,7 +735,7 @@ export function stageTifo(save, fixtureId = null, { community = false } = {}) {
     followers: 6500,
     engagement: 6,
     title: { ar: "المدرج يجهز تيفو للمباراة المقبلة", en: "The stand prepares a tifo for the next match", fr: "Le virage prépare un tifo pour le prochain match" },
-    body: { ar: `تم حجز التيفو للمباراة ${fixture.date}. الجمهور +٣، المعنويات +١، والحماس يرفع أفضلية الملعب قليلًا.`, en: `The tifo is booked for ${fixture.date}. Fan support rises by 3, morale by 1, with a small home-atmosphere boost.`, fr: `Le tifo est prévu pour le ${fixture.date}. Le soutien augmente de 3, le moral de 1, avec un léger avantage à domicile.` },
+    body: { ar: `تم حجز التيفو للمباراة ${fixture.date}. الجمهور +3، المعنويات +1، والحماس يرفع أفضلية الملعب قليلًا.`, en: `The tifo is booked for ${fixture.date}. Fan support rises by 3, morale by 1, with a small home-atmosphere boost.`, fr: `Le tifo est prévu pour le ${fixture.date}. Le soutien augmente de 3, le moral de 1, avec un léger avantage à domicile.` },
   });
   save.fanSupport = clamp(save.fanSupport + 2, 10, 100);
   group.tifoCount = (group.tifoCount || 0) + 1;
@@ -742,7 +748,7 @@ export function organizeAwaySupport(save, fixtureId = null) {
   const fixture = upcomingUltrasFixtures(save, 21).find((entry) =>
     entry.id === fixtureId && entry.away === save.clubId && !entry.neutral,
   ) || upcomingUltrasFixtures(save, 21).find((entry) => entry.away === save.clubId && !entry.neutral);
-  assert(fixture, localizedText(save, "لا توجد مباراة خارجية خلال ٢١ يومًا.", "There is no away match in the next 21 days.", "Aucun match à l’extérieur n’est prévu dans les 21 prochains jours."));
+  assert(fixture, localizedText(save, "لا توجد مباراة خارجية خلال 21 يومًا.", "There is no away match in the next 21 days.", "Aucun match à l’extérieur n’est prévu dans les 21 prochains jours."));
   const cost = 180_000;
   assert(save.finance.cash >= cost, localizedText(save, "السيولة لا تكفي لحافلات المشجعين.", "The club cannot afford supporter coaches.", "Le club ne peut pas financer les cars des supporters."));
   post(save, -cost, "ultras-away-trip", localizedText(save, "تنظيم رحلة مشجعين خارجية", "Organize an away supporters’ trip", "Organiser le déplacement des supporters"), uid(save, "ultras-away"));
@@ -759,7 +765,7 @@ export function launchChant(save) {
   const group = ownGroup(save);
   assert(group, localizedText(save, "مجموعة المشجعين غير موجودة.", "The supporters’ group is unavailable.", "Le groupe de supporters est introuvable."));
   const fixture = upcomingUltrasFixtures(save, 10).find((entry) => entry.home === save.clubId || entry.away === save.clubId);
-  assert(fixture, localizedText(save, "لا توجد مباراة لنشر الهتاف خلالها خلال ١٠ أيام.", "There is no fixture in the next 10 days for the chant.", "Aucun match n’est prévu dans les 10 prochains jours pour lancer le chant."));
+  assert(fixture, localizedText(save, "لا توجد مباراة لنشر الهتاف خلالها خلال 10 أيام.", "There is no fixture in the next 10 days for the chant.", "Aucun match n’est prévu dans les 10 prochains jours pour lancer le chant."));
   group.lastOwnerActionDate = save.date;
   setSupporterMood(save, save.clubId, 4, "owner-backed-chant");
   for (const player of save.players.filter((person) => person.clubId === save.clubId && person.status === "active"))

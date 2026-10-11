@@ -193,9 +193,3 @@ export function companyById(id) {
 export function licenseById(id) {
   return LICENSE_TIERS[id] || null;
 }
-export function branchByLevel(l) {
-  return BRANCH_LEVELS.find((b) => b.level === l) || null;
-}
-export function onlineByLevel(l) {
-  return ONLINE_LEVELS.find((b) => b.level === l) || null;
-}

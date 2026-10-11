@@ -38,7 +38,7 @@ export function setCareerPath(s, childId, path) {
   const d = s.dynasty;
   const child = findDynastyChild(s, childId);
   assert(child, "الابن غير موجود أو ملفه ناقص.");
-  assert(child.age >= 15, "يمكن اختيار المسار المهني من عمر ١٥ سنة.");
+  assert(child.age >= 15, "يمكن اختيار المسار المهني من عمر 15 سنة.");
   assert(CAREER_PATH_IDS.includes(path), "المسار المهني غير معروف.");
   if (child.careerPath === path) return path;
   assert(child.careerPath === null, "اختار الابن مساره بالفعل؛ لا يمكن فرض مسار بديل.");

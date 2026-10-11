@@ -144,7 +144,7 @@ export function signSponsor(s, offer) {
     });
   message(s, {
     title: "شراكة جديدة للنادي",
-    body: `تم توقيع رعاية ${asset.name} مع ${sponsor.name}. استلمت ٢٥٪ مقدمًا، والباقي على ١١ دفعة كل ٣٠ يومًا.`,
+    body: `تم توقيع رعاية ${asset.name} مع ${sponsor.name}. استلمت 25% مقدمًا، والباقي على 11 دفعة كل 30 يومًا.`,
     category: "sponsors",
   });
   return c;

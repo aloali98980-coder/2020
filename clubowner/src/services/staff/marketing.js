@@ -33,9 +33,9 @@ export function setSponsorMood(s, assetId, v) {
 }
 export function launchCampaign(s, type, budget) {
   assert(CAMPAIGN_TYPES[type], "حملة غير صالحة.");
-  assert(Number.isSafeInteger(budget) && budget >= 100000 && budget <= 50000000, "الميزانية من ١٠٠ ألف إلى ٥٠ مليونًا.");
+  assert(Number.isSafeInteger(budget) && budget >= 100000 && budget <= 50000000, "الميزانية من 100 ألف إلى 50 مليونًا.");
   assert(s.finance.cash >= budget, "السيولة لا تغطي الحملة.");
-  if (type === "derby") assert(s.bigMatches?.some((m) => m.date > s.date && m.date <= addDays(s.date, 21)), "لا ديربي خلال ٣ أسابيع — الحملة الجماهيرية تحتاج موعدًا قريبًا.");
+  if (type === "derby") assert(s.bigMatches?.some((m) => m.date > s.date && m.date <= addDays(s.date, 21)), "لا ديربي خلال 3 أسابيع — الحملة الجماهيرية تحتاج موعدًا قريبًا.");
   const t = CAMPAIGN_TYPES[type];
   const id = uid(s, "campaign");
   post(s, -budget, "marketing", "حملة: " + t.name.ar, id + "-launch");
@@ -43,10 +43,10 @@ export function launchCampaign(s, type, budget) {
   const c = { id, type, budget, ends: addDays(s.date, t.days), skill: corpSkill(s, "marketing") };
   m.campaigns = m.campaigns || [];
   m.campaigns.push(c);
-  message(s, { title: `حملة: ${t.name.ar}`, body: `انطلقت بميزانية ${budget.toLocaleString("ar-EG")} — العائد يظهر ${c.ends}.`, category: "business" });
+  message(s, { title: `حملة: ${t.name.ar}`, body: `انطلقت بميزانية ${budget.toLocaleString("en-US")} — العائد يظهر ${c.ends}.`, category: "business" });
   return c;
 }
-// تسوية الحملات المنتهية: عائد = ميزانية × (٠.٦ + مهارة + سمعة + حظ).
+// تسوية الحملات المنتهية: عائد = ميزانية × (0.6 + مهارة + سمعة + حظ).
 export function marketingDay(s) {
   const m = ensureStaffCorp(s).marketing;
   m.campaigns = m.campaigns || [];
@@ -65,7 +65,7 @@ export function marketingDay(s) {
     for (const k of Object.keys(m.mood || {})) m.mood[k] = clamp(m.mood[k] + moodDelta, 0, 100);
     message(s, {
       title: `عائد حملة: ${t.name.ar}`,
-      body: `أعادت ${(ret - c.budget) >= 0 ? "+" : ""}${(ret - c.budget).toLocaleString("ar-EG")} صافيًا، والجماهير ${t.fans > 0 ? "+" : ""}${t.fans}، و${profitable ? "رضا الرعاة ارتفع" : "رضا الرعاة انخفض بعد عائد ضعيف"}.`,
+      body: `أعادت ${(ret - c.budget) >= 0 ? "+" : ""}${(ret - c.budget).toLocaleString("en-US")} صافيًا، والجماهير ${t.fans > 0 ? "+" : ""}${t.fans}، و${profitable ? "رضا الرعاة ارتفع" : "رضا الرعاة انخفض بعد عائد ضعيف"}.`,
       category: "business", money: ret,
     });
   }
@@ -81,10 +81,10 @@ export function sponsorExpiryMood(s, c) {
   const m = sponsorMood(s, c.assetId);
   if (m != null && m < 25) {
     s.fanSupport = clamp(s.fanSupport + -3, 0, 100);
-    message(s, { title: "راعٍ غاضب يرحل", body: `رضا الراعي عن ${c.sector || "القطاع"} انهار (${m}٪) — رحل غاضبًا وأخذ جزءًا من الجمهور معه. دلّل الرعاة بالحملات.`, category: "business" });
+    message(s, { title: "راعٍ غاضب يرحل", body: `رضا الراعي عن ${c.sector || "القطاع"} انهار (${m}%) — رحل غاضبًا وأخذ جزءًا من الجمهور معه. دلّل الرعاة بالحملات.`, category: "business" });
   } else if (m != null && m >= 80) {
     post(s, Math.round(c.amount * 0.05), "sponsor-farewell", "وداعية راعٍ", c.id + "-farewell");
-    message(s, { title: "وداعية كريمة", body: `الراعي الراضي (${m}٪) ترك مكافأة وداعية ٥٪ — والباب مفتوح لعودته بعرض أغلى.`, category: "business" });
+    message(s, { title: "وداعية كريمة", body: `الراعي الراضي (${m}%) ترك مكافأة وداعية 5% — والباب مفتوح لعودته بعرض أغلى.`, category: "business" });
   }
   if (m != null) delete ensureStaffCorp(s).marketing.mood[c.assetId];
   return m;

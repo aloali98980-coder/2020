@@ -49,16 +49,46 @@ export function recordMatchStats(s, f, rng, goals, cards) {
   // Minutes: 120 if extra time, 90 otherwise.
   const minutes = f.extraTime ? 120 : 90;
 
-  for (const p of xi) {
-    initSeasonStats(p);
-    p.seasonMinutes += minutes;
-    p.seasonRatingCount += 1;
+  // 0.43: مع المخطط الزمني: الدقائق بحسب الدخول والخروج، والبدلاء الداخلون ضمن المشاركين.
+  const ev = Array.isArray(f.timeline?.ev) ? f.timeline.ev : null;
+  if (ev) {
+    const entry = new Map();
+    const exit = new Map();
+    for (const e of ev) {
+      if (e.t === "r") exit.set(e.p, e.m);
+      if (e.t === "s") {
+        exit.set(e.o, e.m);
+        entry.set(e.i, e.m);
+      }
+    }
+    const extra = [...entry.keys()]
+      .map((id) => s.players.find((y) => y.id === id))
+      .filter((p) => p && !xi.includes(p));
+    xi.push(...extra);
+    for (const p of xi) {
+      initSeasonStats(p);
+      const start = entry.get(p.id) ?? 0;
+      const end = exit.get(p.id) ?? minutes;
+      p.seasonMinutes += Math.max(0, end - start);
+      p.seasonRatingCount += 1;
+    }
+  } else {
+    for (const p of xi) {
+      initSeasonStats(p);
+      p.seasonMinutes += minutes;
+      p.seasonRatingCount += 1;
+    }
   }
 
-  // Assists: for each goal, pick a random teammate (different from scorer when possible).
-  for (let i = 0; i < goals; i++) {
-    const idx = Math.floor(rng() * xi.length);
-    xi[idx].seasonAssists += 1;
+  // 0.43: إن وُجدت خطة الأهداف (من المحرك) فهي المصدر الوحيد للهدافين والصنّاع.
+  const plan = Array.isArray(f.goalPlan) ? f.goalPlan : null;
+  const byId = (id) => xi.find((p) => p.id === id);
+  if (!plan) {
+    // Assists: for each goal, pick a random teammate (different from scorer when possible).
+    for (let i = 0; i < goals; i++) {
+      const idx = Math.floor(rng() * xi.length);
+      xi[idx].seasonAssists += 1;
+    }
   }
 
   // Cards: accumulate to season stats.
@@ -71,15 +101,24 @@ export function recordMatchStats(s, f, rng, goals, cards) {
     p.seasonRed += 1;
   }
 
-  // Goals: distribute match goals to players (same weighting as matchReport).
-  const weights = xi.map((p) => Math.max(4, p.rating - 40));
-  const totalWeight = weights.reduce((a, b) => a + b, 0);
-  for (let g = 0; g < goals; g++) {
-    let r = rng() * totalWeight;
-    for (let i = 0; i < xi.length; i++) {
-      r -= weights[i];
-      if (r <= 0) { xi[i].seasonGoals += 1; break; }
-      if (i === xi.length - 1) xi[i].seasonGoals += 1;
+  if (plan) {
+    for (const g of plan) {
+      const sc = byId(g.s);
+      if (sc) sc.seasonGoals += 1;
+      const as = g.a ? byId(g.a) : null;
+      if (as) as.seasonAssists += 1;
+    }
+  } else {
+    // Goals: distribute match goals to players (same weighting as matchReport).
+    const weights = xi.map((p) => Math.max(4, p.rating - 40));
+    const totalWeight = weights.reduce((a, b) => a + b, 0);
+    for (let g = 0; g < goals; g++) {
+      let r = rng() * totalWeight;
+      for (let i = 0; i < xi.length; i++) {
+        r -= weights[i];
+        if (r <= 0) { xi[i].seasonGoals += 1; break; }
+        if (i === xi.length - 1) xi[i].seasonGoals += 1;
+      }
     }
   }
 

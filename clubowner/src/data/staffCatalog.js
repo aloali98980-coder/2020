@@ -1,4 +1,4 @@
-// المرحلة ١٢ «الإدارة الشاملة» 0.30 — كتالوج معلن واحد لكل ما يخص الجهاز الإداري.
+// المرحلة 12 «الإدارة الشاملة» 0.30 — كتالوج معلن واحد لكل ما يخص الجهاز الإداري.
 // كل نص بثلاث لغات {ar,en,fr} من المصدر نفسه؛ لا نص عربي بلا مقابل.
 export const L = (ar, en, fr) => Object.freeze({ ar, en, fr });
 
@@ -21,10 +21,13 @@ export const ROLE_IDS = Object.freeze(Object.keys(STAFF_ROLES));
 // أدوار الإدارة العليا: أصحاب التقارير والطلبات في اجتماع المجلس الشهري.
 export const DIRECTOR_ROLES = Object.freeze(["sporting", "marketing", "finance", "lawyer", "academy", "social"]);
 // الراتب السوقي العادل لمهارة ما: أساس الدور + نقاط المهارة. الولاء يقاس عليه.
+// 0.44 (معايرة التوازن): مرتبات الجهاز الإداري كانت تفوق مرتبات اللاعبين (نحو 45% من كتلة الأجور).
+// المعامل يخفض الرواتب السوقية كلها بنسبة واحدة دون لمس الأدوار أو المهارات.
+export const STAFF_WAGE_SCALE = 0.55;
 export const marketWage = (role, skill) =>
-  Math.round(((STAFF_ROLES[role]?.base || 100000) + (STAFF_ROLES[role]?.per || 2000) * skill) / 1000) * 1000;
+  Math.round((((STAFF_ROLES[role]?.base || 100000) + (STAFF_ROLES[role]?.per || 2000) * skill) * STAFF_WAGE_SCALE) / 1000) * 1000;
 
-// ── المقر الإداري: ٦ مستويات حتى البرج الإداري ───────────────────────────────
+// ── المقر الإداري: 6 مستويات حتى البرج الإداري ───────────────────────────────
 // التمويل من الثروة الشخصية (فلوسك) مثل الملعب؛ البرج يشترط منشأة officeTower من المدينة.
 export const HQ_LEVELS = Object.freeze([
   { name: L("مقر صغير", "Small Office", "Petit bureau"), cap: 6, cost: 0, days: 0 },
@@ -79,8 +82,8 @@ export const STAFF_LAST = Object.freeze([
 
 // ── فلسفات المدير الرياضي ───────────────────────────────────────────────────
 export const SPORTING_PHILOSOPHIES = Object.freeze({
-  youth: { name: L("مدرسة الشباب", "Youth Project", "Projet jeunes"), desc: L("صفقات تحت ٢٢ سنة بإمكانات عالية، وبيع النجوم الكبار بأسعار ممتازة.", "Signings under 22 with big potential; sells ageing stars at premium prices.", "Recrues de moins de 22 ans à fort potentiel ; vend les stars vieillissantes au meilleur prix.") },
-  stars: { name: L("صفقات النجوم", "Galácticos", "Galactiques"), desc: L("نجوم جاهزون بتقييم ٨٠+ مهما كان السعر، والقمصان تُباع قبل الإعلان.", "Ready-made stars rated 80+ whatever the price; shirts sell before the unveiling.", "Stars confirmées notées 80+ à tout prix ; les maillots se vendent avant la présentation.") },
+  youth: { name: L("مدرسة الشباب", "Youth Project", "Projet jeunes"), desc: L("صفقات تحت 22 سنة بإمكانات عالية، وبيع النجوم الكبار بأسعار ممتازة.", "Signings under 22 with big potential; sells ageing stars at premium prices.", "Recrues de moins de 22 ans à fort potentiel ; vend les stars vieillissantes au meilleur prix.") },
+  stars: { name: L("صفقات النجوم", "Galácticos", "Galactiques"), desc: L("نجوم جاهزون بتقييم 80+ مهما كان السعر، والقمصان تُباع قبل الإعلان.", "Ready-made stars rated 80+ whatever the price; shirts sell before the unveiling.", "Stars confirmées notées 80+ à tout prix ; les maillots se vendent avant la présentation.") },
   smart: { name: L("صفقات ذكية", "Smart Deals", "Recrutement malin"), desc: L("أفضل نسبة جودة لسعر: عقود منتهية ومواهب مظلومة تُباع بربح لاحقًا.", "Best quality-per-price ratio: expiring contracts and undervalued gems flipped later.", "Meilleur rapport qualité-prix : fins de contrat et pépites sous-cotées revendues ensuite.") },
 });
 

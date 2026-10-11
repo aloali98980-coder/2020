@@ -8,7 +8,7 @@ export const DIFFICULTIES = {
     sponsor: 1.18,
     eventInterval: 28,
     description:
-      "سيولة أكبر ٨٠٪، وتشغيل أقل ٢٠٪، وتفاوض أسهل. القدرات والنتائج لا تتغير سرًا.",
+      "سيولة أكبر 80%، وتشغيل أقل 20%، وتفاوض أسهل. القدرات والنتائج لا تتغير سرًا.",
   },
   easy: {
     name: "سهل",
@@ -18,7 +18,7 @@ export const DIFFICULTIES = {
     wage: 0.95,
     sponsor: 1.08,
     eventInterval: 21,
-    description: "سيولة أكبر ٣٠٪، وتشغيل أقل ١٠٪، ومساحة أكبر للتجربة.",
+    description: "سيولة أكبر 30%، وتشغيل أقل 10%، ومساحة أكبر للتجربة.",
   },
   normal: {
     name: "متوسط",
@@ -39,7 +39,7 @@ export const DIFFICULTIES = {
     wage: 1.12,
     sponsor: 0.85,
     eventInterval: 12,
-    description: "سيولة أقل ٢٥٪، وتشغيل أعلى ١٥٪، ورعايات أقل وتفاوض أصعب.",
+    description: "سيولة أقل 25%، وتشغيل أعلى 15%، ورعايات أقل وتفاوض أصعب.",
   },
 };
 export const difficulty = (s) =>

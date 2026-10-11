@@ -57,7 +57,7 @@ for (const [engine, type] of Object.entries({ chromium, webkit }).filter(
     await p.locator('[data-action="negotiate-sponsor"]').first().click();
     await p.waitForFunction(() =>
       (document.getElementById("modal-root")?.innerText || "").includes(
-        "الجولة ١ من ٢",
+        "الجولة 1 من 2",
       ),
     );
     await p

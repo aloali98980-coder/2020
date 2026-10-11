@@ -16,12 +16,6 @@ import {
 const fill = (tpl, vars) =>
   Object.entries(vars).reduce((t, [k, v]) => t.split("{" + k + "}").join(v), tpl);
 
-export function ownedAssets(s) {
-  return (s.empire?.assets || []).map((o) => ({
-    ...o,
-    asset: assetById(o.assetId),
-  }));
-}
 
 export const owns = (s, assetId) =>
   (s.empire?.assets || []).some((a) => a.assetId === assetId);
@@ -60,6 +54,7 @@ export function sellAsset(s, ownershipId) {
   const idx = e.assets.findIndex((a) => a.id === ownershipId);
   assert(idx >= 0, empireText("assetMissing"));
   const owned = e.assets[idx];
+  // 0.46: بيع أصل بملايين لا رجعة فيه: التأكيد يحدث في الواجهة قبل هذا الاستدعاء.
   const def = assetById(owned.assetId);
   e.personal += owned.sellValue;
   e.monthTrack.income += owned.sellValue;

@@ -111,9 +111,6 @@ export function unlockAudio() {
   return true;
 }
 
-export function isAudioUnlocked() {
-  return unlocked;
-}
 
 function settingsVolume(value) {
   return shouldPlayAudio(value) ? normalizeAudioSettings(value).volume : 0;
@@ -367,17 +364,5 @@ export function playCelebrationAudio(save, kind = "title") {
   return true;
 }
 
-export function resetAudioForTests() {
-  stopCrowdAmbience();
-  for (const timer of scheduled) clearTimeout(timer);
-  scheduled.clear();
-  try {
-    context?.close?.();
-  } catch {
-    /* test cleanup */
-  }
-  context = null;
-  unlocked = false;
-}
 
 export { DEFAULT_AUDIO_SETTINGS };

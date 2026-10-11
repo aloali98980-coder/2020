@@ -22,26 +22,19 @@ export function injuryDurationText(days) {
   return `${Math.ceil(days / 30)} أشهر`;
 }
 
-export function injuryDurationTextEn(days) {
-  if (days <= 7) return `${days} days`;
-  if (days <= 30) return `${Math.ceil(days / 7)} weeks`;
-  return `${Math.ceil(days / 30)} months`;
-}
 
-export function injuryDurationTextFr(days) {
-  if (days <= 7) return `${days} jours`;
-  if (days <= 30) return `${Math.ceil(days / 7)} semaines`;
-  return `${Math.ceil(days / 30)} mois`;
-}
 
 /**
  * احتمال الإصابة: يعتمد على تعب اللاعب (fitness منخفض) + دقائق تراكمية كثيرة.
  * الصيغة: 3% أساسي × معامل التعب × معامل اللياقة.
  */
+// 0.44: معايَرة دحرجة الإصابات داخل المخطط الزمني حتى يبقى معدل الفريق قرب خط الأساس
+// (نحو 0.39 إصابة لكل فريق في المباراة): المصاب الذي يخرج قبل دقيقته لا يُحسب.
+export const TIMELINE_INJURY_SCALE = 0.8;
 export function injuryProbability(p, factor = 1) {
   const fatigue = 1 + Math.min((p.seasonMinutes || 0) / 3000, 1.5);
   const lowFit = 1 + Math.max(0, (70 - (p.fitness || 70))) / 100;
-  // 0.30: مدرب اللياقة يخفض الاحتمال عبر factor (افتراضي ١ يُبقي السلوك القديم).
+  // 0.30: مدرب اللياقة يخفض الاحتمال عبر factor (افتراضي 1 يُبقي السلوك القديم).
   return clamp(0.03 * fatigue * lowFit * factor, 0.005, 0.12);
 }
 
@@ -164,17 +157,31 @@ export function applyMatchConsequences(s, f, cards, rng, options = {}) {
   }
 
   // ── إصابات ──
-  for (const p of xi) {
-    const prob = injuryProbability(p, fitnessFactor(s));
-    if (rng() < prob) {
-      const days = injuryDuration(rng);
-      const type = INJURY_TYPES[Math.floor(rng() * INJURY_TYPES.length)];
-      p.injuryUntil = addDays(s.date, days);
-      message(s, {
-        title: `إصابة — ${p.name}`,
-        body: `${type.textAr} لمدّة ${injuryDurationText(days)}. سيعود حوالي ${p.injuryUntil}.`,
-        category: "matches",
-      });
+  // 0.43: الإصابة لمن أنهى المباراة على الأرض فقط: المطرود والمستبدل خارج الأحداث.
+  const ev = Array.isArray(f.timeline?.ev) ? f.timeline.ev : null;
+  const leftPitch = new Set(ev ? ev.filter((e) => e.t === "r").map((e) => e.p).concat(ev.filter((e) => e.t === "s").map((e) => e.o)) : []);
+  const finishing = ev
+    ? [...xi.filter((p) => !leftPitch.has(p.id)), ...ev.filter((e) => e.t === "s").map((e) => s.players.find((y) => y.id === e.i)).filter((p) => p && !leftPitch.has(p.id))]
+    : xi;
+  const injure = (p) => {
+    const days = injuryDuration(rng);
+    const type = INJURY_TYPES[Math.floor(rng() * INJURY_TYPES.length)];
+    p.injuryUntil = addDays(s.date, days);
+    message(s, {
+      title: `إصابة — ${p.name}`,
+      body: `${type.textAr} لمدّة ${injuryDurationText(days)}. سيعود حوالي ${p.injuryUntil}.`,
+      category: "matches",
+    });
+  };
+  if (f.timeline?.ir === 1 && ev) {
+    // 0.44: الإصابات دُحرجت داخل المخطط الزمني (المصاب يُستبدل في دقيقته): نطبّق ما سجّله المحرك فقط.
+    for (const e of ev.filter((x) => x.t === "i")) {
+      const p = s.players.find((y) => y.id === e.p);
+      if (p) injure(p);
+    }
+  } else {
+    for (const p of finishing) {
+      if (rng() < injuryProbability(p, fitnessFactor(s))) injure(p);
     }
   }
 

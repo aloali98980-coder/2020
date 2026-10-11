@@ -39,7 +39,7 @@ const married = (opts = {}, tier = "family") => {
   return s;
 };
 
-test("الخطوبة: ٤ عرائس ببونص خفيف وخاتم يخصم من الشخصي", () => {
+test("الخطوبة: 4 عرائس ببونص خفيف وخاتم يخصم من الشخصي", () => {
   assert.equal(Object.keys(BRIDES).length, 4);
   const s = game();
   const p = s.empire.personal;
@@ -67,7 +67,7 @@ test("الفرح بثلاث درجات: التكلفة والسعادة والش
   assert.equal(s.empire.personal, before - WEDDING_TIERS.luxury.cost);
   assert.equal(wife.happiness, 50 + WEDDING_TIERS.luxury.happy);
   assert.ok(/^\d{2}-\d{2}$/.test(wife.birthday));
-  // فرح الفنانة: برستيج +٥٠٪.
+  // فرح الفنانة: برستيج +50%.
   const plain = game();
   propose(plain, "lawyer");
   const p1 = plain.empire.prestige;
@@ -121,7 +121,7 @@ test("الأولاد: الولادة تحتاج زواجًا مستقرًا وت
   w.marriedOn = "2024-01-01"; // أكثر من سنة
   s.date = "2026-08-01";
   let born = false;
-  // نكرر التسوية الشهرية حتى يظهر مولود (احتمال ٨٪ شهريًا).
+  // نكرر التسوية الشهرية حتى يظهر مولود (احتمال 8% شهريًا).
   for (let i = 0; i < 60 && !born; i++) {
     const y = 2026 + Math.floor(i / 12);
     s.date = `${y}-${String((i % 12) + 1).padStart(2, "0")}-01`;
@@ -129,7 +129,7 @@ test("الأولاد: الولادة تحتاج زواجًا مستقرًا وت
     born = s.empire.family.children.length > 0;
     if (born) break;
   }
-  assert.ok(born, "ولد طفل خلال ٦٠ شهرًا افتراضيًا");
+  assert.ok(born, "ولد طفل خلال 60 شهرًا افتراضيًا");
   const kid = s.empire.family.children[0];
   for (const k of ["discipline", "talent", "ambition"])
     assert.ok(kid[k] >= 0 && kid[k] <= 100);
@@ -195,7 +195,7 @@ test("الطلاق: نصف الثروة + محامون + فضيحة، والمح
   assert.ok(s.empire.fame < fame, "فضيحة تخفض الشهرة");
   assert.ok(s.blackFiles.suspicion >= suspicion + 5);
   assert.equal(s.empire.family.divorceCount, 1);
-  // المحامية: ٤٠٪ بدل ٥٠٪.
+  // المحامية: 40% بدل 50%.
   const l = married({ bride: "lawyer" }, "family");
   const p2 = l.empire.personal;
   const set2 = divorce(l);

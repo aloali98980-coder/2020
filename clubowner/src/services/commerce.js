@@ -177,7 +177,7 @@ export function sellSubscriptions(s) {
     (f) => f.home === s.clubId && !f.played,
   ).length;
   assert(home >= 5, "عدد المباريات المتبقية غير كافٍ.");
-  const count = Math.floor((s.sportsCity ? realisticAttendance(s) : s.capacity) * clamp(s.fanSupport / 600, 0.04, 0.18) * (1 + (s.sportsCity ? (cityEffects(s).totals.seasonTickets || 0) * .05 : 0)));
+  const count = Math.floor((s.sportsCity ? realisticAttendance(s) : s.capacity) * clamp(s.fanSupport / 600, 0.04, 0.18) * (1 + (s.sportsCity ? (cityEffects(s).totals.seasonTickets || 0) * .05 + (cityEffects(s).totals.attendance || 0) * .03 : 0)));
   const price = Math.round(s.ticketPrice * home * 0.75);
   c.seasonTickets = count;
   c.seasonTicketPrice = price;

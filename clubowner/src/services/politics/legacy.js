@@ -233,6 +233,3 @@ export function resignOffice(s) {
   return record;
 }
 
-export function legacyTitle(titleId) {
-  return LEGACY_TITLES[titleId] || LEGACY_TITLES.contested;
-}

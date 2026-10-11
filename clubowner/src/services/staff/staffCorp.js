@@ -1,6 +1,6 @@
-// المرحلة ١٢ «الإدارة الشاملة» — الهيكل التنظيمي وسوق الموظفين والولاء والخطف.
+// المرحلة 12 «الإدارة الشاملة» — الهيكل التنظيمي وسوق الموظفين والولاء والخطف.
 // s.staffCorp شجرة واحدة: الموظفون + السوق + التفاوض + الخطف + اجتماع المجلس الشهري.
-// النظام القديم s.staff (٣ أدوار) يبقى كما هو لتوافق الحفظات؛ الجديد مؤسسة كاملة بسعة مقر.
+// النظام القديم s.staff (3 أدوار) يبقى كما هو لتوافق الحفظات؛ الجديد مؤسسة كاملة بسعة مقر.
 import { assert, clamp, addDays, daysBetween, uid } from "../../core/utils.js";
 // مولد الإدارة الشاملة المستقل: لا يستهلك s.seed أبدًا، فلا يزيح عشوائية المحرك
 // ولا يغيّر أي سلوك قائم (الكؤوس والمباريات تُستمد من الدفق الأصلي وحده).
@@ -66,7 +66,7 @@ export function blankStaffCorp() {
   };
 }
 
-// طاقم افتراضي متوسط (مهارة ≈ ٦٠) + مقر صغير: للحفظات الجديدة والمهاجرة معًا.
+// طاقم افتراضي متوسط (مهارة ≈ 60) + مقر صغير: للحفظات الجديدة والمهاجرة معًا.
 const DEFAULT_CREW = [
   ["sporting", 62], ["marketing", 58], ["finance", 60],
   ["doctor", 65], ["fitness", 60], ["gk", 58],
@@ -176,7 +176,7 @@ export function refreshStaffMarket(s) {
   return c.market;
 }
 
-// ── التفاوض: ٣ جولات، عرض مضاد واحد، ومزاد علني على المشاهير ────────────────
+// ── التفاوض: 3 جولات، عرض مضاد واحد، ومزاد علني على المشاهير ────────────────
 export function startNegotiation(s, marketKey) {
   const c = ensureStaffCorp(s);
   const cand = c.market.find((m) => m.key === marketKey);
@@ -199,8 +199,8 @@ export function negotiate(s, { wage, years, bonus }) {
   const cand = c.market.find((m) => m.key === n.marketKey);
   assert(cand, "غادر المرشح السوق.");
   assert(Number.isSafeInteger(wage) && wage >= 20000, "راتب غير صالح.");
-  assert(Number.isInteger(years) && years >= 1 && years <= 5, "مدة العقد من سنة إلى ٥.");
-  assert(Number.isInteger(bonus) && bonus >= 0 && bonus <= 30, "المكافأة من ٠ إلى ٣٠٪.");
+  assert(Number.isInteger(years) && years >= 1 && years <= 5, "مدة العقد من سنة إلى 5.");
+  assert(Number.isInteger(bonus) && bonus >= 0 && bonus <= 30, "المكافأة من 0 إلى 30%.");
   n.round += 1;
   n.offer = { wage, years, bonus };
   // نادٍ منافس يزايد على المشهور من الجولة الثانية: مزاد مضاد علني.
@@ -211,7 +211,7 @@ export function negotiate(s, { wage, years, bonus }) {
     };
     message(s, {
       title: `مزاد على ${cand.name.ar}!`,
-      body: `${n.rival.club} دخل على الخط بعرض ${n.rival.wage.toLocaleString()} شهريًا. تفوّق عليه في الجولة القادمة أو انسحب.`,
+      body: `${n.rival.club} دخل على الخط بعرض ${n.rival.wage.toLocaleString("en-US")} شهريًا. تفوّق عليه في الجولة القادمة أو انسحب.`,
       category: "club", priority: "high",
     });
     return { result: "rival", negotiation: n };
@@ -240,7 +240,7 @@ export function negotiate(s, { wage, years, bonus }) {
     });
     return { result: "rejected", negotiation: null };
   }
-  // عرض مضاد واحد: يقترب ٨٪ من عرضك إن كنت قريبًا.
+  // عرض مضاد واحد: يقترب 8% من عرضك إن كنت قريبًا.
   const gap = need - wage;
   const counter = gap > 0 && gap / need < 0.35
     ? Math.round(need * 0.96)
@@ -248,7 +248,7 @@ export function negotiate(s, { wage, years, bonus }) {
   n.lastCounter = { wage: counter, years: cand.yearsAsk, bonus: cand.bonusAsk };
   message(s, {
     title: `عرض مضاد من ${cand.name.ar}`,
-    body: `يطلب ${counter.toLocaleString()} شهريًا لمدة ${cand.yearsAsk} سنوات ومكافأة ${cand.bonusAsk}٪. الجولة ${n.round + 1} من ٣.`,
+    body: `يطلب ${counter.toLocaleString("en-US")} شهريًا لمدة ${cand.yearsAsk} سنوات ومكافأة ${cand.bonusAsk}%. الجولة ${n.round + 1} من 3.`,
     category: "club",
   });
   return { result: "counter", negotiation: n };
@@ -279,7 +279,7 @@ function hireFromMarket(s, marketKey, { wage, years, bonus }) {
   afterRoleFilled(s, emp);
   message(s, {
     title: `انضمام ${emp.name.ar} — ${roleNameAr(emp.role)}`,
-    body: `عقد ${years} سنوات براتب شهري ${wage.toLocaleString()}.${emp.releaseClause ? ` شرط جزائي ${emp.releaseClause.toLocaleString()}.` : ""} الولاء الحالي ${emp.loyalty}٪.`,
+    body: `عقد ${years} سنوات براتب شهري ${wage.toLocaleString("en-US")}.${emp.releaseClause ? ` شرط جزائي ${emp.releaseClause.toLocaleString("en-US")}.` : ""} الولاء الحالي ${emp.loyalty}%.`,
     category: "club",
   });
   return emp;
@@ -300,7 +300,7 @@ export function fireEmployee(s, id) {
   closeThread(s, id);
   message(s, {
     title: `رحيل ${emp.name.ar}`,
-    body: `أُنهي العقد بتعويض ${compensation.toLocaleString()}. الدور الآن شاغر في الهيكل.`,
+    body: `أُنهي العقد بتعويض ${compensation.toLocaleString("en-US")}. الدور الآن شاغر في الهيكل.`,
     category: "club",
   });
   return compensation;
@@ -308,8 +308,8 @@ export function fireEmployee(s, id) {
 export function renewEmployee(s, id, years, raisePct = 0) {
   const emp = corpEmployee(s, id);
   assert(emp, "الموظف غير موجود.");
-  assert(Number.isInteger(years) && years >= 1 && years <= 5, "التمديد من سنة إلى ٥.");
-  assert(raisePct >= 0 && raisePct <= 50, "الزيادة من ٠ إلى ٥٠٪.");
+  assert(Number.isInteger(years) && years >= 1 && years <= 5, "التمديد من سنة إلى 5.");
+  assert(raisePct >= 0 && raisePct <= 50, "الزيادة من 0 إلى 50%.");
   const base = emp.contractEnd > s.date ? emp.contractEnd : s.date;
   emp.contractEnd = addDays(base, years * 365);
   if (raisePct > 0) {
@@ -320,7 +320,7 @@ export function renewEmployee(s, id, years, raisePct = 0) {
   emp.history.push({ date: s.date, text: `تجديد ${years} سنوات` });
   message(s, {
     title: `تجديد عقد ${emp.name.ar}`,
-    body: `حتى ${emp.contractEnd} براتب ${emp.wage.toLocaleString()}. الولاء الآن ${emp.loyalty}٪.`,
+    body: `حتى ${emp.contractEnd} براتب ${emp.wage.toLocaleString("en-US")}. الولاء الآن ${emp.loyalty}%.`,
     category: "club",
   });
   return emp;
@@ -336,7 +336,7 @@ export function promoteEmployee(s, id) {
   emp.history.push({ date: s.date, text: `ترقية للدرجة ${emp.level}` });
   message(s, {
     title: `ترقية ${emp.name.ar} للدرجة ${emp.level}`,
-    body: `راتب جديد ${emp.wage.toLocaleString()} وولاء ${emp.loyalty}٪.`,
+    body: `راتب جديد ${emp.wage.toLocaleString("en-US")} وولاء ${emp.loyalty}%.`,
     category: "club",
   });
   return emp;
@@ -344,11 +344,11 @@ export function promoteEmployee(s, id) {
 export function raiseEmployee(s, id, pct) {
   const emp = corpEmployee(s, id);
   assert(emp, "الموظف غير موجود.");
-  assert(pct >= 1 && pct <= 50, "الزيادة من ١ إلى ٥٠٪.");
+  assert(pct >= 1 && pct <= 50, "الزيادة من 1 إلى 50%.");
   emp.wage = Math.round(emp.wage * (1 + pct / 100));
   emp.lastRaise = s.date;
   emp.loyalty = clamp(emp.loyalty + 3 + Math.round(pct / 4), 0, 100);
-  emp.history.push({ date: s.date, text: `زيادة ${pct}٪` });
+  emp.history.push({ date: s.date, text: `زيادة ${pct}%` });
   return emp;
 }
 
@@ -373,7 +373,7 @@ export function afterRoleVacated(s, emp) {
     };
     message(s, {
       title: "مدرب مؤقت يقود الفريق",
-      body: "رحل مدرب الفريق الأول؛ المؤقت بمهارة ٤٥ حتى تعيّن بديلًا من سوق الموظفين.",
+      body: "رحل مدرب الفريق الأول؛ المؤقت بمهارة 45 حتى تعيّن بديلًا من سوق الموظفين.",
       category: "club", priority: "high",
     });
   }
@@ -402,12 +402,12 @@ export function makePoachOffer(s, empId, clubAr = null, wage = null) {
   c.poach.push(offer);
   message(s, {
     title: `${club} يخطف ${emp.name.ar}!`,
-    body: `عرض ${offer.wage.toLocaleString()} شهريًا (راتبه الحالي ${emp.wage.toLocaleString()}). لديك ١٠ أيام: زايده بزيادة، أو رقِّه، أو اتركه يرحل${offer.clauseFee ? ` وتقبض الشرط الجزائي ${offer.clauseFee.toLocaleString()}` : ""}.`,
+    body: `عرض ${offer.wage.toLocaleString("en-US")} شهريًا (راتبه الحالي ${emp.wage.toLocaleString("en-US")}). لديك 10 أيام: زايده بزيادة، أو رقِّه، أو اتركه يرحل${offer.clauseFee ? ` وتقبض الشرط الجزائي ${offer.clauseFee.toLocaleString("en-US")}` : ""}.`,
     category: "club", priority: "high",
   });
   return offer;
 }
-// الرد: raise (مطابقة +١٠٪) / promote (ترقية +١٥٪) / release (رحيل + قبض الشرط الجزائي)
+// الرد: raise (مطابقة +10%) / promote (ترقية +15%) / release (رحيل + قبض الشرط الجزائي)
 export function respondPoach(s, offerId, action) {
   const c = ensureStaffCorp(s);
   const o = c.poach.find((x) => x.id === offerId);
@@ -423,7 +423,7 @@ export function respondPoach(s, offerId, action) {
       post(s, o.clauseFee, "release-clause", `شرط جزائي: ${emp.name.ar} إلى ${o.club}`, uid(s, "clause"));
     message(s, {
       title: `رحل ${emp.name.ar} إلى ${o.club}`,
-      body: o.clauseFee ? `قبضت الشرط الجزائي ${o.clauseFee.toLocaleString()}.` : "رحل مجانًا؛ الدور شاغر الآن.",
+      body: o.clauseFee ? `قبضت الشرط الجزائي ${o.clauseFee.toLocaleString("en-US")}.` : "رحل مجانًا؛ الدور شاغر الآن.",
       category: "club",
     });
     return o;
@@ -437,7 +437,7 @@ export function respondPoach(s, offerId, action) {
   emp.loyalty = clamp(emp.loyalty + 6, 0, 100);
   message(s, {
     title: `${emp.name.ar} رفض ${o.club}`,
-    body: `بقى بعد ${action === "promote" ? "الترقية" : "الزيادة"}؛ الولاء الآن ${emp.loyalty}٪.`,
+    body: `بقى بعد ${action === "promote" ? "الترقية" : "الزيادة"}؛ الولاء الآن ${emp.loyalty}%.`,
     category: "club",
   });
   return o;
@@ -465,7 +465,7 @@ export function poachDay(s) {
       emp.loyalty = clamp(emp.loyalty - 5, 0, 100);
       message(s, {
         title: `${emp.name.ar} باقٍ رغم الإغراء`,
-        body: `رفض عرض ${o.club} دون مقابل منك؛ الولاء انخفض إلى ${emp.loyalty}٪.`,
+        body: `رفض عرض ${o.club} دون مقابل منك؛ الولاء انخفض إلى ${emp.loyalty}%.`,
         category: "club",
       });
     }
@@ -498,7 +498,7 @@ function directorReport(s, role) {
   const c = ensureStaffCorp(s);
   if (role === "sporting") {
     const pending = c.deals.filter((d) => d.status === "pending").length;
-    return { label: L("الصفقات المعلّقة", "Pending deals", "Deals en attente"), value: pending, note: L(`فلسفة ${c.sporting.philosophy} · صلاحيات ${c.sporting.freedom}٪`, `Philosophy ${c.sporting.philosophy} · authority ${c.sporting.freedom}%`, `Philosophie ${c.sporting.philosophy} · pouvoirs ${c.sporting.freedom}%`) };
+    return { label: L("الصفقات المعلّقة", "Pending deals", "Deals en attente"), value: pending, note: L(`فلسفة ${c.sporting.philosophy} · صلاحيات ${c.sporting.freedom}%`, `Philosophy ${c.sporting.philosophy} · authority ${c.sporting.freedom}%`, `Philosophie ${c.sporting.philosophy} · pouvoirs ${c.sporting.freedom}%`) };
   }
   if (role === "marketing") {
     const running = c.marketing.campaigns.filter((x) => x.ends > s.date).length;
@@ -512,7 +512,7 @@ function directorReport(s, role) {
   }
   if (role === "academy")
     return { label: L("قائمة المتابعة", "Watchlist", "Liste de suivi"), value: c.academy.watchlist.length, note: L(`المنهج ${c.academy.curriculum}`, `Curriculum ${c.academy.curriculum}`, `Programme ${c.academy.curriculum}`) };
-  return { label: L("المتابعون", "Followers", "Abonnés"), value: c.social.followers, note: L(`التفاعل ${c.social.engagement}٪`, `${c.social.engagement}% engagement`, `${c.social.engagement}% d’engagement`) };
+  return { label: L("المتابعون", "Followers", "Abonnés"), value: c.social.followers, note: L(`التفاعل ${c.social.engagement}%`, `${c.social.engagement}% engagement`, `${c.social.engagement}% d’engagement`) };
 }
 
 export function boardMeetingMonth(s) {

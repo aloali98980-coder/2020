@@ -44,9 +44,6 @@ export function triggerMarketCrash(s, intensity = 85, reason = "crisis") {
   return setMarketCycle(s, "crash", intensity, reason);
 }
 
-export function triggerMarketBubble(s, intensity = 78, reason = "speculation") {
-  return setMarketCycle(s, "bubble", intensity, reason);
-}
 
 function transitionFor(s, roll) {
   const cycle = s.stockMarket.cycle;

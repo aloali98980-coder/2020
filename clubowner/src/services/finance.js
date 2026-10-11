@@ -80,6 +80,24 @@ export const futureIncome = (s) =>
   s.finance.obligations
     .filter((o) => o.status === "pending" && o.category === "sponsor-income")
     .reduce((a, o) => a + o.amount, 0);
+// 0.45 — حقوق البث: من BROADCAST_MIN (آخر الجدول) إلى BROADCAST_MAX (المتصدر)، مقرّبة لـ10,000.
+export const BROADCAST_MIN = 1_000_000;
+export const BROADCAST_MAX = 2_400_000;
+export function leaguePosition(s) {
+  const rows = [...(s.table || [])].sort(
+    (a, b) => b.points - a.points || (b.gf - b.ga) - (a.gf - a.ga) || b.gf - a.gf,
+  );
+  const idx = rows.findIndex((r) => r.clubId === s.clubId);
+  return { index: idx, size: rows.length };
+}
+export function broadcastMonthly(s) {
+  const { index, size } = leaguePosition(s);
+  if (index < 0 || size < 2) return BROADCAST_MIN;
+  const share = 1 - index / (size - 1);
+  const raw = BROADCAST_MIN + (BROADCAST_MAX - BROADCAST_MIN) * share;
+  return Math.round(raw / 10_000) * 10_000;
+}
+
 export function financeDay(s) {
   for (const o of s.finance.obligations) {
     if (o.status !== "pending" || o.due > s.date) continue;
@@ -109,6 +127,8 @@ export function financeDay(s) {
       "تشغيل المنشآت والموظفين",
       "ops-" + s.date,
     );
+    // بث تلفزيوني: إيراد شهري ثابت الصيغة حسب ترتيب النادي في الجدول (أرقام فقط).
+    post(s, broadcastMonthly(s), "broadcast", "حقوق البث التلفزيوني الشهرية", "broadcast-" + s.date);
     message(s, {
       title: "التقرير المالي الشهري جاهز",
       body: "تم سداد المرتبات وتكاليف التشغيل. راجع كشف الحساب والتزامات الشهر القادم.",
@@ -146,7 +166,7 @@ export function takeLoan(s) {
     });
   message(s, {
     title: "تم إيداع التمويل",
-    body: "٥ ملايين جنيه دخلت الخزينة. إجمالي السداد ٥٫٤ مليون على ١٢ دفعة كل ٣٠ يومًا. النموذج تمويلي مبسط، وليس عرضًا بنكيًا حقيقيًا.",
+    body: "5 ملايين جنيه دخلت الخزينة. إجمالي السداد 5٫4 مليون على 12 دفعة كل 30 يومًا. النموذج تمويلي مبسط، وليس عرضًا بنكيًا حقيقيًا.",
     category: "finance",
   });
 }

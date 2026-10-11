@@ -5,7 +5,7 @@ export async function backupBlob(state) {
   const raw = saveBlob(state);
   if (raw.size > MAX_SAVE_BYTES)
     throw Error(
-      "حجم الحفظ تجاوز ١٦٠ ميجابايت؛ لا يمكن إنشاء نسخة لا تقبل الاستيراد.",
+      "حجم الحفظ تجاوز 160 ميجابايت؛ لا يمكن إنشاء نسخة لا تقبل الاستيراد.",
     );
   if (state.database !== "world" || typeof CompressionStream === "undefined")
     return { blob: raw, extension: ".json" };
@@ -13,16 +13,16 @@ export async function backupBlob(state) {
     raw.stream().pipeThrough(new CompressionStream("gzip")),
   ).blob();
   if (compressed.size > MAX_COMPRESSED_BYTES)
-    throw Error("النسخة المضغوطة تجاوزت ٨٠ ميجابايت.");
+    throw Error("النسخة المضغوطة تجاوزت 80 ميجابايت.");
   return { blob: compressed, extension: ".json.gz" };
 }
 export async function readBackup(file) {
   if (file.size > MAX_SAVE_BYTES)
-    throw Error("أقصى حجم للحفظ غير المضغوط ١٦٠ ميجابايت.");
+    throw Error("أقصى حجم للحفظ غير المضغوط 160 ميجابايت.");
   const magic = new Uint8Array(await file.slice(0, 2).arrayBuffer());
   if (magic[0] !== 0x1f || magic[1] !== 0x8b) return file.text();
   if (file.size > MAX_COMPRESSED_BYTES)
-    throw Error("أقصى حجم للملف المضغوط ٨٠ ميجابايت.");
+    throw Error("أقصى حجم للملف المضغوط 80 ميجابايت.");
   if (typeof DecompressionStream === "undefined")
     throw Error(
       "هذا المتصفح لا يفك الحفظ المضغوط؛ فك ملف gzip إلى JSON ثم استورده.",
@@ -40,7 +40,7 @@ export async function readBackup(file) {
       total += value.byteLength;
       if (total > MAX_SAVE_BYTES) {
         await reader.cancel();
-        throw Error("الحفظ بعد فك الضغط تجاوز حد ١٦٠ ميجابايت.");
+        throw Error("الحفظ بعد فك الضغط تجاوز حد 160 ميجابايت.");
       }
       chunks.push(value);
     }

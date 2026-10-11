@@ -1,4 +1,4 @@
-// 0.30 المجموعة ١: الهيكل التنظيمي وسوق الموظفين — العقود والولاء والخطف والمقر.
+// 0.30 المجموعة 1: الهيكل التنظيمي وسوق الموظفين — العقود والولاء والخطف والمقر.
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createGame, SAVE_VERSION } from "../src/core/game.js";
@@ -71,9 +71,9 @@ test("ترحيل v25: طاقم افتراضي دون مساس باللاعبين
   validateSave(m);
 });
 
-test("التفاوض: قبول عادل → تعيين، و٣ جولات ثم رفض", () => {
+test("التفاوض: قبول عادل → تعيين، و3 جولات ثم رفض", () => {
   const s = rich(game());
-  // إخلاء مقعد: المقر ٦/٦ ممتلئ.
+  // إخلاء مقعد: المقر 6/6 ممتلئ.
   fireEmployee(s, corpEmployees(s).find((e) => e.role === "gk").id);
   const cand = plantCandidate(s, "gk", 70);
   startNegotiation(s, cand.key);
@@ -220,7 +220,7 @@ test("المقر: ترقية بمستويات وسعة، والبرج مربوط
   validateSave(s);
 });
 
-test("تكامل: ٦٠ يومًا تُنضج السوق والاجتماع والرواتب دون كسر", () => {
+test("تكامل: 60 يومًا تُنضج السوق والاجتماع والرواتب دون كسر", () => {
   const s = rich(game());
   const delta = 50_000_000 - s.finance.cash;
   s.finance.cash = 50_000_000;
@@ -240,14 +240,14 @@ test("تكامل: ٦٠ يومًا تُنضج السوق والاجتماع وا�
       }
     }
   }
-  assert.equal(days >= 60, true, "تقدّم ٦٠ يومًا");
+  assert.equal(days >= 60, true, "تقدّم 60 يومًا");
   assert.ok(s.finance.ledger.some((e) => e.category === "staff-wages"), "رواتب إدارية مسددة");
   assert.ok(s.finance.ledger.length > start);
   assert.ok(s.staffCorp.market.length >= 5);
   validateSave(s);
 });
 
-test("المشاهير: ١٢ اسمًا حقيقيًا فريدًا بشروط جزائية", () => {
+test("المشاهير: 12 اسمًا حقيقيًا فريدًا بشروط جزائية", () => {
   assert.equal(FAMOUS_STAFF.length, 12);
   assert.equal(new Set(FAMOUS_STAFF.map((f) => f.fid)).size, 12);
   for (const f of FAMOUS_STAFF)

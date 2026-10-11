@@ -217,12 +217,12 @@ export const SYSTEM_PHRASES = {
       "Your project starts here. The game blends reference data with a simulated world that evolves inside your save. Abilities, contracts, events and retirements are not facts about real people. See the sources page for data details, and export your save regularly",
       "Votre projet commence ici. Le jeu mêle données de référence et monde simulé qui évolue dans votre sauvegarde. Capacités, contrats, événements et retraites ne sont pas des faits sur des personnes réelles. Consultez la page des sources et exportez régulièrement votre sauvegarde",
     ],
-  "سيولة أكبر ٨٠٪، وتشغيل أقل ٢٠٪، وتفاوض أسهل. القدرات والنتائج لا تتغير سرًا":
+  "سيولة أكبر 80%، وتشغيل أقل 20%، وتفاوض أسهل. القدرات والنتائج لا تتغير سرًا":
     [
       "80% more cash, 20% lower operating costs and easier negotiations. Abilities and results are never secretly altered",
       "80 % de trésorerie en plus, 20 % de charges en moins et négociations plus faciles. Capacités et résultats ne sont jamais modifiés en secret",
     ],
-  "سيولة أكبر ٣٠٪، وتشغيل أقل ١٠٪، ومساحة أكبر للتجربة": [
+  "سيولة أكبر 30%، وتشغيل أقل 10%، ومساحة أكبر للتجربة": [
     "30% more cash, 10% lower operating costs and more room to experiment",
     "30 % de trésorerie en plus, 10 % de charges en moins et plus de marge pour expérimenter",
   ],
@@ -230,7 +230,7 @@ export const SYSTEM_PHRASES = {
     "Economy and negotiations at their base rates. Decisions have gains and costs",
     "Économie et négociations aux taux de base. Chaque décision a ses gains et ses coûts",
   ],
-  "سيولة أقل ٢٥٪، وتشغيل أعلى ١٥٪، ورعايات أقل وتفاوض أصعب": [
+  "سيولة أقل 25%، وتشغيل أعلى 15%، ورعايات أقل وتفاوض أصعب": [
     "25% less cash, 15% higher operating costs, fewer sponsors and harder negotiations",
     "25 % de trésorerie en moins, 15 % de charges en plus, moins de sponsors et négociations plus dures",
   ],
@@ -771,7 +771,7 @@ export const SYSTEM_PHRASES = {
   ],
 
   // localSaveCodec.js, saveCompression.js
-  "تجاوز الحفظ حد ١٦٠ MiB؛ احتفظ بالنسخة السابقة وقلل العالم في المشاوير الجديدة":
+  "تجاوز الحفظ حد 160 MiB؛ احتفظ بالنسخة السابقة وقلل العالم في المشاوير الجديدة":
     [
       "The save exceeded the 160 MiB limit; keep the previous copy and load a smaller world in new careers",
       "La sauvegarde dépasse la limite de 160 Mio ; gardez la copie précédente et réduisez le monde dans les nouvelles carrières",
@@ -793,19 +793,19 @@ export const SYSTEM_PHRASES = {
     "Save player count mismatch",
     "Nombre de joueurs de la sauvegarde incohérent",
   ],
-  "حجم الحفظ تجاوز ١٦٠ ميجابايت؛ لا يمكن إنشاء نسخة لا تقبل الاستيراد": [
+  "حجم الحفظ تجاوز 160 ميجابايت؛ لا يمكن إنشاء نسخة لا تقبل الاستيراد": [
     "The save exceeded 160 MB; a copy that cannot be imported will not be created",
     "La sauvegarde dépasse 160 Mo ; impossible de créer une copie non importable",
   ],
-  "النسخة المضغوطة تجاوزت ٨٠ ميجابايت": [
+  "النسخة المضغوطة تجاوزت 80 ميجابايت": [
     "The compressed copy exceeded 80 MB",
     "La copie compressée dépasse 80 Mo",
   ],
-  "أقصى حجم للحفظ غير المضغوط ١٦٠ ميجابايت": [
+  "أقصى حجم للحفظ غير المضغوط 160 ميجابايت": [
     "Maximum uncompressed save size is 160 MB",
     "Taille maximale non compressée : 160 Mo",
   ],
-  "أقصى حجم للملف المضغوط ٨٠ ميجابايت": [
+  "أقصى حجم للملف المضغوط 80 ميجابايت": [
     "Maximum compressed file size is 80 MB",
     "Taille maximale du fichier compressé : 80 Mo",
   ],
@@ -813,7 +813,7 @@ export const SYSTEM_PHRASES = {
     "This browser cannot decompress the save; unzip the gzip file to JSON and import that",
     "Ce navigateur ne décompresse pas la sauvegarde ; décompressez le gzip en JSON puis importez-le",
   ],
-  "الحفظ بعد فك الضغط تجاوز حد ١٦٠ ميجابايت": [
+  "الحفظ بعد فك الضغط تجاوز حد 160 ميجابايت": [
     "The decompressed save exceeded the 160 MB limit",
     "La sauvegarde décompressée dépasse la limite de 160 Mo",
   ],
@@ -898,7 +898,7 @@ export const SYSTEM_PHRASES = {
     "East stand expansion",
     "Extension de la tribune est",
   ],
-  "إضافة ٣٬٠٠٠ مقعد لكل توسعة. الدخل يعتمد على الحضور الفعلي؛ يُغلق ١٠٪ من السعة أثناء البناء":
+  "إضافة 3٬000 مقعد لكل توسعة. الدخل يعتمد على الحضور الفعلي؛ يُغلق 10% من السعة أثناء البناء":
     [
       "Adds 3,000 seats per expansion. Income depends on actual attendance; 10% of capacity closes during construction",
       "Ajoute 3 000 sièges par extension. Les recettes dépendent de l’affluence réelle ; 10 % de la capacité ferme pendant les travaux",

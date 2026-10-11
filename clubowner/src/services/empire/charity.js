@@ -1,5 +1,5 @@
 // الخير والسمعة في «حياة الملياردير» 0.29 — تبرعات ومشاريع خيرية باسم المالك
-// ترفع السمعة وتخفض مؤشر الشبهات (المرحلة ٨)، والبخل يجرّ هجوم الصحافة.
+// ترفع السمعة وتخفض مؤشر الشبهات (المرحلة 8)، والبخل يجرّ هجوم الصحافة.
 import { assert, clamp, uid, daysBetween, addDays } from "../../core/utils.js";
 import { message } from "../inbox.js";
 import { reduceSuspicion } from "../blackFiles.js";

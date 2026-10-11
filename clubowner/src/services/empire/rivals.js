@@ -31,7 +31,7 @@ export function ensureRivals(s) {
     wealth: Math.round(
       RIVAL_WEALTH_MIN + rnd() * (RIVAL_WEALTH_MAX - RIVAL_WEALTH_MIN),
     ),
-    growthPct: 0.5 + rnd() * 2, // ٠٫٥٪ … ٢٫٥٪ شهريًا
+    growthPct: 0.5 + rnd() * 2, // 0٫5% … 2٫5% شهريًا
   }));
   return e.rivals.list;
 }
@@ -116,7 +116,7 @@ function resolveRace(s) {
   return rec;
 }
 
-// الترتيب الحالي بين المليارديرات (١ = الأغنى).
+// الترتيب الحالي بين المليارديرات (1 = الأغنى).
 export function billionaireRank(s) {
   const e = ensureEmpire(s);
   const rivals = ensureRivals(s);
@@ -150,7 +150,7 @@ function rivalsMonthHook(s) {
   const e = ensureEmpire(s);
   const rnd = makeLcg(s.seed * 31 + Number(e.lastMonthSettle?.replace("-", "") || 1));
   for (const r of ensureRivals(s)) {
-    const drift = (rnd() - 0.5) * 1.2; // ±٠٫٦٪ حول معدل نموّه
+    const drift = (rnd() - 0.5) * 1.2; // ±0٫6% حول معدل نموّه
     r.wealth = Math.max(1_000_000, Math.round(r.wealth * (1 + (r.growthPct + drift) / 100)));
   }
   const rec = resolveRace(s);

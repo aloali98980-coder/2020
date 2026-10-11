@@ -109,8 +109,8 @@ test("بطاقة اللاعب: مواصفات كاملة وسجل أهداف م�
   });
   const after = playerDetail(s, p);
   assert.ok(after.includes("سجل المواسم — الأهداف والصناعة"), "جدول المواسم");
-  assert.ok(after.includes("٩٠٠"), "دقائق الموسم المحفوظة");
-  assert.ok(after.includes("٧"), "أهداف الموسم المحفوظة");
+  assert.ok(after.includes("900"), "دقائق الموسم المحفوظة");
+  assert.ok(after.includes("7"), "أهداف الموسم المحفوظة");
   assert.ok(!after.includes("لا سجل مواسم محفوظ بعد"), "السطر البديل يختفي");
 });
 

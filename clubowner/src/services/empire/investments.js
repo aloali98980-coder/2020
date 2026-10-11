@@ -49,7 +49,7 @@ export function vehicleReturn(kind, r) {
     case "rental":
       return 0.8;
     case "stocks":
-      return 1.2 + (r - 0.5) * 6; // −1.8٪ … +4.2٪
+      return 1.2 + (r - 0.5) * 6; // −1.8% … +4.2%
     case "startup":
       if (r < 0.5) return 5;
       if (r < 0.8) return 1;
@@ -58,7 +58,7 @@ export function vehicleReturn(kind, r) {
     case "coin":
       if (r < 0.08) return -40;
       if (r > 0.94) return 40;
-      return (r - 0.5) * 20; // −10٪ … +10٪
+      return (r - 0.5) * 20; // −10% … +10%
     default:
       return 0;
   }

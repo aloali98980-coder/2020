@@ -69,15 +69,10 @@ export function contractDay(s) {
         p.morale = Math.max(0, p.morale - 12);
         message(s, {
           title: `مراجعة وعد المشاركة: ${p.name}`,
-          body: "اللاعب شارك في أقل من ٦٠٪ من مباريات فترة المراجعة رغم وعد الأساسي. انخفضت المعنويات ١٢ نقطة. راجع ترتيب فريقك أو تفاوض على دور مناسب.",
+          body: "اللاعب شارك في أقل من 60% من مباريات فترة المراجعة رغم وعد الأساسي. انخفضت المعنويات 12 نقطة. راجع ترتيب فريقك أو تفاوض على دور مناسب.",
           category: "transfers",
         });
       }
     }
   }
-}
-export function activateReleaseClause(s, p) {
-  return p.contractTerms?.releaseClause > 0
-    ? p.contractTerms.releaseClause
-    : null;
 }

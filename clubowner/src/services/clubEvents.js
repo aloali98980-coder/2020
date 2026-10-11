@@ -25,9 +25,9 @@ import {
 
 // 0.25 «نظام الأحداث الموسّع» — طبقتان بإيقاعين مختلفين:
 //
-//   ١) قرارات: حدث مهم كل `difficulty.eventInterval` يومًا (١٢–٢٨ حسب الصعوبة)،
+//   1) قرارات: حدث مهم كل `difficulty.eventInterval` يومًا (12–28 حسب الصعوبة)،
 //      ورسالة `required: true` توقف الزمن حتى تحسمها — هذا هو «ضابط الإزعاج» الأصلي.
-//   ٢) نكهة: خبر قصير كل ٣ أيام على الأكثر، `required: false`، فلا يوقف الزمن أبدًا،
+//   2) نكهة: خبر قصير كل 3 أيام على الأكثر، `required: false`، فلا يوقف الزمن أبدًا،
 //      وأثره صغير ومعلن أو بلا أثر.
 //
 // لا يُعرض حدث إلا إذا تحققت بوابته `when(s)` على الحفظ الحالي، ولا يتكرر حدث
@@ -38,7 +38,7 @@ const gate = (event, s) =>
 export const availableDecisions = (s) => EVENT_CATALOG.filter((e) => gate(e, s));
 export const availableFlavor = (s) => FLAVOR_CATALOG.filter((e) => gate(e, s));
 
-// أخبار النكهة لا تتكرر داخل الموسم: نتذكر ما صُرف خلال آخر ١٥٠ يوماً من البريد،
+// أخبار النكهة لا تتكرر داخل الموسم: نتذكر ما صُرف خلال آخر 150 يوماً من البريد،
 // ثم ننسى — فمسيرة من عشرين موسمًا لا تُحرم من الأخبار بعد موسم واحد.
 const FLAVOR_REPEAT_WINDOW = 150;
 const FLAVOR_GAP_DAYS = 3;
@@ -67,7 +67,7 @@ export function clubEventDay(s) {
     return null;
   const open = availableDecisions(s);
   if (!open.length) return null; // لا حدث ممكن اليوم: البوابات كلها مغلقة
-  // التنويع: آخر ٨ أحداث في السجل + الحدث الأخير لا تعود، إلا إذا كان ذلك هو المتاح كله.
+  // التنويع: آخر 8 أحداث في السجل + الحدث الأخير لا تعود، إلا إذا كان ذلك هو المتاح كله.
   const recent = new Set(s.clubDecisions.slice(-8).map((e) => e.type));
   recent.add(s.lastClubEvent);
   const fresh = open.filter((e) => !recent.has(e.id));

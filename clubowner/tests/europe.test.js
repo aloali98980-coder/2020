@@ -71,6 +71,8 @@ function checkDraw(days, pots, country, kind) {
         );
   }
 }
+// الدفعة 7: ترحيل أرقام القمصان يضيف حقل shirtNumber فقط؛ المقارنة تستثنيه.
+const stripShirt = (ps) => ps.map(({ shirtNumber, ...p }) => p);
 test("200 seeded draws: opponents, associations, pots, balanced venues and one fixture per matchday", () => {
   for (const kind of ["ucl", "uecl"]) {
     const ids = Array.from({ length: 36 }, (_, i) => "c" + i),
@@ -365,7 +367,7 @@ test("Schema four import keeps ongoing cups, player objects and finances unchang
   const next = migrateSave(s);
   assert.equal(next.version, SAVE_VERSION);
   assert.equal(s.version, 4);
-  assert.deepEqual(next.players, players);
+  assert.deepEqual(stripShirt(next.players), stripShirt(players));
   assert.deepEqual(next.finance, finance);
   assert.deepEqual(next.expansion.cups, cups);
   assert.equal(next.expansion.europeanFormatVersion, 1);

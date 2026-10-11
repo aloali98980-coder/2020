@@ -88,7 +88,17 @@ export function buildMatchReport(s, f) {
       .slice(0, 3);
   const events = [];
   // أهدافنا: دقائق مرتبة وهدافون بأوزان التقييم؛ أهداف المنافس: بالدقيقة فقط (بلا قوائم لمعظم الأندية).
-  for (const min of minutesFor(rng, ours, f.extraTime)) {
+  // 0.43: خطة المحرك هي المصدر (نفس الهدافين والصنّاع والدقائق في كل الشاشات).
+  const plan = Array.isArray(f.goalPlan) && f.goalPlan.length === ours ? f.goalPlan : null;
+  const ownGoalSteps = plan
+    ? plan.map((g) => ({ min: g.m, playerId: g.s, assistId: g.a }))
+    : minutesFor(rng, ours, f.extraTime).map((min) => ({ min, playerId: undefined, assistId: undefined }));
+  for (const step of ownGoalSteps) {
+    const min = step.min;
+    if (plan) {
+      events.push({ min, type: "goal", playerId: step.playerId, assistId: step.assistId, clubId: s.clubId });
+      continue;
+    }
     const scorer = xi.length ? weightedScorer(rng, xi) : null;
     // 0.24: assister — pick a different teammate deterministically.
     let assisterId = null;
@@ -112,25 +122,35 @@ export function buildMatchReport(s, f) {
       playerId: null,
       clubId: home ? f.away : f.home,
     });
-  // بطاقات: تُستخدم قيم المحرك إن وُجدت (مرحلة المجموعات القارية)، وإلا فتوليد حتمي.
-  const ourYellows = f.homeYellows ?? Math.floor(rng() * 3),
-    ourReds = f.homeReds ?? (rng() < 0.05 ? 1 : 0);
-  for (let i = 0; i < ourYellows + ourReds && xi.length; i++)
-    events.push({
-      min: 20 + Math.floor(rng() * 70),
-      type: i < ourYellows ? "yellow" : "red",
-      playerId: pick(rng, xi).p.id,
-      clubId: s.clubId,
-    });
-  // تبديلات واقعية في الشوط الثاني من دكة البدلاء.
-  for (let i = 0; i < Math.min(3, bench.length); i++)
-    events.push({
-      min: 58 + Math.floor(rng() * 25),
-      type: "sub",
-      out: xi.length ? pick(rng, xi).p.id : null,
-      playerId: bench[i].id,
-      clubId: s.clubId,
-    });
+  // 0.43: مع المخطط الزمني للمحرك: بطاقاتنا وتبديلاتنا من السجل نفسه (لا توليد مستقل).
+  const tlEv = Array.isArray(f.timeline?.ev) ? f.timeline.ev : null;
+  if (tlEv) {
+    for (const e of tlEv) {
+      if (e.t === "y") events.push({ min: e.m, type: "yellow", playerId: e.p, clubId: s.clubId });
+      else if (e.t === "r") events.push({ min: e.m, type: "red", playerId: e.p, clubId: s.clubId });
+      else if (e.t === "s") events.push({ min: e.m, type: "sub", out: e.o, playerId: e.i, clubId: s.clubId });
+    }
+  } else {
+    // بطاقات: تُستخدم قيم المحرك إن وُجدت (مرحلة المجموعات القارية)، وإلا فتوليد حتمي.
+    const ourYellows = f.homeYellows ?? Math.floor(rng() * 3),
+      ourReds = f.homeReds ?? (rng() < 0.05 ? 1 : 0);
+    for (let i = 0; i < ourYellows + ourReds && xi.length; i++)
+      events.push({
+        min: 20 + Math.floor(rng() * 70),
+        type: i < ourYellows ? "yellow" : "red",
+        playerId: pick(rng, xi).p.id,
+        clubId: s.clubId,
+      });
+    // تبديلات واقعية في الشوط الثاني من دكة البدلاء.
+    for (let i = 0; i < Math.min(3, bench.length); i++)
+      events.push({
+        min: 58 + Math.floor(rng() * 25),
+        type: "sub",
+        out: xi.length ? pick(rng, xi).p.id : null,
+        playerId: bench[i].id,
+        clubId: s.clubId,
+      });
+  }
   events.sort((a, b) => a.min - b.min);
   // إحصائيات تقديرية من فرق القوة مع تذبذب حتمي.
   const ourPower = sidePower(s, s.clubId, xi),

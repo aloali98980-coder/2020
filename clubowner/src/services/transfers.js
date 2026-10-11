@@ -9,6 +9,9 @@ import { assertTransfersAllowed } from "./boardMandate.js";
 import { isTransferBanned } from "./blackFiles.js";
 import { recordSupporterSigning } from "./ultras.js";
 import { addInsideInformation } from "./stockMarket/insider.js";
+import { assertVacationAllows } from "./protection.js";
+import { medicalResult, assignShirtNumber, firstWordsIndex } from "./presentation.js";
+import { addNoise, transferNoise } from "./noiseMeter.js";
 export function submitOffer(s, playerId, terms) {
   assertTransfersAllowed(s);
   if (isTransferBanned(s))
@@ -117,6 +120,8 @@ export function transferReply(s, id) {
 export function acceptClub(s, id) {
   const n = s.negotiations.find((x) => x.id === id);
   assert(n && n.stage === "club-reply", "العرض غير متاح.");
+  // 0.46: وضع الإجازة يمنع الصفقات الكبرى والنجوم.
+  assertVacationAllows(s, { player: s.players.find((x) => x.id === n.playerId), fee: n.counter || 0 });
   n.fee = n.counter;
   n.stage = "personal";
   closeThread(s, id);
@@ -143,6 +148,7 @@ export function signPlayer(s, id, terms) {
   assert(n && n.stage === "personal", "ابدأ باتفاق مع النادي أولًا.");
   const p = s.players.find((x) => x.id === n.playerId);
   assertMarket(s, p);
+  assertVacationAllows(s, { player: p, fee: n.fee || 0 });
   assert(!p.loan, "اللاعب معار الآن.");
   assert(
     p.status !== "retired" && (!n.seller || p.clubId === n.seller),
@@ -184,6 +190,19 @@ export function signPlayer(s, id, terms) {
     s.finance.cash >= total,
     "السيولة لا تكفي للمقدم ومكافأة التوقيع وعمولة الوكيل.",
   );
+  // الفحص الطبي قبل أي مال: قد يسقط اللاعب، فتُغلق الصفقة دون خصم ودون توقيع.
+  const medical = medicalResult(s, p);
+  if (!medical.pass) {
+    n.stage = "rejected";
+    n.medical = { result: "fail", date: s.date };
+    closeThread(s, id);
+    message(s, {
+      title: `فشل الفحص الطبي لـ ${p.name}`,
+      body: "الصفقة سقطت بعد الفحص الطبي، ولم يُدفع أي مبلغ ولم يُوقَّع العقد.",
+      category: "transfers",
+    });
+    return { medical: "fail" };
+  }
   n.seller = n.seller || p.clubId;
   if (Object.hasOwn(s.expansion?.budgets || {}, n.seller))
     s.expansion.budgets[n.seller] += upfront;
@@ -239,11 +258,15 @@ export function signPlayer(s, id, terms) {
     rest +
     guaranteedWages(terms.salary, terms.years, clauses.annualRaisePct);
   closeThread(s, id);
+  assignShirtNumber(s, p);
+  p.firstWordsIndex = firstWordsIndex(s, p);
+  addNoise(s, "transfer", transferNoise(n.fee), "صفقة انتقال تثير الجدل");
   message(s, {
     title: `${p.name} ينضم إلى النادي`,
-    body: "تم التوقيع والتسجيل وفق قواعد القائمة التجريبية. الفحص الطبي في هذه النسخة مبسّط ونتيجته سليمة؛ النظام الطبي التفصيلي لاحقًا.",
+    body: "نتيجة الفحص الطبي: سليم. رقم القميص وأول كلماته موجودان في ملف اللاعب.",
     category: "transfers",
   });
+  return { medical: "pass" };
 }
 export function renewPlayer(s, playerId, terms) {
   const p = s.players.find((x) => x.id === playerId);
