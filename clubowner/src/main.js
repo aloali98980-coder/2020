@@ -99,6 +99,7 @@ import "./styles/responsive.css";
 import "./styles/readability.css";
 import "./styles/mobile.css";
 import "./styles/dashboard.css";
+import { applyPerformanceMode } from "./core/device.js";
 import "./styles/tokens.css";
 import "./styles/motion.css";
 import "./styles/dynasty.css";
@@ -3048,6 +3049,8 @@ document.addEventListener("change", async (e) => {
 });
 bindModalKeyboard();
 async function bootstrap() {
+  // 0.44: وضع الأداء الخفيف على الأجهزة الضعيفة قبل أول رسم
+  applyPerformanceMode();
   app.innerHTML = `<div style="padding:40px;text-align:center">جارٍ فتح الحفظة…</div>`;
   try {
     const loaded = await loadGame();
