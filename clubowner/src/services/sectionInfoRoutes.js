@@ -1,6 +1,11 @@
 // الدفعة 6 — القسم 7 (بند 6ب): بطاقة تعريف لكل قسم في الشريط الجانبي.
 // كل بطاقة 2–4 سطور بثلاث لغات (حد أقصى 6). تُقرأ عبر SECTION_INFO في sectionInfo.js.
 export const ROUTE_INFO = Object.freeze({
+  clubs: {
+    ar: ["دليل الأندية: تصفح الدوري ← الأندية ← اللاعبين.", "كل نادٍ وقائمة لاعبيه وبطاقة كل لاعب بسجل أهدافه."],
+    en: ["Club guide: browse the league → clubs → players.", "Every club, its squad and each player's goal record."],
+    fr: ["Guide des clubs : parcourez le championnat → clubs → joueurs.", "Chaque club, son effectif et le palmarès de buts de chaque joueur."],
+  },
   dashboard: {
     ar: ["مكتب المالك: ملخص يومي للنادي.", "الخزينة والمباريات القادمة والقرارات المعلقة في مكان واحد.", "كل بطاقة تفتح شاشتها الكاملة."],
     en: ["Owner's office: a daily summary of the club.", "Cash, next matches and pending decisions in one place.", "Each card opens its full screen."],

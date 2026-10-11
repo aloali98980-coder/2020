@@ -61,5 +61,5 @@ test("البحث في السوق واللاعبين يتجمع في رندر و�
   assert.ok(start > 0 && end > start, "معالج البحث موجود");
   const handler = main.slice(start, end);
   assert.ok(!/\brender\(\)/.test(handler), "لا رندر مباشر داخل معالج البحث");
-  assert.equal((handler.match(/renderSearchSoon\(\)/g) || []).length, 2);
+  assert.equal((handler.match(/renderSearchSoon\(\)/g) || []).length, 3); // السوق + اللاعبين + الأندية
 });

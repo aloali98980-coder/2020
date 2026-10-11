@@ -24,6 +24,8 @@ export const DICTIONARY = {
   "ملف اللاعب": ["Player profile", "Profil du joueur"],
 
   "قاعدة اللاعبين": ["Player database", "Base des joueurs"],
+  // 0.43: متصفح الأندية — تسمية الرابط في الهيكل (الشاشة نفسها تستخدم tr).
+  "دليل الأندية": ["Clubs directory", "Répertoire des clubs"],
   "صاحب النادي": ["Club Owner", "Propriétaire du club"],
   "مكتب المالك": ["Owner’s office", "Bureau du propriétaire"],
   "البريد الوارد": ["Inbox", "Messagerie"],
