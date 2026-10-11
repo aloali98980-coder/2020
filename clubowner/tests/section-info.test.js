@@ -67,3 +67,14 @@ test("الإعدادات تحوي زر إعادة البطاقات، والبط�
   }
   setLanguage("ar");
 });
+
+test("كل قسم في الشريط الجانبي له بطاقة تعريف بثلاث لغات (≤6 سطور)", async () => {
+  const { NAV } = await import("../src/components/shell.js");
+  for (const item of NAV) {
+    const copy = SECTION_INFO[item.id];
+    assert.ok(copy, `missing info card: ${item.id}`);
+    for (const lang of ["ar", "en", "fr"]) {
+      assert.ok(copy[lang]?.length >= 1 && copy[lang].length <= MAX_INFO_LINES, `${item.id}/${lang}`);
+    }
+  }
+});

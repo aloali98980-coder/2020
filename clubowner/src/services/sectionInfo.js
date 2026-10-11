@@ -3,12 +3,14 @@
 import { ABSENCE_MIN_DAYS } from "./absence.js";
 import { IRREVERSIBLE_FEE, MAJOR_FEE } from "./protection.js";
 import { ACHIEVEMENT_FAMILIES } from "../data/achievements.js";
+import { ROUTE_INFO } from "./sectionInfoRoutes.js";
 
 const fmt = (n) => new Intl.NumberFormat("en-US").format(n);
 // (التعريفات بثلاث لغات صراحةً؛ المفتاح غير المعروف يُرفض بخطأ إنجليزي/عربي ثابت.)
 const achievementCount = ACHIEVEMENT_FAMILIES.length * 4;
 
 export const SECTION_INFO = Object.freeze({
+  ...ROUTE_INFO,
   achievements: {
     ar: [
       `${achievementCount} إنجازًا عبر أربع مراتب: برونزي وفضي وذهبي وأسطوري.`,

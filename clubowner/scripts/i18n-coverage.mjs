@@ -32,6 +32,7 @@ const SKIP = [
   /src\/services\/sectionInfo\.js/,
   // Source labels are explicit {ar,en,fr} records (0.46 — batch 6 §8).
   /src\/services\/sources\.js/,
+  /src\/services\/sectionInfoRoutes\.js/,
   // The ultras dashboard and service localize each phrase inline through AR/EN/FR maps.
   /src\/features\/ultras\.js/,
   /src\/services\/ultras\.js/,
