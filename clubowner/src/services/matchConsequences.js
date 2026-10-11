@@ -164,7 +164,13 @@ export function applyMatchConsequences(s, f, cards, rng, options = {}) {
   }
 
   // ── إصابات ──
-  for (const p of xi) {
+  // 0.43: الإصابة لمن أنهى المباراة على الأرض فقط: المطرود والمستبدل خارج الأحداث.
+  const ev = Array.isArray(f.timeline?.ev) ? f.timeline.ev : null;
+  const leftPitch = new Set(ev ? ev.filter((e) => e.t === "r").map((e) => e.p).concat(ev.filter((e) => e.t === "s").map((e) => e.o)) : []);
+  const finishing = ev
+    ? [...xi.filter((p) => !leftPitch.has(p.id)), ...ev.filter((e) => e.t === "s").map((e) => s.players.find((y) => y.id === e.i)).filter((p) => p && !leftPitch.has(p.id))]
+    : xi;
+  for (const p of finishing) {
     const prob = injuryProbability(p, fitnessFactor(s));
     if (rng() < prob) {
       const days = injuryDuration(rng);

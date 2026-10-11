@@ -49,10 +49,35 @@ export function recordMatchStats(s, f, rng, goals, cards) {
   // Minutes: 120 if extra time, 90 otherwise.
   const minutes = f.extraTime ? 120 : 90;
 
-  for (const p of xi) {
-    initSeasonStats(p);
-    p.seasonMinutes += minutes;
-    p.seasonRatingCount += 1;
+  // 0.43: مع المخطط الزمني: الدقائق بحسب الدخول والخروج، والبدلاء الداخلون ضمن المشاركين.
+  const ev = Array.isArray(f.timeline?.ev) ? f.timeline.ev : null;
+  if (ev) {
+    const entry = new Map();
+    const exit = new Map();
+    for (const e of ev) {
+      if (e.t === "r") exit.set(e.p, e.m);
+      if (e.t === "s") {
+        exit.set(e.o, e.m);
+        entry.set(e.i, e.m);
+      }
+    }
+    const extra = [...entry.keys()]
+      .map((id) => s.players.find((y) => y.id === id))
+      .filter((p) => p && !xi.includes(p));
+    xi.push(...extra);
+    for (const p of xi) {
+      initSeasonStats(p);
+      const start = entry.get(p.id) ?? 0;
+      const end = exit.get(p.id) ?? minutes;
+      p.seasonMinutes += Math.max(0, end - start);
+      p.seasonRatingCount += 1;
+    }
+  } else {
+    for (const p of xi) {
+      initSeasonStats(p);
+      p.seasonMinutes += minutes;
+      p.seasonRatingCount += 1;
+    }
   }
 
   // 0.43: إن وُجدت خطة الأهداف (من المحرك) فهي المصدر الوحيد للهدافين والصنّاع.

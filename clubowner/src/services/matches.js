@@ -11,9 +11,10 @@ import { message } from "./inbox.js";
 import { legendMatchBonus } from "./legends.js";
 import { recordMatchStats } from "./seasonStats.js";
 import { planOwnGoals } from "./goalModel.js";
+import { buildTimeline, compactTimeline } from "./matchTimeline.js";
 
 const ourGoalsOf = (f, s) => (f.home === s.clubId ? f.homeGoals : f.awayGoals) || 0;
-import { generateCardDistribution, applyMatchConsequences } from "./matchConsequences.js";
+import { applyMatchConsequences } from "./matchConsequences.js";
 import { recordDisciplineIncident, refereeSuspensionThreshold } from "./politics/committees.js";
 import { resolveInsiderBet } from "./betting/insider.js";
 import { fanAttendanceMultiplier, recordSupporterResult, supporterMatchBonus } from "./ultras.js";
@@ -83,7 +84,7 @@ function strength(s, id) {
       : 0)
   );
 }
-function goals(s, power, opponent, home) {
+export function goals(s, power, opponent, home) {
   const expected = clamp(
     1.25 + (power - opponent) / 30 + (home ? 0.2 : 0),
     0.25,
@@ -273,50 +274,71 @@ export function matchDay(
         const moraleDelta = our > opp ? (f.isDerby ? 5 : 3) : -1;
         p.morale = clamp(p.morale + moraleDelta, 0, 100);
       });
-      // 0.43: هدافو المباراة من تشكيلتها الفعلية فقط، بأوزان المركز والتقييم.
-      // الخطة تُحفظ في f.goalPlan لتستهلكها الإحصاءات والتقرير (لا أهداف أشباح).
-      const goalXi = (Array.isArray(f.lineup) && f.lineup.length
+      // 0.43: مخطط زمني واحد للمباراة: بطاقات وطرد وتبديلات، ثم الأهداف من يوم اللاعب على الأرض فقط.
+      const lineupPlayers = (Array.isArray(f.lineup) && f.lineup.length
         ? f.lineup
             .map((x) => s.players.find((y) => y.id === x.playerId))
             .filter((p) => p && p.status !== "retired")
-            .map((p) => ({ p }))
-        : selectXI(s).filter((x) => x.p.status !== "retired")
-      );
-      if (owns && ourGoalsOf(f, s) > 0 && goalXi.length) {
-        f.goalPlan = planOwnGoals(() => random(s), goalXi, ourGoalsOf(f, s), f.extraTime);
+        : selectXI(s).filter((x) => x.p.status !== "retired").map((x) => x.p));
+      const onStarting = new Set(lineupPlayers.map((p) => p.id));
+      const bench = s.players
+        .filter(
+          (p) =>
+            p.clubId === s.clubId &&
+            p.status !== "retired" &&
+            !onStarting.has(p.id) &&
+            !(p.injuryUntil && p.injuryUntil > s.date) &&
+            !(p.suspendedUntil && p.suspendedUntil >= s.date),
+        )
+        .sort((a, b) => b.rating - a.rating)
+        .slice(0, 5);
+      const politics = s.politics;
+      const refereePolicy = politics?.committees?.referees?.policy || "balanced";
+      const suspensionThreshold = refereeSuspensionThreshold(politics);
+      const tl = buildTimeline(lineupPlayers, bench, () => random(s), {
+        isDerby: f.isDerby,
+        refereePolicy,
+        extraTime: f.extraTime,
+      });
+      const byIdAll = new Map([...lineupPlayers, ...bench].map((p) => [p.id, p]));
+      // عقوبة النقص العددي تُطبَّق قبل توزيع الأهداف حتى لا تزيد الخطة على النتيجة النهائية
+      const reds = tl.events.filter((e) => e.t === "r");
+      if (!f.extraTime && reds.length && random(s) < 0.3) {
+        const side = f.home === s.clubId ? "Home" : "Away";
+        const key = side === "Home" ? "homeGoals" : "awayGoals";
+        f[key] = Math.max(0, (f[key] || 0) - 1);
+        // المسابقات الأوروبية تحفظ النظامي بجانب النتيجة: نُبقيهما متطابقين
+        const regKey = side === "Home" ? "regulationHome" : "regulationAway";
+        if (Number.isFinite(f[regKey])) f[regKey] = Math.max(0, f[regKey] - 1);
+      }
+      const ourFinal = ourGoalsOf(f, s);
+      const poolAt = (m) =>
+        [...tl.participants()]
+          .filter((id) => tl.onPitchAt(id, m))
+          .map((id) => ({ p: byIdAll.get(id) }))
+          .filter((x) => x.p);
+      if (ourFinal > 0) {
+        f.goalPlan = planOwnGoals(() => random(s), lineupPlayers.map((p) => ({ p })), ourFinal, f.extraTime, poolAt);
         f.goalPlan.forEach((g, i) => {
           const scorer = s.players.find((p) => p.id === g.s);
           if (!scorer) return;
           scorer.goals++;
           const bonus = scorer.contractTerms?.goalBonus || 0;
           if (bonus)
-            post(
-              s,
-              -bonus,
-              "goal-bonus",
-              `مكافأة هدف ${scorer.name}`,
-              f.id + "-goal-" + i,
-            );
+            post(s, -bonus, "goal-bonus", `مكافأة هدف ${scorer.name}`, f.id + "-goal-" + i);
         });
+      } else {
+        f.goalPlan = [];
       }
-      // 0.23+0.24: accumulate season stats + apply match consequences.
-      // Cards are generated once and shared between both systems for determinism.
-      const xi = Array.isArray(f.lineup) && f.lineup.length
-        ? f.lineup.map((x) => s.players.find((y) => y.id === x.playerId)).filter(Boolean)
-        : selectXI(s).filter((x) => x.p.status !== "retired").map((x) => x.p);
-      const politics = s.politics;
-      const refereePolicy = politics?.committees?.referees?.policy || "balanced";
-      const suspensionThreshold = refereeSuspensionThreshold(politics);
-      const cards = generateCardDistribution(xi, () => random(s), { isDerby: f.isDerby, refereePolicy });
-      recordMatchStats(s, f, () => random(s), our, cards);
+      f.timeline = compactTimeline(tl);
+      const cards = {
+        yellows: tl.events.filter((e) => e.t === "y").map((e) => byIdAll.get(e.p)).filter(Boolean),
+        reds: reds.map((e) => byIdAll.get(e.p)).filter(Boolean),
+      };
+      recordMatchStats(s, f, () => random(s), ourFinal, cards);
       const { redCardPenalty } = applyMatchConsequences(s, f, cards, () => random(s), { suspensionThreshold });
-      for (const player of (cards.reds || [])) recordDisciplineIncident(s, f, player);
-      // Red card numerical disadvantage: reduce score with probability.
-      if (!f.extraTime && redCardPenalty > 0 && random(s) < 0.3) {
-        f[our === "homeGoals" ? "homeGoals" : "awayGoals"] = Math.max(0, f[
-          f.home === s.clubId ? "homeGoals" : "awayGoals"
-        ] - 1);
-      }
+      for (const player of cards.reds) recordDisciplineIncident(s, f, player);
+      void redCardPenalty;
       message(s, {
         title: `${f.isDerby ? "🔥 " : ""}${result} ${our}–${opp} | تقرير ${f.isDerby ? "الديربي" : "المباراة"}`,
         body: `${extendedClub(f.home).name} ${f.homeGoals} — ${f.awayGoals} ${extendedClub(f.away).name}. ${f.neutral ? "مباراة على ملعب محايد؛ لا إيراد تذاكر ملعب ناديك." : home ? (f.isDerby ? "تم تسجيل تذاكر الديربي بأسعار مضاعفة ومصروفات التنظيم." : "تم تسجيل التذاكر ومصروفات التنظيم في الحسابات.") : "مباراة خارج ملعبك."} ${f.tactics ? `خطة ${f.tactics.formation} · ملاءمة المراكز ${f.tactics.fit}٪ · الضغط والإيقاع يؤثران على الفرص والإجهاد. ` : ""}المحاكاة احتمالية ومبسطة، وليست مباراة مرئية.`,

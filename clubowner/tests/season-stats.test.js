@@ -264,11 +264,11 @@ test("a played own-fixture populates season stats on starting XI", () => {
     "at least one own player should have minutes recorded",
   );
 
-  // Minutes should be 90 (normal) or 120 (extra time).
+  // 0.43: الدقائق بين 1 ومدة المباراة؛ البدلاء والمطرودون يلعبون جزءًا من المباراة.
   for (const p of withMinutes) {
     assert.ok(
-      p.seasonMinutes === 90 || p.seasonMinutes === 120,
-      `minutes should be 90 or 120, got ${p.seasonMinutes} for ${p.id}`,
+      p.seasonMinutes >= 1 && p.seasonMinutes <= 120,
+      `minutes should be within the match length, got ${p.seasonMinutes} for ${p.id}`,
     );
     assert.ok(p.seasonRatingCount >= 1, "should have at least 1 rating");
     assert.ok(p.seasonRatingSum > 0, "rating sum should be positive");

@@ -74,15 +74,17 @@ function pickWeighted(rng, items, weightOf, exclude = null) {
  * @param extraTime — هل امتدت المباراة (120 دقيقة)
  * @returns {{s:string|null, a:string|null, m:number}[]} مرتبة بالدقيقة
  */
-export function planOwnGoals(rng, xi, count, extraTime = false) {
+export function planOwnGoals(rng, xi, count, extraTime = false, poolAt = null) {
   if (!Array.isArray(xi) || !xi.length || count <= 0) return [];
   const span = extraTime ? 120 : 90;
   const minutes = new Set();
   while (minutes.size < count) minutes.add(1 + Math.floor(rng() * span));
   const sorted = [...minutes].sort((a, b) => a - b);
   return sorted.map((m) => {
-    const scorer = pickWeighted(rng, xi, scoreWeight);
-    const assist = scorer ? pickWeighted(rng, xi, assistWeight, scorer.p.id) : null;
+    // poolAt(m): من على أرض الملعب في تلك الدقيقة فقط (المطرود والمستبدل خارج الأحداث)
+    const pool = poolAt ? poolAt(m) : xi;
+    const scorer = pickWeighted(rng, pool, scoreWeight);
+    const assist = scorer ? pickWeighted(rng, pool, assistWeight, scorer.p.id) : null;
     return { s: scorer?.p.id ?? null, a: assist?.p.id ?? null, m };
   });
 }

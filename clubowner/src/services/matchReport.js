@@ -122,25 +122,35 @@ export function buildMatchReport(s, f) {
       playerId: null,
       clubId: home ? f.away : f.home,
     });
-  // بطاقات: تُستخدم قيم المحرك إن وُجدت (مرحلة المجموعات القارية)، وإلا فتوليد حتمي.
-  const ourYellows = f.homeYellows ?? Math.floor(rng() * 3),
-    ourReds = f.homeReds ?? (rng() < 0.05 ? 1 : 0);
-  for (let i = 0; i < ourYellows + ourReds && xi.length; i++)
-    events.push({
-      min: 20 + Math.floor(rng() * 70),
-      type: i < ourYellows ? "yellow" : "red",
-      playerId: pick(rng, xi).p.id,
-      clubId: s.clubId,
-    });
-  // تبديلات واقعية في الشوط الثاني من دكة البدلاء.
-  for (let i = 0; i < Math.min(3, bench.length); i++)
-    events.push({
-      min: 58 + Math.floor(rng() * 25),
-      type: "sub",
-      out: xi.length ? pick(rng, xi).p.id : null,
-      playerId: bench[i].id,
-      clubId: s.clubId,
-    });
+  // 0.43: مع المخطط الزمني للمحرك: بطاقاتنا وتبديلاتنا من السجل نفسه (لا توليد مستقل).
+  const tlEv = Array.isArray(f.timeline?.ev) ? f.timeline.ev : null;
+  if (tlEv) {
+    for (const e of tlEv) {
+      if (e.t === "y") events.push({ min: e.m, type: "yellow", playerId: e.p, clubId: s.clubId });
+      else if (e.t === "r") events.push({ min: e.m, type: "red", playerId: e.p, clubId: s.clubId });
+      else if (e.t === "s") events.push({ min: e.m, type: "sub", out: e.o, playerId: e.i, clubId: s.clubId });
+    }
+  } else {
+    // بطاقات: تُستخدم قيم المحرك إن وُجدت (مرحلة المجموعات القارية)، وإلا فتوليد حتمي.
+    const ourYellows = f.homeYellows ?? Math.floor(rng() * 3),
+      ourReds = f.homeReds ?? (rng() < 0.05 ? 1 : 0);
+    for (let i = 0; i < ourYellows + ourReds && xi.length; i++)
+      events.push({
+        min: 20 + Math.floor(rng() * 70),
+        type: i < ourYellows ? "yellow" : "red",
+        playerId: pick(rng, xi).p.id,
+        clubId: s.clubId,
+      });
+    // تبديلات واقعية في الشوط الثاني من دكة البدلاء.
+    for (let i = 0; i < Math.min(3, bench.length); i++)
+      events.push({
+        min: 58 + Math.floor(rng() * 25),
+        type: "sub",
+        out: xi.length ? pick(rng, xi).p.id : null,
+        playerId: bench[i].id,
+        clubId: s.clubId,
+      });
+  }
   events.sort((a, b) => a.min - b.min);
   // إحصائيات تقديرية من فرق القوة مع تذبذب حتمي.
   const ourPower = sidePower(s, s.clubId, xi),
