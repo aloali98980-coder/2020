@@ -516,6 +516,37 @@ export function validateSave(s) {
   validateTalent(s);
   validateLegends(s);
   validateDynasty(s);
+  check(
+    Array.isArray(s.celebrations) &&
+      s.celebrations.length <= 500 &&
+      new Set(s.celebrations.map((item) => item.id)).size === s.celebrations.length &&
+      new Set(s.celebrations.map((item) => item.sourceKey)).size === s.celebrations.length &&
+      s.celebrations.every(
+        (item) =>
+          id(item.id) &&
+          ["title", "cup", "derby", "promotion"].includes(item.kind) &&
+          text(item.sourceId) &&
+          text(item.sourceKey) &&
+          text(item.name) &&
+          isoDate(item.date) &&
+          amount(item.season) &&
+          typeof item.seen === "boolean" &&
+          item.reward &&
+          ["merchandise", "sponsor", "morale", "fans", "reputation", "followers", "engagement"].every((key) => amount(item.reward[key])),
+      ),
+    "سجل الاحتفالات غير سليم.",
+  );
+  const city = s.sportsCity, stadium = city?.stadium;
+  check(city && Array.isArray(city.facilities) && city.facilities.length <= CITY_FACILITIES.length &&
+    new Set(city.facilities).size === city.facilities.length && city.facilities.every(x => CITY_FACILITIES.some(f => f.id === x)) &&
+    stadium && Number.isInteger(stadium.tier) && stadium.tier >= 0 && stadium.tier < CAPACITY_TIERS.length &&
+    (!stadium.project || (Number.isInteger(stadium.project.tier) && stadium.project.tier > stadium.tier && stadium.project.tier < CAPACITY_TIERS.length && isoDate(stadium.project.end))) &&
+    Array.isArray(city.eventsSeen) && city.eventsSeen.length <= 100 && Array.isArray(city.news) && city.news.length <= 40 &&
+    (!city.broadcasts || (Array.isArray(city.broadcasts) && city.broadcasts.length <= 30)), "حالة المدينة الرياضية غير سليمة.");
+  validateExpansion(s);
+  validateTalent(s);
+  validateLegends(s);
+  validateDynasty(s);
   return s;
 }
 

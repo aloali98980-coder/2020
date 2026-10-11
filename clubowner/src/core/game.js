@@ -24,7 +24,7 @@ import { initBetting } from "../services/betting/state.js";
 import { initStockMarket } from "../services/stockMarket/state.js";
 import { initClubEmpire } from "../services/clubEmpire/state.js";
 import { ensureAudioPreferences } from "../services/audio.js";
-export const SAVE_VERSION = 35;
+export const SAVE_VERSION = 36;
 export function createGame({
   clubId = "ahly",
   owner = "مالك النادي",
@@ -117,6 +117,7 @@ export function createGame({
     negotiations: [],
     inbox: [],
     events: [],
+    celebrations: [],
     fixtures: fixtures(startDate),
     table: CLUBS.map((c) => ({
       clubId: c.id,

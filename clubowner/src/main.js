@@ -101,6 +101,7 @@ import "./styles/tokens.css";
 import "./styles/motion.css";
 import "./styles/dynasty.css";
 import "./styles/politics.css";
+import "./styles/celebrations.css";
 import { createGame } from "./core/game.js";
 import { getState, setState, commit, isSaving } from "./core/store.js";
 import { saveGame, loadGame, exportGame, importGame } from "./services/save.js";
@@ -124,6 +125,13 @@ import { advanceTime } from "./services/time.js";
 import { pendingActions, resolveInfo } from "./services/inbox.js";
 import { matchReportModal } from "./features/matchReport.js";
 import { showHighlightsScreen } from "./features/matchHighlights.js";
+import { showCelebrationScreen } from "./features/celebrations.js";
+import {
+  celebrationSnapshot,
+  markCelebrationSeen,
+  pendingCelebrations,
+  trackCelebrationEvents,
+} from "./services/celebrations.js";
 import { paletteItems, paletteOverlay } from "./features/palette.js";
 import { markStep, hideOnboarding } from "./features/onboarding.js";
 import {
@@ -267,6 +275,7 @@ import { APP_VERSION } from "./data/version.js";
 import { playInstantFriendly } from "./services/instantFriendly.js";
 import {
   playMatchSequence,
+  playCelebrationAudio,
   setAudioEnabled,
   setAudioMuted,
   setAudioVolume,
@@ -481,7 +490,73 @@ async function apply(operation, text) {
   if (text) toast(text);
   return r;
 }
+function showCelebrationQueue(records, onDone = () => {}) {
+  if (!records.length) return onDone();
+  const save = getState();
+  const record = save?.celebrations?.find((item) => item.id === records[0].id);
+  if (!save || !record) return showCelebrationQueue(records.slice(1), onDone);
+  playCelebrationAudio(save, record.kind);
+  showCelebrationScreen(save, record, records.length, async () => {
+    await apply((state) => markCelebrationSeen(state, record.id));
+    showCelebrationQueue(records.slice(1), onDone);
+  });
+}
+
+
 async function runTime(resume = false) {
+  const days = resume
+    ? null
+    : Number(document.getElementById("advance-days")?.value || 7);
+  const stateBefore = getState(),
+    playedBefore = new Set(
+      stateBefore ? playedOwnFixtures(stateBefore).map((f) => f.id) : [],
+    ),
+    celebrationBefore = stateBefore ? celebrationSnapshot(stateBefore) : null;
+  const r = await apply((s) => {
+    const result = advanceTime(s, days);
+    const celebrations = result.advanced
+      ? trackCelebrationEvents(s, celebrationBefore)
+      : [];
+    if (result.advanced) markStep(s, "week");
+    return { ...result, celebrationIds: celebrations.map((item) => item.id) };
+  });
+  const s = getState();
+  const fresh = s
+    ? playedOwnFixtures(s).filter((f) => !playedBefore.has(f.id))
+    : [];
+  const finishAdvance = () => {
+    // Sound is still presentation-only. When a trophy scene follows the match,
+    // its fanfare replaces overlapping match cues for a cleaner celebration.
+    if (fresh.length && !r.celebrationIds?.length)
+      playMatchSequence(s, fresh[fresh.length - 1]);
+    // 0.24: شاشة لقطات الماتش أولاً، ثم تقرير الماتش الكامل.
+    if (s && s.preferences?.autoMatchReport !== false && fresh.length) {
+      const report = reportFor(s, fresh[fresh.length - 1]);
+      showHighlightsScreen(s, report, () => {
+        openModal(matchReportModal(s, report));
+      });
+    }
+    if (r.blocked) {
+      ui.route = "inbox";
+      ui.inboxFilter = "required";
+      ui.message = pendingActions(getState())[0]?.id;
+      render();
+      toast(
+        r.advanced
+          ? `تقدمنا ${num(r.advanced)} أيام. الوقت متوقف لقرارك.`
+          : "فيه قرار مهم محتاج ردك قبل تمرير الوقت.",
+      );
+    } else
+      toast(
+        r.match
+          ? "توقفت المحاكاة بعد المباراة. النتيجة في بريدك."
+          : `تم تمرير ${num(r.advanced)} ${r.advanced === 1 ? "يوم" : "أيام"} وحفظ اللعبة.`,
+      );
+  };
+  const pending = s ? pendingCelebrations(s) : [];
+  if (pending.length) showCelebrationQueue(pending, finishAdvance);
+  else finishAdvance();
+}
   const days = resume
     ? null
     : Number(document.getElementById("advance-days")?.value || 7);
@@ -2798,6 +2873,8 @@ async function bootstrap() {
     if (loaded.backup)
       toast("تم استرجاع النسخة الاحتياطية بعد تعذر قراءة الحفظ الأساسي.", true);
     if (loaded.error) toast("الحفظة غير سليمة: " + loaded.error, true);
+    const pending = loaded.state ? pendingCelebrations(loaded.state) : [];
+    if (pending.length) setTimeout(() => showCelebrationQueue(pending), 0);
   } catch (e) {
     render();
     toast(

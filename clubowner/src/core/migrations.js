@@ -24,6 +24,7 @@ import { initBetting } from "../services/betting/state.js";
 import { initStockMarket } from "../services/stockMarket/state.js";
 import { initClubEmpire } from "../services/clubEmpire/state.js";
 import { ensureAudioPreferences } from "../services/audio.js";
+import { ensureCelebrations } from "../services/celebrations.js";
 import { stockText } from "../data/stockMarketTexts.js";
 import { empireText } from "../data/empireTexts.js";
 function migrateToFive(input) {
@@ -618,7 +619,17 @@ function migrateSave35(input) {
     " أجواء يوم الماتش 0.39: أُضيف صوت مولّد بخفة مع تشغيل افتراضي بعد أول تفاعل، وإعدادات كتم ومستوى مستقلة.";
   return prior;
 }
-export function migrateSave(input) { return migrateSave35(input); }
+function migrateSave36(input) {
+  if (!input || input.version === 36) return input;
+  const prior = input.version === 35 ? structuredClone(input) : migrateSave35(input);
+  if (prior?.version !== 35) return prior;
+  prior.version = 36;
+  ensureCelebrations(prior);
+  prior.migrationNote = (prior.migrationNote || "") +
+    " احتفالات النادي 0.40: أُضيف سجل مشاهد التتويج ومكافآت المبيعات والرعاة والمعنويات دون تغيير محرك المباريات.";
+  return prior;
+}
+export function migrateSave(input) { return migrateSave36(input); }
 
 function migrateSave33(input) {
   if (!input || input.version === 33) return input;

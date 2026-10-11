@@ -1095,4 +1095,10 @@ export const DICTIONARY = {
     "Match-day atmosphere 0.39: lightweight generated audio was added, with playback enabled by default after first interaction and independent mute and volume controls.",
     "Ambiance des jours de match 0.39 : un son généré léger a été ajouté, activé par défaut après la première interaction, avec des commandes de volume et de sourdine séparées.",
   ],
+  "احتفالات النادي 0.40: أُضيف سجل مشاهد التتويج ومكافآت المبيعات والرعاة والمعنويات دون تغيير محرك المباريات": [
+    "Club celebrations 0.40: trophy scenes and sales, sponsorship and morale rewards were recorded without changing the match engine.",
+    "Célébrations du club 0.40 : les scènes de trophée et les récompenses de ventes, de sponsoring et de moral sont enregistrées sans modifier le moteur de match.",
+  ],
+  "إعدادات المحاكاة أو الصوت ناقصة": ["Simulation or audio settings are incomplete.", "Les réglages de simulation ou de son sont incomplets."],
+  "سجل الاحتفالات غير سليم": ["Invalid celebration history.", "Historique des célébrations invalide."],
 };
