@@ -1,0 +1,331 @@
+/* 0.42 — الجوائز: الصفحة وحفل نهاية الموسم وقاعة المشاهير. */
+.awards-ceremony-panel .award-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  background: var(--gold-soft);
+  border: 1px solid var(--gold-line);
+  color: var(--gold);
+  font-weight: 700;
+}
+.award-mini-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+.award-mini {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--panel-2);
+  border: 1px solid var(--gold-line);
+}
+.award-mini > span {
+  display: block;
+  font-size: 11px;
+  color: var(--muted, #9fb0c4);
+  margin-bottom: 6px;
+}
+.award-chip {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.award-chip strong {
+  color: var(--ink, #eef4fa);
+  font-size: 14px;
+}
+.award-chip small {
+  color: var(--muted, #9fb0c4);
+  font-size: 11px;
+}
+.award-chip em {
+  color: var(--gold);
+  font-size: 10px;
+  font-style: normal;
+}
+.award-chip i {
+  color: var(--muted, #9fb0c4);
+  font-size: 11px;
+  font-style: normal;
+}
+.award-vacant {
+  color: var(--muted, #9fb0c4);
+  font-size: 12px;
+}
+.own-chip {
+  border-inline-start: 3px solid var(--gold);
+}
+
+/* التصويت الجماهيري */
+.fan-vote-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 12px 0;
+}
+.fan-vote-row {
+  display: grid;
+  grid-template-columns: minmax(120px, 1.2fr) 3fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: var(--panel-2);
+}
+.fan-vote-info {
+  display: flex;
+  flex-direction: column;
+}
+.fan-vote-info small {
+  color: var(--muted, #9fb0c4);
+  font-size: 11px;
+}
+.fan-vote-bar {
+  height: 10px;
+  border-radius: 999px;
+  background: var(--panel-3);
+  overflow: hidden;
+}
+.fan-vote-bar i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--gold), #f2d488);
+}
+.fan-vote-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* الجوائز الشهرية */
+.monthly-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 10px;
+}
+.monthly-card {
+  padding: 12px;
+  border-radius: 14px;
+  background: var(--panel-2);
+  border: 1px solid var(--gold-line);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.monthly-card .monthly-tag {
+  font-size: 11px;
+  color: var(--muted, #9fb0c4);
+}
+.monthly-card > div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* قاعة المشاهير */
+.hall-season {
+  border: 1px solid var(--gold-line);
+  border-radius: 16px;
+  padding: 14px;
+  margin-bottom: 14px;
+  background: linear-gradient(160deg, var(--panel-2), transparent 70%);
+}
+.hall-season header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 10px;
+}
+.hall-season header strong {
+  color: var(--gold);
+}
+.hall-season header small {
+  color: var(--muted, #9fb0c4);
+}
+.hall-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 8px;
+}
+.hall-cell {
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: var(--panel-3);
+}
+.hall-cell > span {
+  display: block;
+  font-size: 10px;
+  color: var(--muted, #9fb0c4);
+  margin-bottom: 4px;
+}
+.hall-team p {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.8;
+  color: var(--ink, #eef4fa);
+}
+
+/* مشهد الحفل */
+.awards-ceremony {
+  width: min(860px, 100%);
+  margin: auto;
+  padding: clamp(16px, 3vw, 30px);
+  color: #f6f5ee;
+  background: linear-gradient(160deg, #141d38, #0c1222 70%);
+  border: 1px solid rgb(231 186 89 / 52%);
+  border-radius: 22px;
+  box-shadow: 0 32px 110px rgb(0 0 0 / 58%);
+}
+.awards-ceremony header {
+  text-align: center;
+  margin-bottom: 12px;
+}
+.awards-ceremony .eyebrow {
+  color: #f4cd75;
+  letter-spacing: 0.12em;
+}
+.awards-ceremony h2 {
+  margin: 6px 0;
+  color: #fff6d8;
+  font-size: clamp(22px, 3.6vw, 34px);
+}
+.awards-ceremony header p,
+.awards-ceremony footer > span {
+  color: #c7d0df;
+  font-size: 13px;
+}
+.awards-stage {
+  display: block;
+  width: 100%;
+  max-height: 320px;
+  border-radius: 16px;
+  border: 1px solid rgb(255 255 255 / 10%);
+}
+.aw-curtain {
+  fill: #3a1d4e;
+  opacity: 0.95;
+}
+.aw-podium rect {
+  fill: #22314f;
+  stroke: rgb(255 255 255 / 12%);
+}
+.aw-podium .aw-step2 {
+  fill: #2c3d61;
+}
+.aw-podium .aw-step3 {
+  fill: #2c3d61;
+}
+.aw-trophy {
+  fill: #f0c76f;
+  stroke: #ffe9a8;
+  stroke-width: 2;
+}
+.aw-stage-mark {
+  fill: #ffe9a8;
+  font-size: 44px;
+  font-weight: 800;
+}
+.aw-confetti rect {
+  fill: #f4cd75;
+  opacity: 0;
+  animation: aw-fall 2.8s linear infinite;
+  animation-delay: var(--d, 0s);
+}
+@keyframes aw-fall {
+  0% {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(220px);
+  }
+}
+.awards-step-body {
+  margin: 16px 0;
+  text-align: center;
+}
+.awards-winner-label {
+  display: block;
+  color: #c7d0df;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  margin-bottom: 10px;
+}
+.awards-step-body .award-chip strong {
+  color: #fff6d8;
+  font-size: clamp(20px, 3vw, 28px);
+}
+.awards-step-body .award-chip small {
+  color: #c7d0df;
+  font-size: 13px;
+}
+.awards-ceremony footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.awards-team-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 8px;
+}
+.award-team-card {
+  padding: 8px;
+  border-radius: 10px;
+  background: rgb(255 255 255 / 7%);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.award-team-card b {
+  color: #fff6d8;
+  font-size: 12px;
+}
+.award-team-card small {
+  color: #c7d0df;
+  font-size: 10px;
+}
+.award-team-card em {
+  color: #f4cd75;
+  font-size: 10px;
+  font-style: normal;
+}
+.award-scorers {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.award-scorer-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+}
+.award-scorer-row > span {
+  color: #c7d0df;
+  font-size: 12px;
+}
+.awards-ceremony-intro {
+  text-align: center;
+  color: #c7d0df;
+}
+.awards-ceremony footer .btn {
+  min-width: 160px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .aw-confetti rect {
+    animation: none;
+    opacity: 0.5;
+  }
+}

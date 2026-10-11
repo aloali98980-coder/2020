@@ -530,6 +530,25 @@ export function validateSave(s) {
       ),
     "سجل الاحتفالات غير سليم.",
   );
+  // 0.42: الجوائز — قاعة فائزين محدودة وقوائم شهرية وحفل محفوظ.
+  check(
+    s.awards &&
+      s.awards.version === 1 &&
+      Array.isArray(s.awards.hall) &&
+      s.awards.hall.length <= 30 &&
+      s.awards.hall.every(
+        (h) => amount(h.season) && isoDate(h.date) && h.awards && typeof h.awards === "object",
+      ) &&
+      Array.isArray(s.awards.monthly) &&
+      s.awards.monthly.length <= 18 &&
+      s.awards.monthly.every((m) => typeof m.month === "string" && m.month.length === 7) &&
+      (!s.awards.fanVote || typeof s.awards.fanVote === "object") &&
+      (!s.awards.ceremony || typeof s.awards.ceremony === "object") &&
+      typeof s.awards.monthStats === "object" &&
+      typeof s.awards.statsBase === "object" &&
+      Array.isArray(s.awards.demanded),
+    "سجل الجوائز وقاعة المشاهير غير سليم.",
+  );
   const city = s.sportsCity, stadium = city?.stadium;
   check(city && Array.isArray(city.facilities) && city.facilities.length <= CITY_FACILITIES.length &&
     new Set(city.facilities).size === city.facilities.length && city.facilities.every(x => CITY_FACILITIES.some(f => f.id === x)) &&

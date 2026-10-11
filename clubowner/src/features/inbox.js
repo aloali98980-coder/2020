@@ -1,6 +1,7 @@
 import { excerpt, getLanguage, tr } from "../i18n/index.js";
 import { boardTextFor } from "../data/boardTexts.js";
 import { eventDecisionView } from "./events.js";
+import { awardDemandActions, coachDemandActions } from "./awards.js";
 import { heading, badge, empty, button } from "../components/shared.js";
 import { icon } from "../components/icons.js";
 import { num, date, esc, category, money , cur} from "../ui/format.js";
@@ -39,6 +40,14 @@ export function messageDetail(s, m) {
     actions = button(boardTextFor("boardMailOpen", null, getLanguage()), "go-board", "", "primary");
   if (m.kind === "cup-draw")
     actions = button(tr("شاهد مراسم القرعة", "Watch Draw Ceremony", "Voir la cérémonie du tirage"), "view-cup-draw", m.ref, "primary");
+  if (m.kind === "ceremony")
+    actions =
+      button(tr("شاهد حفل الجوائز", "Watch the awards ceremony", "Voir la cérémonie des prix"), "view-ceremony", "", "primary") +
+      button(tr("لاحقًا", "Later", "Plus tard"), "resolve", m.id, "ghost");
+  if (m.kind === "fan-vote")
+    actions =
+      button(tr("افتح صفحة الجوائز وشارك بالاستفتاء", "Open awards and join the vote", "Ouvrir les prix et voter"), "go-awards", "", "primary") +
+      button(tr("لاحقًا", "Later", "Plus tard"), "resolve", m.id, "ghost");
   if (["ultras-event", "ultras-demand", "ultras-demand-escalation"].includes(m.kind))
     actions = button(tr("افتح صفحة الجماهير واختر الرد", "Open supporters and choose a response", "Ouvrir la page des supporters et répondre"), "go-ultras", "", "primary");
   if (m.kind === "youth-intake-day" && m.required && m.status === "open")
@@ -96,6 +105,8 @@ export function messageDetail(s, m) {
       actions =
         button("شروط التجديد", "renew-player", m.ref, "primary") +
         button("السماح بانتهاء العقد", "resolve", m.id, "ghost");
+    if (m.kind === "award-demand") actions = awardDemandActions(m);
+    if (m.kind === "coach-demand") actions = coachDemandActions(m);
     if (m.kind === "liquidity")
       actions =
         button("راجع التمويل", "go-finance", m.id, "primary") +

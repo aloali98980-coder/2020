@@ -34,6 +34,7 @@ export const DICTIONARY = {
   "الإدارة المالية": ["Finances", "Finances"],
   "عالم الكرة": ["Football world", "Monde du football"],
   "قاعة الأساطير": ["Hall of legends", "Panthéon"],
+  "الجوائز وقاعة المشاهير": ["Awards & Hall of Fame", "Prix et panthéon"],
   "الإعدادات والحفظ": ["Settings & saves", "Réglages et sauvegardes"],
   "إدارة النادي": ["Club management", "Gestion du club"],
   "الجهاز الفني والمسيرة": ["Staff & careers", "Staff et carrières"],

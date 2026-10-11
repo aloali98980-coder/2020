@@ -26,6 +26,7 @@ import { initClubEmpire } from "../services/clubEmpire/state.js";
 import { ensureAudioPreferences } from "../services/audio.js";
 import { ensureCelebrations } from "../services/celebrations.js";
 import { ensureUltras } from "../services/ultras.js";
+import { ensureAwards } from "../services/awards.js";
 import { stockText } from "../data/stockMarketTexts.js";
 import { empireText } from "../data/empireTexts.js";
 function migrateToFive(input) {
@@ -639,7 +640,7 @@ function migrateSave36(input) {
 
 // 0.41 (save v37): generated multilingual supporter groups and persistent mood.
 // Legacy results, prices and finances remain unchanged during migration.
-export function migrateSave(input) {
+function migrateSave37(input) {
   if (!input || input.version === 37) return input;
   const prior = input.version === 36 ? structuredClone(input) : migrateSave36(input);
   if (prior?.version !== 36) return prior;
@@ -648,6 +649,20 @@ export function migrateSave(input) {
   prior.migrationNote =
     (prior.migrationNote || "") +
     " أجواء الجماهير 0.41: أُنشئت مجموعة ألتراس فريدة ومترجمة لكل نادٍ في الحفظة، مع مزاج ومطالب قابلة للتصعيد.";
+  return prior;
+}
+
+// 0.42 (save v38): الجوائز — قاعة مشاهير وحفل موسمي وخطافات عقود وتصويت جماهيري.
+// الحفظات القديمة تُرحَّل بقاعة فارغة تبدأ التسجيل من الموسم الحالي؛ لا تُمس نتائج أو عقود.
+export function migrateSave(input) {
+  if (!input || input.version === 38) return input;
+  const prior = input.version === 37 ? structuredClone(input) : migrateSave37(input);
+  if (prior?.version !== 37) return prior;
+  prior.version = 38;
+  ensureAwards(prior);
+  prior.migrationNote =
+    (prior.migrationNote || "") +
+    " جوائز الموسم 0.42: أُضيفت الجوائز السبع عشرة وحفل نهاية الموسم وقاعة المشاهير المحفوظة عبر المواسم، مع استفتاء جماهيري وخطافات عقود الفائزين ورواتب المدربين؛ الحفظة القديمة تبدأ بقاعة فارغة.";
   return prior;
 }
 
