@@ -10,6 +10,9 @@ import { post } from "./finance.js";
 import { message } from "./inbox.js";
 import { legendMatchBonus } from "./legends.js";
 import { recordMatchStats } from "./seasonStats.js";
+import { planOwnGoals } from "./goalModel.js";
+
+const ourGoalsOf = (f, s) => (f.home === s.clubId ? f.homeGoals : f.awayGoals) || 0;
 import { generateCardDistribution, applyMatchConsequences } from "./matchConsequences.js";
 import { recordDisciplineIncident, refereeSuspensionThreshold } from "./politics/committees.js";
 import { resolveInsiderBet } from "./betting/insider.js";
@@ -270,9 +273,20 @@ export function matchDay(
         const moraleDelta = our > opp ? (f.isDerby ? 5 : 3) : -1;
         p.morale = clamp(p.morale + moraleDelta, 0, 100);
       });
-      if (team.length)
-        for (let i = 0; i < our; i++) {
-          const scorer = team[Math.floor(random(s) * team.length)];
+      // 0.43: هدافو المباراة من تشكيلتها الفعلية فقط، بأوزان المركز والتقييم.
+      // الخطة تُحفظ في f.goalPlan لتستهلكها الإحصاءات والتقرير (لا أهداف أشباح).
+      const goalXi = (Array.isArray(f.lineup) && f.lineup.length
+        ? f.lineup
+            .map((x) => s.players.find((y) => y.id === x.playerId))
+            .filter((p) => p && p.status !== "retired")
+            .map((p) => ({ p }))
+        : selectXI(s).filter((x) => x.p.status !== "retired")
+      );
+      if (owns && ourGoalsOf(f, s) > 0 && goalXi.length) {
+        f.goalPlan = planOwnGoals(() => random(s), goalXi, ourGoalsOf(f, s), f.extraTime);
+        f.goalPlan.forEach((g, i) => {
+          const scorer = s.players.find((p) => p.id === g.s);
+          if (!scorer) return;
           scorer.goals++;
           const bonus = scorer.contractTerms?.goalBonus || 0;
           if (bonus)
@@ -283,7 +297,8 @@ export function matchDay(
               `مكافأة هدف ${scorer.name}`,
               f.id + "-goal-" + i,
             );
-        }
+        });
+      }
       // 0.23+0.24: accumulate season stats + apply match consequences.
       // Cards are generated once and shared between both systems for determinism.
       const xi = Array.isArray(f.lineup) && f.lineup.length

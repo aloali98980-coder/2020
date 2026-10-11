@@ -55,10 +55,15 @@ export function recordMatchStats(s, f, rng, goals, cards) {
     p.seasonRatingCount += 1;
   }
 
-  // Assists: for each goal, pick a random teammate (different from scorer when possible).
-  for (let i = 0; i < goals; i++) {
-    const idx = Math.floor(rng() * xi.length);
-    xi[idx].seasonAssists += 1;
+  // 0.43: إن وُجدت خطة الأهداف (من المحرك) فهي المصدر الوحيد للهدافين والصنّاع.
+  const plan = Array.isArray(f.goalPlan) ? f.goalPlan : null;
+  const byId = (id) => xi.find((p) => p.id === id);
+  if (!plan) {
+    // Assists: for each goal, pick a random teammate (different from scorer when possible).
+    for (let i = 0; i < goals; i++) {
+      const idx = Math.floor(rng() * xi.length);
+      xi[idx].seasonAssists += 1;
+    }
   }
 
   // Cards: accumulate to season stats.
@@ -71,15 +76,24 @@ export function recordMatchStats(s, f, rng, goals, cards) {
     p.seasonRed += 1;
   }
 
-  // Goals: distribute match goals to players (same weighting as matchReport).
-  const weights = xi.map((p) => Math.max(4, p.rating - 40));
-  const totalWeight = weights.reduce((a, b) => a + b, 0);
-  for (let g = 0; g < goals; g++) {
-    let r = rng() * totalWeight;
-    for (let i = 0; i < xi.length; i++) {
-      r -= weights[i];
-      if (r <= 0) { xi[i].seasonGoals += 1; break; }
-      if (i === xi.length - 1) xi[i].seasonGoals += 1;
+  if (plan) {
+    for (const g of plan) {
+      const sc = byId(g.s);
+      if (sc) sc.seasonGoals += 1;
+      const as = g.a ? byId(g.a) : null;
+      if (as) as.seasonAssists += 1;
+    }
+  } else {
+    // Goals: distribute match goals to players (same weighting as matchReport).
+    const weights = xi.map((p) => Math.max(4, p.rating - 40));
+    const totalWeight = weights.reduce((a, b) => a + b, 0);
+    for (let g = 0; g < goals; g++) {
+      let r = rng() * totalWeight;
+      for (let i = 0; i < xi.length; i++) {
+        r -= weights[i];
+        if (r <= 0) { xi[i].seasonGoals += 1; break; }
+        if (i === xi.length - 1) xi[i].seasonGoals += 1;
+      }
     }
   }
 

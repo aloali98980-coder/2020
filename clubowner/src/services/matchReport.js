@@ -88,7 +88,17 @@ export function buildMatchReport(s, f) {
       .slice(0, 3);
   const events = [];
   // أهدافنا: دقائق مرتبة وهدافون بأوزان التقييم؛ أهداف المنافس: بالدقيقة فقط (بلا قوائم لمعظم الأندية).
-  for (const min of minutesFor(rng, ours, f.extraTime)) {
+  // 0.43: خطة المحرك هي المصدر (نفس الهدافين والصنّاع والدقائق في كل الشاشات).
+  const plan = Array.isArray(f.goalPlan) && f.goalPlan.length === ours ? f.goalPlan : null;
+  const ownGoalSteps = plan
+    ? plan.map((g) => ({ min: g.m, playerId: g.s, assistId: g.a }))
+    : minutesFor(rng, ours, f.extraTime).map((min) => ({ min, playerId: undefined, assistId: undefined }));
+  for (const step of ownGoalSteps) {
+    const min = step.min;
+    if (plan) {
+      events.push({ min, type: "goal", playerId: step.playerId, assistId: step.assistId, clubId: s.clubId });
+      continue;
+    }
     const scorer = xi.length ? weightedScorer(rng, xi) : null;
     // 0.24: assister — pick a different teammate deterministically.
     let assisterId = null;
