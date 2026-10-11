@@ -1019,6 +1019,8 @@ export const MESSAGE_PHRASES = {
 
   // finance.js
   "مبلغ غير صالح": ["Invalid amount", "Montant invalide"],
+  "بث تلفزيوني": ["TV broadcast", "Diffusion TV"],
+  "حقوق البث التلفزيوني الشهرية": ["Monthly TV broadcast rights", "Droits TV mensuels"],
   "مرتبات اللاعبين الشهرية": [
     "Monthly player wages",
     "Salaires mensuels des joueurs",

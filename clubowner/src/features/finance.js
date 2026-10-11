@@ -25,6 +25,7 @@ const cats = {
   operations: "تشغيل",
   sponsorship: "رعاية",
   "sponsor-income": "دفعة رعاية",
+  broadcast: "بث تلفزيوني",
   "sponsor-bonus": "مكافأة رعاية",
   transfer: "انتقال",
   signing: "توقيع",

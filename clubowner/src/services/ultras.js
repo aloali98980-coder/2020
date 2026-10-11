@@ -505,7 +505,13 @@ function recordClash(save, group, rivalId = null) {
   group.lastIncident = incident;
   group.incidentCount = (group.incidentCount || 0) + 1;
   group.protestUntil = addDays(save.date, 10);
-  post(save, -250_000, "ultras-fine", localizedText(save, "غرامة اشتباك جماهيري", "Supporter-clash fine", "Amende après affrontement de supporters"), uid(save, "ultras-fine"));
+  // 0.45: غرامة معقولة (100,000) ولا تتكرر قبل 60 يومًا لكل مجموعة؛ الحادثة تُسجَّل دائمًا.
+  const lastFine = group.lastFineDate;
+  const fineDue = !lastFine || addDays(lastFine, 60) <= save.date;
+  if (fineDue) {
+    group.lastFineDate = save.date;
+    post(save, -100_000, "ultras-fine", localizedText(save, "غرامة اشتباك جماهيري", "Supporter-clash fine", "Amende après affrontement de supporters"), uid(save, "ultras-fine"));
+  }
   save.reputation = clamp((save.reputation || 0) - 2, 0, 100);
   save.fanSupport = clamp((save.fanSupport || 0) - 5, 10, 100);
   if (rival) {

@@ -310,7 +310,7 @@ test("clashes carry fines and scandal; association presidents can sanction a riv
   const reputation = s.reputation;
   const suspicion = s.blackFiles.suspicion;
   forceSupporterClash(s, "zamalek");
-  assert.equal(s.finance.cash, cash - 250_000);
+  assert.equal(s.finance.cash, cash - 100_000); // 0.45: الغرامة 100,000 (انظر docs/balance-audit-0.44.md)
   assert(s.reputation < reputation);
   assert(s.blackFiles.suspicion > suspicion);
   assert.equal(rival.lastIncident.kind, "clash");
