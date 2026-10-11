@@ -23,7 +23,8 @@ import { initPolitics } from "../services/politics/state.js";
 import { initBetting } from "../services/betting/state.js";
 import { initStockMarket } from "../services/stockMarket/state.js";
 import { initClubEmpire } from "../services/clubEmpire/state.js";
-export const SAVE_VERSION = 34;
+import { ensureAudioPreferences } from "../services/audio.js";
+export const SAVE_VERSION = 35;
 export function createGame({
   clubId = "ahly",
   owner = "مالك النادي",
@@ -134,6 +135,7 @@ export function createGame({
     // حياة الملياردير 0.29: ثروة شخصية منفصلة عن خزينة النادي من اليوم الأول.
     empire: initEmpire(null, ownerStory),
   };
+  ensureAudioPreferences(s);
   if (expanded) {
     initPyramid(s);
     initTalent(s);

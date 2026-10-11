@@ -104,8 +104,11 @@ export function validateSave(s) {
     "أسواق غير مدعومة.",
   );
   check(
-    s.preferences && typeof s.preferences.pauseMatches === "boolean",
-    "إعدادات المحاكاة ناقصة.",
+    s.preferences && typeof s.preferences.pauseMatches === "boolean" &&
+      s.preferences.audio && typeof s.preferences.audio.enabled === "boolean" &&
+      typeof s.preferences.audio.muted === "boolean" && Number.isFinite(s.preferences.audio.volume) &&
+      s.preferences.audio.volume >= 0 && s.preferences.audio.volume <= 1,
+    "إعدادات المحاكاة أو الصوت ناقصة.",
   );
   const f = s.finance;
   check(

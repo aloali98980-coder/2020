@@ -3066,3 +3066,32 @@ body.reduce-motion .hl-progress span { transition: none !important; }
 .staff-case-card .badge { padding: .2rem .55rem; border: 1px solid var(--line, rgba(148,163,184,.25)); border-radius: 999px; color: var(--muted, #94a3b8); font-size: .78rem; }
 .staff-finance-warning { margin: .75rem 0; padding: .85rem 1rem; border: 1px solid rgba(248,113,113,.45); border-radius: 13px; background: rgba(248,113,113,.08); }
 .staff-finance-warning ul { margin: .5rem 0 0; padding-inline-start: 1.2rem; }
+
+/* 0.39 — compact controls for the generated, user-gesture-unlocked match audio. */
+.audio-settings-panel {
+  border-inline-start: 3px solid var(--gold);
+}
+.audio-level-row {
+  align-items: center;
+}
+.audio-slider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: min(240px, 52%);
+}
+.audio-slider input[type="range"] {
+  width: 100%;
+  accent-color: var(--gold);
+}
+.audio-slider output {
+  min-width: 3.2em;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+  text-align: end;
+}
+@media (max-width: 640px) {
+  .audio-slider {
+    min-width: 42%;
+  }
+}

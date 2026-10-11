@@ -265,6 +265,13 @@ import { ASSETS } from "./data/catalog.js";
 import { findPerson } from "./services/retired.js";
 import { APP_VERSION } from "./data/version.js";
 import { playInstantFriendly } from "./services/instantFriendly.js";
+import {
+  playMatchSequence,
+  setAudioEnabled,
+  setAudioMuted,
+  setAudioVolume,
+  unlockAudio,
+} from "./services/audio.js";
 import { getCupDraw } from "./services/cupDraw.js";
 import { cupDrawModal } from "./features/cupDraw.js";
 import { youthIntakeModal } from "./features/youthIntake.js";
@@ -487,16 +494,17 @@ async function runTime(resume = false) {
     if (result.advanced) markStep(s, "week");
     return result;
   });
-  // 0.24: شاشة لقطات الماتش أولاً، ثم تقرير الماتش الكامل.
   const s = getState();
-  if (s && s.preferences?.autoMatchReport !== false) {
-    const fresh = playedOwnFixtures(s).filter((f) => !playedBefore.has(f.id));
-    if (fresh.length) {
-      const r = reportFor(s, fresh[fresh.length - 1]);
-      showHighlightsScreen(s, r, () => {
-        openModal(matchReportModal(s, r));
-      });
-    }
+  const fresh = s
+    ? playedOwnFixtures(s).filter((f) => !playedBefore.has(f.id))
+    : [];
+  if (fresh.length) playMatchSequence(s, fresh[fresh.length - 1]);
+  // 0.24: شاشة لقطات الماتش أولاً، ثم تقرير الماتش الكامل.
+  if (s && s.preferences?.autoMatchReport !== false && fresh.length) {
+    const report = reportFor(s, fresh[fresh.length - 1]);
+    showHighlightsScreen(s, report, () => {
+      openModal(matchReportModal(s, report));
+    });
   }
   if (r.blocked) {
     ui.route = "inbox";
@@ -884,12 +892,15 @@ const actions = {
   "modal-close": () => closeModal(),
   "instant-friendly": async () => {
     let reportData = null;
+    let fixture = null;
     await apply((s) => {
       const res = playInstantFriendly(s);
       reportData = res.report;
+      fixture = res.fixture;
       markStep(s, "friendly");
     });
     const s = getState();
+    if (fixture) playMatchSequence(s, fixture);
     if (reportData) {
       showHighlightsScreen(s, reportData, () => {
         openModal(matchReportModal(s, reportData));
@@ -1968,6 +1979,17 @@ const actions = {
     ),
   "close-modal": closeModal,
 };
+let firstAudioGesture = false;
+const unlockOnGesture = () => {
+  if (firstAudioGesture) return;
+  firstAudioGesture = true;
+  unlockAudio();
+};
+for (const eventName of ["pointerdown", "touchstart", "keydown"])
+  document.addEventListener(eventName, unlockOnGesture, {
+    once: true,
+    passive: eventName !== "keydown",
+  });
 document.addEventListener("click", async (e) => {
   if (isSaving() || actionBusy) {
     toast(tr("جارٍ حفظ القرار…", "Saving decision…", "Enregistrement…"));
@@ -2435,6 +2457,11 @@ document.addEventListener("submit", async (e) => {
   }
 });
 document.addEventListener("input", (e) => {
+  if (e.target.id === "audio-volume") {
+    const output = document.getElementById("audio-volume-value");
+    if (output) output.value = `${Math.round(Number(e.target.value))}%`;
+    return;
+  }
   if (e.target.closest("#offer-form,#contract-form")) updateCalculations();
   if (e.target.id === "palette-input") {
     paletteQuery(e.target.value);
@@ -2484,6 +2511,27 @@ document.addEventListener("keydown", (e) => {
 document.addEventListener("change", async (e) => {
   if (isSaving() || actionBusy) return;
   try {
+    if (e.target.id === "audio-enabled") {
+      await apply(
+        (s) => setAudioEnabled(s, e.target.checked),
+        tr("تم حفظ إعداد الصوت.", "Sound setting saved.", "Réglage audio enregistré."),
+      );
+      return;
+    }
+    if (e.target.id === "audio-muted") {
+      await apply(
+        (s) => setAudioMuted(s, e.target.checked),
+        tr("تم حفظ إعداد الكتم.", "Mute setting saved.", "Réglage muet enregistré."),
+      );
+      return;
+    }
+    if (e.target.id === "audio-volume") {
+      await apply(
+        (s) => setAudioVolume(s, Number(e.target.value) / 100),
+        tr("تم حفظ مستوى الصوت.", "Volume saved.", "Volume enregistré."),
+      );
+      return;
+    }
     if (e.target.dataset.dynastyUpbringing) {
       const childId = e.target.dataset.dynastyUpbringing;
       const style = e.target.value;

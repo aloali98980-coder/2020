@@ -18,6 +18,7 @@ const paths = {
     '<circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="4" ry="9"/><path d="M3 12h18M5 6h14M5 18h14"/>',
   settings:
     '<path d="m9 3-1 3-3 1-2 5 2 5 3 1 1 3h6l1-3 3-1 2-5-2-5-3-1-1-3z"/><circle cx="12" cy="12" r="3"/>',
+  sound: '<path d="M4 10v4h4l5 4V6l-5 4H4Zm12-2a6 6 0 0 1 0 8m2-11a10 10 0 0 1 0 14"/>',
   arrow: '<path d="M20 12H4m6-6-6 6 6 6"/>',
   up: '<path d="m5 15 6-6 4 4 6-8m-6 0h6v6"/>',
   down: '<path d="m5 9 6 6 4-4 6 8m-6 0h6v-6"/>',

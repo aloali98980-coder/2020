@@ -1091,4 +1091,8 @@ export const DICTIONARY = {
     "Club Empire 0.38: the club market is active and your additional-club portfolio starts empty; your money and results are unchanged.",
     "Empire des clubs 0.38 : le marché est actif et votre portefeuille de clubs supplémentaires est vide ; votre argent et vos résultats sont inchangés.",
   ],
+  "أجواء يوم الماتش 0.39: أُضيف صوت مولّد بخفة مع تشغيل افتراضي بعد أول تفاعل، وإعدادات كتم ومستوى مستقلة": [
+    "Match-day atmosphere 0.39: lightweight generated audio was added, with playback enabled by default after first interaction and independent mute and volume controls.",
+    "Ambiance des jours de match 0.39 : un son généré léger a été ajouté, activé par défaut après la première interaction, avec des commandes de volume et de sourdine séparées.",
+  ],
 };
