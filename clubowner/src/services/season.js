@@ -48,6 +48,9 @@ export function seasonDay(s) {
   };
   archiveSeasonStats(s, entry);
   s.seasonHistory.push(entry);
+  // 0.46: البطولة تُسجَّل في إرث المالك (يغذي نقاط الإرث) عند نهاية الموسم.
+  if (entry.table?.[0]?.clubId === s.clubId && s.dynasty)
+    s.dynasty.titlesWon = Math.min(1_000_000, (s.dynasty.titlesWon || 0) + 1);
   s.seasonNumber++;
   resetSeasonStats(s);
   s.table = CLUBS.map((c) => ({

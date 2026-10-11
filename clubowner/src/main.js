@@ -224,6 +224,7 @@ import { worldView } from "./features/world.js";
 import { settingsView } from "./features/settings.js";
 import { achievementsView } from "./features/achievements.js";
 import { absenceBanner } from "./features/absence.js";
+import { legendLogView } from "./features/legendLog.js";
 import { markAbsenceSeen } from "./services/absence.js";
 import { dynastyView } from "./features/dynasty.js";
 import { politicsView } from "./features/politics.js";
@@ -452,6 +453,7 @@ function render() {
     legends: () => legendsView(s, ui.legendFilters),
     awards: () => awardsView(s),
     achievements: () => achievementsView(s),
+    legacy: () => legendLogView(s),
     dynasty: () => dynastyView(s),
     settings: () => settingsView(s),
     database: () => databaseView(),

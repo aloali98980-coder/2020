@@ -385,6 +385,7 @@ Object.assign(STAFF_PHRASES, {
   "لا أزمة مفتوحة": ["No open crisis.", "Aucune crise en cours."],
   "مضاعف طلب القمصان": ["Shirt-demand multiplier", "Multiplicateur de demande de maillots"],
   "الإنجازات": ["Achievements", "Succès"],
+  "سجل الأسطورة": ["Legend log", "Journal de légende"],
   "نشر محتوى": ["Publish content", "Publier du contenu"],
   "النشر التلقائي للروتيني شهريًا، والكبرى (ديربي، لقب، تعاقد نجم) تُنشر يدويًا من هنا": ["Routine posts go out automatically each month; major moments (derby, title, star signing) are published manually from here.", "Les publications de routine partent automatiquement chaque mois ; les moments clés (derby, titre, signature d’une star) se publient manuellement ici."],
   "حملة جماهيرية قبل الديربي": ["Derby fan campaign", "Campagne avant le derby"],

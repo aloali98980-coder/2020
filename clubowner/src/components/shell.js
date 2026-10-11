@@ -30,6 +30,7 @@ const LINKS = [
   { id: "legends", name: "قاعة الأساطير", icon: "crown" },
   { id: "awards", name: "الجوائز وقاعة المشاهير", icon: "crown" },
   { id: "achievements", name: "الإنجازات", icon: "crown" },
+  { id: "legacy", name: "سجل الأسطورة", icon: "crown" },
   { id: "dynasty", name: "الأجيال", icon: "crown" },
   { id: "settings", name: "الإعدادات والحفظ", icon: "settings" },
 ];
@@ -65,7 +66,7 @@ export const NAV_GROUPS = [
     items: ["market", "facilities", "sponsors", "commerce", "finance"],
   },
   { caption: "عالم الكرة", items: ["world", "legends", "awards", "achievements"] },
-  { caption: "العائلة والإرث", items: ["dynasty"] },
+  { caption: "العائلة والإرث", items: ["dynasty", "legacy"] },
   { caption: "النظام", items: ["settings"] },
 ];
 export const NAV = NAV_GROUPS.flatMap((g) => g.items.map(byId));
