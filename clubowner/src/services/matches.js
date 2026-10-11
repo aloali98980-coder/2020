@@ -6,6 +6,7 @@ import { matchCommerce } from "./commerce.js";
 import { getDerbyInfo, derbyPreMatchMessage, derbyPostMatchMessage } from "./derby.js";
 import { CLUBS } from "../data/catalog.js";
 import { addDays, random, clamp } from "../core/utils.js";
+import { tr } from "../i18n/index.js";
 import { post } from "./finance.js";
 import { message } from "./inbox.js";
 import { legendMatchBonus } from "./legends.js";
@@ -84,16 +85,73 @@ function strength(s, id) {
       : 0)
   );
 }
-export function goals(s, power, opponent, home) {
-  const expected = clamp(
-    1.25 + (power - opponent) / 30 + (home ? 0.2 : 0),
-    0.25,
-    3.2,
-  );
-  let g = 0;
-  for (let i = 0; i < 6; i++) if (random(s) < expected / 6) g++;
-  return g;
+// ── نموذج النتائج 0.43 (مواصفة «النتائج المتوازنة» المقفولة) ─────────────────
+// متوسط ~4 أهداف للمباراة (أعلى من الدوريات الحقيقية عمدًا: دراما)، يزداد مع قوة الفريق.
+// فارق قوة 20 ← الأقوى ~60–65%، المفاجآت ~20–25%، الباقي تعادلات.
+// لا سقف صلب: الحد الأقصى لهدف فريق 14 (الذيل الكبير موجود)، والأرقام مقفولة في tests/engine-balance.test.js.
+export const GOAL_MODEL = Object.freeze({
+  base: 2, // λ لفريقين متكافئين → 4 أهداف للمباراة
+  sensitivity: 0.035, // حساسية القوة
+  floor: 0.8, // أرضية λ للضعيف (يحدّ الذيل الصفري)
+  ceiling: 2.5, // سقف λ للقوي (يحدّ فضائح القوي ضد الضعيف)
+  cap: 14, // أقصى هدف لفريق في مباراة
+  homeFactor: 1.03,
+});
+
+// بواسون بطريقة كنوث مع مولّد المحاكاة الحتمي
+function poissonDraw(rng, lam) {
+  const L = Math.exp(-lam);
+  let k = 0;
+  let p = 1;
+  do {
+    k++;
+    p *= rng();
+  } while (p > L && k <= GOAL_MODEL.cap + 1);
+  return Math.min(GOAL_MODEL.cap, k - 1);
 }
+
+// فضيحتان مقفولتان: قوي ضد ضعيف (فارق قوة 30+ وفارق أهداف 6+)، وكبار متقاربون (فارق قوة أقل من 15 وفارق أهداف 5+).
+export function scandalKind(power, opp, hg, ag) {
+  const gap = Math.abs((power || 0) - (opp || 0));
+  const margin = Math.abs((hg || 0) - (ag || 0));
+  if (gap >= 30 && margin >= 6) return "rout";
+  if (gap < 15 && margin >= 5) return "giants";
+  return null;
+}
+function scandalMessage(s, f, kind) {
+  const home = extendedClub(f.home).name;
+  const away = extendedClub(f.away).name;
+  const score = `${f.homeGoals}–${f.awayGoals}`;
+  if (kind === "giants")
+    message(s, {
+      title: tr("يوم أسود للكبار! 💥", "A black day for the giants! 💥", "Un jour noir pour les grands ! 💥"),
+      body: tr(
+        `${home} ${score} ${away}: انهيار مفاجئ لم يتوقعه أحد. طرد مبكر وأخطاء دفاعية تصدّرت الأخبار.`,
+        `${home} ${score} ${away}: a sudden collapse nobody expected. An early red card and defensive errors dominated the headlines.`,
+        `${home} ${score} ${away} : effondrement soudain que personne n'attendait. Expulsion précoce et erreurs défensives à la une.`,
+      ),
+      category: "matches",
+      kind: "info",
+    });
+  else
+    message(s, {
+      title: tr("سحق تاريخي! 📰", "Historic rout! 📰", "Déroute historique ! 📰"),
+      body: tr(
+        `${home} ${score} ${away}: نتيجة تُحكى للأحفاد. فريسة من فرق الدنيا تحوّلت إلى ذبح كامل.`,
+        `${home} ${score} ${away}: a result to tell the grandchildren. A total massacre of a weaker side.`,
+        `${home} ${score} ${away} : un résultat à raconter aux petits-enfants. Un massacre total face à plus faible.`,
+      ),
+      category: "matches",
+      kind: "info",
+    });
+}
+/** أهداف فريق واحد: power = قوته، opponent = قوة خصمه. */
+export function goals(s, power, opponent, home) {
+  const raw = GOAL_MODEL.base * Math.exp((GOAL_MODEL.sensitivity * ((power || 0) - (opponent || 0))) / 2);
+  const lam = clamp(raw, GOAL_MODEL.floor, GOAL_MODEL.ceiling) * (home ? GOAL_MODEL.homeFactor : 1);
+  return poissonDraw(() => random(s), lam);
+}
+
 export function matchDay(
   s,
   fixturesToPlay = s.fixtures,
@@ -361,6 +419,13 @@ export function matchDay(
           resolveInsiderBet(s, f);
         }
       } catch {}
+    }
+    // 0.43: فضيحة النتيجة بعد كل التعديلات (عقوبة الطرد أولًا). تُسجَّل في المباراة،
+    // ومن طرف ناديك تصل نكهة إخبارية تلقائية.
+    const scandal = scandalKind(hp, ap, f.homeGoals, f.awayGoals);
+    if (scandal) {
+      f.scandal = scandal;
+      if (owns) scandalMessage(s, f, scandal);
     }
   }
 }

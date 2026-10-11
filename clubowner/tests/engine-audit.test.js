@@ -3,7 +3,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { createGame } from "../src/core/game.js";
-import { matchDay, goals } from "../src/services/matches.js";
+import { matchDay } from "../src/services/matches.js";
 import { buildTimeline } from "../src/services/matchTimeline.js";
 
 const lcg = (seed) => () => {
@@ -139,37 +139,6 @@ test("لا أهداف أشباح في المحاكاة الكاملة: الهد�
   const planTotal = s.fixtures.reduce((n, f) => n + ((f.played && f.goalPlan?.length) || 0), 0);
   assert.equal(seasonTotal, planTotal, "أهداف الموسم = أهداف الخطط");
   void goalsSeen;
-});
-
-test("توزيع النتائج: القوي يغلب غالبًا، والمفاجآت نادرة مع فارق كبير، والسكورات معقولة", () => {
-  const N = 20000;
-  const simulate = (diff) => {
-    const s = { seed: 12345 + diff };
-    let strong = 0, upset = 0, total = 0, max = 0;
-    for (let i = 0; i < N; i++) {
-      s.seed = (s.seed * 1664525 + 1013904223) | 0;
-      const a = goals(s, 60 + diff, 60, false);
-      const b = goals(s, 60, 60 + diff, false);
-      if (a > b) strong++;
-      else if (a < b) upset++;
-      total += a + b;
-      max = Math.max(max, a, b);
-    }
-    return { win: strong / N, upset: upset / N, avg: total / N, max };
-  };
-  const even = simulate(0);
-  assert.ok(Math.abs(even.win - even.upset) < 0.03, "تعادل القوة يعطي فرصًا متساوية تقريبًا");
-  const mid = simulate(10);
-  assert.ok(mid.win > 0.5 && mid.win < 0.62, `فارق 10 يغلب ${mid.win.toFixed(2)}`);
-  const big = simulate(20);
-  assert.ok(big.win > 0.65 && big.win < 0.82, `فارق 20 يغلب ${big.win.toFixed(2)}`);
-  assert.ok(big.upset < 0.12, `مفاجآت فارق 20: ${big.upset.toFixed(2)}`);
-  const huge = simulate(30);
-  assert.ok(huge.upset < 0.04, `مفاجآت فارق 30: ${huge.upset.toFixed(2)}`);
-  for (const r of [even, mid, big, huge]) {
-    assert.ok(r.avg > 2.1 && r.avg < 2.9, `متوسط الأهداف ${r.avg.toFixed(2)}`);
-    assert.ok(r.max <= 6, `أقصى هدف لفريق ${r.max}`);
-  }
 });
 
 test("الحراس لا يسجلون في الخطط (عبر مباريات كثيرة)", () => {
