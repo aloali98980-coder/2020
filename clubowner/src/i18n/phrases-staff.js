@@ -386,6 +386,7 @@ Object.assign(STAFF_PHRASES, {
   "مضاعف طلب القمصان": ["Shirt-demand multiplier", "Multiplicateur de demande de maillots"],
   "الإنجازات": ["Achievements", "Succès"],
   "سجل الأسطورة": ["Legend log", "Journal de légende"],
+  "حصاد الموسم": ["Season harvest", "Bilan de saison"],
   "نشر محتوى": ["Publish content", "Publier du contenu"],
   "النشر التلقائي للروتيني شهريًا، والكبرى (ديربي، لقب، تعاقد نجم) تُنشر يدويًا من هنا": ["Routine posts go out automatically each month; major moments (derby, title, star signing) are published manually from here.", "Les publications de routine partent automatiquement chaque mois ; les moments clés (derby, titre, signature d’une star) se publient manuellement ici."],
   "حملة جماهيرية قبل الديربي": ["Derby fan campaign", "Campagne avant le derby"],

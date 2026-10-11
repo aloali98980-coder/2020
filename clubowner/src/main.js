@@ -225,6 +225,7 @@ import { settingsView } from "./features/settings.js";
 import { achievementsView } from "./features/achievements.js";
 import { absenceBanner } from "./features/absence.js";
 import { legendLogView } from "./features/legendLog.js";
+import { seasonHarvestView } from "./features/seasonHarvest.js";
 import { markAbsenceSeen } from "./services/absence.js";
 import { dynastyView } from "./features/dynasty.js";
 import { politicsView } from "./features/politics.js";
@@ -454,6 +455,7 @@ function render() {
     awards: () => awardsView(s),
     achievements: () => achievementsView(s),
     legacy: () => legendLogView(s),
+    harvest: () => seasonHarvestView(s),
     dynasty: () => dynastyView(s),
     settings: () => settingsView(s),
     database: () => databaseView(),

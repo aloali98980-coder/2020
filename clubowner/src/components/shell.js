@@ -31,6 +31,7 @@ const LINKS = [
   { id: "awards", name: "الجوائز وقاعة المشاهير", icon: "crown" },
   { id: "achievements", name: "الإنجازات", icon: "crown" },
   { id: "legacy", name: "سجل الأسطورة", icon: "crown" },
+  { id: "harvest", name: "حصاد الموسم", icon: "crown" },
   { id: "dynasty", name: "الأجيال", icon: "crown" },
   { id: "settings", name: "الإعدادات والحفظ", icon: "settings" },
 ];
@@ -65,7 +66,7 @@ export const NAV_GROUPS = [
     caption: "الأعمال والمال",
     items: ["market", "facilities", "sponsors", "commerce", "finance"],
   },
-  { caption: "عالم الكرة", items: ["world", "legends", "awards", "achievements"] },
+  { caption: "عالم الكرة", items: ["world", "legends", "awards", "harvest", "achievements"] },
   { caption: "العائلة والإرث", items: ["dynasty", "legacy"] },
   { caption: "النظام", items: ["settings"] },
 ];
