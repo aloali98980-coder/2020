@@ -3,11 +3,18 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { createGame } from "../src/core/game.js";
 import { setLanguage } from "../src/i18n/index.js";
+import { esc } from "../src/ui/format.js";
 import { CITY_FACILITIES, CITY_GROUPS, cityFacility } from "../src/data/sportsCityFacilities.js";
 import { ensureSportsCity } from "../src/services/sportsCity.js";
-import { cityEffects, cityEconomy, settleCityMonth } from "../src/services/cityFacilities.js";
+import {
+  buildCityFacility,
+  cityEffects,
+  cityEconomy,
+  settleCityMonth,
+} from "../src/services/cityFacilities.js";
 import { sellSubscriptions, initCommerce } from "../src/services/commerce.js";
-import { sportsCityView } from "../src/features/sportsCity.js";
+import { cityFacilitiesCatalogView, sportsCityView } from "../src/features/sportsCity.js";
+import { facilitiesView } from "../src/features/facilities.js";
 
 setLanguage("ar");
 
@@ -44,6 +51,50 @@ test("قائمة المنشآت تعرض المنشآت كلها بلا رموز
   const html = sportsCityView(s);
   for (const f of CITY_FACILITIES) assert.ok(html.includes(f.name.ar), `معروضة: ${f.id}`);
   assert.ok(!/undefined|NaN/.test(html));
+});
+
+test("شاشة منشآت النادي تعرض كتالوج الـ37 منشأة وروابط البناء", () => {
+  const s = fresh();
+  const html = facilitiesView(s);
+  const tiles = html.match(/<article class="city-tile\b/g) || [];
+
+  assert.equal(tiles.length, CITY_FACILITIES.length);
+  assert.match(html, /data-city-facility-count="0\/37"/);
+  assert.match(html, /aria-live="polite"/);
+  for (const f of CITY_FACILITIES) {
+    assert.ok(html.includes(f.name.ar), `اسم المنشأة ظاهر: ${f.id}`);
+    assert.ok(
+      html.includes(`data-action="city-build" data-id="${f.id}"`),
+      `زر البناء مربوط: ${f.id}`,
+    );
+  }
+  assert.ok(!/undefined|NaN/.test(html));
+});
+
+test("عداد منشآت المدينة يتحدث فور البناء ويزيل رابط المنشأة المبنية", () => {
+  const s = fresh();
+  assert.match(facilitiesView(s), /data-city-facility-count="0\/37"/);
+
+  buildCityFacility(s, "trainingPitch");
+  const html = facilitiesView(s);
+
+  assert.match(html, /data-city-facility-count="1\/37"/);
+  assert.match(html, /class="city-tile built" data-facility-id="trainingPitch"/);
+  assert.doesNotMatch(html, /data-action="city-build" data-id="trainingPitch"/);
+});
+
+test("كتالوج منشآت النادي يعرض الاسم الصحيح بالعربية والإنجليزية والفرنسية", () => {
+  const s = fresh();
+  try {
+    for (const language of ["ar", "en", "fr"]) {
+      setLanguage(language);
+      const html = facilitiesView(s);
+      for (const f of CITY_FACILITIES)
+        assert.ok(html.includes(esc(f.name[language])), `${language}: ${f.id}`);
+    }
+  } finally {
+    setLanguage("ar");
+  }
 });
 
 test("قناة الأحداث تدر دخلًا شهريًا: صالة مغطاة = مبناها + حدثان", () => {

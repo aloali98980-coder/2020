@@ -47,12 +47,39 @@ export function stadiumScene(s) {
   return `<svg class="sports-city-scene ${homeMatch ? "match-night" : ""}" viewBox="0 0 330 300" role="img" aria-label="${l("خريطة المدينة الرياضية والملعب", "Sports city and stadium map", "Plan de la cité sportive et du stade")}"><defs><radialGradient id="city-sky"><stop stop-color="#274f60"/><stop offset="1" stop-color="#0b1826"/></radialGradient></defs><rect width="330" height="300" fill="url(#city-sky)"/><path d="M0 190h330M0 240h330M0 280h330M8 190v110m36-110v110m34-110v110m34-110v110m34-110v110m34-110v110m34-110v110m34-110v110m34-110v110m34-110v110" stroke="#3a5960" stroke-width="2"/><ellipse cx="160" cy="119" rx="${60 + level * 9}" ry="${35 + level * 6}" fill="#122b36" stroke="#f2d180" stroke-width="3"/>${rings}<ellipse cx="160" cy="116" rx="48" ry="25" fill="#32956e" stroke="white" stroke-width="2"/><path d="M160 92v48m-48-24h96" stroke="white" stroke-width="1"/><g class="floodlights"><path d="M35 40v75m249-75v75" stroke="#a9c9d2" stroke-width="3"/><circle cx="35" cy="40" r="8"/><circle cx="284" cy="40" r="8"/></g>${blocks}</svg>`;
 }
 
+export function cityFacilitiesCatalogView(s) {
+  const effects = cityEffects(s);
+  const built = new Set(s.sportsCity?.facilities || []);
+  const builtCount = CITY_FACILITIES.filter((facility) =>
+    built.has(facility.id),
+  ).length;
+  const completedGroups = new Set(effects.completed);
+
+  return `<section class="city-facilities-catalog">
+    <div class="panel-head">
+      <h3>${l("منشآت المدينة الرياضية", "Sports city facilities", "Installations de la cité sportive")}</h3>
+      <span class="badge green" role="status" aria-live="polite" data-city-facility-count="${builtCount}/${CITY_FACILITIES.length}">${l("مبنية", "Built", "Construites")} ${num(builtCount)} / ${num(CITY_FACILITIES.length)}</span>
+    </div>
+    ${Object.entries(CITY_GROUPS)
+      .map(
+        ([group, count]) =>
+          `<section class="city-group"><h4>${label(group)} · ${num(CITY_FACILITIES.filter((facility) => facility.group === group && built.has(facility.id)).length)}/${num(count)} ${completedGroups.has(group) ? "★" : ""}</h4><div class="city-grid">${CITY_FACILITIES.filter(
+            (facility) => facility.group === group,
+          )
+            .map((facility) => {
+              const isBuilt = built.has(facility.id);
+              return `<article class="city-tile ${isBuilt ? "built" : ""}" data-facility-id="${esc(facility.id)}"><strong>${esc(l(facility.name.ar, facility.name.en, facility.name.fr))}</strong><small>${money(facility.cost)} ${cur()} · ${money(facility.upkeep)} / ${l("شهر", "month", "mois")}</small><small>${l("تأثير", "Effect", "Effet")}: ${esc(facility.effect)} +${num(facility.value)}</small>${isBuilt ? "✓" : `<button class="btn secondary small" data-action="city-build" data-id="${esc(facility.id)}">${l("ابنِ", "Build", "Construire")}</button>`}</article>`;
+            })
+            .join("")}</div></section>`,
+      )
+      .join("")}
+  </section>`;
+}
+
 export function sportsCityView(s) {
   const city = ensureSportsCity(s),
     st = city.stadium,
-    built = new Set(city.facilities),
-    eco = cityEconomy(s),
-    fx = cityEffects(s);
+    eco = cityEconomy(s);
   const pending = st.project;
   return `<section class="sports-city">
  <div class="city-hero"><div><h3>${l("المدينة الرياضية والملعب", "Sports city & stadium", "Cité sportive et stade")}</h3><p>${num(s.capacity)} ${l("مقعد", "seats", "places")} · ${l("حضور متوقع", "Expected crowd", "Affluence prévue")}: ${num(realisticAttendance(s))} · ${l("الثروة الشخصية", "Personal wealth", "Fortune personnelle")}: ${money(s.empire.personal)} ${cur()}</p><p>${l("الدخل / الصيانة الشهرية", "Monthly income / maintenance", "Revenus / entretien mensuels")}: ${money(eco.income)} / ${money(eco.upkeep)} ${cur()}</p></div>${stadiumScene(s)}</div>
@@ -95,18 +122,6 @@ export function sportsCityView(s) {
      .join("") ||
    `<p>${l("لا أخبار بعد", "No news yet", "Pas encore d’actualités")}</p>`
  }</section>
- ${Object.entries(CITY_GROUPS)
-   .map(
-     ([group, count]) =>
-       `<section class="city-group"><h4>${label(group)} · ${num(CITY_FACILITIES.filter((x) => x.group === group && built.has(x.id)).length)}/${num(count)} ${fx.completed.includes(group) ? "★" : ""}</h4><div class="city-grid">${CITY_FACILITIES.filter(
-         (x) => x.group === group,
-       )
-         .map(
-           (f) =>
-             `<article class="city-tile ${built.has(f.id) ? "built" : ""}"><strong>${esc(l(f.name.ar, f.name.en, f.name.fr))}</strong><small>${money(f.cost)} ${cur()} · ${money(f.upkeep)} / ${l("شهر", "month", "mois")}</small><small>${l("تأثير", "Effect", "Effet")}: ${esc(f.effect)} +${num(f.value)}</small>${!built.has(f.id) ? `<button class="btn secondary small" data-action="city-build" data-id="${f.id}">${l("ابنِ", "Build", "Construire")}</button>` : "✓"}</article>`,
-         )
-         .join("")}</div></section>`,
-   )
-   .join("")}
+ ${cityFacilitiesCatalogView(s)}
  </section>`;
 }

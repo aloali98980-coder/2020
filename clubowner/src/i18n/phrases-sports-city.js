@@ -15,6 +15,11 @@ Object.assign(SPORTS_CITY_PHRASES, {
     "Invalid sports city state.",
     "État de la cité sportive invalide.",
   ],
+  "منشآت المدينة الرياضية": [
+    "Sports city facilities",
+    "Installations de la cité sportive",
+  ],
+  مبنية: ["Built", "Construites"],
   "برامج القناة والجمهور": [
     "Channel & social programmes",
     "Émissions et réseaux sociaux",

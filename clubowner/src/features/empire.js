@@ -177,7 +177,7 @@ function palaceBanner(s) {
 }
 
 function assetRow(s, a) {
-  const owned = owns(s, a.assetId);
+  const owned = owns(s, a.id);
   const afford = s.empire.personal >= a.price;
   return `<div class="asset-row ${owned ? "owned" : ""}">
     <div class="asset-info">
@@ -193,7 +193,7 @@ function assetRow(s, a) {
     ${
       owned
         ? `<span class="badge gold">${t("ownedLabel")}</span>`
-        : `<button class="btn ${afford ? "primary" : "secondary"}" data-action="empire-buy-asset" data-id="${a.assetId}" ${afford ? "" : "disabled"}>${t("buyLabel")}</button>`
+        : `<button class="btn ${afford ? "primary" : "secondary"}" data-action="empire-buy-asset" data-id="${a.id}" ${afford ? "" : "disabled"}>${t("buyLabel")}</button>`
     }
   </div>`;
 }
