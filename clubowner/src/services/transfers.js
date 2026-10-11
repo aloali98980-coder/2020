@@ -7,6 +7,7 @@ import { message, closeThread } from "./inbox.js";
 import { post, obligation, wages } from "./finance.js";
 import { assertTransfersAllowed } from "./boardMandate.js";
 import { isTransferBanned } from "./blackFiles.js";
+import { recordSupporterSigning } from "./ultras.js";
 import { addInsideInformation } from "./stockMarket/insider.js";
 export function submitOffer(s, playerId, terms) {
   assertTransfersAllowed(s);
@@ -218,6 +219,7 @@ export function signPlayer(s, id, terms) {
     fee: n.fee,
   });
   p.clubId = s.clubId;
+  recordSupporterSigning(s, p);
   p.salary = terms.salary;
   p.role = terms.role;
   p.contractEnd = addDays(s.date, 365 * terms.years);

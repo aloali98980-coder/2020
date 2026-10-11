@@ -102,6 +102,7 @@ import "./styles/motion.css";
 import "./styles/dynasty.css";
 import "./styles/politics.css";
 import "./styles/celebrations.css";
+import "./styles/ultras.css";
 import { createGame } from "./core/game.js";
 import { getState, setState, commit, isSaving } from "./core/store.js";
 import { saveGame, loadGame, exportGame, importGame } from "./services/save.js";
@@ -132,6 +133,18 @@ import {
   pendingCelebrations,
   trackCelebrationEvents,
 } from "./services/celebrations.js";
+import { ultrasView } from "./features/ultras.js";
+import {
+  fulfilSupporterDemand,
+  imposeUltrasStadiumSanction,
+  launchChant,
+  organizeAwaySupport,
+  pressureRivalSupporters,
+  respondToSupporterDemand,
+  resolveUltrasEvent,
+  stageTifo,
+  recordTicketPriceChange,
+} from "./services/ultras.js";
 import { paletteItems, paletteOverlay } from "./features/palette.js";
 import { markStep, hideOnboarding } from "./features/onboarding.js";
 import {
@@ -161,7 +174,7 @@ import {
 } from "./services/sponsors.js";
 import { takeLoan, wages, secretDeposit } from "./services/finance.js";
 import { setupView } from "./features/setup.js";
-import { shell, NAV, NAV_GROUPS, NAV_BY_ID } from "./components/shell.js";
+import { shell, NAV_GROUPS, NAV_BY_ID, navLabel } from "./components/shell.js";
 import { dashboardView } from "./features/dashboard.js";
 import { inboxView } from "./features/inbox.js";
 import {
@@ -393,6 +406,7 @@ function render() {
     board: () => boardView(s),
     politics: () => politicsView(s, ui.politicsTab),
     staff: () => staffView(s, ui.staffTab, getLanguage()),
+    ultras: () => ultrasView(s),
     world: () =>
       s.expansion
         ? competitionsView(s, ui.expandedDivision)
@@ -413,8 +427,7 @@ function render() {
     app.querySelector("#main-content")?.classList.add("page-enter");
   lastRenderedRoute = ui.route;
   translateDOM(app);
-  document.title =
-    (NAV.find((n) => n.id === ui.route)?.name || "Empire FC") + " | Empire FC";
+  document.title = navLabel(ui.route) + " | Empire FC";
   document.title = translateText(document.title);
 }
 function navigate(route) {
@@ -502,7 +515,6 @@ function showCelebrationQueue(records, onDone = () => {}) {
   });
 }
 
-
 async function runTime(resume = false) {
   const days = resume
     ? null
@@ -556,47 +568,6 @@ async function runTime(resume = false) {
   const pending = s ? pendingCelebrations(s) : [];
   if (pending.length) showCelebrationQueue(pending, finishAdvance);
   else finishAdvance();
-}
-  const days = resume
-    ? null
-    : Number(document.getElementById("advance-days")?.value || 7);
-  const stateBefore = getState(),
-    playedBefore = new Set(
-      stateBefore ? playedOwnFixtures(stateBefore).map((f) => f.id) : [],
-    );
-  const r = await apply((s) => {
-    const result = advanceTime(s, days);
-    if (result.advanced) markStep(s, "week");
-    return result;
-  });
-  const s = getState();
-  const fresh = s
-    ? playedOwnFixtures(s).filter((f) => !playedBefore.has(f.id))
-    : [];
-  if (fresh.length) playMatchSequence(s, fresh[fresh.length - 1]);
-  // 0.24: شاشة لقطات الماتش أولاً، ثم تقرير الماتش الكامل.
-  if (s && s.preferences?.autoMatchReport !== false && fresh.length) {
-    const report = reportFor(s, fresh[fresh.length - 1]);
-    showHighlightsScreen(s, report, () => {
-      openModal(matchReportModal(s, report));
-    });
-  }
-  if (r.blocked) {
-    ui.route = "inbox";
-    ui.inboxFilter = "required";
-    ui.message = pendingActions(getState())[0]?.id;
-    render();
-    toast(
-      r.advanced
-        ? `تقدمنا ${num(r.advanced)} أيام. الوقت متوقف لقرارك.`
-        : "فيه قرار مهم محتاج ردك قبل تمرير الوقت.",
-    );
-  } else
-    toast(
-      r.match
-        ? "توقفت المحاكاة بعد المباراة. النتيجة في بريدك."
-        : `تم تمرير ${num(r.advanced)} ${r.advanced === 1 ? "يوم" : "أيام"} وحفظ اللعبة.`,
-    );
 }
 function showPlayer(id) {
   const s = getState(),
@@ -1058,6 +1029,20 @@ const actions = {
     apply((s) => {
       s.press.delegate = !s.press.delegate;
     }),
+  "ultras-event-choice": async (el) =>
+    apply((s) => resolveUltrasEvent(s, el.dataset.event, el.dataset.id)),
+  "ultras-demand-choice": async (el) =>
+    apply((s) => respondToSupporterDemand(s, el.dataset.id)),
+  "ultras-tifo": async (el) => apply((s) => stageTifo(s, el.dataset.id || null)),
+  "ultras-away": async (el) => apply((s) => organizeAwaySupport(s, el.dataset.id || null)),
+  "ultras-chant": async () => apply((s) => launchChant(s)),
+  "ultras-pressure": async () => {
+    const rivalId = document.getElementById("ultras-rival-select")?.value;
+    if (rivalId) await apply((s) => pressureRivalSupporters(s, rivalId));
+  },
+  "ultras-sanction": async (el) =>
+    apply((s) => imposeUltrasStadiumSanction(s, el.dataset.id)),
+  "go-ultras": async () => navigate("ultras"),
   "bid-accept": async (el) => apply((s) => answerBid(s, el.dataset.id, true)),
   "bid-reject": async (el) => apply((s) => answerBid(s, el.dataset.id, false)),
   "talent-intake": async () => apply((s) => startIntake(s)),
@@ -1863,7 +1848,7 @@ const actions = {
           `<div class="more-group"><small>${g.caption}</small><div class="more-grid">${g.items
             .map(
               (id) =>
-                `<button data-nav="${id}">${icon(NAV_BY_ID[id].icon, 24)}<span>${NAV_BY_ID[id].name}</span></button>`,
+                `<button data-nav="${id}">${icon(NAV_BY_ID[id].icon, 24)}<span>${navLabel(id)}</span></button>`,
             )
             .join("")}</div></div>`,
       ).join("")}<div class="more-foot"><span data-no-translate>EMPIRE FC</span><button type="button" class="badge vault-key" data-action="secret-vault">v${APP_VERSION}</button></div>`,
@@ -2335,7 +2320,11 @@ document.addEventListener("submit", async (e) => {
     if (form.id === "commerce-prices") {
       const ticket = Number(form.elements.ticket.value),
         shirt = Number(form.elements.shirt.value);
-      await apply((s) => setPrices(s, ticket, shirt));
+      await apply((s) => {
+        const previousTicket = s.ticketPrice;
+        setPrices(s, ticket, shirt);
+        recordTicketPriceChange(s, previousTicket, ticket);
+      });
     }
     if (form.id === "shop-stock") {
       const quantity = Number(form.elements.quantity.value);
@@ -2521,8 +2510,13 @@ document.addEventListener("submit", async (e) => {
         vip = Number(form.elements.vip.value),
         premium = Number(form.elements.premium.value);
       await apply((s) => {
+        const previousPrices = categoryPrices(s);
+        const previousAverage = (s.ticketPrice + previousPrices.first + previousPrices.vip) / 3;
         s.ticketPrice = p;
         setCategoryPrices(s, { first, vip });
+        const nextPrices = categoryPrices(s);
+        const nextAverage = (s.ticketPrice + nextPrices.first + nextPrices.vip) / 3;
+        recordTicketPriceChange(s, previousAverage, nextAverage);
         setMatchPremium(s, premium);
       }, "تم اعتماد أسعار الفئات والعلاوة للمباريات القادمة.");
       closeModal();
@@ -2587,22 +2581,25 @@ document.addEventListener("change", async (e) => {
   if (isSaving() || actionBusy) return;
   try {
     if (e.target.id === "audio-enabled") {
+      const enabled = e.target.checked;
       await apply(
-        (s) => setAudioEnabled(s, e.target.checked),
+        (s) => setAudioEnabled(s, enabled),
         tr("تم حفظ إعداد الصوت.", "Sound setting saved.", "Réglage audio enregistré."),
       );
       return;
     }
     if (e.target.id === "audio-muted") {
+      const muted = e.target.checked;
       await apply(
-        (s) => setAudioMuted(s, e.target.checked),
+        (s) => setAudioMuted(s, muted),
         tr("تم حفظ إعداد الكتم.", "Mute setting saved.", "Réglage muet enregistré."),
       );
       return;
     }
     if (e.target.id === "audio-volume") {
+      const volume = Number(e.target.value) / 100;
       await apply(
-        (s) => setAudioVolume(s, Number(e.target.value) / 100),
+        (s) => setAudioVolume(s, volume),
         tr("تم حفظ مستوى الصوت.", "Volume saved.", "Volume enregistré."),
       );
       return;

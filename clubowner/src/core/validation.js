@@ -18,6 +18,7 @@ import { OWNER_STORIES, LIFESTYLES, TRANSFER_CAP } from "../services/empire/weal
 import { CASE_KINDS, CASE_STAGES } from "../data/staffCatalog.js";
 import { validatePolitics } from "./politicsValidation.js";
 import { validateStockMarket } from "./stockMarketValidation.js";
+import { validateUltras } from "./ultrasValidation.js";
 
 // A save is untrusted input. Validate structure and relationships before replacing it.
 const id = (value) =>
@@ -104,10 +105,14 @@ export function validateSave(s) {
     "أسواق غير مدعومة.",
   );
   check(
-    s.preferences && typeof s.preferences.pauseMatches === "boolean" &&
-      s.preferences.audio && typeof s.preferences.audio.enabled === "boolean" &&
-      typeof s.preferences.audio.muted === "boolean" && Number.isFinite(s.preferences.audio.volume) &&
-      s.preferences.audio.volume >= 0 && s.preferences.audio.volume <= 1,
+    s.preferences &&
+      typeof s.preferences.pauseMatches === "boolean" &&
+      s.preferences.audio &&
+      typeof s.preferences.audio.enabled === "boolean" &&
+      typeof s.preferences.audio.muted === "boolean" &&
+      Number.isFinite(s.preferences.audio.volume) &&
+      s.preferences.audio.volume >= 0 &&
+      s.preferences.audio.volume <= 1,
     "إعدادات المحاكاة أو الصوت ناقصة.",
   );
   const f = s.finance;
@@ -505,17 +510,6 @@ export function validateSave(s) {
   validateEmpire(s);
   validatePolitics(s);
   validateStockMarket(s);
-  const city = s.sportsCity, stadium = city?.stadium;
-  check(city && Array.isArray(city.facilities) && city.facilities.length <= CITY_FACILITIES.length &&
-    new Set(city.facilities).size === city.facilities.length && city.facilities.every(x => CITY_FACILITIES.some(f => f.id === x)) &&
-    stadium && Number.isInteger(stadium.tier) && stadium.tier >= 0 && stadium.tier < CAPACITY_TIERS.length &&
-    (!stadium.project || (Number.isInteger(stadium.project.tier) && stadium.project.tier > stadium.tier && stadium.project.tier < CAPACITY_TIERS.length && isoDate(stadium.project.end))) &&
-    Array.isArray(city.eventsSeen) && city.eventsSeen.length <= 100 && Array.isArray(city.news) && city.news.length <= 40 &&
-    (!city.broadcasts || (Array.isArray(city.broadcasts) && city.broadcasts.length <= 30)), "حالة المدينة الرياضية غير سليمة.");
-  validateExpansion(s);
-  validateTalent(s);
-  validateLegends(s);
-  validateDynasty(s);
   check(
     Array.isArray(s.celebrations) &&
       s.celebrations.length <= 500 &&
@@ -547,6 +541,7 @@ export function validateSave(s) {
   validateTalent(s);
   validateLegends(s);
   validateDynasty(s);
+  validateUltras(s);
   return s;
 }
 

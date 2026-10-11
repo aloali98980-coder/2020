@@ -25,6 +25,7 @@ import { initStockMarket } from "../services/stockMarket/state.js";
 import { initClubEmpire } from "../services/clubEmpire/state.js";
 import { ensureAudioPreferences } from "../services/audio.js";
 import { ensureCelebrations } from "../services/celebrations.js";
+import { ensureUltras } from "../services/ultras.js";
 import { stockText } from "../data/stockMarketTexts.js";
 import { empireText } from "../data/empireTexts.js";
 function migrateToFive(input) {
@@ -596,7 +597,7 @@ export function migrateSave32(input) {
   return s;
 }
 
-// 0.37 (save v33): بورصة الأندية — أسعار أولية لكل أندية الحفظة ومحفظة فارغة.
+// 0.37 (save v33) → 0.38 (save v34): بورصة الأندية — أسعار أولية لكل أندية الحفظة ومحفظة فارغة.
 // لا يُخصم شيء من الثروة الشخصية أثناء الترحيل، ولا تتغير نتائج أو قوائم قديمة.
 function migrateSave34(input) {
   if (!input || input.version === 34) return input;
@@ -608,28 +609,47 @@ function migrateSave34(input) {
   return prior;
 }
 
-// v35 adds generated, royalty-free match-day audio preferences.
+// 0.39 (save v35): generated, royalty-free match-day audio preferences. Old careers
+// migrate with sound enabled, but playback still waits for the browser's first gesture.
 function migrateSave35(input) {
   if (!input || input.version === 35) return input;
   const prior = input.version === 34 ? structuredClone(input) : migrateSave34(input);
   if (prior?.version !== 34) return prior;
   prior.version = 35;
   ensureAudioPreferences(prior);
-  prior.migrationNote = (prior.migrationNote || "") +
+  prior.migrationNote =
+    (prior.migrationNote || "") +
     " أجواء يوم الماتش 0.39: أُضيف صوت مولّد بخفة مع تشغيل افتراضي بعد أول تفاعل، وإعدادات كتم ومستوى مستقلة.";
   return prior;
 }
+
+// 0.40 (save v36): persist celebration history and one-shot rewards. Existing
+// players, match results and finance ledgers remain untouched during migration.
 function migrateSave36(input) {
   if (!input || input.version === 36) return input;
   const prior = input.version === 35 ? structuredClone(input) : migrateSave35(input);
   if (prior?.version !== 35) return prior;
   prior.version = 36;
   ensureCelebrations(prior);
-  prior.migrationNote = (prior.migrationNote || "") +
+  prior.migrationNote =
+    (prior.migrationNote || "") +
     " احتفالات النادي 0.40: أُضيف سجل مشاهد التتويج ومكافآت المبيعات والرعاة والمعنويات دون تغيير محرك المباريات.";
   return prior;
 }
-export function migrateSave(input) { return migrateSave36(input); }
+
+// 0.41 (save v37): generated multilingual supporter groups and persistent mood.
+// Legacy results, prices and finances remain unchanged during migration.
+export function migrateSave(input) {
+  if (!input || input.version === 37) return input;
+  const prior = input.version === 36 ? structuredClone(input) : migrateSave36(input);
+  if (prior?.version !== 36) return prior;
+  prior.version = 37;
+  ensureUltras(prior);
+  prior.migrationNote =
+    (prior.migrationNote || "") +
+    " أجواء الجماهير 0.41: أُنشئت مجموعة ألتراس فريدة ومترجمة لكل نادٍ في الحفظة، مع مزاج ومطالب قابلة للتصعيد.";
+  return prior;
+}
 
 function migrateSave33(input) {
   if (!input || input.version === 33) return input;

@@ -4,6 +4,7 @@ import { ownFixtures } from "./calendar.js";
 import { post } from "./finance.js";
 import { assert, clamp, addDays, random } from "../core/utils.js";
 import { message } from "./inbox.js";
+import { recordSupporterSale } from "./ultras.js";
 // 0.16: expanded fictional coach market (8 profiles). Skill shapes match
 // impact and development; salary is monthly; contracts run 1-3 years.
 export const COACHES = [
@@ -366,6 +367,7 @@ export function answerBid(s, id, accept) {
   s.expansion.budgets[o.buyer] -= o.fee;
   o.status = "accepted";
   post(s, o.fee, "player-sale", "بيع " + p.name, o.id);
+  recordSupporterSale(s, p);
   p.clubId = o.buyer;
   p.careerHistory.push({ date: s.date, type: "transfer-out", clubId: o.buyer });
 }

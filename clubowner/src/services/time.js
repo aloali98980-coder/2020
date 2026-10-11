@@ -37,6 +37,7 @@ import { siblingConflictDay } from "./dynastyCareers.js";
 import { politicsDay } from "./politics/day.js";
 import { bettingDay } from "./betting/day.js";
 import { stockMarketDay } from "./stockMarket/day.js";
+import { ultrasDay } from "./ultras.js";
 function eventsDay(s) {
   for (const e of s.events) {
     if (e.done || e.date > s.date) continue;
@@ -134,6 +135,7 @@ export function advanceTime(s, days = null) {
     // والخبر القصير لا يوقف الزمن أبدًا لأنه required: false.
     flavorEventDay(s);
     clubEventDay(s);
+    ultrasDay(s);
     politicsDay(s);
     bettingDay(s);
     stockMarketDay(s);

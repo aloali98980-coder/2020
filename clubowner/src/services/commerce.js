@@ -6,6 +6,7 @@ import { getDerbyInfo } from "./derby.js";
 import { post } from "./finance.js";
 import { onlineShirtMultiplier } from "./staff/social.js";
 import { assert, clamp, addDays } from "../core/utils.js";
+import { fanAttendanceMultiplier } from "./ultras.js";
 export const BUSINESSES = {
   shop: { name: "متجر النادي", setup: 350000, cost: 55000, rep: 20 },
   food: { name: "خدمات يوم المباراة", setup: 250000, cost: 25000, rep: 0 },
@@ -145,8 +146,17 @@ export function ticketForecast(s, fixture = null) {
     gross += catGross;
     return { id: cat.id, name: cat.name, paying: catPaying, gross: catGross };
   });
+  const homeClubId = f?.home || s.clubId;
+  const supporters = fanAttendanceMultiplier(s, homeClubId, f?.date || s.date);
+  paying = Math.floor(paying * supporters);
+  gross = Math.round(gross * supporters);
+  for (const row of breakdown) {
+    row.paying = Math.floor(row.paying * supporters);
+    row.gross = Math.round(row.gross * supporters);
+  }
+  const subscribedAttendance = Math.floor(subscribed * supporters);
   const limit = s.sportsCity ? realisticAttendance(s, f) : s.capacity;
-  const total = Math.min(s.capacity, paying + subscribed);
+  const total = Math.min(s.capacity, paying + subscribedAttendance);
   const ratio = total > limit ? limit / total : 1;
   paying = Math.floor(paying * ratio);
   gross = Math.round(gross * ratio);

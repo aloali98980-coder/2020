@@ -24,7 +24,8 @@ import { initBetting } from "../services/betting/state.js";
 import { initStockMarket } from "../services/stockMarket/state.js";
 import { initClubEmpire } from "../services/clubEmpire/state.js";
 import { ensureAudioPreferences } from "../services/audio.js";
-export const SAVE_VERSION = 36;
+import { initializeUltras } from "../services/ultras.js";
+export const SAVE_VERSION = 37;
 export function createGame({
   clubId = "ahly",
   owner = "مالك النادي",
@@ -191,6 +192,8 @@ export function createGame({
   ensureStaffCorp(s);
   // 0.31: رئاسة الاتحاد — خريطة محايدة وحملة مؤجلة أربع مواسم.
   initPolitics(s);
+  // 0.41: مجموعات جماهير مولدة ومترجمة لكل نادٍ في العالم المحمل.
+  initializeUltras(s);
   // 0.36: إمبراطورية المراهنات — سوق عام يعمل حتى بلا شركة.
   initBetting(s);
   // 0.37: بورصة الأندية — كل نادٍ له تسعير أولي، ومحفظة المالك تبدأ فارغة.
