@@ -9,19 +9,16 @@ import { migrateSave } from "../src/core/migrations.js";
 import {
   OWNER_STORIES,
   LIFESTYLES,
-  TRANSFER_CAP,
   initEmpire,
   storyForOldSave,
   netWorth,
   portfolioValue,
-  transferToPersonal,
-  transferToClub,
-  transferRemaining,
   setLifestyle,
   repayDebt,
   chargeMonthlyLiving,
 } from "../src/services/empire/wealth.js";
 import { empireDay } from "../src/services/empire/day.js";
+import { takeFromClub, transferToClub } from "../src/services/empire/transfers.js";
 import { advanceTime } from "../src/services/time.js";
 
 const game = (opts = {}) => {
@@ -53,7 +50,7 @@ test("الفصل التام: خزينة النادي لا تختلط بالثر�
   s.finance.cash += 0;
   assert.equal(s.empire.personal, personalBefore);
   // التحويل يغير الطرفين بنفس المقدار تمامًا.
-  transferToPersonal(s, 2_000_000);
+  takeFromClub(s, 2_000_000);
   assert.equal(s.finance.cash, clubBefore - 2_000_000);
   assert.equal(s.empire.personal, personalBefore + 2_000_000);
   // القيد المحاسبي للنادي ما زال متماسكًا.
@@ -61,44 +58,12 @@ test("الفصل التام: خزينة النادي لا تختلط بالثر�
   assert.equal(s.finance.initialCash + sum, s.finance.cash);
 });
 
-test("التحويل بحدود شهرية في الاتجاهين", () => {
-  const s = game();
-  assert.equal(transferRemaining(s, "toPersonal"), TRANSFER_CAP);
-  transferToPersonal(s, TRANSFER_CAP);
-  assert.equal(transferRemaining(s, "toPersonal"), 0);
-  // تجاوز الحد مرفوض.
-  assert.throws(() => transferToPersonal(s, 1));
-  // الاتجاه الآخر مستقل بحدّه الخاص.
-  assert.equal(transferRemaining(s, "toClub"), TRANSFER_CAP);
-  transferToClub(s, 3_000_000);
-  assert.equal(transferRemaining(s, "toClub"), TRANSFER_CAP - 3_000_000);
-  // الشهر الجديد يفتح الحدود من جديد.
-  s.date = "2026-11-01";
-  assert.equal(transferRemaining(s, "toPersonal"), TRANSFER_CAP);
-  assert.equal(transferRemaining(s, "toClub"), TRANSFER_CAP);
-});
-
-test("السحب من النادي يمر على الجمعية ويرفع الشبهات حين يكبر", () => {
-  const s = game();
-  const small = game();
-  transferToPersonal(s, 2_000_000); // فوق عتبة المليون
-  transferToPersonal(small, 500_000); // تحت العتبة
-  assert.ok(
-    s.inbox.some(
-      (m) => m.category === "board" && /الجمعية/.test(m.title + m.body),
-    ),
-    "رسالة مراقبة الجمعية للسحب الكبير",
-  );
-  assert.ok(s.blackFiles.suspicion > 0, "الشبهات ارتفعت مع السحب الكبير");
-  assert.equal(small.blackFiles.suspicion, 0);
-});
-
 test("دعم النادي من الشخصي يرفع البرستيج ويُسجَّل في الدفاتر", () => {
   const s = game({ ownerStory: "heir" });
   const cashBefore = s.finance.cash;
   transferToClub(s, 4_000_000);
   assert.equal(s.finance.cash, cashBefore + 4_000_000);
-  assert.ok(s.finance.ledger.some((e) => e.category === "owner-support"));
+  assert.ok(s.finance.ledger.some((e) => e.category === "vault"));
   assert.equal(s.empire.prestige, initEmpire(null, "heir").prestige + 1);
 });
 

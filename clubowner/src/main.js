@@ -313,12 +313,13 @@ import { blackFilesView } from "./features/blackFiles.js";
 import * as BlackService from "./services/blackFiles.js";
 import * as ReleaseService from "./services/releaseClause.js";
 import { empireView } from "./features/empire.js";
+import { setLifestyle, repayDebt } from "./services/empire/wealth.js";
 import {
-  transferToPersonal,
+  takeFromClub,
   transferToClub,
-  setLifestyle,
-  repayDebt,
-} from "./services/empire/wealth.js";
+  proposeProject,
+  drawStatus,
+} from "./services/empire/transfers.js";
 const requireBlack = () => BlackService;
 const requireRelease = () => ReleaseService;
 const app = document.getElementById("app");
@@ -730,11 +731,22 @@ function vaultModalHtml() {
         .join("")
     : `<li class="muted">${tr("لا حركات بعد.", "No movements yet.", "Aucun mouvement pour l’instant.")}</li>`;
   return `<h2>${tr("الخزنة الموحدة 🤫", "The unified vault 🤫", "Le coffre unifié 🤫")}</h2>
-    <p class="muted">${tr("تحويل داخلي بين خزينة النادي وخزنتك الشخصية. بلا حد شهري وبلا عقوبة.", "An internal transfer between the club treasury and your personal vault. No monthly cap and no penalty.", "Un transfert interne entre la trésorerie du club et votre coffre personnel. Sans plafond mensuel ni pénalité.")}</p>
+    <p class="muted">${tr("تحويل داخلي بين خزينة النادي وخزنتك الشخصية. التحويل إلى النادي بلا قيود، والسحب إلى الشخصي يخضع لسقف الثقة والفاصل الثلاثي.", "An internal transfer between the club treasury and your personal vault. Moves to the club are unrestricted; draws to personal follow the trust cap and the three-month gap.", "Un transfert interne entre la trésorerie du club et votre coffre personnel. Les versements au club sont libres ; les prélèvements vers le personnel suivent le plafond de confiance et l’intervalle de trois mois.")}</p>
     <div class="vault-dest"><strong>${tr("إلى خزينة النادي", "To the club treasury", "Vers la trésorerie du club")}</strong><div class="modal-actions vault-grid">${amountRow("club")}</div></div>
     <div class="vault-dest"><strong>${tr("إلى الخزنة الشخصية", "To your personal vault", "Vers votre coffre personnel")}</strong><div class="modal-actions vault-grid">${amountRow("personal")}</div></div>
     <h3>${tr("الدفتر", "Ledger", "Registre")}</h3><ul class="vault-log">${rows}</ul>
     <div class="modal-actions">${button(tr("إغلاق الخزنة", "Close the vault", "Fermer le coffre"), "modal-close", "", "ghost")}</div>`;
+}
+
+function lootModalHtml({ amount, project, status, from }) {
+  const reasons = status.reasonTexts.map((x) => `<li>${x}</li>`).join("");
+  const action = "loot-confirm";
+  const payload = `${amount}:${project || ""}:${from}`;
+  return `<h2>${tr("هذا نهب!", "This is looting!", "C’est du pillage !")}</h2>
+    <p>${tr("سحب", "Drawing", "Prélèvement de")} ${money(amount)} ${cur()} ${tr("خارج القواعد:", "outside the rules:", "hors des règles :")}</p>
+    <ul class="muted">${reasons}</ul>
+    <p>${tr("التنفيذ يرفع الحرارة (الشبهات) ويخفض ثقة الجمعية، ويفتح خطر الفصل.", "Proceeding raises heat (suspicion), lowers assembly trust and opens a dismissal risk.", "Poursuivre fait monter la pression (soupçons), baisse la confiance de l’assemblée et ouvre un risque de révocation.")}</p>
+    <div class="modal-actions">${button(tr("تنفيذ النهب", "Proceed with looting", "Poursuivre le pillage"), action, payload, "primary")}${button(tr("إلغاء", "Cancel", "Annuler"), "modal-close", "", "ghost")}</div>`;
 }
 
 const actions = {
@@ -985,6 +997,13 @@ const actions = {
   "vault-move": async (el) => {
     const [to, amountRaw] = String(el.dataset.id).split(":");
     const amount = Number(amountRaw);
+    if (to === "personal") {
+      const st = drawStatus(getState(), amount);
+      if (st.loot) {
+        openModal(lootModalHtml({ amount, project: null, status: st, from: "vault" }));
+        return;
+      }
+    }
     await apply((s) => vaultMove(s, { to, amount }));
     toast(
       to === "club"
@@ -992,6 +1011,20 @@ const actions = {
         : `${tr("تم تحويل", "Moved", "Transféré")} ${money(amount)} ${cur()} ${tr("إلى خزنتك الشخصية", "to your personal vault", "vers votre coffre personnel")}`,
     );
     openModal(vaultModalHtml());
+  },
+  // تأكيد النهب صراحةً بعد تحذير «هذا نهب!» (data-id = المبلغ:المشروع)
+  "loot-confirm": async (el) => {
+    const [amountRaw, projectRaw, from] = String(el.dataset.id).split(":");
+    const amount = Number(amountRaw);
+    const project = projectRaw || null;
+    const text = tr("تم السحب، وسُجل النهب في الدفاتر.", "Drawn — the looting is recorded in the ledger.", "Prélevé — le pillage est enregistré dans le registre.");
+    if (from === "vault") {
+      await apply((s) => vaultMove(s, { to: "personal", amount, confirmLoot: true }), text);
+      openModal(vaultModalHtml());
+      return;
+    }
+    await apply((s) => takeFromClub(s, amount, { project, confirmLoot: true }), text);
+    closeModal();
   },
   "modal-close": () => closeModal(),
   "instant-friendly": async () => {
@@ -2563,8 +2596,14 @@ document.addEventListener("submit", async (e) => {
     }
     if (form.id === "empire-draw-form") {
       const amount = Math.round(Number(form.elements.amount.value));
+      const project = form.elements.project?.value || null;
+      const st = drawStatus(getState(), amount, { project });
+      if (st.loot) {
+        openModal(lootModalHtml({ amount, project, status: st, from: "empire" }));
+        return;
+      }
       await apply(
-        (s) => transferToPersonal(s, amount),
+        (s) => takeFromClub(s, amount, { project }),
         "تم التحويل من خزينة النادي إلى ثروتك الشخصية.",
       );
     }
@@ -2573,6 +2612,14 @@ document.addEventListener("submit", async (e) => {
       await apply(
         (s) => transferToClub(s, amount),
         "تم دعم خزينة النادي من ثروتك الشخصية.",
+      );
+    }
+    if (form.id === "empire-project-form") {
+      const title = form.elements.title.value;
+      const amount = Math.round(Number(form.elements.amount.value));
+      await apply(
+        (s) => proposeProject(s, { title, amount }),
+        tr("تم عرض المشروع على تصويت الجمعية.", "The project was put to the assembly vote.", "Le projet a été soumis au vote de l’assemblée."),
       );
     }
     if (form.id === "empire-repay-form") {

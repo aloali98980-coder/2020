@@ -31,15 +31,22 @@ test("التحويل إلى النادي: الشخصي ينقص والخزينة
   assert.equal(validateSave(s), s);
 });
 
-test("التحويل إلى الشخصي: خزينة النادي تنقص والشخصي يزيد", () => {
+test("التحويل إلى الشخصي ضمن السقف: خزينة النادي تنقص والشخصي يزيد", () => {
   const s = game();
   const e = ensureEmpire(s);
   const beforeP = e.personal;
   const beforeC = s.finance.cash;
-  vaultMove(s, { to: "personal", amount: 500_000_000 });
-  assert.equal(e.personal, beforeP + 500_000_000);
-  assert.equal(s.finance.cash, beforeC - 500_000_000);
+  vaultMove(s, { to: "personal", amount: 10_000_000 });
+  assert.equal(e.personal, beforeP + 10_000_000);
+  assert.equal(s.finance.cash, beforeC - 10_000_000);
   assert.equal(validateSave(s), s);
+});
+
+test("التحويل إلى الشخصي فوق السقف يحتاج تأكيد النهب صراحةً", () => {
+  const s = game();
+  assert.throws(() => vaultMove(s, { to: "personal", amount: 500_000_000 }), (err) => err.code === "loot");
+  vaultMove(s, { to: "personal", amount: 500_000_000, confirmLoot: true });
+  assert.equal(ensureVault(s).log[0].kind, "loot");
 });
 
 test("بلا عقوبة: لا شبهات ولا حد شهري، ويمكن التكرار بحرية", () => {

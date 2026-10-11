@@ -3,16 +3,20 @@
 import { sportsCityView } from "./sportsCity.js";
 import { bettingView } from "./betting.js";
 import { icon } from "../components/icons.js";
-import { badge } from "../components/shared.js";
+import { badge, infoNote } from "../components/shared.js";
 import { money, num, cur, esc } from "../ui/format.js";
 import { tr } from "../i18n/index.js";
 import {
   OWNER_STORIES,
   LIFESTYLES,
-  TRANSFER_CAP,
-  transferRemaining,
   netWorth,
 } from "../services/empire/wealth.js";
+import {
+  personalCap,
+  floorRemainingDays,
+  dismissalRisk,
+  ensureTransfers,
+} from "../services/empire/transfers.js";
 import { palaceStage, owns, totalUpkeep } from "../services/empire/assets.js";
 import { childStage } from "../services/empire/family.js";
 import {
@@ -59,11 +63,18 @@ export const EMPIRE_TABS = [
   { id: "city", key: "empireTabCity", icon: "stadium" },
 ];
 
+function drawSummary(s) {
+  return { cap: personalCap(s), remainingDays: floorRemainingDays(s) };
+}
+function approvedProjects(s) {
+  return ensureTransfers(s.empire).projects.filter((p) => p.status === "approved" && !p.used);
+}
+
 function wealthTab(s) {
   const e = s.empire;
   const story = OWNER_STORIES[e.story] || OWNER_STORIES.selfmade;
-  const remainingOut = transferRemaining(s, "toPersonal");
-  const remainingIn = transferRemaining(s, "toClub");
+  const draw = drawSummary(s);
+  const projects = approvedProjects(s);
   return `
   <div class="empire-fortunes">
     <div class="fortune-card club">
@@ -107,23 +118,37 @@ function wealthTab(s) {
     </div>
   </section>
 
-  <section class="panel">
-    <div class="panel-head"><h3>${icon("transfer")} ${t("transfersTitle")}</h3></div>
-    <p class="muted">${t("transfersHint")}</p>
+  <section class="panel smart-transfers">
+    <div class="panel-head"><h3>${icon("transfer")} ${tr("التحويلات الذكية", "Smart transfers", "Transferts intelligents")}</h3>${dismissalRisk(s) ? badge(tr("خطر الفصل", "Dismissal risk", "Risque de révocation"), "red") : ""}</div>
+    <p class="muted">${tr("سقفك الشخصي يتبع ثقة الجمعية لحظة التحويل.", "Your personal cap follows the assembly’s trust at the moment of transfer.", "Votre plafond personnel suit la confiance de l’assemblée au moment du transfert.")}</p>
     <div class="transfer-grid">
       <form id="empire-draw-form" class="transfer-box">
-        <h4>💼 → 💎 ${t("transferToPersonal")}</h4>
-        <small>${t("transferMonthlyCap")}: ${money(remainingOut)} / ${money(TRANSFER_CAP)}</small>
-        <input type="number" name="amount" min="1" max="${remainingOut}" step="100000" placeholder="1000000">
-        <button class="btn secondary" type="submit" ${remainingOut <= 0 ? "disabled" : ""}>${t("transferToPersonal")}</button>
+        <h4>💼 → 💎 ${tr("سحب شخصي", "Personal draw", "Prélèvement personnel")}</h4>
+        <small>${tr("السقف الحالي", "Current cap", "Plafond actuel")}: ${money(draw.cap)} ${cur()}</small>
+        <small>${draw.remainingDays > 0 ? `${tr("التحويل التالي بعد", "Next draw in", "Prochain prélèvement dans")} ${num(draw.remainingDays)} ${tr("يومًا", "days", "jours")}` : tr("الفاصل مكتمل: التحويل متاح", "Gap complete: draw available", "Intervalle écoulé : prélèvement disponible")}</small>
+        <input type="number" name="amount" min="1" step="100000" placeholder="1000000">
+        ${
+          projects.length
+            ? `<select name="project"><option value="">${tr("بسقف الثقة", "Within trust cap", "Dans le plafond de confiance")}</option>${projects.map((p) => `<option value="${esc(p.id)}">${esc(p.title)} · ${money(p.amount)} ${cur()}</option>`).join("")}</select>`
+            : ""
+        }
+        <button class="btn secondary" type="submit">${tr("تحويل إلى الشخصي", "Move to personal", "Vers le personnel")}</button>
       </form>
       <form id="empire-support-form" class="transfer-box">
-        <h4>💎 → 💼 ${t("transferToClub")}</h4>
-        <small>${t("transferMonthlyCap")}: ${money(remainingIn)} / ${money(TRANSFER_CAP)}</small>
-        <input type="number" name="amount" min="1" max="${remainingIn}" step="100000" placeholder="1000000">
-        <button class="btn secondary" type="submit" ${remainingIn <= 0 ? "disabled" : ""}>${t("transferToClub")}</button>
+        <h4>💎 → 💼 ${tr("دعم النادي", "Support the club", "Soutenir le club")}</h4>
+        <small>${tr("بلا سقف", "No cap", "Sans plafond")}</small>
+        <input type="number" name="amount" min="1" step="100000" placeholder="1000000">
+        <button class="btn secondary" type="submit">${tr("تحويل إلى النادي", "Move to club", "Vers le club")}</button>
+      </form>
+      <form id="empire-project-form" class="transfer-box">
+        <h4>🗳️ ${tr("مشروع للتصويت", "Project for a vote", "Projet à voter")}</h4>
+        <small>${tr("قبول المجلس يتيح سحبًا بمبلغه دون السقف", "Board approval allows a draw of its amount beyond the cap", "L’approbation du conseil permet un prélèvement de son montant hors plafond")}</small>
+        <input type="text" name="title" maxlength="60" placeholder="${tr("اسم المشروع", "Project name", "Nom du projet")}">
+        <input type="number" name="amount" min="1" step="100000" placeholder="50000000">
+        <button class="btn secondary" type="submit">${tr("عرض على التصويت", "Put to a vote", "Soumettre au vote")}</button>
       </form>
     </div>
+    ${infoNote(tr("السحب فوق السقف أو قبل انتهاء الفاصل الثلاثي = نهب: يُعرض تحذير صريح قبل التنفيذ، وترتفع الحرارة وتهبط ثقة الجمعية.", "A draw above the cap or before the three-month gap ends is looting: an explicit warning appears first, heat rises and assembly trust falls.", "Un prélèvement au-delà du plafond ou avant la fin de l’intervalle de trois mois est un pillage : un avertissement explicite s’affiche, la pression monte et la confiance de l’assemblée baisse."))}
   </section>
 
   ${
