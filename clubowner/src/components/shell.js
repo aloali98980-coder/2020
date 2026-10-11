@@ -29,6 +29,7 @@ const LINKS = [
   { id: "world", name: "عالم الكرة", icon: "world" },
   { id: "legends", name: "قاعة الأساطير", icon: "crown" },
   { id: "awards", name: "الجوائز وقاعة المشاهير", icon: "crown" },
+  { id: "achievements", name: "الإنجازات", icon: "crown" },
   { id: "dynasty", name: "الأجيال", icon: "crown" },
   { id: "settings", name: "الإعدادات والحفظ", icon: "settings" },
 ];
@@ -63,7 +64,7 @@ export const NAV_GROUPS = [
     caption: "الأعمال والمال",
     items: ["market", "facilities", "sponsors", "commerce", "finance"],
   },
-  { caption: "عالم الكرة", items: ["world", "legends", "awards"] },
+  { caption: "عالم الكرة", items: ["world", "legends", "awards", "achievements"] },
   { caption: "العائلة والإرث", items: ["dynasty"] },
   { caption: "النظام", items: ["settings"] },
 ];

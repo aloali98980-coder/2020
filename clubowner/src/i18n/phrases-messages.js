@@ -1019,6 +1019,8 @@ export const MESSAGE_PHRASES = {
 
   // finance.js
   "مبلغ غير صالح": ["Invalid amount", "Montant invalide"],
+  "إنجاز مفتوح": ["Achievement unlocked", "Succès débloqué"],
+  "فتحت إنجازًا جديدًا. راجع صفحة الإنجازات لتفاصيله ومستوى التقدم في بقية الإنجازات": ["You unlocked a new achievement. See the Achievements page for details and progress on the rest", "Vous avez débloqué un nouveau succès. Consultez la page Succès pour les détails et la progression des autres"],
   "بث تلفزيوني": ["TV broadcast", "Diffusion TV"],
   "حقوق البث التلفزيوني الشهرية": ["Monthly TV broadcast rights", "Droits TV mensuels"],
   "مرتبات اللاعبين الشهرية": [

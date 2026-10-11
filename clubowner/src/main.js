@@ -222,6 +222,7 @@ import { launchCampaign } from "./services/staff/marketing.js";
 import { publishContent, derbyCampaign, resolveCrisis } from "./services/staff/social.js";
 import { worldView } from "./features/world.js";
 import { settingsView } from "./features/settings.js";
+import { achievementsView } from "./features/achievements.js";
 import { dynastyView } from "./features/dynasty.js";
 import { politicsView } from "./features/politics.js";
 import { POLITICAL_BLOCS } from "./data/politicsCatalog.js";
@@ -448,6 +449,7 @@ function render() {
     empire: () => empireView(s, ui.empireTab),
     legends: () => legendsView(s, ui.legendFilters),
     awards: () => awardsView(s),
+    achievements: () => achievementsView(s),
     dynasty: () => dynastyView(s),
     settings: () => settingsView(s),
     database: () => databaseView(),

@@ -26,6 +26,8 @@ const SKIP = [
   // Club-empire and ultras event records store explicit {ar,en,fr} objects.
   /src\/data\/clubEmpireEvents\.js/,
   /src\/data\/ultrasEvents\.js/,
+  // Achievement records and their UI labels store explicit {ar,en,fr} objects (0.46).
+  /src\/data\/achievements\.js/,
   // The ultras dashboard and service localize each phrase inline through AR/EN/FR maps.
   /src\/features\/ultras\.js/,
   /src\/services\/ultras\.js/,
