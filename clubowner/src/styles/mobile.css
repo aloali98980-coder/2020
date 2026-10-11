@@ -1,0 +1,45 @@
+/* الجوال (الإصدار 0.44 — الدفعة 4): لمس، تجاوب، وأداء.
+   يُحمَّل آخر ملفات الأنماط، ولا يغيّر أي قاعدة على الشاشات الكبيرة. */
+
+/* المحتوى لا يُخفى خلف الشريط السفلي الثابت على الجوال. */
+@media (max-width: 760px) {
+  .content {
+    padding-bottom: calc(104px + env(safe-area-inset-bottom));
+  }
+}
+
+/* أهداف اللمس: 44px كحد أدنى على الشاشات التي تعمل باللمس (بلا تأثير على الفأرة). */
+@media (pointer: coarse) {
+  .btn,
+  .icon-btn,
+  .nav-item,
+  .mobile-nav button,
+  .more-grid button,
+  .desk-item,
+  .mini-facility {
+    min-height: 44px;
+  }
+  .icon-btn {
+    min-width: 44px;
+  }
+  .mobile-nav button {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+}
+
+/* حالة الشاشة الحالية في الشريط السفلي وفي قائمة «المزيد» (لا لون وحده). */
+.mobile-nav button[aria-current="page"] span,
+.more-grid button.active {
+  font-weight: 800;
+}
+.more-grid button.active {
+  outline: 2px solid var(--green);
+  outline-offset: -2px;
+}
+
+/* تركيز لوحة المفاتيح واضح على كل الأزرار (يبقى مخفيًا عند النقر بالفأرة). */
+:where(button, a, input, select, textarea):focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: 2px;
+}

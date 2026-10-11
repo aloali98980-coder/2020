@@ -97,6 +97,7 @@ import "./styles/layout.css";
 import "./styles/features.css";
 import "./styles/responsive.css";
 import "./styles/readability.css";
+import "./styles/mobile.css";
 import "./styles/tokens.css";
 import "./styles/motion.css";
 import "./styles/dynasty.css";
@@ -377,6 +378,22 @@ matchMedia("(prefers-color-scheme: light)").addEventListener?.("change", () => {
       document.documentElement.dataset.theme = resolveTheme("system");
   } catch {}
 });
+// رندر متجمع لحقول البحث: يتجنب إعادة بناء الشاشة مع كل حرف على الهاتف.
+let searchRenderTimer = 0;
+function renderSearchSoon() {
+  clearTimeout(searchRenderTimer);
+  searchRenderTimer = setTimeout(() => {
+    const active = document.activeElement;
+    const id = active?.id;
+    const pos = active?.selectionStart ?? null;
+    render();
+    if (!id) return;
+    const input = document.getElementById(id);
+    if (!input) return;
+    input.focus();
+    if (pos !== null) input.setSelectionRange(pos, pos);
+  }, 120);
+}
 function render() {
   const s = getState();
   if (s) {
@@ -2002,7 +2019,7 @@ const actions = {
           `<div class="more-group"><small>${g.caption}</small><div class="more-grid">${g.items
             .map(
               (id) =>
-                `<button data-nav="${id}">${icon(NAV_BY_ID[id].icon, 24)}<span>${navLabel(id)}</span></button>`,
+                `<button data-nav="${id}" class="${ui.route === id ? "active" : ""}" ${ui.route === id ? 'aria-current="page"' : ""}>${icon(NAV_BY_ID[id].icon, 24)}<span>${navLabel(id)}</span></button>`,
             )
             .join("")}</div></div>`,
       ).join("")}<div class="more-foot"><span data-no-translate>EMPIRE FC</span><button type="button" class="badge vault-key" data-action="secret-vault">v${APP_VERSION}</button></div>`,
@@ -2714,25 +2731,16 @@ document.addEventListener("input", (e) => {
     paletteQuery(e.target.value);
     return;
   }
+  // البحث على الجوال: الحالة تتحدث فورًا، والرندر يتجمع (debounce) ويحفظ التركيز والمؤشر.
   if (e.target.id === "market-search") {
-    const value = e.target.value,
-      pos = e.target.selectionStart;
-    ui.marketQuery = value;
-    render();
-    const input = document.getElementById("market-search");
-    input?.focus();
-    input?.setSelectionRange(pos, pos);
+    ui.marketQuery = e.target.value;
+    renderSearchSoon();
     return;
   }
   if (e.target.id === "player-search") {
-    const value = e.target.value,
-      pos = e.target.selectionStart;
-    ui.playerFilters.search = value;
+    ui.playerFilters.search = e.target.value;
     ui.playerFilters.page = 0;
-    render();
-    const input = document.getElementById("player-search");
-    input.focus();
-    input.setSelectionRange(pos, pos);
+    renderSearchSoon();
   }
 });
 // اختصارات البحث السريع: Ctrl/⌘+K للفتح والإغلاق، والأسهم وEnter للتنقل داخل النتائج.
