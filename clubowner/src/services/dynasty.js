@@ -206,6 +206,7 @@ function normalizeChild(s, raw, index, usedIds, generation, parentId = null) {
   const normalized = {
     id,
     name: String(source.name || source.fullName || `Child ${index + 1}`).trim().slice(0, 80) || `Child ${index + 1}`,
+    gender: normalizeGender(source.gender),
     birthDate: birthday,
     bornOn: birthday,
     age,
@@ -321,7 +322,20 @@ function academyMentor(s, mentorId) {
   return availableAcademyMentors(s).find((mentor) => mentor.id === mentorId) || null;
 }
 
-export function createDynastyChild(s, { name, age = 0, birthDate = null, parentId = null, stats = null } = {}) {
+// الجواز (الدفعة 5): حقل الجنس للأبناء. الولادات 50/50، والوراثة للذكور فقط.
+// الحفظ القديم بلا حقل جنس يُعامَل كذكر (الافتراضي).
+export const GENDERS = ["male", "female"];
+export function normalizeGender(value) {
+  return value === "female" ? "female" : "male";
+}
+export function birthGender(s) {
+  return random(s) < 0.5 ? "male" : "female";
+}
+export function isSuccessionEligibleGender(child) {
+  return normalizeGender(child?.gender) === "male";
+}
+
+export function createDynastyChild(s, { name, age = 0, birthDate = null, parentId = null, stats = null, gender = null } = {}) {
   const d = s.dynasty || (s.dynasty = migrateDynasty(s));
   const today = saveDate(s);
   const parent = parentId ? findDynastyChild(s, parentId) : null;
@@ -338,9 +352,11 @@ export function createDynastyChild(s, { name, age = 0, birthDate = null, parentI
     : { talent: 42 + bonus, discipline: 45 + bonus, ambition: 40 + bonus };
   const chosenStats = stats && typeof stats === "object" ? stats : {};
   const id = uid(s, "dynasty-child");
+  const childGender = GENDERS.includes(gender) ? gender : birthGender(s);
   return {
     id,
     name: String(name || "").trim().slice(0, 80) || `Child ${d.children.length + 1}`,
+    gender: childGender,
     birthDate: born,
     bornOn: born,
     age: actualAge,
@@ -755,8 +771,8 @@ export function migrateDynasty(s) {
     normalizeChild(context, child, index, childIds, integerInRange(existing.generation, 1, Number.MAX_SAFE_INTEGER, 1)),
   );
   let heirId = existing.heirId || s.heirId || s.inheritorId || null;
-  if (!heirId) heirId = children.find((child) => child.isHeir)?.id || null;
-  if (!children.some((child) => child.id === heirId)) heirId = null;
+  if (!heirId) heirId = children.find((child) => child.isHeir && isSuccessionEligibleGender(child))?.id || null;
+  if (!children.some((child) => child.id === heirId && isSuccessionEligibleGender(child))) heirId = null;
   for (const child of children) child.isHeir = child.id === heirId;
   const defaults = initDynasty(context, { ownerAge: actualAge });
   const retirementAge = integerInRange(ownerSource.retirementAge, 50, 80, 65);
@@ -909,6 +925,7 @@ export function setDynastyHeir(s, childId) {
   const child = d?.children.find((person) => person.id === childId);
   assert(child, "يمكن تعيين وريث واحد من أبناء المالك الحالي.");
   assert(!child.excludedFromSuccession, "أُبعد هذا الابن عن الخلافة.");
+  assert(isSuccessionEligibleGender(child), "الوراثة للذكور فقط.");
   for (const sibling of d.children) sibling.isHeir = sibling.id === child.id;
   child.legalClaim = true;
   d.heirId = child.id;
@@ -969,6 +986,7 @@ function distantRelative(s) {
   const d = s.dynasty;
   const person = createDynastyChild(s, {
     name: `${d.familyName} Cousin`,
+    gender: "male",
     age: 38,
     stats: { talent: 55, discipline: 62, ambition: 48 },
   });
@@ -983,7 +1001,7 @@ function distantRelative(s) {
 function retireCurrentOwner(s) {
   const d = s.dynasty;
   const eligible = d.children
-    .filter((child) => child.age >= 18 && !child.excludedFromSuccession)
+    .filter((child) => child.age >= 18 && !child.excludedFromSuccession && isSuccessionEligibleGender(child))
     .sort((a, b) => {
       if (a.id === b.id) return 0;
       const aNamedHeir = Number(a.id === d.heirId);

@@ -82,6 +82,7 @@ export const DYNASTY_PHRASES = {
   "لقطة نقاط الإرث غير صالحة": ["Invalid legacy-score snapshot", "Instantané de score d’héritage invalide"],
   "يمكن تعيين وريث واحد من أبناء المالك الحالي": ["One of the current owner's children can be appointed heir", "Un des enfants du propriétaire actuel peut être désigné héritier"],
   "أُبعد هذا الابن عن الخلافة": ["This child is excluded from succession", "Cet enfant est exclu de la succession"],
+  "الوراثة للذكور فقط.": ["Succession is for male heirs only.", "La succession est réservée aux héritiers masculins."],
   "بيانات أهلية الخلافة غير صالحة": ["Invalid succession-eligibility data", "Données d’éligibilité à la succession invalides"],
   "ملف الإرث غير متاح": ["Legacy record is unavailable", "Le dossier d’héritage n’est pas disponible"],
   "عرض التقاعد غير مفتوح": ["The retirement offer is not open", "L’offre de retraite n’est pas ouverte"],
