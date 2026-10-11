@@ -1,6 +1,7 @@
 // الدفعة 6 — القسم 1: الإنجازات. قياس من حالة اللعبة + فتح مرة واحدة + إشعار البريد.
 import { ACHIEVEMENTS, ACHIEVEMENT_FAMILIES } from "../data/achievements.js";
 import { message } from "./inbox.js";
+import { notifyEnabled } from "./settingsHub.js";
 
 export const ACHIEVEMENTS_SCHEMA = 1;
 
@@ -65,6 +66,7 @@ export function refreshAchievements(s) {
     if (value >= ach.target) {
       a.unlocked[ach.id] = { date: s.date };
       opened.push(ach.id);
+      if (notifyEnabled(s, "achievements"))
       message(s, {
         title: "إنجاز مفتوح",
         body: "فتحت إنجازًا جديدًا. راجع صفحة الإنجازات لتفاصيله ومستوى التقدم في بقية الإنجازات.",

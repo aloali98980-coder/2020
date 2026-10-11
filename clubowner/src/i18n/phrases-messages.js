@@ -1029,6 +1029,7 @@ export const MESSAGE_PHRASES = {
   "وضع الإجازة غير مفعّل": ["Holiday mode is not on", "Le mode vacances n'est pas activé"],
   "وضع الإجازة يمنع القرارات المتعلقة بالنجوم حتى عودتك": ["Holiday mode blocks star-related decisions until you return", "Le mode vacances bloque les décisions liées aux stars jusqu'à votre retour"],
   "وضع الإجازة يمنع الصفقات الكبرى حتى عودتك": ["Holiday mode blocks major deals until you return", "Le mode vacances bloque les grands transferts jusqu'à votre retour"],
+  "إشعار غير معروف": ["Unknown notification", "Notification inconnue"],
   "بث تلفزيوني": ["TV broadcast", "Diffusion TV"],
   "حقوق البث التلفزيوني الشهرية": ["Monthly TV broadcast rights", "Droits TV mensuels"],
   "مرتبات اللاعبين الشهرية": [

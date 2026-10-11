@@ -227,6 +227,7 @@ import { absenceBanner } from "./features/absence.js";
 import { legendLogView } from "./features/legendLog.js";
 import { seasonHarvestView } from "./features/seasonHarvest.js";
 import { markAbsenceSeen } from "./services/absence.js";
+import { setNotify } from "./services/settingsHub.js";
 import {
   irreversibleWarning,
   startVacation,
@@ -3112,6 +3113,13 @@ document.addEventListener("change", async (e) => {
         (s) => (s.preferences.autoMatchReport = e.target.checked),
         tr("تم حفظ الإعداد.", "Setting saved.", "Réglage enregistré."),
       );
+    if (e.target.id === "notify-achievements" || e.target.id === "notify-absence") {
+      const key = e.target.id === "notify-achievements" ? "achievements" : "absence";
+      await apply(
+        (s) => setNotify(s, key, e.target.checked),
+        tr("تم حفظ الإشعار.", "Notification saved.", "Notification enregistrée."),
+      );
+    }
     if (e.target.id === "reduce-motion")
       await apply(
         (s) => (s.preferences.reduceMotion = e.target.checked),

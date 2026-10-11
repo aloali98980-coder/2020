@@ -3,11 +3,13 @@ import { esc, num, date } from "../ui/format.js";
 import { tr } from "../i18n/index.js";
 import { absenceReport } from "../services/absence.js";
 import { clubBy } from "../components/shared.js";
+import { notifyEnabled } from "../services/settingsHub.js";
 
 const info = (text) =>
   `<details class="info-toggle"><summary aria-label="ⓘ">ⓘ</summary><p>${esc(text)}</p></details>`;
 
 export function absenceBanner(s) {
+  if (!notifyEnabled(s, "absence")) return "";
   const r = absenceReport(s);
   if (!r) return "";
   const hasAnything = r.results.count || r.major.count || r.pending.count;

@@ -11,6 +11,10 @@ import { listSlots, MAX_SAVE_SLOTS } from "../services/slots.js";
 import { audioSettingsFor } from "../services/audio.js";
 import { vacationCard } from "./protection.js";
 
+const info = (text) =>
+  `<details class="info-toggle"><summary aria-label="ⓘ">ⓘ</summary><p>${text}</p></details>`;
+import { notifyEnabled } from "../services/settingsHub.js";
+
 const themePref = () => {
   try {
     return localStorage.getItem("clubowner.theme") || "dark";
@@ -224,6 +228,15 @@ export function settingsView(s) {
         ${badge("مفعّل دائمًا", "green")}
       </div>
       <p class="fine-print">اليوم والأسبوع يتم تمريرهما يومًا بيوم. النظام يحتفظ بالأيام المتبقية عند التوقف.</p>
+    </section>
+    <section class="panel settings-panel notify-panel">
+      <div class="panel-head"><h3>${icon("info")} ${tr("الإشعارات", "Notifications", "Notifications")}</h3>
+        ${info(tr("تُحفظ مع الحفظ نفسه. إيقاف الإشعار لا يُلغي شيئًا من الحفظ، فقط يمنع الرسالة أو البطاقة.", "Saved with your save. Turning one off removes nothing from the save; it only hides the message or card.", "Enregistré avec la sauvegarde. Désactiver ne supprime rien : cela masque seulement le message ou la carte."))}
+      </div>
+      <div class="preference-row"><div><strong>${tr("فتح إنجاز", "Achievement unlocked", "Succès débloqué")}</strong></div>
+        <label class="switch"><input type="checkbox" id="notify-achievements" ${notifyEnabled(s, "achievements") ? "checked" : ""}><span></span></label></div>
+      <div class="preference-row"><div><strong>${tr("ملخص «ماذا فاتك؟»", "“What did you miss?” summary", "Résumé « Ce que vous avez manqué »")}</strong></div>
+        <label class="switch"><input type="checkbox" id="notify-absence" ${notifyEnabled(s, "absence") ? "checked" : ""}><span></span></label></div>
     </section>
     <section class="panel settings-panel about-panel">
       <div class="panel-head">
