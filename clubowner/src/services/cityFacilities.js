@@ -67,6 +67,8 @@ export function cityEconomy(s) {
   const income =
     built.reduce((sum, x) => sum + x.income, 0) +
     (totals.income || 0) * 30_000 +
+    // 0.44: قنوات الأحداث (صالة، بادل، مضمار، شاشات، مؤتمرات) تدر دخلًا شهريًا
+    (totals.events || 0) * 40_000 +
     (ensureSportsCity(s).stadium.oldGround === "lease" ? 200_000 : 0);
   return { upkeep, income, net: income - upkeep };
 }
@@ -80,11 +82,9 @@ export function settleCityMonth(s) {
   const e = ensureEmpire(s);
   personalIncome(s, income);
   e.debt += personalExpense(s, upkeep);
-  if (cityEffects(s).totals.fan)
-    s.fanSupport = clamp(
-      s.fanSupport + Math.min(2, cityEffects(s).totals.fan),
-      0,
-      100,
-    );
+  // 0.44: تمثال الإنجاز (prestige) يضيف نصف نقطة شهرية مع قنوات الجماهير
+  const fanBoost = Math.min(2, (cityEffects(s).totals.fan || 0) + (cityEffects(s).totals.prestige || 0) * 0.5);
+  if (fanBoost)
+    s.fanSupport = clamp(s.fanSupport + fanBoost, 0, 100);
   return true;
 }
