@@ -1,3 +1,14 @@
+## 0.43 — club browser (read-only)
+
+`features/clubBrowser.js` derives everything from the save: leagues are `s.expansion.divisions`
+(demo league fallback for classic careers), squads are `s.players` filtered by club, and the
+season scoring record reads the existing `s.seasonHistory[].playerStats` archive. Clubs whose
+market was not enabled at setup have no saved players and are shown as an explicit empty state
+with the pack source link — never filled with invented names. No schema change, no migration,
+no new persisted state; the only writer is the pre-existing UI state for the selected league,
+club and search query. Player cards reuse `features/players.js` `playerDetail`. See
+docs/FEATURES-0.43.md.
+
 ## 0.10 FIFA addition
 `services/fifa/{engine,access,draw}.js` + `core/fifaValidation.js` + `features/fifa/cards.js`. `fifaGuests.js` registers six real cup-only opponents without changing selectable clubs or division membership; existing Auckland remains one identity. `fifaVersion` gates old-save behavior until rollover. Four-year qualification history is separate from general history. No promotion-code or league-data changes. See docs/FIFA-0.10.md.
 

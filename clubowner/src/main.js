@@ -49,6 +49,7 @@ import {
 } from "./services/clubManagement.js";
 import { ALL_MARKETS } from "./data/worldMarkets.js";
 import { databaseView } from "./features/database.js";
+import { clubBrowserView } from "./features/clubBrowser.js";
 import {
   getLanguage,
   setLanguage,
@@ -337,6 +338,9 @@ const ui = {
   playerFilters: { search: "", pos: "all", league: "all" },
   financeTab: "ledger",
   worldTab: "table",
+  clubLeague: null,
+  clubClub: null,
+  clubQuery: "",
   legendFilters: { ...DEFAULT_LEGEND_FILTERS },
   legendOffer: {},
   empireTab: "wealth",
@@ -430,6 +434,12 @@ function render() {
     dynasty: () => dynastyView(s),
     settings: () => settingsView(s),
     database: () => databaseView(),
+    clubs: () =>
+      clubBrowserView(s, {
+        league: ui.clubLeague,
+        club: ui.clubClub,
+        q: ui.clubQuery,
+      }),
     careers: () => careersView(s, ui.talentPlayer),
   };
   app.innerHTML = shell(s, ui.route, (views[ui.route] || views.dashboard)());
@@ -1634,6 +1644,13 @@ const actions = {
     navigate("finance");
     toast("راجع التمويل، ثم عُد للبريد لتأكيد التعامل مع تنبيه السيولة.");
   },
+  "club-open": async (el) => {
+    ui.clubClub = el.dataset.id;
+    render();
+    document
+      .querySelector(".club-card")
+      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+  },
   "player-detail": async (el) => showPlayer(el.dataset.id),
   "transfer-offer": async (el) => {
     const s = getState(),
@@ -2642,6 +2659,15 @@ document.addEventListener("input", (e) => {
     input.focus();
     input.setSelectionRange(pos, pos);
   }
+  if (e.target.id === "club-search") {
+    const value = e.target.value,
+      pos = e.target.selectionStart;
+    ui.clubQuery = value;
+    render();
+    const input = document.getElementById("club-search");
+    input?.focus();
+    input?.setSelectionRange(pos, pos);
+  }
 });
 // اختصارات البحث السريع: Ctrl/⌘+K للفتح والإغلاق، والأسهم وEnter للتنقل داخل النتائج.
 document.addEventListener("keydown", (e) => {
@@ -2769,6 +2795,12 @@ document.addEventListener("change", async (e) => {
     }
     if (e.target.id === "division-view") {
       ui.expandedDivision = e.target.value;
+      render();
+      return;
+    }
+    if (e.target.id === "club-league") {
+      ui.clubLeague = e.target.value;
+      ui.clubClub = null;
       render();
       return;
     }
