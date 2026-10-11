@@ -30,6 +30,8 @@ const SKIP = [
   /src\/data\/achievements\.js/,
   // Section info cards store explicit {ar,en,fr} line lists (0.46 — batch 6 §7).
   /src\/services\/sectionInfo\.js/,
+  // Source labels are explicit {ar,en,fr} records (0.46 — batch 6 §8).
+  /src\/services\/sources\.js/,
   // The ultras dashboard and service localize each phrase inline through AR/EN/FR maps.
   /src\/features\/ultras\.js/,
   /src\/services\/ultras\.js/,

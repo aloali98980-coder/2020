@@ -2,7 +2,7 @@ import { getLanguage, tr } from "../i18n/index.js";
 import { DIFFICULTIES } from "../models/difficulty.js";
 import { heading, button, badge, infoNote } from "../components/shared.js";
 import { icon } from "../components/icons.js";
-import { date, num } from "../ui/format.js";
+import { date, num, esc } from "../ui/format.js";
 import { getSession, isAuthenticated } from "../services/auth.js";
 import { getDisplayCurrency, DISPLAY_CURRENCIES } from "../ui/format.js";
 import { CURRENCIES } from "../data/currencies.js";
@@ -14,6 +14,21 @@ import { vacationCard } from "./protection.js";
 const info = (text) =>
   `<details class="info-toggle"><summary aria-label="ⓘ">ⓘ</summary><p>${text}</p></details>`;
 import { notifyEnabled } from "../services/settingsHub.js";
+import { liveSources } from "../services/sources.js";
+
+// المصادر: حصرًا هنا، وأعدادها حية من البيانات.
+const sourcesPanel = (s) => {
+  const lang = getLanguage();
+  const rows = liveSources(s)
+    .map((x) => `<div class="staff-metric"><small>${esc(x.label[lang] || x.label.ar)}</small><strong>${num(x.count)}</strong></div>`)
+    .join("");
+  return `<section class="panel settings-panel sources-panel">
+      <div class="panel-head"><h3>${icon("info")} ${tr("المصادر", "Sources", "Sources")}</h3>
+        ${info(tr("أعداد حية تُحسب الآن من بياناتك وكتالوج اللعبة. أي رقم لا يمكن عدّه لا يُعرض.", "Live counts computed now from your data and the game catalogue. Anything that cannot be counted is not shown.", "Chiffres en direct calculés à partir de vos données et du catalogue. Tout élément non comptable n'est pas affiché."))}
+      </div>
+      <div class="staff-metric-grid">${rows}</div>
+    </section>`;
+};
 
 const themePref = () => {
   try {
@@ -92,6 +107,7 @@ export function settingsView(s) {
   return `${heading("إنت اللي بتحدد طريقة إدارتك", "الإعدادات والحفظ", "حافظ على مشوارك، واضبط إيقاع العالم.")}
   ${cloudPanel(s)}
   ${vacationCard(s)}
+  ${sourcesPanel(s)}
   <section class="panel install-panel">
     <div>
       <span class="eyebrow">الآيفون والشاشة الرئيسية</span>
