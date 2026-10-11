@@ -3106,3 +3106,12 @@ body.reduce-motion .hl-progress span { transition: none !important; }
 button.headline-row { cursor: pointer; }
 .headline-row > span:nth-child(2) { flex: 1 1 160px; min-width: 0; overflow-wrap: anywhere; }
 .headline-row small { white-space: nowrap; }
+
+/* الدفعة 7 §3: رقم القميص وأول الكلمات في ملف اللاعب. */
+.presentation-line { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-top: 8px; }
+.shirt-badge {
+  display: inline-grid; place-items: center; min-width: 40px; height: 40px; padding: 0 8px;
+  border-radius: 8px; font-weight: 800; font-size: 1.1rem; background: var(--gold, #d4a017); color: #111;
+}
+.first-words { margin: 0; flex: 1 1 220px; font-style: italic; overflow-wrap: anywhere; }
+.first-words small { display: block; font-style: normal; opacity: .7; }

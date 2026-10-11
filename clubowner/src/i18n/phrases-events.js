@@ -8610,4 +8610,41 @@ export const EVENT_PHRASES = {
     "Ban them inside the ground",
     "Les interdire dans le stade",
   ],
+  // ── الدفعة 7 §3: تقديم اللاعب (فحص طبي، رقم القميص، أول الكلمات) ──
+  "أنا هنا لأعمل، والباقي يأتي بعد ذلك": [
+    "I'm here to work, the rest comes later",
+    "Je suis là pour travailler, le reste viendra ensuite",
+  ],
+  "شكرًا للجماهير، سأعطي كل شيء على أرض الملعب": [
+    "Thank you to the fans, I'll give everything on the pitch",
+    "Merci aux supporters, je donnerai tout sur le terrain",
+  ],
+  "أحب هذا النادي منذ صغري، والآن صرت جزءًا منه": [
+    "I have loved this club since I was a boy, and now I am part of it",
+    "J'aime ce club depuis mon enfance, et j'en fais désormais partie",
+  ],
+  "المدرب وضع خطة واضحة، وسأنفذها بالكامل": [
+    "The coach has a clear plan and I will carry it out in full",
+    "L'entraîneur a un plan clair et je l'appliquerai entièrement",
+  ],
+  "أنا جاهز للتحدي، ولن أخذل زملائي": [
+    "I'm ready for the challenge and won't let my teammates down",
+    "Je suis prêt pour le défi et je ne décevrai pas mes coéquipiers",
+  ],
+  "خطوة كبيرة في مسيرتي، وأتطلع للبداية": [
+    "A big step in my career, and I look forward to getting started",
+    "Un grand pas dans ma carrière, et j'ai hâte de commencer",
+  ],
+  "فشل الفحص الطبي لـ": [
+    "Failed medical for",
+    "Échec de la visite médicale de",
+  ],
+  "الصفقة سقطت بعد الفحص الطبي، ولم يُدفع أي مبلغ ولم يُوقَّع العقد": [
+    "The deal collapsed after the medical; no money was paid and no contract was signed",
+    "La transaction a échoué après la visite médicale ; aucune somme n'a été versée et aucun contrat n'a été signé",
+  ],
+  "نتيجة الفحص الطبي: سليم. رقم القميص وأول كلماته موجودان في ملف اللاعب": [
+    "Medical result: fit. The shirt number and first words are on the player's file",
+    "Résultat de la visite médicale : apte. Le numéro de maillot et ses premiers mots figurent dans le dossier du joueur",
+  ],
 };

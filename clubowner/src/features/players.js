@@ -1,4 +1,5 @@
 import { marketBy } from "../data/worldMarkets.js";
+import { FIRST_WORDS, shirtNumberOf } from "../services/presentation.js";
 import { provenance } from "../models/provenance.js";
 import { getLanguage } from "../i18n/index.js";
 import { clubBy } from "../components/shared.js";
@@ -86,6 +87,14 @@ function negotiationsPanel(s) {
     })
     .join("")}</div>`;
 }
+// 🎽 رقم القميص وأول الكلمات (يظهران بعد التوقيع فقط).
+function presentationLine(s, p) {
+  const shirt = shirtNumberOf(s, p);
+  const words = Number.isInteger(p.firstWordsIndex) ? FIRST_WORDS[p.firstWordsIndex] : null;
+  if (shirt === null && !words) return "";
+  return `<div class="presentation-line">${shirt === null ? "" : `<span class="shirt-badge" aria-label="${tr("رقم القميص", "Shirt number", "Numéro de maillot")}">${num(shirt)}</span>`}${words ? `<blockquote class="first-words">«${esc(words)}»<small>${tr("أول كلماته للجماهير", "First words to the fans", "Ses premiers mots aux supporters")}</small></blockquote>` : ""}</div>`;
+}
+
 export function playerDetail(s, p) {
   const src = provenance(p);
   const own = p.clubId === s.clubId;
@@ -100,7 +109,7 @@ export function playerDetail(s, p) {
   const clause = p.contractTerms?.releaseClause || 0;
   const range = baseRangeForRating(p.rating);
   const clauseBlock = `<div class="effect-card"><h4>${tr("الشرط الجزائي", "Release clause", "Clause libératoire")}</h4><p>${clause > 0 ? `${money(clause)} ${cur()} — ${tr("سلم القيمة حسب التقييم", "Value ladder by rating", "Échelle par note")} ${money(range.min)}–${money(range.max)} ${cur()}` : tr("لا يوجد شرط جزائي — تفاوض عادي", "No release clause — normal negotiation", "Pas de clause — négociation normale")}</p>${!own && clause > 0 ? `<small>${tr("يمكن كسره بدفع فوري دفعة واحدة + التفاوض مع اللاعب مباشرة. أندية AI تكسر شروط لاعبيك أيضًا (كاش فوري + غضب جماهيري).", "Can be triggered by instant payment + direct negotiation. AI clubs also break your players' clauses (instant cash + fan fury).", "Peut être déclenchée par paiement comptant + négociation directe. Les clubs IA déclenchent aussi vos clauses (cash immédiat + fureur).")}</small><div class="modal-actions" style="margin-top:8px">${button("كسر الشرط الجزائي", "break-clause", p.id, "small primary")}</div>` : ""}</div>`;
-  return `<div class="player-profile-head">${avatar(p)}<div><span class="eyebrow">${esc(p.nationality)} · ${tr("ملف اللاعب", "Player profile", "Profil du joueur")}</span><h2>${esc(getLanguage() === "ar" ? p.name : p.nameLatin || p.name)}</h2><p>${position(p.position)} · ${num(p.age)} سنة · القدم ${p.foot}</p></div><span class="rating big">${num(Math.round(p.rating))}</span></div><div class="profile-stats"><div><small>القيمة المتوقعة</small><strong>${money(p.value)} ${cur()}</strong></div><div><small>المرتب الشهري</small><strong>${money(p.salary)} ${cur()}</strong></div><div><small>نهاية العقد</small><strong>${date(p.contractEnd)}</strong></div></div>${clauseBlock}<h3 class="section-title">القدرات الفنية والبدنية</h3><div class="attribute-grid">${Object.entries(
+  return `<div class="player-profile-head">${avatar(p)}<div><span class="eyebrow">${esc(p.nationality)} · ${tr("ملف اللاعب", "Player profile", "Profil du joueur")}</span><h2>${esc(getLanguage() === "ar" ? p.name : p.nameLatin || p.name)}</h2><p>${position(p.position)} · ${num(p.age)} سنة · القدم ${p.foot}</p>${presentationLine(s, p)}</div><span class="rating big">${num(Math.round(p.rating))}</span></div><div class="profile-stats"><div><small>القيمة المتوقعة</small><strong>${money(p.value)} ${cur()}</strong></div><div><small>المرتب الشهري</small><strong>${money(p.salary)} ${cur()}</strong></div><div><small>نهاية العقد</small><strong>${date(p.contractEnd)}</strong></div></div>${clauseBlock}<h3 class="section-title">القدرات الفنية والبدنية</h3><div class="attribute-grid">${Object.entries(
     p.attributes,
   )
     .map(
