@@ -8647,4 +8647,33 @@ export const EVENT_PHRASES = {
     "Medical result: fit. The shirt number and first words are on the player's file",
     "Résultat de la visite médicale : apte. Le numéro de maillot et ses premiers mots figurent dans le dossier du joueur",
   ],
+  // ── الدفعة 7 §4: مقياس الضجيج ──
+  "حملة إعلامية ملفقة تثير الجدل": [
+    "A fabricated media campaign stirs debate",
+    "Une campagne médiatique fabriquée fait polémique",
+  ],
+  "كسر شرط جزائي يثير الجدل": [
+    "A broken release clause stirs debate",
+    "Une clause libératoire rompue fait polémique",
+  ],
+  "مصدر ضجيج غير معروف": [
+    "Unknown noise source",
+    "Source de bruit inconnue",
+  ],
+  "ضجيج": [
+    "Noise",
+    "Bruit",
+  ],
+  "فوز يهدّئ الأجواء": [
+    "A win calms things down",
+    "Une victoire apaise l'atmosphère",
+  ],
+  "خسارة ترفع الأصوات": [
+    "A defeat raises the voices",
+    "Une défaite fait monter les voix",
+  ],
+  "صفقة انتقال تثير الجدل": [
+    "A transfer stirs debate",
+    "Un transfert fait débat",
+  ],
 };

@@ -18,6 +18,7 @@ import { dismissalRisk } from "../services/empire/transfers.js";
 import { pendingActions } from "../services/inbox.js";
 import { sortedTable } from "../services/matches.js";
 import { morningHeadlines } from "../services/morningHeadlines.js";
+import { currentNoise, noiseLevel } from "../services/noiseMeter.js";
 import { FACILITIES } from "../data/catalog.js";
 
 // تفاصيل ثانوية خلف ⓘ: لا تزاحم الشاشة، وتُفتح بنقرة.
@@ -191,6 +192,7 @@ export function dashboardView(s) {
     ${inboxWidget}
     ${tableWidget}
     ${facilitiesWidget}
+    ${noiseWidgetView(s)}
     ${empireCardView(s)}
     ${conditional}
   </div>`;
@@ -224,6 +226,30 @@ function headlinesView(s) {
     <div class="panel-head"><h3>📰 ${tr("عناوين الصباح", "Morning headlines", "Gros titres du matin")}</h3>${info(`${tr("أهم", "The top", "Les")} ${num(items.length)} ${tr("أخبار لليوم، مرتبة بالأولوية: القرارات أولًا، ثم النتائج والمباريات القريبة، ثم الصحافة والبريد.", "stories of the day, ranked: decisions first, then results and near fixtures, then press and mail.", "infos du jour, classées : décisions d’abord, puis résultats et matchs proches, puis presse et courrier.")}`)}</div>
     <div class="headlines-list">${rows}</div>
     <button class="dash-widget-link" data-nav="inbox">${tr("كل البريد", "All mail", "Toute la boîte")} ${icon("arrow", 14)}</button>
+  </section>`;
+}
+
+// 📊 مقياس الضجيج: الرقم والمستوى ظاهران، والأثر والسجل خلف ⓘ.
+function noiseWidgetView(s) {
+  const value = currentNoise(s);
+  const level = noiseLevel(value);
+  const names = {
+    low: tr("هادئ", "Calm", "Calme"),
+    medium: tr("متوسط", "Medium", "Moyen"),
+    high: tr("عالٍ", "High", "Élevé"),
+  };
+  const log = (s.noise?.log || []).slice(0, 3);
+  const logHtml = log.length
+    ? `<ul class="noise-log">${log.map((x) => `<li><span>${esc(x.label)}</span> <small>${shortDate(x.date)}</small></li>`).join("")}</ul>`
+    : "";
+  const detail = tr("الصفقات الكبيرة والفضائح ترفع المقياس، والنتائج تحركه. يؤثر على الجماهير والرعاة والصحافة.", "Big transfers and scandals raise the meter; results move it. It affects fans, sponsors and the press.", "Les gros transferts et les scandales le font monter ; les résultats le font bouger. Il touche supporters, sponsors et presse.");
+  return `<section class="panel dash-widget noise-card" data-widget="noise">
+    <div class="panel-head"><h3>📊 ${tr("مقياس الضجيج", "Noise meter", "Mètre du bruit")}</h3><details class="info-toggle"><summary aria-label="${tr("تفاصيل", "Details", "Détails")}">ⓘ</summary><p>${detail}</p>${logHtml}</details></div>
+    <div class="dash-widget-body">
+      <div class="noise-row noise-${level}"><strong>${num(Math.round(value))}<small>/100</small></strong><span class="badge outline">${names[level]}</span></div>
+      <div class="noise-bar" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${num(Math.round(value))}"><span style="width:${num(Math.round(value))}%"></span></div>
+    </div>
+    <button class="dash-widget-link" data-nav="world">${tr("الجدول والمنافسة", "Table and competition", "Classement et compétition")} ${icon("arrow", 14)}</button>
   </section>`;
 }
 

@@ -8,6 +8,7 @@ import { blackTextAr } from "../data/blackTexts.js";
 import { boardTextAr } from "../data/boardTexts.js";
 import { ensureBoard } from "./boardMandate.js";
 import { aiBreakReleaseClauses } from "./releaseClause.js";
+import { addNoise, SCANDAL_NOISE } from "./noiseMeter.js";
 import { fileLegalCase } from "./staff/legal.js";
 
 export const SUSPICION_THRESHOLDS = {
@@ -285,6 +286,7 @@ export function doOperation(s, opId, params = {}) {
       until: addDays(s.date, 14),
       date: s.date,
     };
+    addNoise(s, "scandal", SCANDAL_NOISE, "حملة إعلامية ملفقة تثير الجدل");
     s.fanSupport = clamp(s.fanSupport + 3, 0, 100);
     message(s, {
       title: blackTextAr("opSuccess") + " — حرب إعلامية",
@@ -483,6 +485,7 @@ export function blackFilesDay(s) {
       p.careerHistory.push({ date: s.date, type: "release-broken-ai", clubId: item.buyer, fee: item.clause });
       post(s, item.clause, "player-sale", `كسر شرط جزائي: ${p.name}`, uid(s, "release-ai"));
       s.fanSupport = clamp(s.fanSupport - 8, 0, 100);
+      addNoise(s, "transfer", 10, "كسر شرط جزائي يثير الجدل");
       message(s, {
         title: blackTextAr("releaseClauseBrokenTitle", { v: p.name }),
         body: blackTextAr("releaseClauseBrokenBody", { v: item.buyer, money: item.clause }),

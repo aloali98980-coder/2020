@@ -1,3 +1,4 @@
+import { noteResultNoise } from "./noiseMeter.js";
 import { cityEffects } from "./cityFacilities.js";
 import { roleEffect } from "./playerRoles.js";
 import { selectXI, tacticalEffects } from "./tactics.js";
@@ -398,6 +399,7 @@ export function matchDay(
       };
       recordMatchStats(s, f, () => random(s), ourFinal, cards);
       const { redCardPenalty } = applyMatchConsequences(s, f, cards, () => random(s), { suspensionThreshold });
+      noteResultNoise(s, f);
       for (const player of cards.reds) recordDisciplineIncident(s, f, player);
       void redCardPenalty;
       message(s, {

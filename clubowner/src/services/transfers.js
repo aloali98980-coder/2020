@@ -11,6 +11,7 @@ import { recordSupporterSigning } from "./ultras.js";
 import { addInsideInformation } from "./stockMarket/insider.js";
 import { assertVacationAllows } from "./protection.js";
 import { medicalResult, assignShirtNumber, firstWordsIndex } from "./presentation.js";
+import { addNoise, transferNoise } from "./noiseMeter.js";
 export function submitOffer(s, playerId, terms) {
   assertTransfersAllowed(s);
   if (isTransferBanned(s))
@@ -259,6 +260,7 @@ export function signPlayer(s, id, terms) {
   closeThread(s, id);
   assignShirtNumber(s, p);
   p.firstWordsIndex = firstWordsIndex(s, p);
+  addNoise(s, "transfer", transferNoise(n.fee), "صفقة انتقال تثير الجدل");
   message(s, {
     title: `${p.name} ينضم إلى النادي`,
     body: "نتيجة الفحص الطبي: سليم. رقم القميص وأول كلماته موجودان في ملف اللاعب.",
