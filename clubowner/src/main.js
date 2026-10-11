@@ -1955,7 +1955,7 @@ const actions = {
   },
   "betting-marketing-slide": async (el) => {
     const v = document.getElementById("betting-marketing-val");
-    if (v) v.textContent = el.value;
+    if (v) v.textContent = `${money(Number(el.value))} ${cur()}`;
   },
   "betting-save-marketing": async (el) => {
     const val = Number(document.getElementById("betting-marketing")?.value);
@@ -2694,6 +2694,16 @@ document.addEventListener("submit", async (e) => {
   }
 });
 document.addEventListener("input", (e) => {
+  // الشرائح: data-action يوجّه السحب الحي إلى إجراء، و data-out يحدّث مخرجًا نصيًا مباشرة.
+  if (e.target.matches?.('input[type="range"][data-action]')) {
+    actions[e.target.dataset.action]?.(e.target);
+    return;
+  }
+  if (e.target.matches?.('input[type="range"][data-out]')) {
+    const out = document.getElementById(e.target.dataset.out);
+    if (out) out.textContent = `${num(Number(e.target.value))}${e.target.dataset.unit || ""}`;
+    return;
+  }
   if (e.target.id === "audio-volume") {
     const output = document.getElementById("audio-volume-value");
     if (output) output.value = `${Math.round(Number(e.target.value))}%`;

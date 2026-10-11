@@ -244,8 +244,8 @@ function sportingTab(s, lang) {
   <p>${l("الفلسفة", "Philosophy", "Philosophie")}: ${phils}</p>
   <p class="hint">${esc(lang === "ar" ? SPORTING_PHILOSOPHIES[sp.philosophy].desc.ar : lang === "fr" ? SPORTING_PHILOSOPHIES[sp.philosophy].desc.fr : SPORTING_PHILOSOPHIES[sp.philosophy].desc.en)}</p>
   <form id="staff-freedom-form" class="neg-form"><label>${l("الصلاحيات", "Authority", "Pouvoirs")}
-  <input type="range" name="freedom" min="0" max="100" step="5" value="${sp.freedom}"></label>
-  <span>${num(sp.freedom)}% ${sp.freedom >= 70 ? l("(حرية كاملة — ينفّذ بنفسه)", "(full authority — acts alone)", "(pleins pouvoirs — agit seul)") : l("(كل صفقة بإذنك)", "(every deal needs you)", "(chaque deal vous attend)")}</span>
+  <input type="range" name="freedom" min="0" max="100" step="5" value="${sp.freedom}" data-out="staff-freedom-val" data-unit="%"></label>
+  <span><b id="staff-freedom-val">${num(sp.freedom)}%</b> ${sp.freedom >= 70 ? l("(حرية كاملة — ينفّذ بنفسه)", "(full authority — acts alone)", "(pleins pouvoirs — agit seul)") : l("(كل صفقة بإذنك)", "(every deal needs you)", "(chaque deal vous attend)")}</span>
   <button class="btn small primary" type="submit">${l("حفظ", "Save", "Enregistrer")}</button></form>
   <p class="hint">${l("الصلاحية الفعلية", "Effective authority", "Pouvoirs effectifs")}: ${num(effective)}%${delegated ? ` · ${l("تفويض مؤقت من المجلس حتى", "Temporary board delegation until", "Délégation temporaire du conseil jusqu’au")} ${esc(authorityUntil)} (${l("تفويض المجلس يضيف 15 نقطة", "Board delegation adds 15 points", "La délégation ajoute 15 points")})` : ""}</p>
   <p>${l("سقف التنفيذ التلقائي", "Auto-execution cap", "Plafond d’action")} ${money(autoCap(s))} · ${l("ميزانية المجلس", "Board budget", "Budget du conseil")} ${money(sp.budget)}

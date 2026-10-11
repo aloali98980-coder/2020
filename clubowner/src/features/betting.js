@@ -133,7 +133,7 @@ export function bettingView(s) {
       <div class="transfer-box" style="margin-top:10px">
         <h4>${t("marketingLabel")}</h4>
         <small>الحالي ${money(b.marketingSpend)}/شهر — حد أقصى ${money(2_000_000)}</small>
-        <input type="range" min="0" max="2000000" step="50000" value="${b.marketingSpend}" id="betting-marketing">
+        <input type="range" min="0" max="2000000" step="50000" value="${b.marketingSpend}" id="betting-marketing" data-action="betting-marketing-slide">
         <span id="betting-marketing-val">${money(b.marketingSpend)}</span>
         <button class="btn secondary" data-action="betting-save-marketing">حفظ</button>
       </div>

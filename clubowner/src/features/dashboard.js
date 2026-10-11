@@ -27,7 +27,7 @@ import { FACILITIES } from "../data/catalog.js";
 function empireCardView(s) {
   const e = s.empire;
   if (!e) return "";
-  return `<section class="panel empire-card" data-nav="empire" role="button" tabindex="0" style="cursor:pointer">
+  return `<section class="panel empire-card" data-nav="empire">
     <div class="panel-head"><h3>🏰 ${tr("حياة الملياردير", "Empire Life", "Vie de milliardaire")}</h3><button class="text-button" data-nav="empire">${tr("افتح القصر", "Open the palace", "Ouvrir le palais")} ${icon("arrow", 14)}</button></div>
     <div class="empire-card-row">
       <span>💎 <strong>${money(e.personal)}</strong> <small>${tr("ثروتك الشخصية", "your personal fortune", "votre fortune personnelle")}</small></span>
