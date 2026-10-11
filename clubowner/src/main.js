@@ -227,6 +227,15 @@ import { absenceBanner } from "./features/absence.js";
 import { legendLogView } from "./features/legendLog.js";
 import { seasonHarvestView } from "./features/seasonHarvest.js";
 import { markAbsenceSeen } from "./services/absence.js";
+import {
+  irreversibleWarning,
+  startVacation,
+  endVacation,
+} from "./services/protection.js";
+import {
+  irreversibleModal,
+  vacationReturnModal,
+} from "./features/protection.js";
 import { dynastyView } from "./features/dynasty.js";
 import { politicsView } from "./features/politics.js";
 import { POLITICAL_BLOCS } from "./data/politicsCatalog.js";
@@ -1085,6 +1094,15 @@ const actions = {
   "go-awards": async () => navigate("awards"),
   // 0.46: «تم الاطلاع» يحدّث آخر زيارة فيختفي الملخص حتى غياب جديد.
   "absence-seen": async () => apply((state) => markAbsenceSeen(state)),
+  // 0.46: وضع الإجازة وتقرير العودة.
+  "vacation-start": async () => apply((state) => startVacation(state), tr("بدأ وضع الإجازة.", "Holiday mode is on.", "Mode vacances activé.")),
+  "vacation-end": async () => {
+    let out = null;
+    await apply((state) => {
+      out = endVacation(state);
+    });
+    if (out) openModal(vacationReturnModal(out));
+  },
   "view-ceremony": async () => {
     const s = getState();
     const ceremony = s?.awards?.ceremony;
@@ -1745,6 +1763,27 @@ const actions = {
     updateCalculations();
   },
   "accept-club": async (el) => {
+    // 0.46: قرار لا رجعة فيه (نجم أو ملايين) يحتاج تأكيدًا صريحًا قبل التنفيذ.
+    const st = getState();
+    const neg = st?.negotiations.find((x) => x.id === el.dataset.id);
+    const warn = neg
+      ? irreversibleWarning(st, {
+          player: st.players.find((x) => x.id === neg.playerId),
+          fee: neg.counter || 0,
+        })
+      : null;
+    if (warn && !el.dataset.confirmed) {
+      openModal(
+        irreversibleModal({
+          title: tr("تأكيد الصفقة", "Confirm the deal", "Confirmer le transfert"),
+          warning: warn,
+          action: "accept-club",
+          id: el.dataset.id,
+        }),
+      );
+      return;
+    }
+    closeModal();
     await apply(
       (s) => acceptClub(s, el.dataset.id),
       "تم الاتفاق مع النادي. باقي عقد اللاعب.",
@@ -1913,6 +1952,22 @@ const actions = {
   },
   "empire-sell-asset": async (el) => {
     const { sellAsset } = await import("./services/empire/assets.js");
+    // 0.46: بيع أصل بملايين لا رجعة فيه: تأكيد أولًا.
+    const st = getState();
+    const owned = st?.empire?.assets?.find((a) => a.id === el.dataset.id);
+    const warn = owned ? irreversibleWarning(st, { fee: owned.sellValue || 0 }) : null;
+    if (warn && !el.dataset.confirmed) {
+      openModal(
+        irreversibleModal({
+          title: tr("تأكيد بيع الأصل", "Confirm the sale", "Confirmer la vente"),
+          warning: warn,
+          action: "empire-sell-asset",
+          id: el.dataset.id,
+        }),
+      );
+      return;
+    }
+    closeModal();
     await apply(
       (s) => sellAsset(s, el.dataset.id),
       "تم بيع الأصل وإضافة قيمته إلى ثروتك.",

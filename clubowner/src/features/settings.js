@@ -9,6 +9,7 @@ import { CURRENCIES } from "../data/currencies.js";
 import { APP_VERSION } from "../data/version.js";
 import { listSlots, MAX_SAVE_SLOTS } from "../services/slots.js";
 import { audioSettingsFor } from "../services/audio.js";
+import { vacationCard } from "./protection.js";
 
 const themePref = () => {
   try {
@@ -86,6 +87,7 @@ export function settingsView(s) {
   const audio = audioSettingsFor(s);
   return `${heading("إنت اللي بتحدد طريقة إدارتك", "الإعدادات والحفظ", "حافظ على مشوارك، واضبط إيقاع العالم.")}
   ${cloudPanel(s)}
+  ${vacationCard(s)}
   <section class="panel install-panel">
     <div>
       <span class="eyebrow">الآيفون والشاشة الرئيسية</span>

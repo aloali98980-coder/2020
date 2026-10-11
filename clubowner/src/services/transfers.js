@@ -9,6 +9,7 @@ import { assertTransfersAllowed } from "./boardMandate.js";
 import { isTransferBanned } from "./blackFiles.js";
 import { recordSupporterSigning } from "./ultras.js";
 import { addInsideInformation } from "./stockMarket/insider.js";
+import { assertVacationAllows } from "./protection.js";
 export function submitOffer(s, playerId, terms) {
   assertTransfersAllowed(s);
   if (isTransferBanned(s))
@@ -117,6 +118,8 @@ export function transferReply(s, id) {
 export function acceptClub(s, id) {
   const n = s.negotiations.find((x) => x.id === id);
   assert(n && n.stage === "club-reply", "العرض غير متاح.");
+  // 0.46: وضع الإجازة يمنع الصفقات الكبرى والنجوم.
+  assertVacationAllows(s, { player: s.players.find((x) => x.id === n.playerId), fee: n.counter || 0 });
   n.fee = n.counter;
   n.stage = "personal";
   closeThread(s, id);
@@ -143,6 +146,7 @@ export function signPlayer(s, id, terms) {
   assert(n && n.stage === "personal", "ابدأ باتفاق مع النادي أولًا.");
   const p = s.players.find((x) => x.id === n.playerId);
   assertMarket(s, p);
+  assertVacationAllows(s, { player: p, fee: n.fee || 0 });
   assert(!p.loan, "اللاعب معار الآن.");
   assert(
     p.status !== "retired" && (!n.seller || p.clubId === n.seller),

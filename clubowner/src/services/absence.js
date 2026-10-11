@@ -18,8 +18,8 @@ export function markAbsenceSeen(s) {
 }
 
 // يعيد null إن لم تمر الأيام الكافية، وإلا ملخصًا بالأرقام الفعلية من الحفظ.
-export function absenceReport(s, minDays = ABSENCE_MIN_DAYS) {
-  const { lastSeen } = ensureAbsence(s);
+export function absenceReport(s, minDays = ABSENCE_MIN_DAYS, since = null) {
+  const lastSeen = since || ensureAbsence(s).lastSeen;
   const days = daysBetween(lastSeen, s.date);
   if (!(days >= minDays)) return null;
 
