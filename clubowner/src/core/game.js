@@ -25,7 +25,8 @@ import { initStockMarket } from "../services/stockMarket/state.js";
 import { initClubEmpire } from "../services/clubEmpire/state.js";
 import { ensureAudioPreferences } from "../services/audio.js";
 import { initializeUltras } from "../services/ultras.js";
-export const SAVE_VERSION = 37;
+import { ensureAwards } from "../services/awards.js";
+export const SAVE_VERSION = 38;
 export function createGame({
   clubId = "ahly",
   owner = "مالك النادي",
@@ -200,5 +201,7 @@ export function createGame({
   initStockMarket(s);
   // 0.38: إمبراطور الأندية — السوق يعمل والمحفظة تبدأ بلا أندية إضافية.
   initClubEmpire(s);
+  // 0.42: الجوائز — قاعة مشاهير فارغة من الموسم الأول، والاستفتاء يُفتح لاحقًا.
+  ensureAwards(s);
   return s;
 }

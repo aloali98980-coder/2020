@@ -14,6 +14,8 @@ const SKIP = [
   /src\/data\/packs\//,
   /src\/data\/starProfiles\.js/,
   /src\/data\/legends\.js/,
+  // Award classification aliases are search keys (country names/demonyms), never shown in the UI.
+  /src\/data\/countryAliases\.js/,
   /src\/data\/worldMarkets\.js/,
   // Political catalog records store explicit {ar,en,fr} objects and are rendered by locale.
   /src\/data\/politicsCatalog\.js/,

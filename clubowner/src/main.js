@@ -102,6 +102,7 @@ import "./styles/motion.css";
 import "./styles/dynasty.css";
 import "./styles/politics.css";
 import "./styles/celebrations.css";
+import "./styles/awards.css";
 import "./styles/ultras.css";
 import { createGame } from "./core/game.js";
 import { getState, setState, commit, isSaving } from "./core/store.js";
@@ -133,6 +134,14 @@ import {
   pendingCelebrations,
   trackCelebrationEvents,
 } from "./services/celebrations.js";
+import { awardsView, showAwardCeremony } from "./features/awards.js";
+import {
+  pendingCeremony,
+  markCeremonySeen,
+  campaignFanVote,
+  resolveAwardDemand,
+  resolveCoachDemand,
+} from "./services/awards.js";
 import { ultrasView } from "./features/ultras.js";
 import {
   fulfilSupporterDemand,
@@ -417,6 +426,7 @@ function render() {
     black: () => blackFilesView(s),
     empire: () => empireView(s, ui.empireTab),
     legends: () => legendsView(s, ui.legendFilters),
+    awards: () => awardsView(s),
     dynasty: () => dynastyView(s),
     settings: () => settingsView(s),
     database: () => databaseView(),
@@ -515,6 +525,17 @@ function showCelebrationQueue(records, onDone = () => {}) {
   });
 }
 
+// 0.42: حفل الجوائز يُعرض بعد مشاهد الاحتفالات وقبل التقارير.
+function showCeremonyIfPending(onDone = () => {}) {
+  const save = getState();
+  const ceremony = save?.awards?.ceremony;
+  if (!save || !ceremony || ceremony.seen) return onDone();
+  showAwardCeremony(save, ceremony, async () => {
+    await apply((state) => markCeremonySeen(state));
+    onDone();
+  });
+}
+
 async function runTime(resume = false) {
   const days = resume
     ? null
@@ -566,8 +587,9 @@ async function runTime(resume = false) {
       );
   };
   const pending = s ? pendingCelebrations(s) : [];
-  if (pending.length) showCelebrationQueue(pending, finishAdvance);
-  else finishAdvance();
+  const afterCelebrations = () => showCeremonyIfPending(finishAdvance);
+  if (pending.length) showCelebrationQueue(pending, afterCelebrations);
+  else afterCelebrations();
 }
 function showPlayer(id) {
   const s = getState(),
@@ -959,6 +981,70 @@ const actions = {
     const draw = getCupDraw(s, drawId) || s?.latestDraw;
     if (draw) openModal(cupDrawModal(s, draw), true);
   },
+  "go-awards": async () => navigate("awards"),
+  "view-ceremony": async () => {
+    const s = getState();
+    const ceremony = s?.awards?.ceremony;
+    if (ceremony)
+      showAwardCeremony(s, ceremony, async () => {
+        await apply((state) => markCeremonySeen(state));
+        render();
+      });
+  },
+  "fan-campaign": async () =>
+    apply(
+      (s) => campaignFanVote(s),
+      tr(
+        "انطلقت حملتك الدعائية لمرشحك — التفاعل يتصاعد.",
+        "Your campaign is live — engagement is climbing.",
+        "Votre campagne est lancée — l’engagement monte.",
+      ),
+    ),
+  "award-demand-raise": async (el) =>
+    apply(
+      (s) => resolveAwardDemand(s, el.dataset.id, "raise"),
+      tr(
+        "قُبلت الزيادة وحُسّن عقد الفائز.",
+        "The raise was approved and the winner’s deal improved.",
+        "L’augmentation est accordée et le contrat amélioré.",
+      ),
+    ),
+  "award-demand-improve": async (el) =>
+    apply(
+      (s) => resolveAwardDemand(s, el.dataset.id, "improve"),
+      tr(
+        "حُسّن عقد الفائز بالمعقول.",
+        "The winner’s deal improved moderately.",
+        "Le contrat du vainqueur est modestement amélioré.",
+      ),
+    ),
+  "award-demand-refuse": async (el) =>
+    apply(
+      (s) => resolveAwardDemand(s, el.dataset.id, "refuse"),
+      tr(
+        "رُفض المطلب — المعنويات تأثرت.",
+        "The demand was refused — morale dropped.",
+        "La demande est refusée — le moral baisse.",
+      ),
+    ),
+  "coach-demand-raise": async (el) =>
+    apply(
+      (s) => resolveCoachDemand(s, el.dataset.id, "raise"),
+      tr(
+        "رُفِع راتب المدرب وامتد عقده.",
+        "The coach’s salary rose and the contract extended.",
+        "Le salaire de l’entraîneur augmente et son contrat est prolongé.",
+      ),
+    ),
+  "coach-demand-refuse": async (el) =>
+    apply(
+      (s) => resolveCoachDemand(s, el.dataset.id, "refuse"),
+      tr(
+        "رُفض مطلب المدرب — الثقة تأثرت.",
+        "The coach’s demand was refused — confidence dropped.",
+        "La demande est refusée — la confiance baisse.",
+      ),
+    ),
   "open-youth-intake": async () => {
     const s = getState();
     openModal(youthIntakeModal(s), true);
@@ -2871,7 +2957,10 @@ async function bootstrap() {
       toast("تم استرجاع النسخة الاحتياطية بعد تعذر قراءة الحفظ الأساسي.", true);
     if (loaded.error) toast("الحفظة غير سليمة: " + loaded.error, true);
     const pending = loaded.state ? pendingCelebrations(loaded.state) : [];
-    if (pending.length) setTimeout(() => showCelebrationQueue(pending), 0);
+    if (pending.length)
+      setTimeout(() => showCelebrationQueue(pending, () => showCeremonyIfPending()), 0);
+    else if (loaded.state?.awards?.ceremony && !loaded.state.awards.ceremony.seen)
+      setTimeout(() => showCeremonyIfPending(), 0);
   } catch (e) {
     render();
     toast(

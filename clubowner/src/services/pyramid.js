@@ -43,6 +43,7 @@ import { initManagement } from "./clubManagement.js";
 import { endSeasonBoardReview, startSeasonMandate } from "./boardMandate.js";
 import { politicalSeasonEnd } from "./politics/campaign.js";
 import { associationSeasonEnd } from "./politics/associationFinance.js";
+import { runSeasonAwards } from "./awards.js";
 import { reconcilePoliticalMap } from "./politics/state.js";
 import { ensureUltras } from "./ultras.js";
 const EUROPE = [
@@ -514,6 +515,8 @@ function rollover(s) {
   associationSeasonEnd(s);
   // 0.26: تصويت الجمعية العمومية على الموسم المنتهي قبل أي أرشفة أو ترقية.
   endSeasonBoardReview(s);
+  // 0.42: حفل الجوائز وقاعة المشاهير قبل أرشفة الموسم وترقية الأندية.
+  runSeasonAwards(s);
   const own = ownDivision(s),
     rank = standings(own).findIndex((t) => t.clubId === s.clubId) + 1;
   for (const p of s.press.promises.filter((p) => !p.resolved)) {

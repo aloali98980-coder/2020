@@ -5,6 +5,7 @@ import { SEASON_STAT_KEYS, initSeasonStats } from "./seasonStats.js";
 import { endSeasonBoardReview, startSeasonMandate } from "./boardMandate.js";
 import { politicalSeasonEnd } from "./politics/campaign.js";
 import { associationSeasonEnd } from "./politics/associationFinance.js";
+import { runSeasonAwards } from "./awards.js";
 
 // Save each player's season stats to the history entry before resetting.
 function archiveSeasonStats(s, entry) {
@@ -38,6 +39,8 @@ export function seasonDay(s) {
   associationSeasonEnd(s);
   // 0.26: تصويت الجمعية العمومية على موسم انتهى لتوه، قبل أرشفته وقبل تصفير الإحصاءات.
   endSeasonBoardReview(s);
+  // 0.42: حفل الجوائز وقاعة المشاهير قبل أرشفة الموسم وتصفير الإحصاءات.
+  runSeasonAwards(s);
   const entry = {
     number: s.seasonNumber,
     date: s.date,
