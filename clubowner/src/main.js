@@ -223,6 +223,8 @@ import { publishContent, derbyCampaign, resolveCrisis } from "./services/staff/s
 import { worldView } from "./features/world.js";
 import { settingsView } from "./features/settings.js";
 import { achievementsView } from "./features/achievements.js";
+import { absenceBanner } from "./features/absence.js";
+import { markAbsenceSeen } from "./services/absence.js";
 import { dynastyView } from "./features/dynasty.js";
 import { politicsView } from "./features/politics.js";
 import { POLITICAL_BLOCS } from "./data/politicsCatalog.js";
@@ -421,7 +423,7 @@ function render() {
     return;
   }
   const views = {
-    dashboard: () => dashboardView(s),
+    dashboard: () => `${absenceBanner(s)}${dashboardView(s)}`,
     inbox: () => inboxView(s, ui.inboxFilter, ui.message),
     squad: () => playersView(s, false, ui.playerFilters),
     transfers: () => playersView(s, true, ui.playerFilters),
@@ -1077,6 +1079,8 @@ const actions = {
     if (draw) openModal(cupDrawModal(s, draw), true);
   },
   "go-awards": async () => navigate("awards"),
+  // 0.46: «تم الاطلاع» يحدّث آخر زيارة فيختفي الملخص حتى غياب جديد.
+  "absence-seen": async () => apply((state) => markAbsenceSeen(state)),
   "view-ceremony": async () => {
     const s = getState();
     const ceremony = s?.awards?.ceremony;
