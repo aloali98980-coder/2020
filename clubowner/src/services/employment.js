@@ -1,6 +1,4 @@
 export const active = (p) => p.status !== "retired";
-export const ownsContract = (s, p) =>
-  active(p) && (p.loan ? p.loan.parent === s.clubId : p.clubId === s.clubId);
 export function salaryLiability(s, p) {
   if (!active(p)) return 0;
   const l = p.loan;

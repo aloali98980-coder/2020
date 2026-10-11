@@ -76,8 +76,3 @@ export function contractDay(s) {
     }
   }
 }
-export function activateReleaseClause(s, p) {
-  return p.contractTerms?.releaseClause > 0
-    ? p.contractTerms.releaseClause
-    : null;
-}

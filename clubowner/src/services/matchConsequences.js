@@ -22,17 +22,7 @@ export function injuryDurationText(days) {
   return `${Math.ceil(days / 30)} أشهر`;
 }
 
-export function injuryDurationTextEn(days) {
-  if (days <= 7) return `${days} days`;
-  if (days <= 30) return `${Math.ceil(days / 7)} weeks`;
-  return `${Math.ceil(days / 30)} months`;
-}
 
-export function injuryDurationTextFr(days) {
-  if (days <= 7) return `${days} jours`;
-  if (days <= 30) return `${Math.ceil(days / 7)} semaines`;
-  return `${Math.ceil(days / 30)} mois`;
-}
 
 /**
  * احتمال الإصابة: يعتمد على تعب اللاعب (fitness منخفض) + دقائق تراكمية كثيرة.

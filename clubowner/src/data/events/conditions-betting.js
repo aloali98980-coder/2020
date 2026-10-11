@@ -10,8 +10,6 @@ export const bettingIsPresident = (s) => Boolean(s.politics?.office?.held);
 export const bettingSponsorLeague = (s) => Boolean(s.betting?.sponsorLeague);
 export const hasPendingInsider = (s) => Boolean(s.betting?.pendingInsider);
 export const hasBribedOpponent = (s) => Boolean(s.blackFiles?.active?.bribedOpponent);
-export const isSuspended = (s) => s.betting?.licenseStatus === "suspended";
-export const isRevoked = (s) => s.betting?.licenseStatus === "revoked";
 export const hasStarPlayer = (s) => s.players.some((p) => p.clubId === s.clubId && p.rating >= 78);
 export const all = (...fns) => (s) => fns.every((fn) => fn(s));
 export const any = (...fns) => (s) => fns.some((fn) => fn(s));

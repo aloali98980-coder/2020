@@ -56,7 +56,6 @@ const removeSlot = (db, key) =>
   });
 
 export const listSlots = () => readIndex();
-export const slotsFull = () => readIndex().length >= MAX_SLOTS;
 export const MAX_SAVE_SLOTS = MAX_SLOTS;
 
 // تُخزَّن الحفظة كما هي؛ الترحيل والتحقق يحدثان عند التحميل (نفس مسار استيراد الملفات).

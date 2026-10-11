@@ -16,12 +16,6 @@ import {
 const fill = (tpl, vars) =>
   Object.entries(vars).reduce((t, [k, v]) => t.split("{" + k + "}").join(v), tpl);
 
-export function ownedAssets(s) {
-  return (s.empire?.assets || []).map((o) => ({
-    ...o,
-    asset: assetById(o.assetId),
-  }));
-}
 
 export const owns = (s, assetId) =>
   (s.empire?.assets || []).some((a) => a.assetId === assetId);

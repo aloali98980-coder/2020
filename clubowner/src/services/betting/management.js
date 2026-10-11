@@ -150,17 +150,3 @@ export function buyCompetitor(s, competitorId) {
   return b;
 }
 
-export function sellToCompetitor(s, buyerId, amount) {
-  const b = ensureBetting(s);
-  const e = ensureEmpire(s);
-  const buyer = b.competitors.find((c) => c.id === buyerId);
-  if (!buyer) throw new Error("مشترٍ غير موجود");
-  e.personal += amount;
-  b.owned = false;
-  b.licenseStatus = "none";
-  b.customers = 0;
-  b.marketValue = 0;
-  b.history.push({ type: "sold-to-competitor", buyerId, amount, date: s.date });
-  message(s, { title: "بعت شركة المراهنات", body: `بعت شركتك إلى ${buyer.name.ar} مقابل ${amount}. خرجت من السوق.`, category: "events" });
-  return b;
-}

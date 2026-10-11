@@ -188,6 +188,3 @@ function exposeInsider(s, bet, wouldWin) {
 }
 
 // أداة اختبار: احتمال الكشف لنفس المتغيرات
-export function estimateDetection(s, risk, hasBribe) {
-  return riskToDetectionBase(risk, s.blackFiles?.suspicion ?? 0, hasBribe);
-}

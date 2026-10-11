@@ -333,9 +333,6 @@ export function showAwardCeremony(save, ceremony, onDone = () => {}) {
 }
 
 // إغلاق الحفل من خلال زر الانتهاء عند عدم وجود خطوات.
-export function ceremonyDoneAction() {
-  return tr("إغلاق الحفل", "Close the ceremony", "Fermer la cérémonie");
-}
 
 // أزرار طلبات العقود داخل البريد (تُستدعى من features/inbox.js).
 export function awardDemandActions(m) {

@@ -352,7 +352,3 @@ export function syncPublicCompanyValuations(s) {
   return true;
 }
 
-export function ipoMarketDay(s) {
-  syncPublicCompanyValuations(s);
-  return quarterlyShareholderReview(s);
-}

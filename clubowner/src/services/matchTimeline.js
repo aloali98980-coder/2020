@@ -182,6 +182,3 @@ export function compactTimeline(tl) {
 }
 
 /** يعيد بناء أحداث المباراة من السجل المُخزَّن (للتقرير والإحصاءات). */
-export function eventsOf(f) {
-  return Array.isArray(f?.timeline?.ev) ? f.timeline.ev : null;
-}

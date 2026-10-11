@@ -445,26 +445,6 @@ function endVoteBody(s, e, effects) {
 }
 
 // ── وصف العاقبة/المكافأة (يستخدمه البريد وشاشة اللائحة) ─────────────────────
-export function effectText(s, effect) {
-  switch (effect.kind) {
-    case "investors":
-      return boardTextAr("cRewardInvestors", { money: money(effect.amount) });
-    case "budget":
-      return boardTextAr("cRewardBudget", { n: num(Math.round(effect.share * 100)) });
-    case "fans":
-      return boardTextAr("cRewardFans", { n: num(effect.amount) });
-    case "budget-cut":
-      return boardTextAr("cBudgetCut", { n: num(Math.round(effect.share * 100)) });
-    case "freeze":
-      return boardTextAr("cFreeze", { d: effect.until });
-    case "sponsor-out":
-      return boardTextAr("cSponsorOut");
-    case "protest":
-      return boardTextAr("cProtest", { n: num(Math.abs(effect.amount)) });
-    default:
-      return "";
-  }
-}
 
 // ── نداء اليوم: مراجعة المنتصف مرة واحدة عند حلول موعدها ────────────────────
 export function boardDay(s) {

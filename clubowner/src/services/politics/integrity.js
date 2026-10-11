@@ -43,10 +43,6 @@ function recordAction(s, type, details = {}) {
   return record;
 }
 
-export function recordIntegrityConcern(s, type, details = {}) {
-  if (typeof type !== "string" || type.length > 60) return null;
-  return recordAction(s, type, details);
-}
 
 export function submitAssetDeclaration(s) {
   const p = requirePresident(s);

@@ -452,9 +452,6 @@ export function addMarketListing(s, listing) {
   return completed;
 }
 
-export function marketSnapshotMetrics(s, clubId) {
-  return clubMetrics(s, clubId, aggregateSquads(s));
-}
 
 export function marketMetricsForAll(s) {
   const squads = aggregateSquads(s);

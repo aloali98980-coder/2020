@@ -277,7 +277,5 @@ export const DECISION_GROUPS = Object.freeze([
   "betting",
 ]);
 
-export const decisionById = (id) => EVENT_CATALOG.find((e) => e.id === id);
-export const flavorById = (id) => FLAVOR_CATALOG.find((e) => e.id === id);
 export const flavorByCategory = (category) =>
   FLAVOR_CATALOG.filter((e) => e.category === category);

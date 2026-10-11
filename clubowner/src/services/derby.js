@@ -285,9 +285,6 @@ export function getDerbyInfo(idA, idB, s = null) {
   return { isDerby: false };
 }
 
-export function isDerbyMatch(idA, idB, s = null) {
-  return getDerbyInfo(idA, idB, s).isDerby;
-}
 
 /**
  * نص عنوان ومحتوى الصحافة قبل مباراة الديربي

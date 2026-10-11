@@ -506,5 +506,3 @@ export function legendBeneficiaries(s, c) {
   );
 }
 
-export const legendCatalog = () => LEGENDS;
-export const legendYear = (s) => isoYear(s.date);
