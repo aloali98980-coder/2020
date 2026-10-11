@@ -214,6 +214,14 @@ export function takeFromClub(s, amount, { project = null, confirmLoot = false } 
 export function transferToClub(s, amount) {
   assert(Number.isSafeInteger(amount) && amount > 0, tr("مبلغ التحويل غير صالح.", "Invalid transfer amount.", "Montant de transfert invalide."));
   const e = ensureEmpire(s);
+  assert(
+    e.personal >= amount,
+    tr(
+      `رصيدك ${e.personal}. جرّب مبلغًا أقل أو أودع من الخزنة.`,
+      `Your balance is ${e.personal}. Try a smaller amount or deposit from the vault.`,
+      `Votre solde est ${e.personal}. Essayez un montant inférieur ou déposez depuis le coffre.`,
+    ),
+  );
   moveFunds(s, {
     to: "club",
     amount,

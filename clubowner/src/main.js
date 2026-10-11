@@ -1050,13 +1050,6 @@ const actions = {
   "vault-move": async (el) => {
     const [to, amountRaw] = String(el.dataset.id).split(":");
     const amount = Number(amountRaw);
-    if (to === "personal") {
-      const st = drawStatus(getState(), amount);
-      if (st.loot) {
-        openModal(lootModalHtml({ amount, project: null, status: st, from: "vault" }));
-        return;
-      }
-    }
     await apply((s) => vaultMove(s, { to, amount }));
     toast(
       to === "club"
@@ -1071,11 +1064,6 @@ const actions = {
     const amount = Number(amountRaw);
     const project = projectRaw || null;
     const text = tr("تم السحب، وسُجل النهب في الدفاتر.", "Drawn — the looting is recorded in the ledger.", "Prélevé — le pillage est enregistré dans le registre.");
-    if (from === "vault") {
-      await apply((s) => vaultMove(s, { to: "personal", amount, confirmLoot: true }), text);
-      openModal(vaultModalHtml());
-      return;
-    }
     await apply((s) => takeFromClub(s, amount, { project, confirmLoot: true }), text);
     closeModal();
   },

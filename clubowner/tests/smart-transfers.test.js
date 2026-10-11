@@ -19,7 +19,7 @@ import {
   dismissalRisk,
   ensureTransfers,
 } from "../src/services/empire/transfers.js";
-import { vaultMove, ensureVault } from "../src/services/vault.js";
+import { ensureVault } from "../src/services/vault.js";
 import { post } from "../src/services/finance.js";
 
 const game = ({ trust = 60, cash = 5_000_000_000 } = {}) => {
@@ -135,7 +135,7 @@ test("دعم النادي من الشخصي حر: لا سقف ولا أرضية 
 
 test("كل تحويل مسجل بالمبلغ والمصدر والوجهة والسبب في الخزنة والدفتر", () => {
   const s = game({ trust: 50 });
-  vaultMove(s, { to: "personal", amount: 10_000_000 });
+  takeFromClub(s, 10_000_000);
   const e = ensureVault(s).log[0];
   assert.equal(e.from, "club");
   assert.equal(e.to, "personal");
