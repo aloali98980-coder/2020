@@ -48,7 +48,7 @@ test("إجراءات الشرائح الحية موجودة في معالج ال
 test("لوحة القيادة: بطاقة القصر بلا role=button (لا زر داخل زر)", () => {
   const s = createGame({ clubId: "ahly", database: "demo" });
   const html = dashboardView(s);
-  const card = html.match(/<section class="panel empire-card"[^>]*>/);
+  const card = html.match(/<section class="panel dash-widget empire-card"[^>]*>/);
   assert.ok(card, "بطاقة القصر موجودة");
   assert.ok(!/role="button"/.test(card[0]), "لا role=button على البطاقة");
 });

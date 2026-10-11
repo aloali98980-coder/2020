@@ -43,3 +43,29 @@
   outline: 2px solid var(--green);
   outline-offset: 2px;
 }
+
+/* القائمة الجانبية القابلة للطي (الإصدار 0.44): رأس المجموعة زر بهدف لمس 44px. */
+.sidebar .nav-caption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  min-height: 44px;
+  padding: 6px 10px;
+  background: none;
+  border: 0;
+  color: var(--muted);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: start;
+  cursor: pointer;
+}
+.sidebar .nav-caption span {
+  font-size: 16px;
+  line-height: 1;
+}
+.sidebar .nav-group.collapsed .nav-items {
+  display: none;
+}

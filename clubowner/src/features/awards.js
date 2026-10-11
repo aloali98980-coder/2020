@@ -187,7 +187,7 @@ export function awardsCardView(s) {
   if (!s.awards) return "";
   const pending = pendingCeremony(s);
   const best = s.awards.hall[0]?.awards?.["best-player"];
-  return `<section class="panel awards-mini-card" data-nav="awards" role="button" tabindex="0" style="cursor:pointer">
+  return `<section class="panel awards-mini-card" data-nav="awards">
     <div class="panel-head"><h3>🏆 ${local(AWARDS_COPY.seasonCeremony)}</h3><button class="text-button" data-nav="awards">${local(AWARDS_COPY.hallTitle)} ${icon("arrow", 14)}</button></div>
     ${
       pending

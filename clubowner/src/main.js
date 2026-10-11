@@ -98,6 +98,7 @@ import "./styles/features.css";
 import "./styles/responsive.css";
 import "./styles/readability.css";
 import "./styles/mobile.css";
+import "./styles/dashboard.css";
 import "./styles/tokens.css";
 import "./styles/motion.css";
 import "./styles/dynasty.css";
@@ -185,7 +186,7 @@ import {
 import { takeLoan, wages } from "./services/finance.js";
 import { vaultMove, VAULT_AMOUNTS, VAULT_TAPS, VAULT_TAP_WINDOW_MS, ensureVault } from "./services/vault.js";
 import { setupView } from "./features/setup.js";
-import { shell, NAV_GROUPS, NAV_BY_ID, navLabel } from "./components/shell.js";
+import { shell, NAV_GROUPS, NAV_BY_ID, navLabel, toggleNavGroup } from "./components/shell.js";
 import { dashboardView } from "./features/dashboard.js";
 import { inboxView } from "./features/inbox.js";
 import {
@@ -1041,6 +1042,11 @@ const actions = {
     }
     await apply((s) => takeFromClub(s, amount, { project, confirmLoot: true }), text);
     closeModal();
+  },
+  // القائمة الجانبية: طي/فتح مجموعة وحفظ الحالة في المتصفح.
+  "nav-group-toggle": (el) => {
+    toggleNavGroup(el.dataset.id);
+    render();
   },
   "modal-close": () => closeModal(),
   "instant-friendly": async () => {
