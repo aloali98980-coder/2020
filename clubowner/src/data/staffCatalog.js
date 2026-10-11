@@ -21,8 +21,11 @@ export const ROLE_IDS = Object.freeze(Object.keys(STAFF_ROLES));
 // أدوار الإدارة العليا: أصحاب التقارير والطلبات في اجتماع المجلس الشهري.
 export const DIRECTOR_ROLES = Object.freeze(["sporting", "marketing", "finance", "lawyer", "academy", "social"]);
 // الراتب السوقي العادل لمهارة ما: أساس الدور + نقاط المهارة. الولاء يقاس عليه.
+// 0.44 (معايرة التوازن): مرتبات الجهاز الإداري كانت تفوق مرتبات اللاعبين (نحو 45% من كتلة الأجور).
+// المعامل يخفض الرواتب السوقية كلها بنسبة واحدة دون لمس الأدوار أو المهارات.
+export const STAFF_WAGE_SCALE = 0.55;
 export const marketWage = (role, skill) =>
-  Math.round(((STAFF_ROLES[role]?.base || 100000) + (STAFF_ROLES[role]?.per || 2000) * skill) / 1000) * 1000;
+  Math.round((((STAFF_ROLES[role]?.base || 100000) + (STAFF_ROLES[role]?.per || 2000) * skill) * STAFF_WAGE_SCALE) / 1000) * 1000;
 
 // ── المقر الإداري: 6 مستويات حتى البرج الإداري ───────────────────────────────
 // التمويل من الثروة الشخصية (فلوسك) مثل الملعب؛ البرج يشترط منشأة officeTower من المدينة.
