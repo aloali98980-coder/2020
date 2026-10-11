@@ -1,6 +1,6 @@
 // عائلة «حياة الملياردير» 0.29 — خطوبة ← فرح ← زوجة حية ← أولاد ← طلاق.
 // الزوجة لها سعادة ومطالب وذكرى سنوية وعيد ميلاد بعواقب، والأولاد تنمو
-// إحصائياتهم (انضباط/موهبة/طموح 0-100) حسب المدرسة والمصروف — إرث المرحلة ١٠.
+// إحصائياتهم (انضباط/موهبة/طموح 0-100) حسب المدرسة والمصروف — إرث المرحلة 10.
 import { assert, clamp, uid, random, daysBetween } from "../../core/utils.js";
 import { message } from "../inbox.js";
 import { addSuspicion } from "../blackFiles.js";
@@ -65,7 +65,7 @@ export function marry(s, tierId) {
   const brideId = e.family.brideId;
   e.personal -= tier.cost;
   e.monthTrack.expenses += tier.cost;
-  // الفنانة تلمّع كل فرح: برستيج +٥٠٪.
+  // الفنانة تلمّع كل فرح: برستيج +50%.
   const prestigeGain = Math.round(
     tier.prestige * (brideId === "artist" ? 1.5 : 1),
   );

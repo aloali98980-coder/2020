@@ -23,7 +23,7 @@ export function hireStaff(s, id, role) {
   );
   assert(
     s.staff.filter((x) => x.status === "employed").length < 3,
-    "حد الطاقم في هذه النسخة ٣ أدوار، بموظف واحد لكل دور.",
+    "حد الطاقم في هذه النسخة 3 أدوار، بموظف واحد لكل دور.",
   );
   assert(
     !s.staff.some((x) => x.status === "employed" && x.role === role),
@@ -70,7 +70,7 @@ export function dismissStaff(s, id) {
 export function trainStaff(s, id) {
   const p = s.staff.find((p) => p.id === id);
   assert(p?.status === "employed" && !p.course, "الدورة غير متاحة.");
-  assert(s.finance.cash >= 100000, "تكلفة الدورة ١٠٠ ألف جنيه.");
+  assert(s.finance.cash >= 100000, "تكلفة الدورة 100 ألف جنيه.");
   post(s, -100000, "staff-course", `دورة مهنية: ${p.name}`, uid(s, "course"));
   p.course = { end: addDays(s.date, 21) };
 }
@@ -92,7 +92,7 @@ export function scoutAssignment(s, staffId, playerId) {
       ),
     "الكشاف مشغول بمهمة قائمة.",
   );
-  assert(s.finance.cash >= 40000, "ميزانية المهمة ٤٠ ألف جنيه.");
+  assert(s.finance.cash >= 40000, "ميزانية المهمة 40 ألف جنيه.");
   post(
     s,
     -40000,
@@ -117,7 +117,7 @@ export function staffDay(s) {
       p.course = null;
       message(s, {
         title: `اكتملت دورة ${p.name}`,
-        body: "تحسنت المهارة المهنية الأساسية ٦ نقاط حتى حد ٩٥. أثره في النادي يتحدث تلقائيًا.",
+        body: "تحسنت المهارة المهنية الأساسية 6 نقاط حتى حد 95. أثره في النادي يتحدث تلقائيًا.",
         category: "careers",
       });
     }

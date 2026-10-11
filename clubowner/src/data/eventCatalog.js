@@ -1,8 +1,8 @@
 // Consequences are explicit and deterministic at decision time; not random punishment.
 //
 // 0.25 «نظام الأحداث الموسّع»: الكتالوج صار طبقتين —
-//   · EVENT_CATALOG  : أحداث قرارات (يتوقف الزمن حتى تحسمها) — ٧٠ حدثًا.
-//   · FLAVOR_CATALOG : أخبار نكهة قصيرة (لا قرار، لا توقيف للوقت) — ١١٥ خبرًا.
+//   · EVENT_CATALOG  : أحداث قرارات (يتوقف الزمن حتى تحسمها) — 70 حدثًا.
+//   · FLAVOR_CATALOG : أخبار نكهة قصيرة (لا قرار، لا توقيف للوقت) — 115 خبرًا.
 // الأحداث الثمانية الأولى هي الكتالوج الأصلي نفسه بالمعرّفات والنصوص ذاتها،
 // لأن الحفظات القديمة تحمل `clubDecisions[].type` و`lastClubEvent` بتلك المعرّفات.
 // كل حدث يحمل `topic` فريدًا: لا حدثان بنفس الفكرة، والاختبار يتحقق آليًا.
@@ -175,7 +175,7 @@ export const EVENT_CATALOG = [
 export const FLAVOR_CATALOG = [...FLAVOR_A, ...FLAVOR_B, ...FLAVOR_C, ...FLAVOR_DRAMA, ...FLAVOR_BLACK, ...FLAVOR_EMPIRE];
 
 // فئات «تحديث الدراما» 0.25 الستّ التي طلبها صاحب المشروع. كل حدث قرار جديد أو مُوسَّم
-// يحمل `theme` منها، والاختبار يتحقق أن لكل فئة ≥٣ أحداث بخيارات وعواقب مختلفة.
+// يحمل `theme` منها، والاختبار يتحقق أن لكل فئة ≥3 أحداث بخيارات وعواقب مختلفة.
 // `theme` بيانات وصفية فقط: المحرك والآلية (حدث واحد مفتوح + الفاصل الزمني) لم يتغيرا.
 export const EVENT_THEMES = Object.freeze([
   "players",
@@ -241,7 +241,7 @@ export const FLAVOR_EFFECT_KEYS = Object.freeze([
   "personal",
 ]);
 
-// حدود «صغر الأثر» للنكهة: المال ≤ ٢٥ ألفًا، والجماهير ±٢، والمعنويات ±٢.
+// حدود «صغر الأثر» للنكهة: المال ≤ 25 ألفًا، والجماهير ±2، والمعنويات ±2.
 export const FLAVOR_LIMITS = Object.freeze({
   cash: 25000,
   fans: 2,

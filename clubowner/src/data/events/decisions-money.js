@@ -23,7 +23,7 @@ export const MONEY_DECISIONS = [
     choices: [
       {
         id: "take-large",
-        label: "أخذ ٤ ملايين تُسدَّد بعد ٦٠ يومًا",
+        label: "أخذ 4 ملايين تُسدَّد بعد 60 يومًا",
         cash: 4000000,
         costLater: 4400000,
         costDays: 60,
@@ -32,7 +32,7 @@ export const MONEY_DECISIONS = [
       },
       {
         id: "take-small",
-        label: "أخذ ١٫٥ مليون تُسدَّد بعد ٣٠ يومًا",
+        label: "أخذ 1٫5 مليون تُسدَّد بعد 30 يومًا",
         cash: 1500000,
         costLater: 1620000,
         costDays: 30,

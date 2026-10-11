@@ -291,7 +291,7 @@ import {
 } from "./ui/modal.js";
 import { icon } from "./components/icons.js";
 import { badge, button, infoNote } from "./components/shared.js";
-import { money, num, esc, date, setDigitsMode, setDisplayCurrency, cur } from "./ui/format.js";
+import { money, num, esc, date, setDisplayCurrency, cur } from "./ui/format.js";
 import { ASSETS } from "./data/catalog.js";
 import { findPerson } from "./services/retired.js";
 import { APP_VERSION } from "./data/version.js";
@@ -381,7 +381,6 @@ function render() {
   const s = getState();
   if (s) {
     // تفضيلات العرض تُطبق قبل بناء الشاشات: نمط الأرقام وتقليل الحركة.
-    setDigitsMode(s.preferences?.digits === "western" ? "western" : "arabic");
     document.body.classList.toggle(
       "reduce-motion",
       !!s.preferences?.reduceMotion,
@@ -653,12 +652,12 @@ function updateCalculations() {
           Number(contract.elements.annualRaisePct.value),
         );
     document.getElementById("contract-summary").innerHTML =
-      `<div><span>المطلوب من الخزينة الآن</span><strong class="${now > s.finance.cash ? "red" : "green"}">${money(now)} ${cur()}</strong></div><div><span>إجمالي الالتزام خلال العقد</span><strong>${money(total)} ${cur()}</strong></div>${n ? `<div><span>عمولة الوكيل (٣٪)</span><b>${money(agent)} ${cur()}</b></div>` : ""}<small>يشمل ${renew ? "العقد الجديد والمكافأة" : "رسوم الانتقال والمرتب والمكافأة والوكيل"}. الرصيد المتاح ${money(s.finance.cash)} ${cur()}.</small>`;
+      `<div><span>المطلوب من الخزينة الآن</span><strong class="${now > s.finance.cash ? "red" : "green"}">${money(now)} ${cur()}</strong></div><div><span>إجمالي الالتزام خلال العقد</span><strong>${money(total)} ${cur()}</strong></div>${n ? `<div><span>عمولة الوكيل (3%)</span><b>${money(agent)} ${cur()}</b></div>` : ""}<small>يشمل ${renew ? "العقد الجديد والمكافأة" : "رسوم الانتقال والمرتب والمكافأة والوكيل"}. الرصيد المتاح ${money(s.finance.cash)} ${cur()}.</small>`;
   }
   if (offer) translateDOM(document.getElementById("offer-summary"));
   if (contract) {
     const summary = document.getElementById("contract-summary");
-    summary.innerHTML += `<small>${tr("التكلفة المضمونة تشمل الزيادة السنوية ولا تشمل مكافآت المشاركات والأهداف المتغيرة. وعد الأساسي: المشاركة في ٦٠٪ من المباريات خلال أول ٦٠ يومًا؛ المخالفة تخفض المعنويات ١٢ نقطة. الشرط الجزائي يسمح لك بدفعه عند شراء لاعب من السوق؛ بيع لاعبيك للمنافسين غير متاح بعد.", "Guaranteed cost includes annual raises but excludes variable appearance and goal bonuses. Regular role: appear in 60% of matches during the first 60 days or lose 12 morale. A market player’s release clause can be activated when buying; AI purchases of your players are not yet enabled.", "Le coût garanti inclut les hausses annuelles, pas les primes variables. Titulaire : participer à 60 % des matchs des 60 premiers jours, sinon perte de 12 points de moral. La clause d’un joueur du marché peut être activée à l’achat ; ventes à l’IA non disponibles.")}</small>`;
+    summary.innerHTML += `<small>${tr("التكلفة المضمونة تشمل الزيادة السنوية ولا تشمل مكافآت المشاركات والأهداف المتغيرة. وعد الأساسي: المشاركة في 60% من المباريات خلال أول 60 يومًا؛ المخالفة تخفض المعنويات 12 نقطة. الشرط الجزائي يسمح لك بدفعه عند شراء لاعب من السوق؛ بيع لاعبيك للمنافسين غير متاح بعد.", "Guaranteed cost includes annual raises but excludes variable appearance and goal bonuses. Regular role: appear in 60% of matches during the first 60 days or lose 12 morale. A market player’s release clause can be activated when buying; AI purchases of your players are not yet enabled.", "Le coût garanti inclut les hausses annuelles, pas les primes variables. Titulaire : participer à 60 % des matchs des 60 premiers jours, sinon perte de 12 points de moral. La clause d’un joueur du marché peut être activée à l’achat ; ventes à l’IA non disponibles.")}</small>`;
     translateDOM(summary);
   }
 }
@@ -699,7 +698,7 @@ function authModalContent(activeTab = "login", error = "") {
           <input type="text" name="username" required autocomplete="nickname" placeholder="الاسم الذي يظهر في حسابك">
         </label>
         <label class="field">
-          <span>كلمة المرور (٦ أحرف على الأقل)</span>
+          <span>كلمة المرور (6 أحرف على الأقل)</span>
           <input type="password" name="password" minlength="6" required autocomplete="new-password" placeholder="••••••••">
         </label>
       </div>
@@ -1514,7 +1513,7 @@ const actions = {
     openModal(hireStaffForm(getState(), el.dataset.id)),
   "staff-course": async (el) =>
     openModal(
-      `<h2>دورة تطوير</h2><p>${tr("٦ نقاط للمهارة الأساسية حتى حد ٩٥. لا تضمن الدورة زيادة المرتب.", "Adds 6 points to the main skill, up to 95. Salary is unchanged.", "Ajoute 6 points à la compétence principale, jusqu’à 95. Salaire inchangé.")}</p><div class="modal-actions">${button(`الموافقة على دورة ٢١ يومًا مقابل ${money(100000)} ${cur()}`, "confirm-staff-course", el.dataset.id, "primary")}</div>`,
+      `<h2>دورة تطوير</h2><p>${tr("6 نقاط للمهارة الأساسية حتى حد 95. لا تضمن الدورة زيادة المرتب.", "Adds 6 points to the main skill, up to 95. Salary is unchanged.", "Ajoute 6 points à la compétence principale, jusqu’à 95. Salaire inchangé.")}</p><div class="modal-actions">${button(`الموافقة على دورة 21 يومًا مقابل ${money(100000)} ${cur()}`, "confirm-staff-course", el.dataset.id, "primary")}</div>`,
     ),
   "confirm-staff-course": async (el) => {
     await apply((s) => trainStaff(s, el.dataset.id));
@@ -1745,7 +1744,7 @@ const actions = {
       sp = resolveSponsor(offer.sponsorId),
       asset = ASSETS.find((x) => x.id === offer.assetId);
     openModal(
-      `<span class="eyebrow">قبل الالتزام</span><h2>${sp.name} × ${asset.name}</h2><p class="muted">عقد ٣٦٠ يومًا بقيمة ${money(offer.amount)} ${cur()}، ومقدم ${money(Math.floor(offer.amount * 0.25))} ${cur()}. تشمل مكافآت أداء موحدة تُصرف تلقائيًا.</p><div class="effect-card"><h4>الحقوق والالتزامات</h4><p>سيتم حجز ${asset.name} طوال مدة العقد. ${offer.exclusive ? "العقد حصري لقطاع " + sp.sector + "؛ يمنع التعاقد مع منافس في نفس القطاع." : "بدون حصرية قطاع؛ مساحة الإعلان نفسها محجوزة لهذا الشريك فقط."}</p><small>الباقي على ١١ دفعة متساوية تقريبًا كل ٣٠ يومًا. الفسخ المبكر غير متاح في هذه النسخة.</small></div><div class="modal-actions"><button class="btn primary" data-action="sign-sponsor" data-id="${sp.id}" data-asset="${asset.id}">توقيع العقد واستلام المقدم ${icon("check", 17)}</button></div>`,
+      `<span class="eyebrow">قبل الالتزام</span><h2>${sp.name} × ${asset.name}</h2><p class="muted">عقد 360 يومًا بقيمة ${money(offer.amount)} ${cur()}، ومقدم ${money(Math.floor(offer.amount * 0.25))} ${cur()}. تشمل مكافآت أداء موحدة تُصرف تلقائيًا.</p><div class="effect-card"><h4>الحقوق والالتزامات</h4><p>سيتم حجز ${asset.name} طوال مدة العقد. ${offer.exclusive ? "العقد حصري لقطاع " + sp.sector + "؛ يمنع التعاقد مع منافس في نفس القطاع." : "بدون حصرية قطاع؛ مساحة الإعلان نفسها محجوزة لهذا الشريك فقط."}</p><small>الباقي على 11 دفعة متساوية تقريبًا كل 30 يومًا. الفسخ المبكر غير متاح في هذه النسخة.</small></div><div class="modal-actions"><button class="btn primary" data-action="sign-sponsor" data-id="${sp.id}" data-asset="${asset.id}">توقيع العقد واستلام المقدم ${icon("check", 17)}</button></div>`,
     );
   },
   "sign-sponsor": async (el) => {
@@ -1788,7 +1787,7 @@ const actions = {
     render();
   },
   "staff-neg-start": async (el) =>
-    apply((s) => startNegotiation(s, el.dataset.id), tr("بدأ التفاوض — ٣ جولات.", "Negotiation started — 3 rounds.", "Négociation lancée — 3 tours.")),
+    apply((s) => startNegotiation(s, el.dataset.id), tr("بدأ التفاوض — 3 جولات.", "Negotiation started — 3 rounds.", "Négociation lancée — 3 tours.")),
   "staff-neg-cancel": async () =>
     apply((s) => cancelNegotiation(s)),
   "staff-fire": async (el) =>
@@ -1823,7 +1822,7 @@ const actions = {
   },
   "loan-modal": async () =>
     openModal(
-      `<span class="eyebrow">تمويل تجريبي ثابت</span><h2>مساحة أكبر للسيولة… والتزام جديد</h2><div class="profile-stats"><div><small>المبلغ المستلم</small><strong>٥ ملايين ${cur()}</strong></div><div><small>إجمالي السداد</small><strong>٥٫٤ مليون ${cur()}</strong></div><div><small>الدفعة كل ٣٠ يومًا</small><strong>٤٥٠ ألف ${cur()}</strong></div></div><p class="muted">١٢ دفعة تشمل تكلفة تمويل ثابتة ٤٠٠ ألف جنيه. حد أقصى قرضان خلال الحفظة التجريبية. لا يتضمن نموذج فائدة مركبة أو شروط بنك حقيقي.</p>${infoNote("التمويل مش إيراد تشغيلي. القسط بيتسدد تلقائيًا حتى لو أدى لعجز في السيولة.")}<div class="modal-actions">${button("اعتماد التمويل", "take-loan", "", "primary")}</div>`,
+      `<span class="eyebrow">تمويل تجريبي ثابت</span><h2>مساحة أكبر للسيولة… والتزام جديد</h2><div class="profile-stats"><div><small>المبلغ المستلم</small><strong>5 ملايين ${cur()}</strong></div><div><small>إجمالي السداد</small><strong>5٫4 مليون ${cur()}</strong></div><div><small>الدفعة كل 30 يومًا</small><strong>450 ألف ${cur()}</strong></div></div><p class="muted">12 دفعة تشمل تكلفة تمويل ثابتة 400 ألف جنيه. حد أقصى قرضان خلال الحفظة التجريبية. لا يتضمن نموذج فائدة مركبة أو شروط بنك حقيقي.</p>${infoNote("التمويل مش إيراد تشغيلي. القسط بيتسدد تلقائيًا حتى لو أدى لعجز في السيولة.")}<div class="modal-actions">${button("اعتماد التمويل", "take-loan", "", "primary")}</div>`,
     ),
   "take-loan": async () => {
     await apply(takeLoan, "تم إيداع التمويل وجدولة الأقساط.");
@@ -1833,7 +1832,7 @@ const actions = {
     const s = getState(),
       prices = categoryPrices(s);
     openModal(
-      `<h2>تسعير تذاكر المباريات</h2><p class="muted">السعر الأعلى يرفع العائد لكل مشجع، لكنه يقلل الطلب. المقصورة أقل تأثرًا بالغلاء من العادية. أصحاب الاشتراكات يشغلون مقاعد العادية أولًا ولا يُحصّلون مرتين.</p><form id="ticket-form"><div class="form-grid"><label class="field"><span>العادية (70٪ من السعة)</span><input type="number" name="price" value="${s.ticketPrice}" min="50" max="500" required></label><label class="field"><span>الأولى (20٪ · 40–2000)</span><input type="number" name="first" value="${prices.first}" min="40" max="2000" required></label><label class="field"><span>المقصورة (10٪ · 100–5000)</span><input type="number" name="vip" value="${prices.vip}" min="100" max="5000" required></label><label class="field"><span>علاوة المباراة البيتية القادمة</span><select name="premium"><option value="0">بدون علاوة</option><option value="25">+٢٥٪ مباراة كبيرة</option><option value="50">+٥٠٪ قمة</option><option value="100">+١٠٠٪ ديربي ناري</option></select></label></div><div class="modal-actions"><button type="submit" class="btn primary">حفظ أسعار التذاكر</button></div></form>`,
+      `<h2>تسعير تذاكر المباريات</h2><p class="muted">السعر الأعلى يرفع العائد لكل مشجع، لكنه يقلل الطلب. المقصورة أقل تأثرًا بالغلاء من العادية. أصحاب الاشتراكات يشغلون مقاعد العادية أولًا ولا يُحصّلون مرتين.</p><form id="ticket-form"><div class="form-grid"><label class="field"><span>العادية (70% من السعة)</span><input type="number" name="price" value="${s.ticketPrice}" min="50" max="500" required></label><label class="field"><span>الأولى (20% · 40–2000)</span><input type="number" name="first" value="${prices.first}" min="40" max="2000" required></label><label class="field"><span>المقصورة (10% · 100–5000)</span><input type="number" name="vip" value="${prices.vip}" min="100" max="5000" required></label><label class="field"><span>علاوة المباراة البيتية القادمة</span><select name="premium"><option value="0">بدون علاوة</option><option value="25">+25% مباراة كبيرة</option><option value="50">+50% قمة</option><option value="100">+100% ديربي ناري</option></select></label></div><div class="modal-actions"><button type="submit" class="btn primary">حفظ أسعار التذاكر</button></div></form>`,
     );
   },
   "export-save": async () => {
@@ -2109,14 +2108,14 @@ const actions = {
       }
       openModal(`
         <h2>سجل الحفظات السحابية</h2>
-        <p class="muted">يتم الاحتفاظ بآخر ٥ حفظات لحسابك تلقائيًا. يمكنك استرجاع أي نسخة أو حذفها.</p>
+        <p class="muted">يتم الاحتفاظ بآخر 5 حفظات لحسابك تلقائيًا. يمكنك استرجاع أي نسخة أو حذفها.</p>
         <div class="cloud-saves-container">
           ${saves.map(s => `
             <div class="cloud-save-item">
               <div class="cloud-save-info">
                 <strong>${s.metadata.clubName} · الموسم ${s.metadata.seasonNumber}</strong>
                 <small>${date(s.metadata.date)} · السيولة ${money(s.metadata.cash)} ${cur()} · ${s.metadata.device || "متصفح"}</small>
-                <small class="muted">المزامنة: ${new Date(s.updatedAt).toLocaleString("ar-EG")}</small>
+                <small class="muted">المزامنة: ${new Date(s.updatedAt).toLocaleString("en-US")}</small>
               </div>
               <div class="settings-actions">
                 ${button("استرجاع", "confirm-cloud-restore", s.id, "secondary small")}
@@ -2415,7 +2414,7 @@ document.addEventListener("submit", async (e) => {
     if (form.id === "city-stadium-form") {
       const tier = Number(form.elements.tier.value), route = form.elements.route.value, district = form.elements.district.value, design = form.elements.design.value;
       const quote = stadiumQuote(getState(), tier, route, district, design);
-      if (!confirm(`${tr("التكلفة","Cost","Coût")}: ${quote.cost.toLocaleString()} · ${quote.days} ${tr("يوم","days","jours")}?`)) return;
+      if (!confirm(`${tr("التكلفة","Cost","Coût")}: ${quote.cost.toLocaleString("en-US")} · ${quote.days} ${tr("يوم","days","jours")}?`)) return;
       await apply((s) => startStadium(s, {tier,route,district,design}), tr("بدأ البناء.","Construction started.","Chantier commencé."));
       return;
     }
@@ -2674,7 +2673,7 @@ document.addEventListener("submit", async (e) => {
     if (form.id === "ticket-form") {
       const p = Number(form.elements.price.value);
       if (!Number.isInteger(p) || p < 50 || p > 500)
-        throw new Error("السعر من ٥٠ إلى ٥٠٠ جنيه.");
+        throw new Error("السعر من 50 إلى 500 جنيه.");
       const first = Number(form.elements.first.value),
         vip = Number(form.elements.vip.value),
         premium = Number(form.elements.premium.value);
@@ -3017,11 +3016,6 @@ document.addEventListener("change", async (e) => {
       await apply(
         (s) => (s.preferences.reduceMotion = e.target.checked),
         tr("تم حفظ إعداد العرض.", "Display setting saved.", "Réglage d'affichage enregistré."),
-      );
-    if (e.target.id === "num-format")
-      await apply(
-        (s) => (s.preferences.digits = e.target.value),
-        tr("تم حفظ نمط الأرقام.", "Number style saved.", "Style des chiffres enregistré."),
       );
     if (e.target.closest("#offer-form,#contract-form")) updateCalculations();
   } catch (err) {

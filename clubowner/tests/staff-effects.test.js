@@ -1,4 +1,4 @@
-// 0.30 المجموعة ٢: الطاقم الفني والكشافون — تأثيرات رقمية ودقة تقارير.
+// 0.30 المجموعة 2: الطاقم الفني والكشافون — تأثيرات رقمية ودقة تقارير.
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createGame } from "../src/core/game.js";
@@ -34,7 +34,7 @@ test("اللياقة: معامل إصابات حقيقي يخفض الاحتما
   const p = squad(s)[0];
   const base = injuryProbability(p);
   assert.ok(injuryProbability(p, fitnessFactor(s)) < base);
-  // بلا مدرب لياقة: المعامل ١ (السلوك القديم).
+  // بلا مدرب لياقة: المعامل 1 (السلوك القديم).
   s.staffCorp.employees = s.staffCorp.employees.filter((e) => e.role !== "fitness");
   assert.equal(fitnessFactor(s), 1);
   validateSave(s);
@@ -60,7 +60,7 @@ test("الطبيب: شفاء شهري أسرع بمهارة أعلى", () => {
   p.injuryUntil = addDays(s.date, 20);
   p.staffDx = p.injuryUntil;
   doctorMonth(s);
-  assert.equal(p.injuryUntil, addDays(s.date, 18), "مهارة ٦٥ تشفي يومين شهريًا");
+  assert.equal(p.injuryUntil, addDays(s.date, 18), "مهارة 65 تشفي يومين شهريًا");
   // إصابة قصيرة تُشفى تمامًا.
   p.injuryUntil = addDays(s.date, 1);
   p.staffDx = p.injuryUntil;
@@ -85,7 +85,7 @@ test("الطبيب التعبان يشخّص غلط: انحراف الغياب �
     if (daysBetween(s.date, p.injuryUntil) !== 10) shifted += 1;
     assert.ok(p.staffDx === p.injuryUntil, "وُسم التشخيص");
   }
-  assert.ok(shifted > 0, "طبيب ٣٠ أخطأ التشخيص فعلًا");
+  assert.ok(shifted > 0, "طبيب 30 أخطأ التشخيص فعلًا");
   // الماهر لا يخطئ أبدًا.
   doc.skill = 90;
   const q = squad(s)[13];
@@ -102,7 +102,7 @@ test("الكشافون: تعيين مناطق وتقارير دورية بدقة
   assignScout(s, scout.id, "europe");
   assert.equal(scout.assignment.region, "europe");
   const reps = scoutMonth(s);
-  assert.ok(reps.length >= 1 && reps.length <= 2, "مهارة ٨٥ تنتج ١-٢ تقرير");
+  assert.ok(reps.length >= 1 && reps.length <= 2, "مهارة 85 تنتج 1-2 تقرير");
   const p = s.players.find((x) => x.id === reps[0].playerId);
   assert.ok(p.scoutReport && p.scoutReport.scoutId === scout.id);
   assert.deepEqual(reps[0].scoutName, scout.name, "مصدر التقرير محفوظ حتى إذا غادر الكشاف لاحقًا");

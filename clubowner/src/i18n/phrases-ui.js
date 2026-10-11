@@ -64,7 +64,7 @@ export const UI_PHRASES = {
     "Facility staff updated",
     "Personnel de l’installation mis à jour",
   ],
-  "عقد ٣٦٠ يومًا بقيمة": [
+  "عقد 360 يومًا بقيمة": [
     "360-day contract worth",
     "Contrat de 360 jours d’une valeur de",
   ],
@@ -78,7 +78,7 @@ export const UI_PHRASES = {
     "for the whole contract term",
     "pendant toute la durée du contrat",
   ],
-  "الباقي على ١١ دفعة متساوية تقريبًا كل ٣٠ يومًا. الفسخ المبكر غير متاح في هذه النسخة":
+  "الباقي على 11 دفعة متساوية تقريبًا كل 30 يومًا. الفسخ المبكر غير متاح في هذه النسخة":
     [
       "The rest comes in 11 roughly equal instalments every 30 days. Early termination is not available in this version",
       "Le reste est versé en 11 mensualités à peu près égales tous les 30 jours. La résiliation anticipée n’est pas disponible dans cette version",
@@ -96,14 +96,14 @@ export const UI_PHRASES = {
     "Plus de marge de trésorerie… et un nouvel engagement",
   ],
   "المبلغ المستلم": ["Amount received", "Montant reçu"],
-  "٥ ملايين ج.م": ["EGP 5 million", "5 millions EGP"],
+  "5 ملايين ج.م": ["EGP 5 million", "5 millions EGP"],
   "إجمالي السداد": ["Total repayment", "Remboursement total"],
-  "٥٫٤ مليون ج.م": ["EGP 5.4 million", "5,4 millions EGP"],
-  "الدفعة كل ٣٠ يومًا": [
+  "5٫4 مليون ج.م": ["EGP 5.4 million", "5,4 millions EGP"],
+  "الدفعة كل 30 يومًا": [
     "Instalment every 30 days",
     "Mensualité tous les 30 jours",
   ],
-  "١٢ دفعة تشمل تكلفة تمويل ثابتة ٤٠٠ ألف جنيه. حد أقصى قرضان خلال الحفظة التجريبية. لا يتضمن نموذج فائدة مركبة أو شروط بنك حقيقي":
+  "12 دفعة تشمل تكلفة تمويل ثابتة 400 ألف جنيه. حد أقصى قرضان خلال الحفظة التجريبية. لا يتضمن نموذج فائدة مركبة أو شروط بنك حقيقي":
     [
       "12 instalments including a fixed financing cost of EGP 400k. At most two loans per trial save. No compound-interest model or real bank terms",
       "12 mensualités incluant un coût de financement fixe de 400 k EGP. Deux prêts au maximum par sauvegarde d’essai. Pas de modèle d’intérêts composés ni de conditions bancaires réelles",
@@ -117,15 +117,15 @@ export const UI_PHRASES = {
       "A higher price raises revenue per fan but lowers demand. Boxes are less price-sensitive than standard seats. Season-ticket holders fill standard seats first and are never charged twice",
       "Un prix plus élevé augmente la recette par supporter mais réduit la demande. Les loges sont moins sensibles au prix que les places standard. Les abonnés occupent d’abord les places standard et ne paient jamais deux fois",
     ],
-  "العادية (70٪ من السعة": [
+  "العادية (70% من السعة": [
     "Standard (70% of capacity",
     "Standard (70 % de la capacité",
   ],
-  "الأولى (20٪ · 40–2000": [
+  "الأولى (20% · 40–2000": [
     "Premium (20% · 40–2000",
     "Première (20 % · 40–2000",
   ],
-  "المقصورة (10٪ · 100–5000": [
+  "المقصورة (10% · 100–5000": [
     "Boxes (10% · 100–5000",
     "Loges (10 % · 100–5000",
   ],
@@ -134,7 +134,7 @@ export const UI_PHRASES = {
     "Majoration du prochain match à domicile",
   ],
   "بدون علاوة": ["No surcharge", "Sans majoration"],
-  "+١٠٠٪ ديربي ناري": ["+100% heated derby", "+100 % derby brûlant"],
+  "+100% ديربي ناري": ["+100% heated derby", "+100 % derby brûlant"],
   "حفظ أسعار التذاكر": [
     "Save ticket prices",
     "Enregistrer les prix des billets",
@@ -181,7 +181,7 @@ export const UI_PHRASES = {
     "Project started. Delivery date and payment terms are in your inbox",
     "Projet lancé. Date de livraison et modalités de paiement dans votre boîte de réception",
   ],
-  "السعر من ٥٠ إلى ٥٠٠ جنيه": [
+  "السعر من 50 إلى 500 جنيه": [
     "Price between EGP 50 and 500",
     "Prix entre 50 et 500 EGP",
   ],
@@ -245,7 +245,7 @@ export const UI_PHRASES = {
     "deducted from paid seats at every match",
     "déduits des places payantes à chaque match",
   ],
-  "الدوري فقط، دون الكؤوس. حجز حتى 18٪ من السعة مرة واحدة بالموسم؛ لخمسة لقاءات متبقية على الأقل":
+  "الدوري فقط، دون الكؤوس. حجز حتى 18% من السعة مرة واحدة بالموسم؛ لخمسة لقاءات متبقية على الأقل":
     [
       "League only, no cups. Reserve up to 18% of capacity once per season, with at least five home fixtures left",
       "Championnat seulement, sans les coupes. Réservation jusqu’à 18 % de la capacité une fois par saison, avec au moins cinq rencontres restantes",
@@ -425,13 +425,13 @@ export const UI_PHRASES = {
   يستفيد: ["benefits", "en profitent"],
   لاعبًا: ["players", "joueurs"],
   "قوة التأثير": ["Impact strength", "Force d’impact"],
-  "٪ · إضافة قوة المباراة +": [
+  "% · إضافة قوة المباراة +": [
     "% · match strength bonus +",
     "% · bonus de force en match +",
   ],
   "جلسات منفذة": ["Sessions delivered", "Séances réalisées"],
   "نقاط سمات مكتسبة": ["Attribute points gained", "Points d’attributs gagnés"],
-  "سمعة +٠٫١٥ وجماهير +١ شهريًا · دخل حقوق صورة متراكم": [
+  "سمعة +0٫15 وجماهير +1 شهريًا · دخل حقوق صورة متراكم": [
     "Reputation +0.15 and fans +1 per month · accumulated image-rights income",
     "Réputation +0,15 et supporters +1 par mois · revenus de droits à l’image cumulés",
   ],
@@ -463,7 +463,7 @@ export const UI_PHRASES = {
     "Legends comeback mode (fantasy",
     "Mode retour des légendes comme joueurs (fictif",
   ],
-  "عند التفعيل يمكن التعاقد مع أسطورة لتلعب لك بعمر ٣١ (حراس ٣٤) بقدرات قريبة من ذروتها؛ بحد أقصى":
+  "عند التفعيل يمكن التعاقد مع أسطورة لتلعب لك بعمر 31 (حراس 34) بقدرات قريبة من ذروتها؛ بحد أقصى":
     [
       "When enabled you can sign a legend to play for you at age 31 (keepers 34) with near-peak ability; at most",
       "Une fois activé, vous pouvez engager une légende pour jouer à 31 ans (gardiens 34) avec des qualités proches de son pic ; au maximum",
@@ -481,7 +481,7 @@ export const UI_PHRASES = {
     "Choisissez une légende dans le catalogue ci-dessous ; l’avance est élevée mais l’effet est mensuel et durable",
   ],
   "الجدار ما زال فارغًا": ["The wall is still empty", "Le mur est encore vide"],
-  "أي لاعب يعتزل في ناديك بعد ١٠٠ مباراة أو ٤٠ هدفًا أو بتقييم ٨٥+ يدخل هنا تلقائيًا، وكذلك كل أسطورة عادت ولعبت لك":
+  "أي لاعب يعتزل في ناديك بعد 100 مباراة أو 40 هدفًا أو بتقييم 85+ يدخل هنا تلقائيًا، وكذلك كل أسطورة عادت ولعبت لك":
     [
       "Any player who retires at your club after 100 matches, 40 goals or with an 85+ rating enters here automatically, as does every legend who came back and played for you",
       "Tout joueur qui prend sa retraite dans votre club après 100 matchs, 40 buts ou avec une note de 85+ entre ici automatiquement, ainsi que toute légende revenue jouer pour vous",
@@ -497,13 +497,13 @@ export const UI_PHRASES = {
     "Biography on Wikipedia",
     "Biographie sur Wikipédia",
   ],
-  "٪: فرصة جلسة شهرية لكل لاعب في المجموعة": [
+  "%: فرصة جلسة شهرية لكل لاعب في المجموعة": [
     "%: chance of a monthly session for each player in the group",
     "% : chance d’une séance mensuelle pour chaque joueur du groupe",
   ],
-  "٪ بمكسب": ["% with a gain of", "% avec un gain de"],
+  "% بمكسب": ["% with a gain of", "% avec un gain de"],
   في: ["in", "en"],
-  "بطء التراجع العمري ١٢٪ · +": [
+  "بطء التراجع العمري 12% · +": [
     "Age decline slowed 12% · +",
     "Déclin lié à l’âge ralenti de 12 % · +",
   ],
@@ -512,7 +512,7 @@ export const UI_PHRASES = {
     "Estimated monthly image-rights income",
     "Revenu mensuel estimé des droits à l’image",
   ],
-  "ج.م مقابل الراتب، مع سمعة +٠٫١٥ وجماهير +١ شهريًا": [
+  "ج.م مقابل الراتب، مع سمعة +0٫15 وجماهير +1 شهريًا": [
     "EGP against the salary, plus reputation +0.15 and fans +1 per month",
     "EGP contre le salaire, plus réputation +0,15 et supporters +1 par mois",
   ],
@@ -646,7 +646,7 @@ export const UI_PHRASES = {
     "EGP. The club may ask for a counter-offer",
     "EGP. Le club peut demander une contre-offre",
   ],
-  "الأقساط كل ٣٠ يومًا. عمولة الوكيل ٣٪ عند التوقيع، وعقد اللاعب يتم التفاوض عليه بعد رد النادي":
+  "الأقساط كل 30 يومًا. عمولة الوكيل 3% عند التوقيع، وعقد اللاعب يتم التفاوض عليه بعد رد النادي":
     [
       "Instalments every 30 days. Agent commission 3% at signing; the player’s contract is negotiated after the club replies",
       "Mensualités tous les 30 jours. Commission d’agent de 3 % à la signature ; le contrat du joueur se négocie après la réponse du club",
@@ -672,7 +672,7 @@ export const UI_PHRASES = {
       "English and French are presentation translations; a few detailed texts and old save messages may remain in Arabic",
       "L’anglais et le français sont des traductions d’affichage ; quelques textes détaillés et messages d’anciennes sauvegardes peuvent rester en arabe",
     ],
-  "حفظ العالم يُصدّر مضغوطًا JSON.GZ، مع قبول JSON القديم. حد ١٦٠ MiB بعد فك الضغط و٨٠ MiB للملف المضغوط. كل قرار يُحفظ تلقائيًا على جهازك. مسح بيانات المتصفح أو تغيير الرابط قد يفقد الوصول للحفظة؛ صدّر نسخة احتياطية بشكل دوري":
+  "حفظ العالم يُصدّر مضغوطًا JSON.GZ، مع قبول JSON القديم. حد 160 MiB بعد فك الضغط و80 MiB للملف المضغوط. كل قرار يُحفظ تلقائيًا على جهازك. مسح بيانات المتصفح أو تغيير الرابط قد يفقد الوصول للحفظة؛ صدّر نسخة احتياطية بشكل دوري":
     [
       "World saves export as compressed JSON.GZ, while old JSON is still accepted. Limits: 160 MiB uncompressed and 80 MiB compressed. Every decision autosaves on your device. Clearing browser data or changing the URL can lose access to the save; export a backup regularly",
       "Les sauvegardes du monde s’exportent en JSON.GZ compressé, l’ancien JSON restant accepté. Limites : 160 Mio décompressé et 80 Mio compressé. Chaque décision est sauvegardée automatiquement sur votre appareil. Effacer les données du navigateur ou changer l’URL peut faire perdre l’accès ; exportez régulièrement une copie",
@@ -764,7 +764,7 @@ export const UI_PHRASES = {
     "A team wins a match. An institution builds a legacy",
     "Une équipe gagne un match. Une institution bâtit un héritage",
   ],
-  "من ٤": ["of 4", "sur 4"],
+  "من 4": ["of 4", "sur 4"],
   "ملعب محايد": ["Neutral venue", "Terrain neutre"],
   "لا مباراة مؤكدة قادمة": [
     "No confirmed upcoming match",
@@ -821,7 +821,7 @@ export const UI_PHRASES = {
   // management/loans.js
   "يومًا · رسوم": ["days · fee", "jours · frais"],
   "ج.م · المستعير": ["EGP · borrowing club", "EGP · club emprunteur"],
-  "٪ من الراتب": ["% of the wage", "% du salaire"],
+  "% من الراتب": ["% of the wage", "% du salaire"],
   "رد إعارة": ["Loan reply", "Réponse au prêt"],
   "تنتهي مهلة الرد": ["Reply deadline", "Fin du délai de réponse"],
   "الرسوم غير مستردة؛ العقد الحالي مستمر. المرتب محسوب في أول الشهر بلا توزيع يومي. خيار الشراء ملزم للمالك إذا فعّله المستعير":
@@ -840,7 +840,7 @@ export const UI_PHRASES = {
   "180 يومًا": ["180 days", "180 jours"],
   "365 يومًا": ["365 days", "365 jours"],
   "الرسوم ج.م": ["Fee (EGP)", "Frais (EGP)"],
-  "نسبة راتب المستعير ٪": [
+  "نسبة راتب المستعير %": [
     "Borrower’s wage share %",
     "Part du salaire prise par l’emprunteur %",
   ],
@@ -940,12 +940,12 @@ export const UI_PHRASES = {
   "ج.م قيمة استرشادية": ["EGP indicative value", "EGP valeur indicative"],
   "عروض السوق المحلي": ["Local market offers", "Offres du marché local"],
   "رعاة خياليون": ["Fictional sponsors", "Sponsors fictifs"],
-  "كل عرض لمدة ٣٦٠ يومًا. ٢٥٪ مقدمًا والباقي على ١١ دفعة كل ٣٠ يومًا": [
+  "كل عرض لمدة 360 يومًا. 25% مقدمًا والباقي على 11 دفعة كل 30 يومًا": [
     "Every offer runs 360 days. 25% upfront and the rest in 11 instalments every 30 days",
     "Chaque offre dure 360 jours. 25 % d’avance et le reste en 11 versements tous les 30 jours",
   ],
   "بسعر عرض ثابت": ["at a fixed offer price", "à un prix d’offre fixe"],
-  "من ٢": ["of 2", "sur 2"],
+  "من 2": ["of 2", "sur 2"],
   "العرض المعلن": ["Published offer", "Offre annoncée"],
   "ج.م. سمعة ناديك": [
     "EGP. Your club’s reputation",
@@ -956,9 +956,9 @@ export const UI_PHRASES = {
     "The sponsor measures your ambition against both",
     "Le sponsor mesure votre ambition à ces deux aunes",
   ],
-  "طلب +١٠٪": ["Ask +10%", "Demander +10 %"],
-  "طلب +٢٠٪": ["Ask +20%", "Demander +20 %"],
-  "طلب +٣٠٪": ["Ask +30%", "Demander +30 %"],
+  "طلب +10%": ["Ask +10%", "Demander +10 %"],
+  "طلب +20%": ["Ask +20%", "Demander +20 %"],
+  "طلب +30%": ["Ask +30%", "Demander +30 %"],
   "طلبك تجاوز سقف الراعي لسمعة ناديك الحالية. العروض الأخرى للمساحة ما زالت متاحة، ويمكنك التوقيع المباشر دون تفاوض":
     [
       "Your ask exceeded what this sponsor pays for your current reputation. The other offers for this space are still open, and you can sign directly without negotiating",
@@ -975,7 +975,7 @@ export const UI_PHRASES = {
     "Standard performance bonuses",
     "Primes de performance standard",
   ],
-  "لقب الدوري ٢٠٪، لقب الكأس المحلية ١٥٪، التأهل القاري ١٥٪ من قيمة العقد — تُصرف تلقائيًا نهاية الموسم عند تحققها للعقود القائمة":
+  "لقب الدوري 20%، لقب الكأس المحلية 15%، التأهل القاري 15% من قيمة العقد — تُصرف تلقائيًا نهاية الموسم عند تحققها للعقود القائمة":
     [
       "League title 20%, domestic cup 15%, continental qualification 15% of the contract value — paid automatically at season end for active contracts when achieved",
       "Titre de champion 20 %, coupe nationale 15 %, qualification continentale 15 % de la valeur du contrat — versés automatiquement en fin de saison pour les contrats en cours, si atteints",
@@ -1356,7 +1356,7 @@ export const UI_PHRASES = {
   "جارٍ جلب سجل الحفظات…": ["Fetching saves history…", "Récupération de l'historique des sauvegardes…"],
   "سجل الحفظات السحابية": ["Cloud saves history", "Historique des sauvegardes cloud"],
   "لا توجد حفظات سحابية مسجلة بعد.": ["No cloud saves registered yet.", "Aucune sauvegarde cloud enregistrée pour le moment."],
-  "يتم الاحتفاظ بآخر ٥ حفظات لحسابك تلقائيًا.": ["Your last 5 saves are kept automatically.", "Vos 5 dernières sauvegardes sont conservées automatiquement."],
+  "يتم الاحتفاظ بآخر 5 حفظات لحسابك تلقائيًا.": ["Your last 5 saves are kept automatically.", "Vos 5 dernières sauvegardes sont conservées automatiquement."],
   "يمكنك استرجاع أي نسخة أو حذفها.": ["You can restore or delete any version.", "Vous pouvez restaurer ou supprimer n'importe quelle version."],
   "متصفح": ["Browser", "Navigateur"],
   "استرجاع": ["Restore", "Restaurer"],
@@ -1375,7 +1375,7 @@ export const UI_PHRASES = {
   "مزامنة الآن إلى السحابة": ["Sync now to cloud", "Synchroniser maintenant vers le cloud"],
   "احفظ مسيرتك سحابيًا لحمايتها من مسح المتصفح التلقائي على الآيفون والكمبيوتر،": ["Save your career to the cloud to protect it from automatic browser wipes on iPhone and PC,", "Sauvegardez votre carrière sur le cloud pour la protéger des suppressions automatiques sur iPhone et PC,"],
   "وتنقل بين أجهزتك بحرية.": ["and switch between your devices freely.", "et passez d'un appareil à l'autre en toute liberté."],
-  "اللعب بدون حساب يظل متاحًا ومحليًا 100٪.": ["Playing without an account remains available and 100% local.", "Jouer sans compte reste disponible et 100 % local."],
+  "اللعب بدون حساب يظل متاحًا ومحليًا 100%.": ["Playing without an account remains available and 100% local.", "Jouer sans compte reste disponible et 100 % local."],
   "تسجيل الدخول / إنشاء حساب": ["Sign in / Create account", "Connexion / Créer un compte"],
   "القاعدة الكبيرة محفوظة محليًا في IndexedDB، وتدعم المزامنة السحابية بحسابك. صدّر نسخة احتياطية دوريًا.": ["The large database is stored locally in IndexedDB and supports cloud sync with your account. Export backups regularly.", "La grande base est stockée localement dans IndexedDB et prend en charge la synchronisation cloud avec votre compte. Exportez régulièrement des sauvegardes."],
   "حفظ اللعبة محليًا": ["Local game save", "Sauvegarde locale du jeu"],
@@ -1393,7 +1393,7 @@ export const UI_PHRASES = {
   "استرجاع الحفظة ومتابعة اللعب": ["Restore save & continue playing", "Restaurer la sauvegarde et continuer à jouer"],
   "إنشاء الحساب والمتابعة": ["Create account & continue", "Créer le compte et continuer"],
   "البريد الإلكتروني أو اسم المستخدم": ["Email or username", "E-mail ou nom d'utilisateur"],
-  "كلمة المرور (٦ أحرف على الأقل)": ["Password (at least 6 characters)", "Mot de passe (au moins 6 caractères)"],
+  "كلمة المرور (6 أحرف على الأقل)": ["Password (at least 6 characters)", "Mot de passe (au moins 6 caractères)"],
   "سجل الحفظات": ["Saves history", "Historique des sauvegardes"],
   "على هذا المتصفح": ["On this browser", "Sur ce navigateur"],
   "تصدير ملف": ["Export file", "Exporter le fichier"],
@@ -1404,13 +1404,13 @@ export const UI_PHRASES = {
   "تسجيل الخروج": ["Sign out", "Déconnexion"],
   "آخر مزامنة سحابية": ["Last cloud sync", "Dernière synchronisation cloud"],
   "اختياري": ["Optional", "Facultatif"],
-  "احفظ مسيرتك سحابيًا لحمايتها من مسح المتصفح التلقائي على الآيفون والكمبيوتر، وتنقل بين أجهزتك بحرية. اللعب بدون حساب يظل متاحًا ومحليًا 100٪": ["Save your career to the cloud to protect it from automatic browser wipes on iPhone and PC, and switch between your devices freely. Playing without an account remains available and 100% local", "Sauvegardez votre carrière sur le cloud pour la protéger des suppressions automatiques sur iPhone et PC, et passez d'un appareil à l'autre en toute liberté. Jouer sans compte reste disponible et 100 % local"],
+  "احفظ مسيرتك سحابيًا لحمايتها من مسح المتصفح التلقائي على الآيفون والكمبيوتر، وتنقل بين أجهزتك بحرية. اللعب بدون حساب يظل متاحًا ومحليًا 100%": ["Save your career to the cloud to protect it from automatic browser wipes on iPhone and PC, and switch between your devices freely. Playing without an account remains available and 100% local", "Sauvegardez votre carrière sur le cloud pour la protéger des suppressions automatiques sur iPhone et PC, et passez d'un appareil à l'autre en toute liberté. Jouer sans compte reste disponible et 100 % local"],
   "القاعدة الكبيرة محفوظة محليًا في IndexedDB، وتدعم المزامنة السحابية بحسابك. صدّر نسخة احتياطية دوريًا": ["The large database is stored locally in IndexedDB and supports cloud sync with your account. Export backups regularly", "La grande base est stockée localement dans IndexedDB et prend en charge la synchronisation cloud avec votre compte. Exportez régulièrement des sauvegardes"],
   "كلمة المرور": ["Password", "Mot de passe"],
   "إلغاء": ["Cancel", "Annuler"],
   "البريد الإلكتروني": ["Email", "E-mail"],
   "اسم المستخدم (اسم المالك": ["Username (owner name", "Nom d'utilisateur (nom propriétaire"],
-  "كلمة المرور (٦ أحرف على الأقل": ["Password (at least 6 characters", "Mot de passe (au moins 6 caractères"],
+  "كلمة المرور (6 أحرف على الأقل": ["Password (at least 6 characters", "Mot de passe (au moins 6 caractères"],
   "تم تسجيل الخروج بنجاح": ["Signed out successfully", "Déconnexion réussie"],
   "لا توجد مسيرة نشطة حاليًا للمزامنة": ["No active career currently to sync", "Aucune carrière active à synchroniser actuellement"],
   "تعذر إتمام المزامنة السحابية": ["Failed to complete cloud sync", "Échec de la synchronisation cloud"],
@@ -1422,7 +1422,7 @@ export const UI_PHRASES = {
   "تعذر جلب الحفظة من السحابة": ["Failed to fetch save from cloud", "Impossible de récupérer la sauvegarde du cloud"],
   "تعذر فك واستعادة الحفظة السحابية": ["Failed to decode and restore cloud save", "Impossible de décoder et restaurer la sauvegarde cloud"],
   "لا توجد حفظات سحابية مسجلة بعد": ["No cloud saves registered yet", "Aucune sauvegarde cloud enregistrée pour le moment"],
-  "يتم الاحتفاظ بآخر ٥ حفظات لحسابك تلقائيًا. يمكنك استرجاع أي نسخة أو حذفها": ["Your last 5 saves are kept automatically. You can restore or delete any version", "Vos 5 dernières sauvegardes sont conservées automatiquement. Vous pouvez restaurer ou supprimer n'importe quelle version"],
+  "يتم الاحتفاظ بآخر 5 حفظات لحسابك تلقائيًا. يمكنك استرجاع أي نسخة أو حذفها": ["Your last 5 saves are kept automatically. You can restore or delete any version", "Vos 5 dernières sauvegardes sont conservées automatiquement. Vous pouvez restaurer ou supprimer n'importe quelle version"],
   "المزامنة": ["Sync", "Synchronisation"],
   "تعذر جلب سجل الحفظات": ["Failed to fetch saves history", "Impossible de récupérer l'historique des sauvegardes"],
   "تم حذف النسخة السحابية": ["Cloud save deleted", "Sauvegarde cloud supprimée"],

@@ -714,7 +714,7 @@ export const MESSAGE_PHRASES = {
   ],
   "تم توقيع رعاية": ["Sponsorship signed for", "Sponsoring signé pour"],
   مع: ["with", "avec"],
-  "استلمت ٢٥٪ مقدمًا، والباقي على ١١ دفعة كل ٣٠ يومًا": [
+  "استلمت 25% مقدمًا، والباقي على 11 دفعة كل 30 يومًا": [
     "You received 25% upfront; the rest comes in 11 instalments every 30 days",
     "Vous avez reçu 25 % d’avance ; le reste suit en 11 versements tous les 30 jours",
   ],
@@ -773,7 +773,7 @@ export const MESSAGE_PHRASES = {
     "Staff member or role unavailable",
     "Membre du personnel ou rôle indisponible",
   ],
-  "حد الطاقم في هذه النسخة ٣ أدوار، بموظف واحد لكل دور": [
+  "حد الطاقم في هذه النسخة 3 أدوار، بموظف واحد لكل دور": [
     "This version allows 3 staff roles, one person per role",
     "Cette version permet 3 rôles, une personne par rôle",
   ],
@@ -803,7 +803,7 @@ export const MESSAGE_PHRASES = {
   ],
   تعويض: ["Compensation:", "Indemnité :"],
   "الدورة غير متاحة": ["Course unavailable", "Formation indisponible"],
-  "تكلفة الدورة ١٠٠ ألف جنيه": [
+  "تكلفة الدورة 100 ألف جنيه": [
     "The course costs EGP 100k",
     "La formation coûte 100 k EGP",
   ],
@@ -813,12 +813,12 @@ export const MESSAGE_PHRASES = {
     "The scout is busy with an ongoing assignment",
     "Le recruteur est occupé par une mission en cours",
   ],
-  "ميزانية المهمة ٤٠ ألف جنيه": [
+  "ميزانية المهمة 40 ألف جنيه": [
     "The assignment budget is EGP 40k",
     "Le budget de la mission est de 40 k EGP",
   ],
   "اكتملت دورة": ["Course completed:", "Formation terminée :"],
-  "تحسنت المهارة المهنية الأساسية ٦ نقاط حتى حد ٩٥. أثره في النادي يتحدث تلقائيًا":
+  "تحسنت المهارة المهنية الأساسية 6 نقاط حتى حد 95. أثره في النادي يتحدث تلقائيًا":
     [
       "Core professional skill improved by 6 points up to a cap of 95. His effect on the club updates automatically",
       "La compétence principale progresse de 6 points jusqu’à 95. Son effet sur le club se met à jour automatiquement",
@@ -852,7 +852,7 @@ export const MESSAGE_PHRASES = {
   "مقدم تطوير": ["Development advance:", "Avance de développement :"],
   "دفعة استلام": ["Delivery payment:", "Versement à la livraison :"],
   "بدأ مشروع": ["Project started:", "Projet lancé :"],
-  "تم دفع ٤٠٪. الاستلام المتوقع": [
+  "تم دفع 40%. الاستلام المتوقع": [
     "40% paid. Expected delivery",
     "40 % versés. Livraison prévue le",
   ],
@@ -1053,14 +1053,14 @@ export const MESSAGE_PHRASES = {
     "Mensualité de prêt, coût de financement inclus",
   ],
   "تم إيداع التمويل": ["Financing deposited", "Financement déposé"],
-  "٥ ملايين جنيه دخلت الخزينة. إجمالي السداد ٥٫٤ مليون على ١٢ دفعة كل ٣٠ يومًا. النموذج تمويلي مبسط، وليس عرضًا بنكيًا حقيقيًا":
+  "5 ملايين جنيه دخلت الخزينة. إجمالي السداد 5٫4 مليون على 12 دفعة كل 30 يومًا. النموذج تمويلي مبسط، وليس عرضًا بنكيًا حقيقيًا":
     [
       "EGP 5 million entered the treasury. Total repayment is 5.4 million over 12 instalments every 30 days. A simplified financing model, not a real bank offer",
       "5 millions EGP sont entrés en trésorerie. Remboursement total de 5,4 millions en 12 mensualités tous les 30 jours. Modèle simplifié, pas une offre bancaire réelle",
     ],
 
   // careers.js
-  "اللاعب يفكر في الاعتزال خلال ٤٥ يومًا داخل هذه الحفظة. يمكنك تجهيز مسار مهني بتكلفة ٦٠ ألف جنيه، طلب الاستمرار (غير مضمون)، أو احترام القرار. هذا حدث محاكاة، وليس خبرًا عن اللاعب الحقيقي":
+  "اللاعب يفكر في الاعتزال خلال 45 يومًا داخل هذه الحفظة. يمكنك تجهيز مسار مهني بتكلفة 60 ألف جنيه، طلب الاستمرار (غير مضمون)، أو احترام القرار. هذا حدث محاكاة، وليس خبرًا عن اللاعب الحقيقي":
     [
       "The player is considering retirement within 45 days in this save. You can prepare a career path for EGP 60k, ask him to continue (not guaranteed) or respect the decision. A simulation event, not news about the real player",
       "Le joueur envisage la retraite sous 45 jours dans cette sauvegarde. Vous pouvez préparer une reconversion pour 60 k EGP, lui demander de continuer (sans garantie) ou respecter sa décision. Événement simulé, pas une information sur le vrai joueur",
@@ -1078,7 +1078,7 @@ export const MESSAGE_PHRASES = {
     "He was already asked to continue",
     "La demande de prolongation a déjà été faite",
   ],
-  "تم تأجيل مراجعة الاعتزال ١٨٠ يومًا. عقد اللاعب لا يتمدد تلقائيًا؛ راجع تاريخ نهايته":
+  "تم تأجيل مراجعة الاعتزال 180 يومًا. عقد اللاعب لا يتمدد تلقائيًا؛ راجع تاريخ نهايته":
     [
       "The retirement review was postponed 180 days. The contract does not extend automatically; check its end date",
       "L’examen de la retraite est reporté de 180 jours. Le contrat ne se prolonge pas automatiquement ; vérifiez sa date de fin",
@@ -1205,7 +1205,7 @@ export const MESSAGE_PHRASES = {
     "Playing-time promise review:",
     "Bilan de la promesse de temps de jeu :",
   ],
-  "اللاعب شارك في أقل من ٦٠٪ من مباريات فترة المراجعة رغم وعد الأساسي. انخفضت المعنويات ١٢ نقطة. راجع ترتيب فريقك أو تفاوض على دور مناسب":
+  "اللاعب شارك في أقل من 60% من مباريات فترة المراجعة رغم وعد الأساسي. انخفضت المعنويات 12 نقطة. راجع ترتيب فريقك أو تفاوض على دور مناسب":
     [
       "The player featured in under 60% of matches in the review period despite the starter promise. Morale fell 12 points. Review your line-up or negotiate a suitable role",
       "Le joueur a disputé moins de 60 % des matchs de la période malgré la promesse de titulaire. Le moral a baissé de 12 points. Revoyez la composition ou négociez un rôle adapté",
@@ -1243,7 +1243,7 @@ export const MESSAGE_PHRASES = {
     "La grande base n’a pas pu être sauvegardée ; la décision n’a pas été appliquée",
   ],
   "بداية موسم جديد": ["A new season begins", "Début d’une nouvelle saison"],
-  "تم أرشفة الترتيب السابق وإنشاء ١٤ جولة جديدة للدوري التجريبي. اللاعبون والعقود والمنشآت يستمرون؛ لا يوجد صعود أو هبوط في هذه النسخة":
+  "تم أرشفة الترتيب السابق وإنشاء 14 جولة جديدة للدوري التجريبي. اللاعبون والعقود والمنشآت يستمرون؛ لا يوجد صعود أو هبوط في هذه النسخة":
     [
       "The previous table was archived and 14 new rounds created for the trial league. Players, contracts and facilities carry on; no promotion or relegation in this version",
       "L’ancien classement est archivé et 14 nouvelles journées créées pour le championnat d’essai. Joueurs, contrats et installations se poursuivent ; pas de montée ni de descente dans cette version",

@@ -69,7 +69,7 @@ test("الاعتذار غير الممول يبقي الأزمة مفتوحة، 
   const beforeEngagement = socialState(s).engagement;
   const cash = s.finance.cash;
   s.finance.cash = 0;
-  assert.throws(() => resolveCrisis(s, "apology"), /الاعتذار العلني يكلف ٢٠٠ ألف/);
+  assert.throws(() => resolveCrisis(s, "apology"), /الاعتذار العلني يكلف 200 ألف/);
   assert.equal(crisis.status, "open");
   assert.equal(s.fanSupport, beforeFans);
   s.finance.cash = cash;

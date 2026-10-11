@@ -1,4 +1,4 @@
-// المجموعة ٤: ملخص المكتب المالي وتوقع السيولة والتحذيرات الشهرية.
+// المجموعة 4: ملخص المكتب المالي وتوقع السيولة والتحذيرات الشهرية.
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createGame } from "../src/core/game.js";

@@ -42,7 +42,7 @@ export function staffCorpDay(s) {
       }
     }
   }
-  // تحذير هادئ: عقد موظف ينتهي خلال ٣٠ يومًا.
+  // تحذير هادئ: عقد موظف ينتهي خلال 30 يومًا.
   for (const emp of corpEmployees(s)) {
     if (emp.warned === emp.contractEnd) continue;
     if (emp.contractEnd >= s.date && emp.contractEnd <= addDays30(s.date)) {

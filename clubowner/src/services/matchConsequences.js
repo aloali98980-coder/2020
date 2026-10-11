@@ -41,7 +41,7 @@ export function injuryDurationTextFr(days) {
 export function injuryProbability(p, factor = 1) {
   const fatigue = 1 + Math.min((p.seasonMinutes || 0) / 3000, 1.5);
   const lowFit = 1 + Math.max(0, (70 - (p.fitness || 70))) / 100;
-  // 0.30: مدرب اللياقة يخفض الاحتمال عبر factor (افتراضي ١ يُبقي السلوك القديم).
+  // 0.30: مدرب اللياقة يخفض الاحتمال عبر factor (افتراضي 1 يُبقي السلوك القديم).
   return clamp(0.03 * fatigue * lowFit * factor, 0.005, 0.12);
 }
 

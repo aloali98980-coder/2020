@@ -20,7 +20,7 @@ test("academy entry obeys age gates and supports focus, position and experienced
   const child = createDynastyChild(s, { name: "Academy Heir", age: 14 });
   const infant = createDynastyChild(s, { name: "Too Young", age: 8 });
   s.dynasty.children.push(child, infant);
-  assert.throws(() => enrollDynastyAcademy(s, infant.id, "CM"), /١٠ إلى ١٧/);
+  assert.throws(() => enrollDynastyAcademy(s, infant.id, "CM"), /10 إلى 17/);
   const veteran = s.players.find((player) => player.clubId === s.clubId);
   veteran.appearances = 120;
   const academy = enrollDynastyAcademy(s, child.id, "ST");

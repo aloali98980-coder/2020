@@ -1,4 +1,4 @@
-// المجموعة ٤: القضايا القانونية، مواعيدها وارتباطها بالفضائح والخلافة.
+// المجموعة 4: القضايا القانونية، مواعيدها وارتباطها بالفضائح والخلافة.
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createGame } from "../src/core/game.js";

@@ -38,7 +38,7 @@ const richSave = () => {
   e.charity.personalTotal = 2_000_000;
   propose(s, "artist");
   marry(s, "luxury");
-  // تواريخ قريبة من تاريخ الحفظ (٠١-٠٧) كي تنفتح بوابات المناسبات.
+  // تواريخ قريبة من تاريخ الحفظ (01-07) كي تنفتح بوابات المناسبات.
   const mm = s.date.slice(5, 7);
   e.family.wife.happiness = 60;
   e.family.wife.marriedOn = `${Number(s.date.slice(0, 4)) - 1}-${mm}-05`;
@@ -64,7 +64,7 @@ const queue = (s, type) => {
   return id;
 };
 
-test("الكتالوج: ٢٦ قرارًا إمبراطوريًا و١٦ نكهة، كلها ببوابات دالة", () => {
+test("الكتالوج: 26 قرارًا إمبراطوريًا و16 نكهة، كلها ببوابات دالة", () => {
   assert.ok(EMPIRE_EVENTS.length >= 26, `${EMPIRE_EVENTS.length} قرارًا`);
   assert.ok(EMPIRE_FLAVORS.length >= 16, `${EMPIRE_FLAVORS.length} نكهة`);
   assert.ok(EMPIRE_EVENTS.length + EMPIRE_FLAVORS.length >= 40);

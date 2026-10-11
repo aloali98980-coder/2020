@@ -1,5 +1,5 @@
 // المدير الرياضي: فلسفة (شباب/نجوم/صفقات ذكية) + سلايدر صلاحيات + سجل قرارات + تقييم موسمي.
-// بحرية ≥٧٠ ينفّذ بنفسه ضمن سقف تلقائي معلن؛ دونها يعرض صفقات معلّقة توافق/ترفض.
+// بحرية ≥70 ينفّذ بنفسه ضمن سقف تلقائي معلن؛ دونها يعرض صفقات معلّقة توافق/ترفض.
 import { assert, clamp, addDays, uid } from "../../core/utils.js";
 import { message } from "../inbox.js";
 import { post } from "../finance.js";
@@ -23,12 +23,12 @@ export function setPhilosophy(s, phil) {
   return phil;
 }
 export function setFreedom(s, v) {
-  assert(Number.isInteger(v) && v >= 0 && v <= 100, "الصلاحيات من ٠ إلى ١٠٠.");
+  assert(Number.isInteger(v) && v >= 0 && v <= 100, "الصلاحيات من 0 إلى 100.");
   const c = ensureStaffCorp(s);
   const previous = c.sporting.freedom;
   c.sporting.freedom = v;
   if (previous !== v) sportingLog(s, L(
-    `عُدّلت صلاحيات المدير الرياضي من ${previous}٪ إلى ${v}٪.`,
+    `عُدّلت صلاحيات المدير الرياضي من ${previous}% إلى ${v}%.`,
     `Sporting director authority changed from ${previous}% to ${v}%.`,
     `Les pouvoirs du directeur sportif passent de ${previous} % à ${v} %.`,
   ), "authority");
@@ -53,7 +53,7 @@ const marketPool = (s) => {
   const pending = pendingPlayerIds(s);
   return (s.players || []).filter((p) => p.status !== "retired" && p.clubId !== s.clubId && !p.loan && !pending.has(p.id));
 };
-// خصم التفاوض بمهارة المدير: حتى ~٢٨٪ من القيمة.
+// خصم التفاوض بمهارة المدير: حتى ~28% من القيمة.
 export const negotiatedFee = (s, player) => {
   const skill = corpSkill(s, "sporting");
   return Math.max(Math.round(player.value * 0.5), Math.round(player.value * (1 - skill * 0.003)));
@@ -102,7 +102,7 @@ export const saleFee = (s, player) => {
   return Math.round(player.value * (0.9 + skill / 500));
 };
 
-// تفويض المجلس يضيف ١٥ نقطة مؤقتًا إلى صلاحية التنفيذ التلقائي طوال مدة منحه.
+// تفويض المجلس يضيف 15 نقطة مؤقتًا إلى صلاحية التنفيذ التلقائي طوال مدة منحه.
 export function sportingDelegationActive(s) {
   const c = ensureStaffCorp(s);
   const until = c.authorities?.sporting?.until || c.sporting.authorityUntil;
@@ -132,10 +132,10 @@ function executeBuy(s, player, fee, wage, auto) {
   st.boughtRating += player.rating;
   st.boughtCount += 1;
   if (auto) st.auto += 1;
-  sportingLog(s, `${auto ? "نفّذ" : "أتمّ"} شراء ${player.name} (${player.rating}) بـ${fee.toLocaleString()}.`, "buy");
+  sportingLog(s, `${auto ? "نفّذ" : "أتمّ"} شراء ${player.name} (${player.rating}) بـ${fee.toLocaleString("en-US")}.`, "buy");
   message(s, {
     title: `${auto ? "صفقة تلقائية" : "تمت الصفقة"}: ${player.name}`,
-    body: `المدير الرياضي ${auto ? "نفّذ بحريته" : "أتمّ بعد موافقتك"} شراء ${player.name} مقابل ${fee.toLocaleString()} وراتب ${wage.toLocaleString()}.`,
+    body: `المدير الرياضي ${auto ? "نفّذ بحريته" : "أتمّ بعد موافقتك"} شراء ${player.name} مقابل ${fee.toLocaleString("en-US")} وراتب ${wage.toLocaleString("en-US")}.`,
     category: "transfers",
   });
   return player;
@@ -146,10 +146,10 @@ function executeSale(s, player, fee, buyer, auto) {
   player.clubId = buyer;
   st.earned += fee;
   if (auto) st.auto += 1;
-  sportingLog(s, `${auto ? "نفّذ" : "أتمّ"} بيع ${player.name} بـ${fee.toLocaleString()}.`, "sell");
+  sportingLog(s, `${auto ? "نفّذ" : "أتمّ"} بيع ${player.name} بـ${fee.toLocaleString("en-US")}.`, "sell");
   message(s, {
     title: `بيع ${player.name}`,
-    body: `انتقل إلى ${buyer} مقابل ${fee.toLocaleString()}.${auto ? " نفّذها المدير الرياضي بحريته." : ""}`,
+    body: `انتقل إلى ${buyer} مقابل ${fee.toLocaleString("en-US")}.${auto ? " نفّذها المدير الرياضي بحريته." : ""}`,
     category: "transfers",
   });
   return player;
@@ -172,7 +172,7 @@ function proposeDeal(s, kind, player, fee, wageOrBuyer) {
   };
   c.deals.push(deal);
   c.deals = c.deals.slice(-20);
-  sportingLog(s, `اقترح ${kind === "buy" ? "شراء" : "بيع"} ${player.name} بـ${fee.toLocaleString()} — بانتظار إذنك.`, "proposal");
+  sportingLog(s, `اقترح ${kind === "buy" ? "شراء" : "بيع"} ${player.name} بـ${fee.toLocaleString("en-US")} — بانتظار إذنك.`, "proposal");
   return deal;
 }
 
@@ -189,10 +189,10 @@ export function rateStoredSeason(s, st) {
   );
   c.sporting.rating = { season: st.season, rating, deals, profit };
   const dir = sportingDirector(s);
-  sportingLog(s, `تقييم الموسم ${st.season}: ${rating}/١٠٠ (${deals} صفقات، صافي ${profit.toLocaleString()}).`, "rating");
+  sportingLog(s, `تقييم الموسم ${st.season}: ${rating}/100 (${deals} صفقات، صافي ${profit.toLocaleString("en-US")}).`, "rating");
   message(s, {
-    title: `تقييم المدير الرياضي (موسم ${st.season}): ${rating}/١٠٠`,
-    body: `${deals} صفقات منفذة بصافي ${profit.toLocaleString()}. ${rating >= 60 ? "يستحق أن يكمل." : rating >= 40 ? "موسم متذبذب — القرار لك." : "موسم كارثي — يُنصح بفصله وتعيين بديل."}${dir ? ` ولاؤه ${dir.loyalty}٪.` : ""}`,
+    title: `تقييم المدير الرياضي (موسم ${st.season}): ${rating}/100`,
+    body: `${deals} صفقات منفذة بصافي ${profit.toLocaleString("en-US")}. ${rating >= 60 ? "يستحق أن يكمل." : rating >= 40 ? "موسم متذبذب — القرار لك." : "موسم كارثي — يُنصح بفصله وتعيين بديل."}${dir ? ` ولاؤه ${dir.loyalty}%.` : ""}`,
     category: "transfers", priority: rating < 40 ? "high" : "normal",
   });
   return c.sporting.rating;
@@ -227,7 +227,7 @@ export function sportingMonth(s) {
   if (pending)
     message(s, {
       title: `المدير الرياضي يقترح ${pending} صفقات`,
-      body: `الفلسفة: ${philNameAr(phil)} — الصلاحيات ${freedom}٪. راجع السجل ووافق أو ارفض من تبويب المدير الرياضي.`,
+      body: `الفلسفة: ${philNameAr(phil)} — الصلاحيات ${freedom}%. راجع السجل ووافق أو ارفض من تبويب المدير الرياضي.`,
       category: "transfers",
     });
   return pending;

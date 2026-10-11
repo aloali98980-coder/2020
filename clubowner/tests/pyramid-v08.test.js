@@ -214,7 +214,7 @@ test("streamed gzip backup is lossless and plain JSON remains accepted", async (
     await readBackup(new Blob([JSON.stringify(s)])),
     JSON.stringify(s),
   );
-  await assert.rejects(() => readBackup({ size: MAX_SAVE_BYTES + 1 }), /١٦٠/);
+  await assert.rejects(() => readBackup({ size: MAX_SAVE_BYTES + 1 }), /160/);
   await assert.rejects(() =>
     readBackup(new Blob([new Uint8Array([31, 139, 0, 7])])),
   );

@@ -55,7 +55,7 @@ export const EMPIRE_ASSETS = [
     prestige: 30,
     name: { ar: "سيارة مطلية بالذهب", en: "Gold-plated car", fr: "Voiture plaquée or" },
     desc: {
-      ar: "طلاء ذهب عيار ٢٤… لأن التواضع ليس في القاموس.",
+      ar: "طلاء ذهب عيار 24… لأن التواضع ليس في القاموس.",
       en: "24-karat gold paint… because humility is not in the dictionary.",
       fr: "Peinture à l'or 24 carats… car l'humilité n'est pas au programme.",
     },
@@ -68,7 +68,7 @@ export const EMPIRE_ASSETS = [
     upkeep: 600_000,
     sellPct: 0.8,
     prestige: 25,
-    name: { ar: "يخت ٢٥ مترًا", en: "25m yacht", fr: "Yacht de 25 m" },
+    name: { ar: "يخت 25 مترًا", en: "25m yacht", fr: "Yacht de 25 m" },
     desc: {
       ar: "بداية البحار: سطح شمس وغرفة سينما صغيرة.",
       en: "A start at sea: sun deck and a small cinema room.",
@@ -82,7 +82,7 @@ export const EMPIRE_ASSETS = [
     upkeep: 1_600_000,
     sellPct: 0.8,
     prestige: 45,
-    name: { ar: "يخت ٦٠ مترًا", en: "60m yacht", fr: "Yacht de 60 m" },
+    name: { ar: "يخت 60 مترًا", en: "60m yacht", fr: "Yacht de 60 m" },
     desc: {
       ar: "طاقم دائم ومهبط طائرة صغير ومرآب جت سكي.",
       en: "Full crew, a small helipad and a jet-ski garage.",
@@ -96,7 +96,7 @@ export const EMPIRE_ASSETS = [
     upkeep: 4_000_000,
     sellPct: 0.8,
     prestige: 80,
-    name: { ar: "ميجا يخت ١٠٠ متر", en: "100m mega yacht", fr: "Méga-yacht de 100 m" },
+    name: { ar: "ميجا يخت 100 متر", en: "100m mega yacht", fr: "Méga-yacht de 100 m" },
     desc: {
       ar: "قصر عائم بحوض سباحة زجاجي وغواصة مرفقة.",
       en: "A floating palace with a glass pool and an attached submarine.",

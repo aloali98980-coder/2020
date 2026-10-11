@@ -109,7 +109,7 @@ export async function encodeLocalSave(s) {
     bytes += n;
     if (bytes > MAX_SAVE_BYTES)
       throw Error(
-        "تجاوز الحفظ حد ١٦٠ MiB؛ احتفظ بالنسخة السابقة وقلل العالم في المشاوير الجديدة.",
+        "تجاوز الحفظ حد 160 MiB؛ احتفظ بالنسخة السابقة وقلل العالم في المشاوير الجديدة.",
       );
   };
   const head = await binary({ ...s, players: [] }, checkSize);

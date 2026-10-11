@@ -91,7 +91,7 @@ test("مصروف المعيشة الشهري يُخصم من الشخصي لا �
 test("الصرف فوق الدخل ينزف الثروة ثم يراكم الدين", () => {
   const s = game({ ownerStory: "gambler" });
   setLifestyle(s, "legendary");
-  s.empire.personal = 1_000_000; // أقل من مصروف الأسطوري (٦ ملايين)
+  s.empire.personal = 1_000_000; // أقل من مصروف الأسطوري (6 ملايين)
   const rec = chargeMonthlyLiving(s);
   assert.equal(rec.paid, 1_000_000);
   assert.equal(rec.shortfall, 5_000_000);
@@ -108,7 +108,7 @@ test("بداية الشهر: دخل القصة + فائدة الدين + الم�
   s.date = "2026-10-01";
   const result = empireDay(s);
   assert.ok(result, "التسوية الشهرية تعمل في اليوم الأول");
-  // دخل ١٥٠ ألفًا − معيشة ٢٥٠ ألفًا = −١٠٠ ألف، مع فائدة ١٪ تضاف للدين.
+  // دخل 150 ألفًا − معيشة 250 ألفًا = −100 ألف، مع فائدة 1% تضاف للدين.
   assert.equal(s.empire.personal, before + 150_000 - 250_000);
   assert.ok(s.empire.debt > debtBefore, "فائدة الدين تُضاف");
   // لا تسوية مرتين في نفس الشهر.
@@ -140,7 +140,7 @@ test("صافي الثروة: الشخصي + الاستثمارات − الدي�
   );
 });
 
-test("الترحيل: حفظة قديمة (نسخة ٢٢) تحصل على إمبراطورية تلقائيًا حسب الصعوبة", () => {
+test("الترحيل: حفظة قديمة (نسخة 22) تحصل على إمبراطورية تلقائيًا حسب الصعوبة", () => {
   for (const [difficulty, story] of [
     ["beginner", "heir"],
     ["easy", "heir"],
@@ -172,7 +172,7 @@ test("storyForOldSave حتمية وتتبع الصعوبة", () => {
   assert.equal(storyForOldSave({}), "selfmade");
 });
 
-test("التكامل: تقدم ٤٠ يومًا عبر بداية شهر يظل صالحًا", async () => {
+test("التكامل: تقدم 40 يومًا عبر بداية شهر يظل صالحًا", async () => {
   const s = game();
   const { pendingActions, resolveInfo } = await import("../src/services/inbox.js");
   const { EVENT_CATALOG } = await import("../src/data/eventCatalog.js");

@@ -185,7 +185,7 @@ export function boardCardView(s) {
     .slice(0, 3);
   return `<section class="panel board-card"><div class="panel-head"><h3>${icon("crown")} ${t("boardCardTitle")}</h3><span class="onboarding-progress">${num(e.done)} / ${num(e.total)}</span></div><div class="onboarding-progress-track"><i style="width:${Math.round((e.done / Math.max(1, e.total)) * 100)}%"></i></div><div class="onboarding-steps">${top
     .map(
-      (item) => `<div class="onboarding-step ${item.done ? "done" : ""}"><span class="onboarding-check">${item.done ? icon("check", 16) : num(Math.round(item.ratio * 100)) + "٪"}</span><div><strong>${itemLabel(item)}</strong><small>${t("boardCurrent")}: ${amountOf(item.unit, item.current)} · ${t("boardTargetShort")}: ${amountOf(item.unit, item.target)}</small></div></div>`,
+      (item) => `<div class="onboarding-step ${item.done ? "done" : ""}"><span class="onboarding-check">${item.done ? icon("check", 16) : num(Math.round(item.ratio * 100)) + "%"}</span><div><strong>${itemLabel(item)}</strong><small>${t("boardCurrent")}: ${amountOf(item.unit, item.current)} · ${t("boardTargetShort")}: ${amountOf(item.unit, item.target)}</small></div></div>`,
     )
     .join("")}</div><button class="btn secondary full" data-nav="board">${t("boardCardOpen")} ${icon("arrow", 16)}</button></section>`;
 }

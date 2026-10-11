@@ -171,7 +171,7 @@ export const BOARD_TEXTS = {
     fr: "Développement",
   },
 
-  // ── بنود اللائحة (١٠ أنواع) ────────────────────────────────────────────────
+  // ── بنود اللائحة (10 أنواع) ────────────────────────────────────────────────
   itemLeagueRank: {
     ar: "المركز {v} أو أفضل في الدوري",
     en: "Finish {v} or better in the league",
@@ -311,7 +311,7 @@ export const BOARD_TEXTS = {
     fr: "un financement des investisseurs de {money}",
   },
   cRewardBudget: {
-    ar: "زيادة ميزانية التعاقدات {n}٪ للموسم القادم",
+    ar: "زيادة ميزانية التعاقدات {n}% للموسم القادم",
     en: "a {n}% bigger transfer budget next season",
     fr: "un budget de transfert en hausse de {n}% la saison prochaine",
   },
@@ -321,7 +321,7 @@ export const BOARD_TEXTS = {
     fr: "un gain d’affection des supporters de +{n}",
   },
   cBudgetCut: {
-    ar: "تقليص ميزانية المرتبات {n}٪",
+    ar: "تقليص ميزانية المرتبات {n}%",
     en: "a {n}% cut to the wage budget",
     fr: "une réduction du budget salarial de {n}%",
   },
@@ -400,7 +400,7 @@ export const BOARD_TEXTS = {
     fr: "Échecs consécutifs : {n}",
   },
   boardBudgetFactor: {
-    ar: "معامل ميزانية التعاقدات: {n}٪",
+    ar: "معامل ميزانية التعاقدات: {n}%",
     en: "Transfer budget factor: {n}%",
     fr: "Coefficient du budget transferts : {n}%",
   },

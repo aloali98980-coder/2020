@@ -1,4 +1,4 @@
-// 0.30 المجموعة ٢: المدير الرياضي — الفلسفة والصلاحيات والصفقات والتقييم.
+// 0.30 المجموعة 2: المدير الرياضي — الفلسفة والصلاحيات والصفقات والتقييم.
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createGame } from "../src/core/game.js";

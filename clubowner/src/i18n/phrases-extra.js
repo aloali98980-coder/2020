@@ -26,7 +26,7 @@ export const EXTRA_PHRASES = {
     "Profit after cost — not every revenue is a gain",
     "Le profit après coûts — toute recette n’est pas un gain",
   ],
-  "بيع اشتراكات الموسم (خصم 25٪": [
+  "بيع اشتراكات الموسم (خصم 25%": [
     "Sell season tickets (25% discount",
     "Vendre les abonnements (remise de 25 %",
   ],
@@ -448,7 +448,7 @@ export const EXTRA_PHRASES = {
     "Estimated abilities for the game, not an official rating",
     "Capacités estimées pour le jeu, pas une évaluation officielle",
   ],
-  "مكافآت المشاركة والأهداف تُصرف عند المباريات، والزيادة السنوية تُطبق تلقائيًا. وعد الأساسي يُراجع بعد ٦٠ يومًا. الإعارات وشراء المنافسين للاعبيك لم تُفعّل بعد":
+  "مكافآت المشاركة والأهداف تُصرف عند المباريات، والزيادة السنوية تُطبق تلقائيًا. وعد الأساسي يُراجع بعد 60 يومًا. الإعارات وشراء المنافسين للاعبيك لم تُفعّل بعد":
     [
       "Appearance and goal bonuses are paid at matches and the annual raise applies automatically. The starter promise is reviewed after 60 days. Loans and rival bids for your players are not active yet",
       "Les primes de match et de but sont versées lors des matchs et l’augmentation annuelle s’applique automatiquement. La promesse de titulaire est évaluée après 60 jours. Prêts et offres des rivaux pour vos joueurs ne sont pas encore actifs",
@@ -459,7 +459,7 @@ export const EXTRA_PHRASES = {
     "Export the current save first",
     "Exportez d’abord la sauvegarde actuelle",
   ],
-  "عمولة الوكيل (٣٪": ["Agent fee (3%", "Commission d’agent (3 %"],
+  "عمولة الوكيل (3%": ["Agent fee (3%", "Commission d’agent (3 %"],
   "العقد الجديد والمكافأة": [
     "New contract and bonus",
     "Nouveau contrat et prime",
@@ -527,12 +527,12 @@ export const EXTRA_PHRASES = {
       "Effets actifs : extension de la capacité du stade, meilleure récupération, progression mensuelle des jeunes et arrivée mensuelle d’un jeune. L’effet sportif exige le bon membre du personnel",
     ],
   الاستلام: ["Delivery", "Livraison"],
-  "تم دفع ٤٠٪، والباقي مستحق عند الاستلام. لا يمكن إلغاء الالتزام بعد بدء البناء في النسخة الحالية":
+  "تم دفع 40%، والباقي مستحق عند الاستلام. لا يمكن إلغاء الالتزام بعد بدء البناء في النسخة الحالية":
     [
       "40% paid, the balance due on delivery. The commitment cannot be cancelled once construction starts in this version",
       "40 % versés, le solde dû à la livraison. L’engagement ne peut pas être annulé une fois les travaux commencés dans cette version",
     ],
-  "٤٠٪ مقدم + ٦٠٪ عند الاستلام. يلزم رصيد يغطي المشروع كاملًا قبل البدء. زيادة التشغيل":
+  "40% مقدم + 60% عند الاستلام. يلزم رصيد يغطي المشروع كاملًا قبل البدء. زيادة التشغيل":
     [
       "40% upfront + 60% on delivery. Cash must cover the full project before starting. Operating increase",
       "40 % d’avance + 60 % à la livraison. La trésorerie doit couvrir tout le projet avant le début. Hausse d’exploitation",
@@ -576,7 +576,7 @@ export const EXTRA_PHRASES = {
   "مباراة خارج ملعبك": ["Away match", "Match à l’extérieur"],
   خطة: ["Formation", "Schéma"],
   "ملاءمة المراكز": ["positional fit", "adéquation des postes"],
-  "٪ · الضغط والإيقاع يؤثران على الفرص والإجهاد": [
+  "% · الضغط والإيقاع يؤثران على الفرص والإجهاد": [
     "% · pressing and tempo affect chances and fatigue",
     " % · pressing et tempo influent sur les occasions et la fatigue",
   ],
@@ -662,13 +662,13 @@ export const EXTRA_PHRASES = {
     "Choose the country, division and club below",
     "Choisissez le pays, la division et le club ci-dessous",
   ],
-  "٤ أندية في النمط القديم": [
+  "4 أندية في النمط القديم": [
     "4 clubs in the legacy mode",
     "4 clubs dans le mode classique",
   ],
   سوق: ["market", "marché"],
   تجريبي: ["trial", "d’essai"],
-  "العروض تختلف في القيمة والحصرية، وتشمل كلها مكافآت الأداء الموحدة. يمكنك التفاوض على زيادة ١٠–٣٠٪؛ القبول يعتمد على سمعة ناديك وثقة الصحافة، والطمع قد يفقدك الراعي":
+  "العروض تختلف في القيمة والحصرية، وتشمل كلها مكافآت الأداء الموحدة. يمكنك التفاوض على زيادة 10–30%؛ القبول يعتمد على سمعة ناديك وثقة الصحافة، والطمع قد يفقدك الراعي":
     [
       "Offers differ in value and exclusivity and all include the standard performance bonuses. You can negotiate a 10–30% increase; acceptance depends on your club’s reputation and press confidence, and greed can cost you the sponsor",
       "Les offres diffèrent par la valeur et l’exclusivité et incluent toutes les primes de performance standard. Vous pouvez négocier une hausse de 10 à 30 % ; l’acceptation dépend de la réputation du club et de la confiance de la presse, et la gourmandise peut vous coûter le sponsor",

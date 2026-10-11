@@ -399,7 +399,7 @@ export function matchDay(
       void redCardPenalty;
       message(s, {
         title: `${f.isDerby ? "🔥 " : ""}${result} ${our}–${opp} | تقرير ${f.isDerby ? "الديربي" : "المباراة"}`,
-        body: `${extendedClub(f.home).name} ${f.homeGoals} — ${f.awayGoals} ${extendedClub(f.away).name}. ${f.neutral ? "مباراة على ملعب محايد؛ لا إيراد تذاكر ملعب ناديك." : home ? (f.isDerby ? "تم تسجيل تذاكر الديربي بأسعار مضاعفة ومصروفات التنظيم." : "تم تسجيل التذاكر ومصروفات التنظيم في الحسابات.") : "مباراة خارج ملعبك."} ${f.tactics ? `خطة ${f.tactics.formation} · ملاءمة المراكز ${f.tactics.fit}٪ · الضغط والإيقاع يؤثران على الفرص والإجهاد. ` : ""}المحاكاة احتمالية ومبسطة، وليست مباراة مرئية.`,
+        body: `${extendedClub(f.home).name} ${f.homeGoals} — ${f.awayGoals} ${extendedClub(f.away).name}. ${f.neutral ? "مباراة على ملعب محايد؛ لا إيراد تذاكر ملعب ناديك." : home ? (f.isDerby ? "تم تسجيل تذاكر الديربي بأسعار مضاعفة ومصروفات التنظيم." : "تم تسجيل التذاكر ومصروفات التنظيم في الحسابات.") : "مباراة خارج ملعبك."} ${f.tactics ? `خطة ${f.tactics.formation} · ملاءمة المراكز ${f.tactics.fit}% · الضغط والإيقاع يؤثران على الفرص والإجهاد. ` : ""}المحاكاة احتمالية ومبسطة، وليست مباراة مرئية.`,
         category: "matches",
       });
       if (f.isDerby) {

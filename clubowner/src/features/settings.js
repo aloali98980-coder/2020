@@ -41,7 +41,7 @@ function cloudPanel(s) {
 
   if (loggedIn && session?.user) {
     const lastSyncText = session.lastSync
-      ? new Date(session.lastSync).toLocaleString("ar-EG")
+      ? new Date(session.lastSync).toLocaleString("en-US")
       : "لم تتم المزامنة بعد";
 
     return `<section class="panel settings-panel cloud-panel">
@@ -75,7 +75,7 @@ function cloudPanel(s) {
       <h3>${icon("world")} الحساب والمزامنة السحابية</h3>
       ${badge("اختياري", "gold")}
     </div>
-    <p>احفظ مسيرتك سحابيًا لحمايتها من مسح المتصفح التلقائي على الآيفون والكمبيوتر، وتنقل بين أجهزتك بحرية. اللعب بدون حساب يظل متاحًا ومحليًا 100٪.</p>
+    <p>احفظ مسيرتك سحابيًا لحمايتها من مسح المتصفح التلقائي على الآيفون والكمبيوتر، وتنقل بين أجهزتك بحرية. اللعب بدون حساب يظل متاحًا ومحليًا 100%.</p>
     <div class="settings-actions" style="margin-top: 15px;">
       ${button(icon("crown", 17) + " تسجيل الدخول / إنشاء حساب", "open-auth-modal", "", "primary")}
     </div>
@@ -117,7 +117,7 @@ export function settingsView(s) {
         <h3>${icon("download")} حفظ اللعبة محليًا</h3>
         ${badge("على هذا المتصفح", "green")}
       </div>
-      <p>حفظ العالم يُصدّر مضغوطًا JSON.GZ، مع قبول JSON القديم. حد ١٦٠ MiB بعد فك الضغط و٨٠ MiB للملف المضغوط. كل قرار يُحفظ تلقائيًا على جهازك. مسح بيانات المتصفح أو تغيير الرابط قد يفقد الوصول للحفظة؛ صدّر نسخة احتياطية بشكل دوري.</p>
+      <p>حفظ العالم يُصدّر مضغوطًا JSON.GZ، مع قبول JSON القديم. حد 160 MiB بعد فك الضغط و80 MiB للملف المضغوط. كل قرار يُحفظ تلقائيًا على جهازك. مسح بيانات المتصفح أو تغيير الرابط قد يفقد الوصول للحفظة؛ صدّر نسخة احتياطية بشكل دوري.</p>
       <div class="save-card">
         <span class="save-file">${icon("shield", 28)}</span>
         <div>
@@ -166,9 +166,8 @@ export function settingsView(s) {
       <div class="preference-row">
         <div>
           <strong>${tr("نمط الأرقام", "Number style", "Style des chiffres")}</strong>
-          <small>${tr("هندية ١٢٣ أو غربية 123 في كل الشاشات", "Arabic-Indic ١٢٣ or Western 123 everywhere", "Indo-arabes ١٢٣ ou occidentaux 123")}</small>
+          <small>${tr("هندية 123 أو غربية 123 في كل الشاشات", "Arabic-Indic 123 or Western 123 everywhere", "Indo-arabes 123 ou occidentaux 123")}</small>
         </div>
-        <label class="field slim"><select id="num-format" aria-label="${tr("نمط الأرقام", "Number style", "Style des chiffres")}"><option value="arabic" ${s.preferences.digits !== "western" ? "selected" : ""}>${tr("هندية ١٢٣", "Arabic-Indic ١٢٣", "Indo-arabes ١٢٣")}</option><option value="western" ${s.preferences.digits === "western" ? "selected" : ""}>${tr("غربية 123", "Western 123", "Occidentaux 123")}</option></select></label>
       </div>
       <div class="preference-row">
         <div>

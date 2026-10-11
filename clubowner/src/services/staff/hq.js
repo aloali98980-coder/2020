@@ -1,5 +1,5 @@
 // المقر الإداري: سعته تحدد عدد موظفيك، وترقياته حتى البرج الإداري.
-// التمويل من الثروة الشخصية (فلوسك) كالملعب، والبرج يشترط منشأة officeTower من المدينة (ربط ١١).
+// التمويل من الثروة الشخصية (فلوسك) كالملعب، والبرج يشترط منشأة officeTower من المدينة (ربط 11).
 import { assert, addDays } from "../../core/utils.js";
 import { ensureEmpire } from "../empire/wealth.js";
 import { message } from "../inbox.js";
@@ -28,7 +28,7 @@ export function startHqUpgrade(s) {
   c.hq.project = { level, cost: spec.cost, start: s.date, end: addDays(s.date, spec.days) };
   message(s, {
     title: `بدأ بناء ${spec.name.ar}`,
-    body: `التكلفة ${spec.cost.toLocaleString()} من ثروتك الشخصية، والتسليم ${c.hq.project.end}. السعة الجديدة ${spec.cap} موظفًا.`,
+    body: `التكلفة ${spec.cost.toLocaleString("en-US")} من ثروتك الشخصية، والتسليم ${c.hq.project.end}. السعة الجديدة ${spec.cap} موظفًا.`,
     category: "club",
   });
   return c.hq.project;

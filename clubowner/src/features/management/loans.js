@@ -5,7 +5,7 @@ import { button } from "../../components/shared.js";
 import { esc, money, date , cur} from "../../ui/format.js";
 const club = (id) => esc(extendedClub(id)?.name || id);
 export function loanTerms(t) {
-  return `${t.days} يومًا · رسوم ${money(t.fee)} ${cur()} · المستعير ${t.wageShare}٪ من الراتب · ${t.role === "starter" ? "أساسي" : "مداورة"} · ${t.recallAllowed ? "استدعاء مسموح بعد 60 يومًا" : "لا استدعاء مبكر"} · ${t.buyOption ? "خيار شراء " + money(t.buyOption) + " " + cur() : "بلا خيار شراء"}`;
+  return `${t.days} يومًا · رسوم ${money(t.fee)} ${cur()} · المستعير ${t.wageShare}% من الراتب · ${t.role === "starter" ? "أساسي" : "مداورة"} · ${t.recallAllowed ? "استدعاء مسموح بعد 60 يومًا" : "لا استدعاء مبكر"} · ${t.buyOption ? "خيار شراء " + money(t.buyOption) + " " + cur() : "بلا خيار شراء"}`;
 }
 export function loanReview(s, id) {
   const o = s.management.loanOffers.find((o) => o.id === id);
@@ -26,7 +26,7 @@ export function loanForm(s, id) {
           .map((id) => `<option value="${esc(id)}">${club(id)}</option>`)
           .join("")}</select></label>`
       : ""
-  }<label class="field">مدة الإعارة<select name="days"><option value="90">90 يومًا</option><option value="180" selected>180 يومًا</option><option value="365">365 يومًا</option></select></label><label class="field">الرسوم ${cur()}<input name="fee" type="number" min="0" max="10000000000" value="${Math.round(p.value * 0.04)}" required></label><label class="field">نسبة راتب المستعير ٪<input name="wageShare" type="number" min="0" max="100" value="80" required></label><label class="field">خيار الشراء ${cur()} — صفر لإلغائه<input name="buyOption" type="number" min="0" max="10000000000" value="0" required></label><label class="field">وعد المشاركة<select name="role"><option value="rotation">مداورة</option><option value="starter">أساسي</option></select></label><label><input name="recallAllowed" type="checkbox" checked> السماح للمالك بالاستدعاء بعد 60 يومًا</label></div><p>النادي الآخر قد يعدّل الشروط أو يرفض. الرسوم لا ترد. مكافآت المباريات على المستعير. خيار الشراء ينقل العقد الحالي دون تمديد أو تفاوض تلقائي.</p><button class="btn primary">إرسال العرض</button></form>`;
+  }<label class="field">مدة الإعارة<select name="days"><option value="90">90 يومًا</option><option value="180" selected>180 يومًا</option><option value="365">365 يومًا</option></select></label><label class="field">الرسوم ${cur()}<input name="fee" type="number" min="0" max="10000000000" value="${Math.round(p.value * 0.04)}" required></label><label class="field">نسبة راتب المستعير %<input name="wageShare" type="number" min="0" max="100" value="80" required></label><label class="field">خيار الشراء ${cur()} — صفر لإلغائه<input name="buyOption" type="number" min="0" max="10000000000" value="0" required></label><label class="field">وعد المشاركة<select name="role"><option value="rotation">مداورة</option><option value="starter">أساسي</option></select></label><label><input name="recallAllowed" type="checkbox" checked> السماح للمالك بالاستدعاء بعد 60 يومًا</label></div><p>النادي الآخر قد يعدّل الشروط أو يرفض. الرسوم لا ترد. مكافآت المباريات على المستعير. خيار الشراء ينقل العقد الحالي دون تمديد أو تفاوض تلقائي.</p><button class="btn primary">إرسال العرض</button></form>`;
 }
 export function loansPanel(s) {
   const m = s.management,

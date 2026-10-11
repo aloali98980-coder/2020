@@ -348,11 +348,11 @@ export const ULTRAS_EVENT_CATALOG = [
 export const ULTRAS_DEMANDS = {
   ticket: {
     name: L("خفض أسعار التذاكر", "Reduce ticket prices", "Baisser le prix des billets"),
-    detail: L("خفض السعر الأساسي ١٥٪ على الأقل للمباريات القادمة.", "Reduce the base ticket price by at least 15% for upcoming matches.", "Baisser le prix de base d’au moins 15 % pour les prochains matchs."),
+    detail: L("خفض السعر الأساسي 15% على الأقل للمباريات القادمة.", "Reduce the base ticket price by at least 15% for upcoming matches.", "Baisser le prix de base d’au moins 15 % pour les prochains matchs."),
   },
   star: {
     name: L("التعاقد مع نجم", "Sign a star player", "Recruter une star"),
-    detail: L("ضم لاعب بتقييم ٧٢ أو أعلى خلال المهلة.", "Sign a player rated 72 or higher before the deadline.", "Recruter avant l’échéance un joueur noté au moins 72."),
+    detail: L("ضم لاعب بتقييم 72 أو أعلى خلال المهلة.", "Sign a player rated 72 or higher before the deadline.", "Recruter avant l’échéance un joueur noté au moins 72."),
   },
   coach: {
     name: L("إقالة المدرب", "Dismiss the coach", "Remplacer l’entraîneur"),

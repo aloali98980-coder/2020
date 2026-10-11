@@ -169,7 +169,7 @@ export const monthOf = (s) => Number(s.date.slice(5, 7));
 export const inWindow = (s) => inInternationalWindow(s.date);
 export const notInWindow = (s) => !inInternationalWindow(s.date);
 export const internationalsAway = (s) => scopes.abroad(s).length > 0;
-// طقس مصر: حرّ شديد ٦–٨، أمطار/رياح ١٢–٢، معتدل في بينهما.
+// طقس مصر: حرّ شديد 6–8، أمطار/رياح 12–2، معتدل في بينهما.
 export const hotSeason = (s) => [6, 7, 8].includes(monthOf(s));
 export const rainySeason = (s) => [11, 12, 1, 2].includes(monthOf(s));
 export const mildSeason = (s) => !hotSeason(s) && !rainySeason(s);
@@ -257,7 +257,7 @@ export const derbyFixtureWithin = (days) => (s) =>
   upcomingOwnFixtures(s, days).some((f) => isRival(s, opponentOf(s, f)));
 export const bigFixtureWithin = (days) => (s) =>
   upcomingOwnFixtures(s, days).some((f) => isBigMatch(s, f));
-// نتيجة آخر ديربي لُعب (خلال آخر ٨ مباريات) — لتوليد ردود فعل بعد الديربي.
+// نتيجة آخر ديربي لُعب (خلال آخر 8 مباريات) — لتوليد ردود فعل بعد الديربي.
 export const lastDerbyResult = (s) => {
   for (const f of playedOwnSorted(s).slice(0, 8)) {
     if (!isRival(s, opponentOf(s, f))) continue;

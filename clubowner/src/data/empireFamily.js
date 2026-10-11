@@ -11,7 +11,7 @@ export const BRIDES = Object.freeze({
       fr: "Un esprit juridique affûté ; un contrat de mariage en béton vous protège en cas de divorce.",
     },
     bonus: {
-      ar: "البونص: تسوية طلاق مخفضة (٤٠٪ بدل ٥٠٪) بفضل العقد المحكم.",
+      ar: "البونص: تسوية طلاق مخفضة (40% بدل 50%) بفضل العقد المحكم.",
       en: "Bonus: reduced divorce settlement (40% instead of 50%) thanks to the ironclad contract.",
       fr: "Bonus : règlement de divorce réduit (40 % au lieu de 50 %) grâce au contrat en béton.",
     },
@@ -25,7 +25,7 @@ export const BRIDES = Object.freeze({
       fr: "Ancienne pédiatre ; un foyer plus calme et des enfants qui grandissent plus vite.",
     },
     bonus: {
-      ar: "البونص: +١ سعادة زوجية شهريًا ونمو إحصائيات الأولاد أسرع ٢٥٪.",
+      ar: "البونص: +1 سعادة زوجية شهريًا ونمو إحصائيات الأولاد أسرع 25%.",
       en: "Bonus: +1 marital happiness per month and children's stats grow 25% faster.",
       fr: "Bonus : +1 de bonheur conjugal par mois et des stats d'enfants 25 % plus rapides.",
     },
@@ -39,7 +39,7 @@ export const BRIDES = Object.freeze({
       fr: "Peintre renommée ; chaque apparition avec elle polit votre nom dans les salons.",
     },
     bonus: {
-      ar: "البونص: +٥٠٪ برستيج من الأفراح والأصول الفنية.",
+      ar: "البونص: +50% برستيج من الأفراح والأصول الفنية.",
       en: "Bonus: +50% prestige from weddings and art assets.",
       fr: "Bonus : +50 % de prestige des mariages et actifs artistiques.",
     },
@@ -53,7 +53,7 @@ export const BRIDES = Object.freeze({
       fr: "Une famille qui ouvre les portes closes ; l'assemblée compte avec elle.",
     },
     bonus: {
-      ar: "البونص: +٥ ثقة من الجمعية عند الفرح وتهدئة شبهات شهرية.",
+      ar: "البونص: +5 ثقة من الجمعية عند الفرح وتهدئة شبهات شهرية.",
       en: "Bonus: +5 assembly confidence at the wedding and monthly suspicion soothing.",
       fr: "Bonus : +5 de confiance de l'assemblée au mariage et apaisement mensuel des soupçons.",
     },

@@ -244,7 +244,7 @@ export const FLAVOR_MARKET = [
     topic: "ارتفاع قيمة ناشئي السوق",
     when: all(hasMarket, scopeNonEmpty("youngsters")),
     title: "قيم الناشئين ترتفع",
-    body: "قفزت تقديرات قيمة اللاعبين تحت ٢١ سنة في السوق المحلية.",
+    body: "قفزت تقديرات قيمة اللاعبين تحت 21 سنة في السوق المحلية.",
     effect: { targets: [{ scope: "youngsters", morale: 1 }] },
   },
   {

@@ -39,12 +39,12 @@ export const NARRATIVES = {
       "The sporting director proposes reviewing candidates in your enabled markets. A report narrows the potential estimate, without guaranteeing a player’s future.",
       "Le directeur sportif propose d’étudier des candidats des marchés actifs. Un rapport affine le potentiel estimé, sans garantir l’avenir du joueur.",
     ],
-  "سيولة أكبر ٨٠٪، وتشغيل أقل ٢٠٪، وتفاوض أسهل. القدرات والنتائج لا تتغير سرًا.":
+  "سيولة أكبر 80%، وتشغيل أقل 20%، وتفاوض أسهل. القدرات والنتائج لا تتغير سرًا.":
     [
       "80% more initial funds, 20% lower base operating costs and easier negotiations. No hidden changes to ratings or match results.",
       "80 % de fonds initiaux en plus, coûts de base réduits de 20 % et négociations facilitées. Aucun changement caché des notes ou résultats.",
     ],
-  "سيولة أكبر ٣٠٪، وتشغيل أقل ١٠٪، ومساحة أكبر للتجربة.": [
+  "سيولة أكبر 30%، وتشغيل أقل 10%، ومساحة أكبر للتجربة.": [
     "30% more initial funds, 10% lower base operating costs and more room to experiment.",
     "30 % de fonds initiaux en plus, coûts de base réduits de 10 % et plus de liberté pour expérimenter.",
   ],
@@ -52,7 +52,7 @@ export const NARRATIVES = {
     "Standard economy and negotiation rates. Every decision has benefits and costs.",
     "Économie et négociations standards. Chaque décision a ses avantages et ses coûts.",
   ],
-  "سيولة أقل ٢٥٪، وتشغيل أعلى ١٥٪، ورعايات أقل وتفاوض أصعب.": [
+  "سيولة أقل 25%، وتشغيل أعلى 15%، ورعايات أقل وتفاوض أصعب.": [
     "25% less initial funding, 15% higher base costs, lower sponsorships and tougher negotiations.",
     "25 % de fonds initiaux en moins, coûts de base majorés de 15 %, sponsors moins généreux et négociations difficiles.",
   ],
@@ -62,7 +62,7 @@ export const NARRATIVES = {
   الموسم: ["Season", "Saison"],
   مشروع: ["Project", "Projet"],
   الجولة: ["Round", "Journée"],
-  "إيراد تعاقدي خلال ٣٠ يومًا": [
+  "إيراد تعاقدي خلال 30 يومًا": [
     "contracted income within 30 days",
     "recettes contractuelles sous 30 jours",
   ],
@@ -112,7 +112,7 @@ export const NARRATIVES = {
     "Salaire indicatif demandé :",
   ],
   "شهريًا.": ["per month.", "par mois."],
-  "الأقساط كل ٣٠ يومًا. عمولة الوكيل ٣٪ عند التوقيع، وعقد اللاعب يتم التفاوض عليه بعد رد النادي.":
+  "الأقساط كل 30 يومًا. عمولة الوكيل 3% عند التوقيع، وعقد اللاعب يتم التفاوض عليه بعد رد النادي.":
     [
       "Instalments every 30 days. Agent fee: 3% on signing. Negotiate player terms after the club replies.",
       "Échéances tous les 30 jours. Commission d’agent : 3 % à la signature. Négociez le contrat après la réponse du club.",
@@ -121,7 +121,7 @@ export const NARRATIVES = {
     "Nothing charged yet. Player contract and agent fee are excluded.",
     "Aucun prélèvement. Contrat du joueur et commission exclus.",
   ],
-  "مكافآت المشاركة والأهداف تُصرف عند المباريات، والزيادة السنوية تُطبق تلقائيًا. وعد الأساسي يُراجع بعد ٦٠ يومًا. الإعارات وشراء المنافسين للاعبيك لم تُفعّل بعد.":
+  "مكافآت المشاركة والأهداف تُصرف عند المباريات، والزيادة السنوية تُطبق تلقائيًا. وعد الأساسي يُراجع بعد 60 يومًا. الإعارات وشراء المنافسين للاعبيك لم تُفعّل بعد.":
     [
       "Appearance and goal bonuses are paid on match days; annual increases are automatic. Regular-role promises are reviewed after 60 days. Player loans and AI purchases of your players are not yet enabled.",
       "Primes versées les jours de match ; hausses annuelles automatiques. Promesse de titulaire revue après 60 jours. Prêts et achats de vos joueurs par l’IA non disponibles.",
@@ -141,7 +141,7 @@ export const NARRATIVES = {
       "Choisissez de prolonger ou de laisser expirer. La prolongation n’est pas automatique.",
     ],
   "يقترب من النهاية": ["is nearing expiry", "approche de son terme"],
-  "اللاعب يفكر في الاعتزال خلال ٤٥ يومًا داخل هذه الحفظة. يمكنك تجهيز مسار مهني بتكلفة ٦٠ ألف جنيه، طلب الاستمرار (غير مضمون)، أو احترام القرار. هذا حدث محاكاة، وليس خبرًا عن اللاعب الحقيقي.":
+  "اللاعب يفكر في الاعتزال خلال 45 يومًا داخل هذه الحفظة. يمكنك تجهيز مسار مهني بتكلفة 60 ألف جنيه، طلب الاستمرار (غير مضمون)، أو احترام القرار. هذا حدث محاكاة، وليس خبرًا عن اللاعب الحقيقي.":
     [
       "The player is considering retirement in 45 days in this save. Fund career preparation for EGP 60,000, request a postponement (not guaranteed), or respect the decision. This is simulation, not real-life news.",
       "Le joueur envisage la retraite dans 45 jours dans cette sauvegarde. Financez une préparation à 60 000 EGP, demandez un report (sans garantie), ou respectez sa décision. Événement simulé, pas une actualité réelle.",
@@ -153,7 +153,7 @@ export const NARRATIVES = {
     "Player maintains retirement plans",
     "Le joueur maintient sa retraite",
   ],
-  "تم تأجيل مراجعة الاعتزال ١٨٠ يومًا. عقد اللاعب لا يتمدد تلقائيًا؛ راجع تاريخ نهايته.":
+  "تم تأجيل مراجعة الاعتزال 180 يومًا. عقد اللاعب لا يتمدد تلقائيًا؛ راجع تاريخ نهايته.":
     [
       "Retirement review postponed for 180 days. The contract is not automatically extended; check its end date.",
       "Réexamen de la retraite reporté de 180 jours. Le contrat n’est pas prolongé automatiquement ; vérifiez sa date de fin.",

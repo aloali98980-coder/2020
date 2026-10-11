@@ -474,7 +474,7 @@ export function setUpbringing(s, childId, style) {
 export function enrollDynastyAcademy(s, childId, position = "CM") {
   const child = findDynastyChild(s, childId);
   assert(child, "الطفل غير موجود أو ملفه ناقص.");
-  assert(child.age >= 10 && child.age <= 17, "الالتحاق بالأكاديمية متاح من عمر ١٠ إلى ١٧ سنة.");
+  assert(child.age >= 10 && child.age <= 17, "الالتحاق بالأكاديمية متاح من عمر 10 إلى 17 سنة.");
   assert(
     child.careerPath === null || child.careerPath === "player",
     "اختار هذا الابن مسارًا خارج كرة القدم.",

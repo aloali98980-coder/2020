@@ -192,10 +192,8 @@ function replaceNames(text, map) {
 }
 const sorted = Object.keys(DICTIONARY).sort((a, b) => b.length - a.length);
 const escapeRx = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-const digits = (text) =>
-  text
-    .replace(/[٠-٩]/g, (c) => String("٠١٢٣٤٥٦٧٨٩".indexOf(c)))
-    .replaceAll("٪", "%");
+// الأرقام لاتينية 0-9 دائمًا (حتى في العربية): لا تحويل إلى الأرقام الهندية.
+const digits = (text) => text;
 const ARABIC = /[ء-ي]/;
 const CONJ = ["and ", "et "];
 const LETTER = /[ء-يً-ْ]/;
