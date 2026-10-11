@@ -3,6 +3,7 @@ import { clamp, random, uid } from "../../core/utils.js";
 import { message } from "../inbox.js";
 import { ensureEmpire, personalIncome } from "../empire/wealth.js";
 import { ensureBetting, estimateMarketValue } from "./state.js";
+import { RESPONSIBLE_COSTS } from "./compliance.js";
 import { BRANCH_LEVELS, ONLINE_LEVELS } from "../../data/bettingCatalog.js";
 import { bettingText } from "../../data/bettingTexts.js";
 
@@ -35,8 +36,8 @@ export function monthlyProfit(s) {
   const branchUp = (BRANCH_LEVELS.find((x) => x.level === b.branches)?.upkeep || 0);
   const onlineUp = (ONLINE_LEVELS.find((x) => x.level === b.onlineLevel)?.upkeep || 0);
   const tierUp = ({ local: 180_000, continental: 420_000, global: 900_000 }[b.licenseTier] || 180_000);
-  const complianceCost = (b.compliance.responsibleLevel || 0) * 250_000; // 0,250k,500k,750k
-  if (b.compliance.responsibleLevel === 3) complianceCost + 250_000; // تصحيح
+  // تكلفة اللعب المسؤول الشهرية = السعر المعروض في الواجهة (RESPONSIBLE_COSTS)
+  const complianceCost = RESPONSIBLE_COSTS[b.compliance.responsibleLevel || 0] || 0;
 
   // التسويق + صيانة + امتثال + عشوائية
   const expenses = b.marketingSpend + branchUp + onlineUp + tierUp + complianceCost + (b.sponsorLeague ? 300_000 : 0);
