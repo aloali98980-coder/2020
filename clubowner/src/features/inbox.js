@@ -39,6 +39,8 @@ export function messageDetail(s, m) {
     actions = button(boardTextFor("boardMailOpen", null, getLanguage()), "go-board", "", "primary");
   if (m.kind === "cup-draw")
     actions = button(tr("شاهد مراسم القرعة", "Watch Draw Ceremony", "Voir la cérémonie du tirage"), "view-cup-draw", m.ref, "primary");
+  if (["ultras-event", "ultras-demand", "ultras-demand-escalation"].includes(m.kind))
+    actions = button(tr("افتح صفحة الجماهير واختر الرد", "Open supporters and choose a response", "Ouvrir la page des supporters et répondre"), "go-ultras", "", "primary");
   if (m.kind === "youth-intake-day" && m.required && m.status === "open")
     actions = button(tr("استعراض وتصعيد الناشئين", "Review & Decide Youth Intake", "Examiner et décider des jeunes"), "open-youth-intake", m.ref, "primary");
   if (m.kind === "deadline-bid" && m.required && m.status === "open")
@@ -46,6 +48,8 @@ export function messageDetail(s, m) {
       button(tr("قبول العرض العاجل", "Accept Urgent Offer", "Accepter l'offre urgente"), "accept-deadline-bid", m.id, "primary") +
       button(tr("رفض العرض", "Decline Offer", "Refuser l'offre"), "decline-deadline-bid", m.id, "ghost");
   if (m.required && m.status === "open") {
+    if (m.kind === "ultras-event")
+      actions = button(tr("افتح صفحة الجماهير واختر الرد", "Open supporters and choose a response", "Ouvrir la page des supporters et répondre"), "go-ultras", "", "primary");
     if (isBoard)
       actions =
         button(boardTextFor("boardMailOpen", null, getLanguage()), "go-board", "", "primary") +
@@ -97,5 +101,5 @@ export function messageDetail(s, m) {
         button("راجع التمويل", "go-finance", m.id, "primary") +
         button("اطلعت وسأراجع المصروفات", "resolve", m.id, "ghost");
   }
-  return `<div class="message-detail-header"><span class="sender-avatar">${icon(m.category === "transfers" ? "transfer" : m.category === "sponsors" ? "sponsor" : "building", 23)}</span><div><strong>إدارة ${category(m.category)}</strong><small>إلى: <span data-no-translate>${esc(s.owner)}</span> · ${date(m.date)}</small></div>${badge(m.status === "resolved" ? "تم التعامل" : m.required ? "قرار مطلوب" : "للعلم", m.status === "resolved" ? "green" : m.required ? "gold" : "")}</div><h2>${esc(m.title)}</h2><p class="message-body">${esc(m.body)}</p>${m.deadline ? `<div class="deadline">${icon("clock", 18)} آخر موعد: ${date(m.deadline)}${m.status === "open" ? " · تقدم الوقت متوقف حتى قرارك" : ""}</div>` : ""}${actions ? `<div class="message-actions">${actions}</div>` : ""}<div class="message-signature">مع تحيات فريق الإدارة،<br><strong>مكتب ${category(m.category)}</strong></div>`;
+  return `<div class="message-detail-header"><span class="sender-avatar">${icon(m.category === "transfers" ? "transfer" : m.category === "sponsors" ? "sponsor" : "building", 23)}</span><div><strong>إدارة ${category(m.category)}</strong><small>إلى: <span data-no-translate>${esc(s.owner)}</span> · ${date(m.date)}</small></div>${badge(m.status === "resolved" ? "تم التعامل" : m.required ? "قرار مطلوب" : "للعلم", m.status === "resolved" ? "green" : m.required ? "gold" : "")}</div><h2>${esc(m.title)}</h2><p class="message-body">${esc(m.body)}</p>${m.deadline ? `<div class="deadline">${icon("clock", 18)} آخر موعد: ${date(m.deadline)}${m.required && m.status === "open" ? " · تقدم الوقت متوقف حتى قرارك" : ""}</div>` : ""}${actions ? `<div class="message-actions">${actions}</div>` : ""}<div class="message-signature">مع تحيات فريق الإدارة،<br><strong>مكتب ${category(m.category)}</strong></div>`;
 }

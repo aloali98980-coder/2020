@@ -101,6 +101,8 @@ import "./styles/tokens.css";
 import "./styles/motion.css";
 import "./styles/dynasty.css";
 import "./styles/politics.css";
+import "./styles/celebrations.css";
+import "./styles/ultras.css";
 import { createGame } from "./core/game.js";
 import { getState, setState, commit, isSaving } from "./core/store.js";
 import { saveGame, loadGame, exportGame, importGame } from "./services/save.js";
@@ -124,6 +126,25 @@ import { advanceTime } from "./services/time.js";
 import { pendingActions, resolveInfo } from "./services/inbox.js";
 import { matchReportModal } from "./features/matchReport.js";
 import { showHighlightsScreen } from "./features/matchHighlights.js";
+import { showCelebrationScreen } from "./features/celebrations.js";
+import {
+  celebrationSnapshot,
+  markCelebrationSeen,
+  pendingCelebrations,
+  trackCelebrationEvents,
+} from "./services/celebrations.js";
+import { ultrasView } from "./features/ultras.js";
+import {
+  fulfilSupporterDemand,
+  imposeUltrasStadiumSanction,
+  launchChant,
+  organizeAwaySupport,
+  pressureRivalSupporters,
+  respondToSupporterDemand,
+  resolveUltrasEvent,
+  stageTifo,
+  recordTicketPriceChange,
+} from "./services/ultras.js";
 import { paletteItems, paletteOverlay } from "./features/palette.js";
 import { markStep, hideOnboarding } from "./features/onboarding.js";
 import {
@@ -153,7 +174,7 @@ import {
 } from "./services/sponsors.js";
 import { takeLoan, wages, secretDeposit } from "./services/finance.js";
 import { setupView } from "./features/setup.js";
-import { shell, NAV, NAV_GROUPS, NAV_BY_ID } from "./components/shell.js";
+import { shell, NAV_GROUPS, NAV_BY_ID, navLabel } from "./components/shell.js";
 import { dashboardView } from "./features/dashboard.js";
 import { inboxView } from "./features/inbox.js";
 import {
@@ -265,6 +286,14 @@ import { ASSETS } from "./data/catalog.js";
 import { findPerson } from "./services/retired.js";
 import { APP_VERSION } from "./data/version.js";
 import { playInstantFriendly } from "./services/instantFriendly.js";
+import {
+  playMatchSequence,
+  playCelebrationAudio,
+  setAudioEnabled,
+  setAudioMuted,
+  setAudioVolume,
+  unlockAudio,
+} from "./services/audio.js";
 import { getCupDraw } from "./services/cupDraw.js";
 import { cupDrawModal } from "./features/cupDraw.js";
 import { youthIntakeModal } from "./features/youthIntake.js";
@@ -377,6 +406,7 @@ function render() {
     board: () => boardView(s),
     politics: () => politicsView(s, ui.politicsTab),
     staff: () => staffView(s, ui.staffTab, getLanguage()),
+    ultras: () => ultrasView(s),
     world: () =>
       s.expansion
         ? competitionsView(s, ui.expandedDivision)
@@ -397,8 +427,7 @@ function render() {
     app.querySelector("#main-content")?.classList.add("page-enter");
   lastRenderedRoute = ui.route;
   translateDOM(app);
-  document.title =
-    (NAV.find((n) => n.id === ui.route)?.name || "Empire FC") + " | Empire FC";
+  document.title = navLabel(ui.route) + " | Empire FC";
   document.title = translateText(document.title);
 }
 function navigate(route) {
@@ -474,6 +503,18 @@ async function apply(operation, text) {
   if (text) toast(text);
   return r;
 }
+function showCelebrationQueue(records, onDone = () => {}) {
+  if (!records.length) return onDone();
+  const save = getState();
+  const record = save?.celebrations?.find((item) => item.id === records[0].id);
+  if (!save || !record) return showCelebrationQueue(records.slice(1), onDone);
+  playCelebrationAudio(save, record.kind);
+  showCelebrationScreen(save, record, records.length, async () => {
+    await apply((state) => markCelebrationSeen(state, record.id));
+    showCelebrationQueue(records.slice(1), onDone);
+  });
+}
+
 async function runTime(resume = false) {
   const days = resume
     ? null
@@ -481,39 +522,52 @@ async function runTime(resume = false) {
   const stateBefore = getState(),
     playedBefore = new Set(
       stateBefore ? playedOwnFixtures(stateBefore).map((f) => f.id) : [],
-    );
+    ),
+    celebrationBefore = stateBefore ? celebrationSnapshot(stateBefore) : null;
   const r = await apply((s) => {
     const result = advanceTime(s, days);
+    const celebrations = result.advanced
+      ? trackCelebrationEvents(s, celebrationBefore)
+      : [];
     if (result.advanced) markStep(s, "week");
-    return result;
+    return { ...result, celebrationIds: celebrations.map((item) => item.id) };
   });
-  // 0.24: شاشة لقطات الماتش أولاً، ثم تقرير الماتش الكامل.
   const s = getState();
-  if (s && s.preferences?.autoMatchReport !== false) {
-    const fresh = playedOwnFixtures(s).filter((f) => !playedBefore.has(f.id));
-    if (fresh.length) {
-      const r = reportFor(s, fresh[fresh.length - 1]);
-      showHighlightsScreen(s, r, () => {
-        openModal(matchReportModal(s, r));
+  const fresh = s
+    ? playedOwnFixtures(s).filter((f) => !playedBefore.has(f.id))
+    : [];
+  const finishAdvance = () => {
+    // Sound is still presentation-only. When a trophy scene follows the match,
+    // its fanfare replaces overlapping match cues for a cleaner celebration.
+    if (fresh.length && !r.celebrationIds?.length)
+      playMatchSequence(s, fresh[fresh.length - 1]);
+    // 0.24: شاشة لقطات الماتش أولاً، ثم تقرير الماتش الكامل.
+    if (s && s.preferences?.autoMatchReport !== false && fresh.length) {
+      const report = reportFor(s, fresh[fresh.length - 1]);
+      showHighlightsScreen(s, report, () => {
+        openModal(matchReportModal(s, report));
       });
     }
-  }
-  if (r.blocked) {
-    ui.route = "inbox";
-    ui.inboxFilter = "required";
-    ui.message = pendingActions(getState())[0]?.id;
-    render();
-    toast(
-      r.advanced
-        ? `تقدمنا ${num(r.advanced)} أيام. الوقت متوقف لقرارك.`
-        : "فيه قرار مهم محتاج ردك قبل تمرير الوقت.",
-    );
-  } else
-    toast(
-      r.match
-        ? "توقفت المحاكاة بعد المباراة. النتيجة في بريدك."
-        : `تم تمرير ${num(r.advanced)} ${r.advanced === 1 ? "يوم" : "أيام"} وحفظ اللعبة.`,
-    );
+    if (r.blocked) {
+      ui.route = "inbox";
+      ui.inboxFilter = "required";
+      ui.message = pendingActions(getState())[0]?.id;
+      render();
+      toast(
+        r.advanced
+          ? `تقدمنا ${num(r.advanced)} أيام. الوقت متوقف لقرارك.`
+          : "فيه قرار مهم محتاج ردك قبل تمرير الوقت.",
+      );
+    } else
+      toast(
+        r.match
+          ? "توقفت المحاكاة بعد المباراة. النتيجة في بريدك."
+          : `تم تمرير ${num(r.advanced)} ${r.advanced === 1 ? "يوم" : "أيام"} وحفظ اللعبة.`,
+      );
+  };
+  const pending = s ? pendingCelebrations(s) : [];
+  if (pending.length) showCelebrationQueue(pending, finishAdvance);
+  else finishAdvance();
 }
 function showPlayer(id) {
   const s = getState(),
@@ -884,12 +938,15 @@ const actions = {
   "modal-close": () => closeModal(),
   "instant-friendly": async () => {
     let reportData = null;
+    let fixture = null;
     await apply((s) => {
       const res = playInstantFriendly(s);
       reportData = res.report;
+      fixture = res.fixture;
       markStep(s, "friendly");
     });
     const s = getState();
+    if (fixture) playMatchSequence(s, fixture);
     if (reportData) {
       showHighlightsScreen(s, reportData, () => {
         openModal(matchReportModal(s, reportData));
@@ -972,6 +1029,20 @@ const actions = {
     apply((s) => {
       s.press.delegate = !s.press.delegate;
     }),
+  "ultras-event-choice": async (el) =>
+    apply((s) => resolveUltrasEvent(s, el.dataset.event, el.dataset.id)),
+  "ultras-demand-choice": async (el) =>
+    apply((s) => respondToSupporterDemand(s, el.dataset.id)),
+  "ultras-tifo": async (el) => apply((s) => stageTifo(s, el.dataset.id || null)),
+  "ultras-away": async (el) => apply((s) => organizeAwaySupport(s, el.dataset.id || null)),
+  "ultras-chant": async () => apply((s) => launchChant(s)),
+  "ultras-pressure": async () => {
+    const rivalId = document.getElementById("ultras-rival-select")?.value;
+    if (rivalId) await apply((s) => pressureRivalSupporters(s, rivalId));
+  },
+  "ultras-sanction": async (el) =>
+    apply((s) => imposeUltrasStadiumSanction(s, el.dataset.id)),
+  "go-ultras": async () => navigate("ultras"),
   "bid-accept": async (el) => apply((s) => answerBid(s, el.dataset.id, true)),
   "bid-reject": async (el) => apply((s) => answerBid(s, el.dataset.id, false)),
   "talent-intake": async () => apply((s) => startIntake(s)),
@@ -1777,7 +1848,7 @@ const actions = {
           `<div class="more-group"><small>${g.caption}</small><div class="more-grid">${g.items
             .map(
               (id) =>
-                `<button data-nav="${id}">${icon(NAV_BY_ID[id].icon, 24)}<span>${NAV_BY_ID[id].name}</span></button>`,
+                `<button data-nav="${id}">${icon(NAV_BY_ID[id].icon, 24)}<span>${navLabel(id)}</span></button>`,
             )
             .join("")}</div></div>`,
       ).join("")}<div class="more-foot"><span data-no-translate>EMPIRE FC</span><button type="button" class="badge vault-key" data-action="secret-vault">v${APP_VERSION}</button></div>`,
@@ -1968,6 +2039,17 @@ const actions = {
     ),
   "close-modal": closeModal,
 };
+let firstAudioGesture = false;
+const unlockOnGesture = () => {
+  if (firstAudioGesture) return;
+  firstAudioGesture = true;
+  unlockAudio();
+};
+for (const eventName of ["pointerdown", "touchstart", "keydown"])
+  document.addEventListener(eventName, unlockOnGesture, {
+    once: true,
+    passive: eventName !== "keydown",
+  });
 document.addEventListener("click", async (e) => {
   if (isSaving() || actionBusy) {
     toast(tr("جارٍ حفظ القرار…", "Saving decision…", "Enregistrement…"));
@@ -2238,7 +2320,11 @@ document.addEventListener("submit", async (e) => {
     if (form.id === "commerce-prices") {
       const ticket = Number(form.elements.ticket.value),
         shirt = Number(form.elements.shirt.value);
-      await apply((s) => setPrices(s, ticket, shirt));
+      await apply((s) => {
+        const previousTicket = s.ticketPrice;
+        setPrices(s, ticket, shirt);
+        recordTicketPriceChange(s, previousTicket, ticket);
+      });
     }
     if (form.id === "shop-stock") {
       const quantity = Number(form.elements.quantity.value);
@@ -2424,8 +2510,13 @@ document.addEventListener("submit", async (e) => {
         vip = Number(form.elements.vip.value),
         premium = Number(form.elements.premium.value);
       await apply((s) => {
+        const previousPrices = categoryPrices(s);
+        const previousAverage = (s.ticketPrice + previousPrices.first + previousPrices.vip) / 3;
         s.ticketPrice = p;
         setCategoryPrices(s, { first, vip });
+        const nextPrices = categoryPrices(s);
+        const nextAverage = (s.ticketPrice + nextPrices.first + nextPrices.vip) / 3;
+        recordTicketPriceChange(s, previousAverage, nextAverage);
         setMatchPremium(s, premium);
       }, "تم اعتماد أسعار الفئات والعلاوة للمباريات القادمة.");
       closeModal();
@@ -2435,6 +2526,11 @@ document.addEventListener("submit", async (e) => {
   }
 });
 document.addEventListener("input", (e) => {
+  if (e.target.id === "audio-volume") {
+    const output = document.getElementById("audio-volume-value");
+    if (output) output.value = `${Math.round(Number(e.target.value))}%`;
+    return;
+  }
   if (e.target.closest("#offer-form,#contract-form")) updateCalculations();
   if (e.target.id === "palette-input") {
     paletteQuery(e.target.value);
@@ -2484,6 +2580,30 @@ document.addEventListener("keydown", (e) => {
 document.addEventListener("change", async (e) => {
   if (isSaving() || actionBusy) return;
   try {
+    if (e.target.id === "audio-enabled") {
+      const enabled = e.target.checked;
+      await apply(
+        (s) => setAudioEnabled(s, enabled),
+        tr("تم حفظ إعداد الصوت.", "Sound setting saved.", "Réglage audio enregistré."),
+      );
+      return;
+    }
+    if (e.target.id === "audio-muted") {
+      const muted = e.target.checked;
+      await apply(
+        (s) => setAudioMuted(s, muted),
+        tr("تم حفظ إعداد الكتم.", "Mute setting saved.", "Réglage muet enregistré."),
+      );
+      return;
+    }
+    if (e.target.id === "audio-volume") {
+      const volume = Number(e.target.value) / 100;
+      await apply(
+        (s) => setAudioVolume(s, volume),
+        tr("تم حفظ مستوى الصوت.", "Volume saved.", "Volume enregistré."),
+      );
+      return;
+    }
     if (e.target.dataset.dynastyUpbringing) {
       const childId = e.target.dataset.dynastyUpbringing;
       const style = e.target.value;
@@ -2750,6 +2870,8 @@ async function bootstrap() {
     if (loaded.backup)
       toast("تم استرجاع النسخة الاحتياطية بعد تعذر قراءة الحفظ الأساسي.", true);
     if (loaded.error) toast("الحفظة غير سليمة: " + loaded.error, true);
+    const pending = loaded.state ? pendingCelebrations(loaded.state) : [];
+    if (pending.length) setTimeout(() => showCelebrationQueue(pending), 0);
   } catch (e) {
     render();
     toast(

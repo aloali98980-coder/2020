@@ -13,6 +13,7 @@ import { recordMatchStats } from "./seasonStats.js";
 import { generateCardDistribution, applyMatchConsequences } from "./matchConsequences.js";
 import { recordDisciplineIncident, refereeSuspensionThreshold } from "./politics/committees.js";
 import { resolveInsiderBet } from "./betting/insider.js";
+import { fanAttendanceMultiplier, recordSupporterResult, supporterMatchBonus } from "./ultras.js";
 export function fixtures(date) {
   let order = CLUBS.map((c) => c.id),
     out = [];
@@ -122,8 +123,8 @@ export function matchDay(
     const effects = owns
       ? tacticalEffects(s, ourHome ? f.away : f.home)
       : { attack: 0, defence: 0, fatigue: 0 };
-    let hp = strength(s, f.home),
-      ap = strength(s, f.away);
+    let hp = strength(s, f.home) + supporterMatchBonus(s, f.home, f, true),
+      ap = strength(s, f.away) + supporterMatchBonus(s, f.away, f, false);
     // bribed opponent: opponent underperforms
     if (hasBribe && owns) {
       if (f.home === s.clubId) ap = ap * 0.75;
@@ -176,6 +177,7 @@ export function matchDay(
     }
     options.afterScore?.(f);
     f.played = true;
+    recordSupporterResult(s, f);
     const h = table.find((t) => t.clubId === f.home),
       a = table.find((t) => t.clubId === f.away);
     h.played++;
@@ -225,7 +227,7 @@ export function matchDay(
               0.2,
               0.98,
             );
-        f.attendance = Math.floor(capacity * fill);
+        f.attendance = Math.floor(capacity * fill * fanAttendanceMultiplier(s, s.clubId, f.date));
         const effectivePrice = f.isDerby ? s.ticketPrice * 2 : s.ticketPrice;
         post(
           s,

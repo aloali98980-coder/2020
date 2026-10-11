@@ -44,6 +44,7 @@ import { endSeasonBoardReview, startSeasonMandate } from "./boardMandate.js";
 import { politicalSeasonEnd } from "./politics/campaign.js";
 import { associationSeasonEnd } from "./politics/associationFinance.js";
 import { reconcilePoliticalMap } from "./politics/state.js";
+import { ensureUltras } from "./ultras.js";
 const EUROPE = [
   "en",
   "es",
@@ -683,6 +684,7 @@ export function pyramidDay(s) {
   });
   cupsDay(s);
   rollover(s);
+  ensureUltras(s);
   if (s.date.endsWith("-01")) {
     const tier = ownDivision(s).tier;
     post(

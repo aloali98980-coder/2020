@@ -21,8 +21,12 @@ const SKIP = [
   /src\/data\/politicsCommittees\.js/,
   /src\/data\/politicsGovernance\.js/,
   /src\/data\/politicsEvents\.js/,
-  // Club-empire event records store explicit {ar,en,fr} objects.
+  // Club-empire and ultras event records store explicit {ar,en,fr} objects.
   /src\/data\/clubEmpireEvents\.js/,
+  /src\/data\/ultrasEvents\.js/,
+  // The ultras dashboard and service localize each phrase inline through AR/EN/FR maps.
+  /src\/features\/ultras\.js/,
+  /src\/services\/ultras\.js/,
 ];
 const files = [];
 (function walk(dir) {

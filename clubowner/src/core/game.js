@@ -23,7 +23,9 @@ import { initPolitics } from "../services/politics/state.js";
 import { initBetting } from "../services/betting/state.js";
 import { initStockMarket } from "../services/stockMarket/state.js";
 import { initClubEmpire } from "../services/clubEmpire/state.js";
-export const SAVE_VERSION = 34;
+import { ensureAudioPreferences } from "../services/audio.js";
+import { initializeUltras } from "../services/ultras.js";
+export const SAVE_VERSION = 37;
 export function createGame({
   clubId = "ahly",
   owner = "مالك النادي",
@@ -116,6 +118,7 @@ export function createGame({
     negotiations: [],
     inbox: [],
     events: [],
+    celebrations: [],
     fixtures: fixtures(startDate),
     table: CLUBS.map((c) => ({
       clubId: c.id,
@@ -134,6 +137,7 @@ export function createGame({
     // حياة الملياردير 0.29: ثروة شخصية منفصلة عن خزينة النادي من اليوم الأول.
     empire: initEmpire(null, ownerStory),
   };
+  ensureAudioPreferences(s);
   if (expanded) {
     initPyramid(s);
     initTalent(s);
@@ -188,6 +192,8 @@ export function createGame({
   ensureStaffCorp(s);
   // 0.31: رئاسة الاتحاد — خريطة محايدة وحملة مؤجلة أربع مواسم.
   initPolitics(s);
+  // 0.41: مجموعات جماهير مولدة ومترجمة لكل نادٍ في العالم المحمل.
+  initializeUltras(s);
   // 0.36: إمبراطورية المراهنات — سوق عام يعمل حتى بلا شركة.
   initBetting(s);
   // 0.37: بورصة الأندية — كل نادٍ له تسعير أولي، ومحفظة المالك تبدأ فارغة.

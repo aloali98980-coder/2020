@@ -8,6 +8,7 @@ import { getDisplayCurrency, DISPLAY_CURRENCIES } from "../ui/format.js";
 import { CURRENCIES } from "../data/currencies.js";
 import { APP_VERSION } from "../data/version.js";
 import { listSlots, MAX_SAVE_SLOTS } from "../services/slots.js";
+import { audioSettingsFor } from "../services/audio.js";
 
 const themePref = () => {
   try {
@@ -82,6 +83,7 @@ function cloudPanel(s) {
 }
 
 export function settingsView(s) {
+  const audio = audioSettingsFor(s);
   return `${heading("إنت اللي بتحدد طريقة إدارتك", "الإعدادات والحفظ", "حافظ على مشوارك، واضبط إيقاع العالم.")}
   ${cloudPanel(s)}
   <section class="panel install-panel">
@@ -174,6 +176,25 @@ export function settingsView(s) {
           <small><kbd>Ctrl</kbd> + <kbd>K</kbd> — ${tr("البحث السريع عن شاشة أو لاعب", "Quick search for a screen or player", "Recherche rapide écran ou joueur")}</small>
         </div>
         ${badge(tr("لوحة مفاتيح", "Desktop", "Bureau"), "")}
+      </div>
+    </section>
+    <section class="panel settings-panel audio-settings-panel">
+      <div class="panel-head">
+        <h3>${icon("sound")} ${tr("أجواء يوم الماتش", "Match-day audio", "Ambiance des matchs")}</h3>
+        ${badge(audio.enabled && !audio.muted ? tr("جاهز", "Ready", "Prêt") : tr("صامت", "Silent", "Silencieux"), audio.enabled && !audio.muted ? "green" : "")}
+      </div>
+      <p>${tr("هتافات وصفارات وألحان مولّدة محليًا بلا تسجيلات خارجية. يبدأ المتصفح الصوت بعد أول تفاعل منك.", "Generated chants, whistles and cues with no external recordings. Your browser starts audio after your first interaction.", "Chants, sifflets et signaux générés localement, sans enregistrements externes. Le navigateur active le son après votre premier geste.")}</p>
+      <div class="preference-row">
+        <div><strong>${tr("تشغيل الصوت", "Sound on", "Activer le son")}</strong><small>${tr("أجواء الملعب والمباريات والاحتفالات", "Crowd, match and celebration cues", "Ambiance du stade, des matchs et des célébrations")}</small></div>
+        <label class="switch"><input type="checkbox" id="audio-enabled" ${audio.enabled ? "checked" : ""}><span></span></label>
+      </div>
+      <div class="preference-row">
+        <div><strong>${tr("كتم الصوت", "Mute", "Muet")}</strong><small>${tr("كتم مؤقت مع الاحتفاظ بمستوى الصوت", "Temporarily silence without changing the level", "Couper temporairement sans modifier le niveau")}</small></div>
+        <label class="switch"><input type="checkbox" id="audio-muted" ${audio.muted ? "checked" : ""}><span></span></label>
+      </div>
+      <div class="preference-row audio-level-row">
+        <div><strong>${tr("مستوى الصوت", "Volume", "Volume")}</strong><small>${tr("يتحكم في كل الأصوات المولّدة", "Applies to all generated cues", "S’applique à tous les sons générés")}</small></div>
+        <label class="audio-slider"><input type="range" id="audio-volume" min="0" max="100" step="1" value="${Math.round(audio.volume * 100)}" aria-label="${tr("مستوى الصوت", "Volume", "Volume")}"><output id="audio-volume-value">${Math.round(audio.volume * 100)}%</output></label>
       </div>
     </section>
     <section class="panel settings-panel">

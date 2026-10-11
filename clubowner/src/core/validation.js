@@ -18,6 +18,7 @@ import { OWNER_STORIES, LIFESTYLES, TRANSFER_CAP } from "../services/empire/weal
 import { CASE_KINDS, CASE_STAGES } from "../data/staffCatalog.js";
 import { validatePolitics } from "./politicsValidation.js";
 import { validateStockMarket } from "./stockMarketValidation.js";
+import { validateUltras } from "./ultrasValidation.js";
 
 // A save is untrusted input. Validate structure and relationships before replacing it.
 const id = (value) =>
@@ -104,8 +105,15 @@ export function validateSave(s) {
     "أسواق غير مدعومة.",
   );
   check(
-    s.preferences && typeof s.preferences.pauseMatches === "boolean",
-    "إعدادات المحاكاة ناقصة.",
+    s.preferences &&
+      typeof s.preferences.pauseMatches === "boolean" &&
+      s.preferences.audio &&
+      typeof s.preferences.audio.enabled === "boolean" &&
+      typeof s.preferences.audio.muted === "boolean" &&
+      Number.isFinite(s.preferences.audio.volume) &&
+      s.preferences.audio.volume >= 0 &&
+      s.preferences.audio.volume <= 1,
+    "إعدادات المحاكاة أو الصوت ناقصة.",
   );
   const f = s.finance;
   check(
@@ -502,6 +510,26 @@ export function validateSave(s) {
   validateEmpire(s);
   validatePolitics(s);
   validateStockMarket(s);
+  check(
+    Array.isArray(s.celebrations) &&
+      s.celebrations.length <= 500 &&
+      new Set(s.celebrations.map((item) => item.id)).size === s.celebrations.length &&
+      new Set(s.celebrations.map((item) => item.sourceKey)).size === s.celebrations.length &&
+      s.celebrations.every(
+        (item) =>
+          id(item.id) &&
+          ["title", "cup", "derby", "promotion"].includes(item.kind) &&
+          text(item.sourceId) &&
+          text(item.sourceKey) &&
+          text(item.name) &&
+          isoDate(item.date) &&
+          amount(item.season) &&
+          typeof item.seen === "boolean" &&
+          item.reward &&
+          ["merchandise", "sponsor", "morale", "fans", "reputation", "followers", "engagement"].every((key) => amount(item.reward[key])),
+      ),
+    "سجل الاحتفالات غير سليم.",
+  );
   const city = s.sportsCity, stadium = city?.stadium;
   check(city && Array.isArray(city.facilities) && city.facilities.length <= CITY_FACILITIES.length &&
     new Set(city.facilities).size === city.facilities.length && city.facilities.every(x => CITY_FACILITIES.some(f => f.id === x)) &&
@@ -513,6 +541,7 @@ export function validateSave(s) {
   validateTalent(s);
   validateLegends(s);
   validateDynasty(s);
+  validateUltras(s);
   return s;
 }
 
