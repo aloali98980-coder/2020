@@ -8676,4 +8676,9 @@ export const EVENT_PHRASES = {
     "A transfer stirs debate",
     "Un transfert fait débat",
   ],
+  // ── إشعار كسر الشرط الجزائي (بعد الإغلاق) ──
+  "انتقالات": [
+    "Transfers",
+    "Transferts",
+  ],
 };

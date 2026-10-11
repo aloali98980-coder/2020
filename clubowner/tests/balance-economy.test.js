@@ -31,7 +31,7 @@ test("البث يُقيَّد داخل الحدود حتى لو كان النا�
 });
 
 test("بوابة 10 مواسم: لا إفلاس ولا ثراء مفرط في كل البذور المختبرة", () => {
-  for (const seed of [1, 3, 4, 5, 11]) {
+  for (let seed = 1; seed <= 12; seed++) { // كل البذور الاثنتي عشرة
     const r = runBalance({ seasons: 10, seed });
     assert.equal(r.bankruptSeason, null, `seed ${seed} bankrupt in season ${r.bankruptSeason}`);
     for (const row of r.rows) assert.ok(row.cash >= 0, `seed ${seed} season ${row.season} cash ${row.cash}`);

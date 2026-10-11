@@ -205,6 +205,7 @@ const HEADLINE_KIND = () => ({
   fixture: tr("قريبًا", "Soon", "Bientôt"),
   press: tr("صحافة", "Press", "Presse"),
   mail: tr("بريد", "Mail", "Courrier"),
+  alert: tr("عاجل", "Urgent", "Urgent"),
 });
 function headlinesView(s) {
   const items = morningHeadlines(s);
@@ -213,7 +214,7 @@ function headlinesView(s) {
   const rows = items
     .map((h) => {
       const attrs =
-        h.kind === "decision" || h.kind === "mail"
+        h.kind === "decision" || h.kind === "mail" || h.kind === "alert"
           ? `data-action="open-message" data-id="${h.ref}"`
           : h.kind === "match"
             ? `data-action="match-report" data-id="${h.ref}"`

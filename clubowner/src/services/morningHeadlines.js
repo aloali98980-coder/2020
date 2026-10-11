@@ -12,7 +12,7 @@ const MAX_AGE_DAYS = 7;
 const LINE_MAX = 90;
 
 // الأولوية: قرار مطلوب > نتيجة حديثة > مباراة قادمة قريبة > خبر صحفي > بريد عادي.
-const KIND_SCORE = { decision: 100, match: 90, fixture: 75, press: 60, mail: 40 };
+const KIND_SCORE = { alert: 110, decision: 100, match: 90, fixture: 75, press: 60, mail: 40 };
 
 const clip = (text) => {
   const t = String(text ?? "").replace(/\s+/g, " ").trim();
@@ -60,9 +60,13 @@ export function morningHeadlines(s) {
   // أخبار الصحافة (الحفظات الموسّعة فقط).
   for (const n of s.press?.news || []) push("press", n.date, n.title);
 
+  // إشعار عاجل غير مطلوب الرد (مثل كسر شرط جزائي تلقائي): أعلى من كل شيء.
+  for (const m of s.inbox || [])
+    if (!m.required && m.priority === "high") push("alert", m.date, m.title, m.id);
+
   // بريد عادي غير مطلوب.
   for (const m of s.inbox || [])
-    if (!m.required) push("mail", m.date, m.title, m.id);
+    if (!m.required && m.priority !== "high") push("mail", m.date, m.title, m.id);
 
   // أزل التكرار بالعنوان مع الإبقاء على الأعلى درجة.
   const sorted = items.sort(

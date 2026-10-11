@@ -486,6 +486,11 @@ export function blackFilesDay(s) {
       post(s, item.clause, "player-sale", `كسر شرط جزائي: ${p.name}`, uid(s, "release-ai"));
       s.fanSupport = clamp(s.fanSupport - 8, 0, 100);
       addNoise(s, "transfer", 10, "كسر شرط جزائي يثير الجدل");
+      // إشعار صاخب: خبر في الصحافة (إن وُجد ملفها) ليظهر أيضًا في عناوين الصباح.
+      if (s.press && Array.isArray(s.press.news)) {
+        s.press.news.unshift({ date: s.date, title: blackTextAr("releaseClauseBrokenTitle", { v: p.name }), type: "انتقالات" });
+        s.press.news = s.press.news.slice(0, 60);
+      }
       message(s, {
         title: blackTextAr("releaseClauseBrokenTitle", { v: p.name }),
         body: blackTextAr("releaseClauseBrokenBody", { v: item.buyer, money: item.clause }),
