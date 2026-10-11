@@ -5,6 +5,7 @@ import test from "node:test";
 import { createGame } from "../src/core/game.js";
 import { matchDay } from "../src/services/matches.js";
 import { buildTimeline } from "../src/services/matchTimeline.js";
+import { applyMatchConsequences, injuryProbability, injuryDuration } from "../src/services/matchConsequences.js";
 
 const lcg = (seed) => () => {
   seed = (seed * 1103515245 + 12345) & 0x7fffffff;
@@ -153,5 +154,86 @@ test("الحراس لا يسجلون في الخطط (عبر مباريات كث
       const p = s.players.find((y) => y.id === g.s);
       if (p) assert.notEqual(p.position, "GK", "حارس سجّل هدفًا");
     }
+  }
+});
+
+// ── تدقيق الإصابات (0.43) ─────────────────────────────────────────────────
+const teamFixture = (s) => {
+  const xi = s.players.filter((p) => p.clubId === s.clubId).slice(0, 11);
+  const f = {
+    id: "audit-f",
+    home: s.clubId,
+    away: "other",
+    homeGoals: 1,
+    awayGoals: 0,
+    lineup: xi.map((p) => ({ playerId: p.id, slot: p.position, fit: 100 })),
+    timeline: { ev: [] },
+  };
+  return { xi, f };
+};
+
+test("الإصابة لا تطال المطرود بعد طرده، وتطال من أنهى المباراة على الأرض", () => {
+  const s = createGame({ database: "demo", leagues: ["eg"] });
+  const { xi, f } = teamFixture(s);
+  const sentOff = xi[3];
+  f.timeline = { ev: [{ m: 30, t: "r", p: sentOff.id }] };
+  for (const p of xi) delete p.injuryUntil;
+  applyMatchConsequences(s, f, { yellows: [], reds: [sentOff] }, () => 0, {});
+  assert.equal(sentOff.injuryUntil, undefined, "المطرود لا يُصاب بعد طرده");
+  const finishing = xi.filter((p) => p.id !== sentOff.id);
+  assert.ok(finishing.some((p) => p.injuryUntil), "من أنهى المباراة يمكن أن يُصاب");
+});
+
+test("المستبدل خارج الملعب لا يُصاب بعد خروجه، والداخل من الدكة يُصاب", () => {
+  const s = createGame({ database: "demo", leagues: ["eg"] });
+  const { xi, f } = teamFixture(s);
+  const subbed = xi[5];
+  const bench = { id: "bench-x", clubId: s.clubId, position: "CM", rating: 60, fitness: 90, name: "بديل" };
+  s.players.push(bench);
+  f.timeline = { ev: [{ m: 60, t: "s", o: subbed.id, i: bench.id }] };
+  for (const p of xi) delete p.injuryUntil;
+  applyMatchConsequences(s, f, { yellows: [], reds: [] }, () => 0, {});
+  assert.equal(subbed.injuryUntil, undefined, "المستبدل لا يُصاب");
+  assert.ok(bench.injuryUntil, "الداخل من الدكة يُصاب إن أصيب");
+});
+
+test("تكرار الإصابات وشدتها معقولان: إصابة أو أكثر في بعض المباريات، وأغلبها خفيفة", () => {
+  const s = createGame({ database: "demo", leagues: ["eg"] });
+  const rng = lcg(31337);
+  let injuries = 0;
+  let light = 0;
+  let heavy = 0;
+  const matches = 3000;
+  for (let m = 0; m < matches; m++) {
+    const { xi, f } = teamFixture(s);
+    for (const p of xi) {
+      delete p.injuryUntil;
+      p.fitness = 75;
+      p.seasonMinutes = 900;
+    }
+    applyMatchConsequences(s, f, { yellows: [], reds: [] }, rng, {});
+    for (const p of xi) {
+      if (!p.injuryUntil) continue;
+      injuries++;
+      const days = Math.round((new Date(p.injuryUntil) - new Date(s.date)) / 86400000);
+      if (days <= 5) light++;
+      if (days >= 15) heavy++;
+    }
+  }
+  const perMatch = injuries / matches;
+  assert.ok(perMatch >= 0.1 && perMatch <= 1.0, `إصابات الفريق في المباراة ${perMatch.toFixed(2)}`);
+  assert.ok(light / injuries > 0.4, `الخفيفة ${(light / injuries).toFixed(2)}`);
+  assert.ok(heavy / injuries < 0.2, `الثقيلة ${(heavy / injuries).toFixed(2)}`);
+});
+
+test("احتمال الإصابة لكل لاعب محصور (0.5%–12%) ويزداد مع الإرهاق، ومدة الإصابة 2–90 يومًا", () => {
+  const fresh = injuryProbability({ fitness: 90, seasonMinutes: 0 });
+  const worn = injuryProbability({ fitness: 40, seasonMinutes: 3000 });
+  assert.ok(fresh >= 0.005 && worn <= 0.12);
+  assert.ok(worn > fresh);
+  const rng = lcg(5);
+  for (let i = 0; i < 1000; i++) {
+    const d = injuryDuration(rng);
+    assert.ok(d >= 2 && d <= 90);
   }
 });
