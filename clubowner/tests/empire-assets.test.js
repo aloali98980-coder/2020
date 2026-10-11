@@ -88,8 +88,8 @@ test("صيانة شهرية تُخصم أول الشهر عبر إيقاع ال�
   const p = s.empire.personal;
   s.date = "2026-08-01";
   empireDay(s);
-  // دخل الوريث 600 ألف − معيشة مريح 800 ألف − صيانة 600 ألف
-  assert.equal(s.empire.personal, p + 600_000 - 800_000 - 600_000);
+  // دخل الوريث 600 ألف − معيشة مريح 500 ألف − صيانة 600 ألف
+  assert.equal(s.empire.personal, p + 600_000 - 500_000 - 600_000);
   assert.equal(totalUpkeep(s), 600_000);
 });
 
@@ -99,7 +99,7 @@ test("عجز الصيانة يتحول دينًا", () => {
   s.empire.personal = 0;
   const debt = s.empire.debt;
   s.date = "2026-08-01";
-  // اليوم الأول: دخل 600 ألف − معيشة مريح 800 ألف − صيانة 600 ألف = عجز 800 ألف → دين.
+  // اليوم الأول: دخل 600 ألف − معيشة مريح 500 ألف − صيانة 600 ألف = عجز 800 ألف → دين.
   empireDay(s);
   assert.ok(s.empire.debt > debt, "الدين زاد لتغطية العجز");
   assert.equal(s.empire.personal, 0);

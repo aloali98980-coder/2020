@@ -94,7 +94,7 @@ test("تقرير حياتك الشهري: دخل/صرف/عوائد/تغير ال
   assert.ok(r, "التقرير موجود");
   assert.equal(r.month, "2026-08");
   assert.ok(r.income >= 600_000, "دخل القصة");
-  assert.ok(r.expenses >= 800_000, "المعيشة");
+  assert.ok(r.expenses >= 500_000, "المعيشة");
   assert.equal(typeof r.returns, "number");
   assert.equal(typeof r.netDelta, "number");
   assert.equal(r.wifeHappiness, null, "أعزب بلا زوجة");

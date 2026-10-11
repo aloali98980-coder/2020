@@ -4,6 +4,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { runBalance } from "../scripts/balance-sim.mjs";
 import { broadcastMonthly, BROADCAST_MIN, BROADCAST_MAX } from "../src/services/finance.js";
+import { LIFESTYLES } from "../src/services/empire/wealth.js";
 import { createGame } from "../src/core/game.js";
 import { setLanguage } from "../src/i18n/index.js";
 
@@ -35,5 +36,16 @@ test("بوابة 10 مواسم: لا إفلاس ولا ثراء مفرط في ك
     assert.equal(r.bankruptSeason, null, `seed ${seed} bankrupt in season ${r.bankruptSeason}`);
     for (const row of r.rows) assert.ok(row.cash >= 0, `seed ${seed} season ${row.season} cash ${row.cash}`);
     assert.ok(r.endCash <= 3 * r.startCash, `seed ${seed} explosive: ${r.endCash}`);
+  }
+});
+
+test("الثروة الشخصية: معيشة «مريحة» 500,000 شهريًا، وتبقى موجبة عبر 10 مواسم", () => {
+  assert.equal(LIFESTYLES.comfortable.cost, 500_000);
+  for (const seed of [1, 11]) {
+    const r = runBalance({ seasons: 10, seed });
+    for (const row of r.rows) {
+      assert.ok(row.personal > 0, `seed ${seed} season ${row.season} personal ${row.personal}`);
+      assert.equal(row.debt, 0, `seed ${seed} season ${row.season} debt`);
+    }
   }
 });

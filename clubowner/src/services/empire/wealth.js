@@ -21,7 +21,7 @@ export const OWNER_STORIES = Object.freeze({
 
 export const LIFESTYLES = Object.freeze({
   frugal: Object.freeze({ cost: 250_000, prestige: 0, happyDrift: -2, fame: 0 }),
-  comfortable: Object.freeze({ cost: 800_000, prestige: 1, happyDrift: 0, fame: 0 }),
+  comfortable: Object.freeze({ cost: 500_000, prestige: 1, happyDrift: 0, fame: 0 }),
   luxury: Object.freeze({ cost: 2_200_000, prestige: 3, happyDrift: 2, fame: 1 }),
   legendary: Object.freeze({ cost: 6_000_000, prestige: 6, happyDrift: 4, fame: 2 }),
 });
