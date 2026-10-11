@@ -52,6 +52,8 @@ function checkMoves(x, moves) {
   );
   return after;
 }
+// الدفعة 7: ترحيل أرقام القمصان يضيف حقل shirtNumber فقط؛ المقارنة تستثنيه.
+const stripShirt = (ps) => ps.map(({ shirtNumber, ...p }) => p);
 test("v08 requested depths, exact major group sizes and legacy lookup are distinct", () => {
   for (const c of ["en", "de", "fr", "it", "es", "eg"])
     assert.equal(
@@ -196,7 +198,7 @@ test("schema seven migration retains all values and old membership; current migr
   const next = migrateSave(s);
   assert.equal(next.version, SAVE_VERSION);
   assert.equal(s.version, 7);
-  assert.deepEqual(next.players, p);
+  assert.deepEqual(stripShirt(next.players), stripShirt(p));
   assert.deepEqual(next.finance, f);
   assert.equal(migrateSave(next), next);
   validateSave(next);

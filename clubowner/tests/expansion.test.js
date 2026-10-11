@@ -39,6 +39,8 @@ const game = () =>
     leagues: ["eg", "en"],
     difficulty: "easy",
   });
+// الدفعة 7: ترحيل أرقام القمصان يضيف حقل shirtNumber فقط؛ المقارنة تستثنيه.
+const stripShirt = (ps) => ps.map(({ shirtNumber, ...p }) => p);
 test("Lower divisions use real-name sources; new England careers have three levels", () => {
   assert.deepEqual(
     DIVISIONS.filter((d) => d.country === "en").map((d) => d.tier),
@@ -193,7 +195,7 @@ test("Version 3 careers migrate without retrofitting competitions or replacing p
   const t = migrateSave(s);
   assert.equal(t.version, SAVE_VERSION);
   assert.equal(t.expansion, undefined);
-  assert.deepEqual(t.players, s.players);
+  assert.deepEqual(stripShirt(t.players), stripShirt(s.players));
   validateSave(t);
 });
 test("A complete 400-day season produces cups, standings and promotion with persistent identities", () => {

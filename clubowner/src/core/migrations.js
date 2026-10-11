@@ -28,6 +28,7 @@ import { ensureCelebrations } from "../services/celebrations.js";
 import { ensureUltras } from "../services/ultras.js";
 import { ensureAwards } from "../services/awards.js";
 import { stockText } from "../data/stockMarketTexts.js";
+import { backfillShirtNumbers } from "../services/presentation.js";
 import { empireText } from "../data/empireTexts.js";
 function migrateToFive(input) {
   if (input?.version === 4) {
@@ -654,7 +655,7 @@ function migrateSave37(input) {
 
 // 0.42 (save v38): الجوائز — قاعة مشاهير وحفل موسمي وخطافات عقود وتصويت جماهيري.
 // الحفظات القديمة تُرحَّل بقاعة فارغة تبدأ التسجيل من الموسم الحالي؛ لا تُمس نتائج أو عقود.
-export function migrateSave(input) {
+function migrateSaveVersion(input) {
   if (!input || input.version === 38) return input;
   const prior = input.version === 37 ? structuredClone(input) : migrateSave37(input);
   if (prior?.version !== 37) return prior;
@@ -713,4 +714,11 @@ function migrateSaveToTwentyFour(input) {
   const v22 = migrateToTwentyTwo(v21);
   const v23 = migrateToTwentyThree(v22);
   return migrateToTwentyFour(v23);
+}
+
+// الدفعة 7 (بعد الإغلاق): أرقام القمصان للحفظات القديمة تُرحَّل عند كل تحميل دون رفع رقم الحفظ.
+export function migrateSave(input) {
+  const out = migrateSaveVersion(input);
+  if (out && typeof out === "object") backfillShirtNumbers(out);
+  return out;
 }

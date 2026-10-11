@@ -38,19 +38,49 @@ export function firstWordsIndex(s, p) {
 
 const isUsableNumber = (n) => Number.isInteger(n) && n >= 1 && n <= 99;
 
-// رقم القميص لا يتكرر داخل النادي بين اللاعبين غير المعتزلين.
+// اختيار الرقم: الرقم السابق إن كان حرًا، ثم الحارس 1، ثم أول رقم حر من 2.
+function pickNumber(taken, p) {
+  if (isUsableNumber(p.previousShirt) && !taken.has(p.previousShirt)) return p.previousShirt;
+  if (p.position === "GK" && !taken.has(1)) return 1;
+  for (let i = 2; i <= 99; i++) if (!taken.has(i)) return i;
+  return null;
+}
+
+// رقم القميص لا يتكرر داخل النادي بين اللاعبين غير المعتزلين (نادي اللاعب نفسه).
 export function assignShirtNumber(s, p) {
+  const clubId = p.clubId ?? s.clubId;
   const taken = new Set(
     s.players
-      .filter((x) => x.clubId === s.clubId && x.id !== p.id && x.status !== "retired" && isUsableNumber(x.shirtNumber))
+      .filter((x) => x.clubId === clubId && x.id !== p.id && x.status !== "retired" && isUsableNumber(x.shirtNumber))
       .map((x) => x.shirtNumber),
   );
-  let n = null;
-  if (isUsableNumber(p.previousShirt) && !taken.has(p.previousShirt)) n = p.previousShirt;
-  if (n === null && p.position === "GK" && !taken.has(1)) n = 1;
-  for (let i = 2; n === null && i <= 99; i++) if (!taken.has(i)) n = i;
-  p.shirtNumber = n;
-  return n;
+  p.shirtNumber = pickNumber(taken, p);
+  return p.shirtNumber;
+}
+
+// ترحيل الحفظات القديمة: كل لاعب نشط بلا رقم يأخذ رقمًا فريدًا داخل ناديه.
+// خطي (مجموعات حسب النادي، لا مسح كامل لكل لاعب). idempotent: من له رقم صالح لا يُمس.
+export function backfillShirtNumbers(s) {
+  if (!Array.isArray(s.players)) return 0;
+  const takenByClub = new Map();
+  const pending = [];
+  for (const p of s.players) {
+    if (p.status === "retired") continue;
+    if (!takenByClub.has(p.clubId)) takenByClub.set(p.clubId, new Set());
+    if (isUsableNumber(p.shirtNumber)) takenByClub.get(p.clubId).add(p.shirtNumber);
+    else pending.push(p);
+  }
+  pending.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+  let filled = 0;
+  for (const p of pending) {
+    const taken = takenByClub.get(p.clubId);
+    const n = pickNumber(taken, p);
+    if (n === null) continue;
+    p.shirtNumber = n;
+    taken.add(n);
+    filled++;
+  }
+  return filled;
 }
 
 // للعرض فقط: إن لم يكن للحفظة القديم رقم، يُحسب الرقم المتاح دون كتابة على الحالة.
@@ -68,4 +98,3 @@ export const FIRST_WORDS = Object.freeze([
   "أنا جاهز للتحدي، ولن أخذل زملائي.",
   "خطوة كبيرة في مسيرتي، وأتطلع للبداية.",
 ]);
-export const firstWordsOf = (s, p) => FIRST_WORDS[p.firstWordsIndex ?? firstWordsIndex(s, p)];
