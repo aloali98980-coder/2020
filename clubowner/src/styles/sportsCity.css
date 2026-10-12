@@ -57,6 +57,10 @@
 .city-form small {
   width: 100%;
 }
+.city-facilities-catalog {
+  display: grid;
+  gap: 12px;
+}
 .city-group {
   padding: 14px;
   border: 1px solid var(--line);

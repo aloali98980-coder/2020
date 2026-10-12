@@ -10,6 +10,7 @@ import { icon } from "../components/icons.js";
 import { money, num, date , cur} from "../ui/format.js";
 import { daysBetween } from "../core/utils.js";
 import { projectQuote } from "../services/facilities.js";
+import { cityFacilitiesCatalogView } from "./sportsCity.js";
 export function facilitiesView(s) {
   return `${heading("الأساس اللي بيشيل النادي", "منشآت النادي", "كل مشروع له وقت وتكلفة تشغيل وأثر. الاستثمار مش مجرد مستوى جديد.", badge(num(s.facilities.filter((f) => f.project).length) + " مشروعات نشطة", "green"))}<div class="facility-grid">${s.facilities
     .map((f) => {
@@ -19,7 +20,7 @@ export function facilitiesView(s) {
     })
     .join(
       "",
-    )}</div>${infoNote("الآثار مفعلة: توسعة سعة الاستاد، استعادة جاهزية أفضل، تطوير شهري للصغار، وتوليد ناشئ شهريًا. الأثر الرياضي يحتاج الموظف المناسب.")}`;
+    )}</div>${cityFacilitiesCatalogView(s)}${infoNote("الآثار مفعلة: توسعة سعة الاستاد، استعادة جاهزية أفضل، تطوير شهري للصغار، وتوليد ناشئ شهريًا. الأثر الرياضي يحتاج الموظف المناسب.")}`;
 }
 export function facilityDetail(s, id) {
   const f = s.facilities.find((x) => x.id === id),

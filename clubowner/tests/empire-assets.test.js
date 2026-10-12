@@ -4,6 +4,9 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { createGame } from "../src/core/game.js";
 import { validateSave } from "../src/core/validation.js";
+import { setLanguage } from "../src/i18n/index.js";
+import { empireView } from "../src/features/empire.js";
+import { EMPIRE_TEXTS } from "../src/data/empireTexts.js";
 import {
   EMPIRE_ASSETS,
   ASSET_CATEGORIES,
@@ -58,6 +61,53 @@ test("الشراء يخصم من الشخصي ويضيف برستيجًا ولا
   assert.ok(s.empire.prestige >= 10 + def.prestige);
   assert.equal(s.empire.assets[0].sellValue, Math.round(def.price * def.sellPct));
   validateSave(s);
+});
+
+test("بطاقتا السيارة واليخت تمرران معرّف الكتالوج وتعرضان نجاح الشراء", () => {
+  setLanguage("ar");
+  const s = game();
+  s.empire.personal = 100_000_000;
+
+  for (const id of ["car-sport", "yacht-25"]) {
+    const before = empireView(s, "assets");
+    const def = assetById(id);
+    assert.ok(
+      before.includes(`data-action="empire-buy-asset" data-id="${id}"`),
+      `زر الشراء يرسل معرّف ${id} بدلًا من undefined`,
+    );
+    assert.ok(!before.includes('data-id="undefined"'));
+
+    buyAsset(s, id);
+    assert.ok(owns(s, id));
+    assert.ok(s.inbox[0].body.includes(def.name.ar));
+    assert.doesNotMatch(
+      `${s.inbox[0].title} ${s.inbox[0].body}`,
+      /unknown|مجهول|غير معروف|undefined/i,
+    );
+
+    const after = empireView(s, "assets");
+    assert.ok(after.includes(def.name.ar));
+    assert.ok(after.includes("مملوك"));
+    assert.ok(!after.includes(`data-action="empire-buy-asset" data-id="${id}"`));
+  }
+});
+
+test("رسالة شراء السيارة تستخدم الاسم والنص المترجمين بلغة الواجهة", () => {
+  try {
+    for (const language of ["en", "fr"]) {
+      setLanguage(language);
+      const s = game();
+      buyAsset(s, "car-sport");
+      const notice = s.inbox[0];
+
+      assert.equal(notice.title, EMPIRE_TEXTS.assetBoughtTitle[language]);
+      assert.ok(notice.body.includes(assetById("car-sport").name[language]));
+      assert.doesNotMatch(`${notice.title} ${notice.body}`, /[\u0600-\u06FF]/);
+      assert.doesNotMatch(`${notice.title} ${notice.body}`, /unknown|undefined/i);
+    }
+  } finally {
+    setLanguage("ar");
+  }
 });
 
 test("لا شراء بلا سيولة ولا تكرار للأصل نفسه", () => {

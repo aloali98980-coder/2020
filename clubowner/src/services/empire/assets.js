@@ -5,7 +5,8 @@
 import { assert, clamp, uid } from "../../core/utils.js";
 import { message } from "../inbox.js";
 import { assetById, PALACE_TIERS } from "../../data/empireAssets.js";
-import { empireText } from "../../data/empireTexts.js";
+import { EMPIRE_TEXTS, empireText } from "../../data/empireTexts.js";
+import { getLanguage } from "../../i18n/index.js";
 import {
   ensureEmpire,
   personalExpense,
@@ -15,7 +16,12 @@ import {
 // يملأ متغيرات {asset}/{money}/{upkeep} في نص مترجم واحد.
 const fill = (tpl, vars) =>
   Object.entries(vars).reduce((t, [k, v]) => t.split("{" + k + "}").join(v), tpl);
-
+const localized = (copy) => {
+  const language = getLanguage();
+  return copy?.[language] || copy?.en || copy?.ar || "";
+};
+const empireMessage = (key, vars = {}) =>
+  fill(localized(EMPIRE_TEXTS[key]), vars);
 
 export const owns = (s, assetId) =>
   (s.empire?.assets || []).some((a) => a.assetId === assetId);
@@ -38,9 +44,9 @@ export function buyAsset(s, assetId) {
   e.prestige = clamp(e.prestige + def.prestige, 0, 400);
   e.fame = clamp(e.fame + 1, 0, 100);
   message(s, {
-    title: empireText("assetBoughtTitle"),
-    body: fill(empireText("assetBoughtBody"), {
-      asset: def.name.ar,
+    title: localized(EMPIRE_TEXTS.assetBoughtTitle),
+    body: empireMessage("assetBoughtBody", {
+      asset: localized(def.name),
       money: String(def.price),
       upkeep: String(def.upkeep),
     }),
@@ -61,9 +67,9 @@ export function sellAsset(s, ownershipId) {
   e.assets.splice(idx, 1);
   e.prestige = clamp(e.prestige - (def?.prestige || 0), 0, 400);
   message(s, {
-    title: empireText("assetSoldTitle"),
-    body: fill(empireText("assetSoldBody"), {
-      asset: def?.name.ar || owned.assetId,
+    title: localized(EMPIRE_TEXTS.assetSoldTitle),
+    body: empireMessage("assetSoldBody", {
+      asset: localized(def?.name) || owned.assetId,
       money: String(owned.sellValue),
     }),
     category: "events",
