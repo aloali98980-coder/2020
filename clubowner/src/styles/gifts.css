@@ -1,0 +1,43 @@
+/* الهدايا 0.46 — نماذج العطاء وأسطر الألقاب وسجل العطاء، بنفس توكنز الواجهة. */
+.gift-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin: 10px 0 14px;
+}
+.gift-form select,
+.gift-form input[type="number"] {
+  flex: 1 1 180px;
+  min-width: 0;
+  max-width: 320px;
+  padding: 9px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.14));
+  background: var(--panel-2, rgba(255, 255, 255, 0.05));
+  color: inherit;
+}
+.gift-title-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  align-items: baseline;
+  padding: 7px 0;
+  border-bottom: 1px dashed var(--line, rgba(255, 255, 255, 0.12));
+}
+.gift-title-row:last-of-type {
+  border-bottom: 0;
+}
+.gift-birthdays {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 8px 0 12px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: rgba(240, 180, 60, 0.12);
+  border: 1px solid rgba(240, 180, 60, 0.35);
+}
+.gift-risk {
+  border-color: rgba(239, 68, 68, 0.35);
+}

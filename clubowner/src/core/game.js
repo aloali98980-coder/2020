@@ -26,7 +26,9 @@ import { initClubEmpire } from "../services/clubEmpire/state.js";
 import { ensureAudioPreferences } from "../services/audio.js";
 import { initializeUltras } from "../services/ultras.js";
 import { ensureAwards } from "../services/awards.js";
-export const SAVE_VERSION = 38;
+import { ensureGifts } from "../services/gifts.js";
+import { ensureBranches } from "../services/branches.js";
+export const SAVE_VERSION = 40;
 export function createGame({
   clubId = "ahly",
   owner = "مالك النادي",
@@ -203,5 +205,9 @@ export function createGame({
   initClubEmpire(s);
   // 0.42: الجوائز — قاعة مشاهير فارغة من الموسم الأول، والاستفتاء يُفتح لاحقًا.
   ensureAwards(s);
+  // 0.46: الهدايا — سجل عطاء فارغ من اليوم الأول، ولا عقوبة على من لا يُهدي.
+  ensureGifts(s);
+  // 0.47: الفروع — قائمة فارغة من اليوم الأول؛ السوق كله متاح للفتح.
+  ensureBranches(s);
   return s;
 }

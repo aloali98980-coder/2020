@@ -40,6 +40,8 @@ import { bettingDay } from "./betting/day.js";
 import { stockMarketDay } from "./stockMarket/day.js";
 import { ultrasDay } from "./ultras.js";
 import { awardsDay } from "./awards.js";
+import { giftsDay } from "./gifts.js";
+import { branchDay, branchesMonth } from "./branches.js";
 function eventsDay(s) {
   for (const e of s.events) {
     if (e.done || e.date > s.date) continue;
@@ -129,6 +131,11 @@ export function advanceTime(s, days = null) {
     awardsDay(s);
     // 0.46: الإنجازات بعد الجوائز (فتح مرة واحدة + إشعار البريد).
     achievementsDay(s);
+    // 0.46: الهدايا — تذكير أعياد الميلاد فقط؛ لا عقوبة على عدم الإهداء.
+    giftsDay(s);
+    // 0.47: الفروع — استلام المشاريع وانتهاء القرارات بصمت، ثم تسوية شهرية.
+    branchDay(s);
+    branchesMonth(s);
     loanDayEnd(s, loanFixtures);
     commerceDay(s);
     managementDay(s);

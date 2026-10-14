@@ -108,6 +108,7 @@ import "./styles/dynasty.css";
 import "./styles/politics.css";
 import "./styles/celebrations.css";
 import "./styles/awards.css";
+import "./styles/gifts.css";
 import "./styles/ultras.css";
 import { createGame } from "./core/game.js";
 import { getState, setState, commit, isSaving } from "./core/store.js";
@@ -140,6 +141,8 @@ import {
   trackCelebrationEvents,
 } from "./services/celebrations.js";
 import { awardsView, showAwardCeremony } from "./features/awards.js";
+import { giftsView } from "./features/gifts.js";
+import { branchesView } from "./features/branches.js";
 import {
   pendingCeremony,
   markCeremonySeen,
@@ -362,6 +365,7 @@ const ui = {
   financeTab: "ledger",
   worldTab: "table",
   clubLeague: null,
+  branchCountry: null,
   clubClub: null,
   clubQuery: "",
   legendFilters: { ...DEFAULT_LEGEND_FILTERS },
@@ -469,6 +473,8 @@ function render() {
     empire: () => empireView(s, ui.empireTab),
     legends: () => legendsView(s, ui.legendFilters),
     awards: () => awardsView(s),
+    gifts: () => giftsView(s),
+    branches: () => branchesView(s, ui.branchCountry),
     achievements: () => achievementsView(s),
     legacy: () => legendLogView(s),
     harvest: () => seasonHarvestView(s),
@@ -800,6 +806,25 @@ function lootModalHtml({ amount, project, status, from }) {
     <ul class="muted">${reasons}</ul>
     <p>${tr("التنفيذ يرفع الحرارة (الشبهات) ويخفض ثقة الجمعية، ويفتح خطر الفصل.", "Proceeding raises heat (suspicion), lowers assembly trust and opens a dismissal risk.", "Poursuivre fait monter la pression (soupçons), baisse la confiance de l’assemblée et ouvre un risque de révocation.")}</p>
     <div class="modal-actions">${button(tr("تنفيذ النهب", "Proceed with looting", "Poursuivre le pillage"), action, payload, "primary")}${button(tr("إلغاء", "Cancel", "Annuler"), "modal-close", "", "ghost")}</div>`;
+}
+
+// الهدايا 0.46: تأكيد صريح قبل أي هدية على خط الغرباء 🔥 — الكلفة والأثر والشبهات معلنة قبل الدفع.
+function giftStrangerConfirmModal(kind, amount, target) {
+  const isPress = kind === "journalist";
+  const suspicion = Math.round((amount / 1_000_000) * (isPress ? 1.2 : 1.5) * 10) / 10;
+  const channel = isPress
+    ? tr("مصداقية الإدارة في الصحافة", "press credibility", "la crédibilité presse")
+    : tr(`علاقة ${target}`, `the ${target} relationship`, `la relation ${target}`);
+  const payload = `${kind}:${amount}:${target || ""}`;
+  return `<h2>${tr("هدية تُحسب رشوة 🔥", "A gift that counts as a bribe 🔥", "Un cadeau qui compte comme un pot-de-vin 🔥")}</h2>
+    <p>${tr("ستدفع", "You will pay", "Vous paierez")} <b>${money(amount)} ${cur()}</b> ${tr("من ثروتك الشخصية.", "from your personal fortune.", "de votre fortune personnelle.")}</p>
+    <p>${tr("الأثر:", "The effect:", "L'effet :")} ${channel} ${tr("يتحسن فورًا.", "improves at once.", "s'améliore aussitôt.")} ${tr("الثمن:", "The cost:", "Le prix :")} +${num(suspicion)}% ${tr("على مؤشر الشبهات في الملفات السوداء، بلا تراجع.", "on the black-files suspicion meter, with no undo.", "sur les soupçons des dossiers noirs, sans retour.")}</p>
+    <p class="muted">${tr("تذكير: عدم الإهداء ليس له أي عقوبة — هذا الخط اختيار حر تمامًا.", "Reminder: not giving carries no penalty — this line is entirely optional.", "Rappel : ne pas donner n'a aucune conséquence — cette ligne reste tout à fait facultative.")}</p>
+    <div class="modal-actions">${button(tr("ادفع الهدية", "Pay the gift", "Payer le cadeau"), "gift-stranger-confirm", payload, "primary")}${button(tr("تراجع", "Step back", "Renoncer"), "modal-close", "", "ghost")}</div>`;
+}
+
+function openGiftStrangerConfirm(kind, amount, target) {
+  openModal(giftStrangerConfirmModal(kind, amount, target), true);
 }
 
 const actions = {
@@ -2030,6 +2055,147 @@ const actions = {
       "بدأ العمل في مشروعك الخيري.",
     );
   },
+  // ── الهدايا 0.46: العطاء يُكافأ والمنع لا يُعاقب ──
+  "gift-grant-personal": async () => {
+    const { grantPersonal } = await import("./services/gifts.js");
+    const playerId = document.getElementById("grant-player")?.value;
+    const amount = Math.round(Number(document.getElementById("grant-amount")?.value));
+    await apply(
+      (s) => grantPersonal(s, playerId, amount),
+      tr("سُجلت المنحة في دفاتر النادي وارتفعت معنويات اللاعب.", "The grant is recorded in the club ledger and the player's morale rose.", "La prime est enregistrée au registre et le moral du joueur a monté."),
+    );
+  },
+  "gift-grant-squad": async () => {
+    const { grantSquad } = await import("./services/gifts.js");
+    const amount = Math.round(Number(document.getElementById("squad-amount-choice")?.value));
+    await apply(
+      (s) => grantSquad(s, amount),
+      tr("منحة جماعية وزعت على القائمة كاملة.", "A squad-wide grant was shared with everyone.", "Une prime collective a été partagée avec tout le monde."),
+    );
+  },
+  "gift-promote": async () => {
+    const { promotePlayer } = await import("./services/gifts.js");
+    const playerId = document.getElementById("promote-player")?.value;
+    const titleId = document.getElementById("promote-title")?.value;
+    const raisePct = Number(document.getElementById("promote-raise")?.value || 0);
+    await apply(
+      (s) => promotePlayer(s, playerId, titleId, raisePct),
+      tr("لقب جديد وحامل جديد — الولاء ارتفع.", "A new title with a new holder — loyalty rose.", "Un nouveau titre et un nouveau porteur — la loyauté a monté."),
+    );
+  },
+  "gift-player-value": async (el) => {
+    const { givePlayerValueGift } = await import("./services/gifts.js");
+    const playerId = document.getElementById("gift-player")?.value;
+    await apply(
+      (s) => givePlayerValueGift(s, playerId, el.dataset.id),
+      tr("وصلت الهدية من ثروتك الشخصية.", "The gift arrived from your personal fortune.", "Le cadeau est arrivé de votre fortune personnelle."),
+    );
+  },
+  "gift-player-cash": async () => {
+    const { givePlayerCash } = await import("./services/gifts.js");
+    const playerId = document.getElementById("gift-player")?.value;
+    const amount = Math.round(Number(document.getElementById("gift-cash")?.value));
+    await apply(
+      (s) => givePlayerCash(s, playerId, amount),
+      tr("الهدية المالية وصلت من ثروتك الشخصية.", "The cash gift arrived from your personal fortune.", "Le cadeau en espèces est arrivé de votre fortune."),
+    );
+  },
+  // خط الغرباء 🔥: تأكيد صريح قبل أي هدية تُحسب رشوة.
+  "gift-stranger-press": async () => {
+    const { giftStranger } = await import("./services/gifts.js");
+    const amount = Math.round(Number(document.getElementById("stranger-press-amount")?.value));
+    openGiftStrangerConfirm("journalist", amount, null);
+  },
+  "gift-stranger-official": async () => {
+    const { giftStranger } = await import("./services/gifts.js");
+    const target = document.getElementById("stranger-official-target")?.value;
+    const amount = Math.round(Number(document.getElementById("stranger-official-amount")?.value));
+    openGiftStrangerConfirm("official", amount, target);
+  },
+  // ── الفروع 0.47: فتح وترقية ومديرون وقرارات إضافة بحتة ──
+  "branch-open": async () => {
+    const { openBranch } = await import("./services/branches.js");
+    const country = document.getElementById("branch-country")?.value;
+    await apply(
+      (s) => openBranch(s, country),
+      tr("مشروع الفرع بدأ — الاستلام في موعده المعلن.", "The branch project began — delivery on the stated date.", "Le projet de branche a commencé — livraison à la date annoncée."),
+    );
+  },
+  "branch-upgrade": async (el) => {
+    const { upgradeBranch } = await import("./services/branches.js");
+    await apply(
+      (s) => upgradeBranch(s, el.dataset.id),
+      tr("مشروع الترقية بدأ.", "The upgrade project began.", "Le projet d'amélioration a commencé."),
+    );
+  },
+  // المعجل ⚡ 0.48: فوري بسعر أعلى معلن — لا انتظار إجباري في أي مسار.
+  "branch-open-instant": async () => {
+    const { openBranch } = await import("./services/branches.js");
+    const country = document.getElementById("branch-country")?.value;
+    await apply(
+      (s) => openBranch(s, country, { instant: true }),
+      tr("دُفع المعجل ⚡: الفرع يعمل من الآن.", "The accelerator was paid ⚡: the branch works right away.", "L'accélérateur a été payé ⚡ : la branche fonctionne aussitôt."),
+    );
+  },
+  "branch-upgrade-instant": async (el) => {
+    const { upgradeBranch } = await import("./services/branches.js");
+    await apply(
+      (s) => upgradeBranch(s, el.dataset.id, { instant: true }),
+      tr("دُفع المعجل ⚡: الترقية اكتملت فورًا.", "The accelerator was paid ⚡: the upgrade is done at once.", "L'accélérateur a été payé ⚡ : l'amélioration est terminée."),
+    );
+  },
+  "branch-hire-manager": async (el) => {
+    const { hireBranchManager } = await import("./services/branches.js");
+    const pickId = document.getElementById(`branch-mgr-${el.dataset.id}`)?.value;
+    await apply(
+      (s) => hireBranchManager(s, el.dataset.id, pickId),
+      tr("مدير الكفاءة تولى عمله.", "The efficiency manager took over.", "Le directeur d'efficacité a pris ses fonctions."),
+    );
+  },
+  "branch-fire-manager": async (el) => {
+    const { fireBranchManager } = await import("./services/branches.js");
+    await apply(
+      (s) => fireBranchManager(s, el.dataset.id),
+      tr("انتهى تكليف مدير الفرع.", "The branch manager was dismissed.", "Le directeur de la branche a été renvoyé."),
+    );
+  },
+  "branch-decide": async (el) => {
+    const { applyBranchDecision } = await import("./services/branches.js");
+    await apply(
+      (s) => applyBranchDecision(s, el.dataset.id),
+      tr("التعزيز يعمل الآن.", "The boost is now live.", "Le renfort est désormais actif."),
+    );
+  },
+  "branch-sign": async (el) => {
+    const { signBranchCandidate } = await import("./services/branches.js");
+    await apply(
+      (s) => signBranchCandidate(s, el.dataset.id),
+      tr("انضم الناشئ إلى فريقك الأول.", "The prospect joined your first team.", "Le jeune a rejoint votre équipe première."),
+    );
+  },
+  "branch-sell": async (el) => {
+    const { sellBranchCandidate } = await import("./services/branches.js");
+    await apply(
+      (s) => sellBranchCandidate(s, el.dataset.id),
+      tr("بيع الناشئ وسُجل في الدفاتر.", "The prospect was sold and recorded in the ledger.", "Le jeune a été vendu et enregistré au registre."),
+    );
+  },
+  "branch-release": async (el) => {
+    const { releaseBranchCandidate } = await import("./services/branches.js");
+    await apply(
+      (s) => releaseBranchCandidate(s, el.dataset.id),
+      tr("أُطلق الناشئ — بلا أي عقوبة.", "The prospect was released — with no penalty at all.", "Le jeune a été libéré — sans aucune pénalité."),
+    );
+  },
+  "gift-stranger-confirm": async (el) => {
+    const [kind, amountRaw, target] = String(el.dataset.id).split(":");
+    const { giftStranger } = await import("./services/gifts.js");
+    await apply(
+      (s) => giftStranger(s, kind, Number(amountRaw), target || null),
+      tr("سُجلت الهدية على الخط الأحمر — والشبهات ارتفعت.", "The gift is recorded on the red line — suspicion rose.", "Le cadeau est enregistré sur la ligne rouge — les soupçons ont monté."),
+    );
+    closeModal();
+  },
   "betting-buy": async (el) => {
     const { buyBettingCompany } = await import("./services/betting/state.js");
     await apply((s) => buyBettingCompany(s, el.dataset.id), tr("اشتريت شركة مراهنات.", "Betting company acquired.", "Société de paris acquise."));
@@ -2772,11 +2938,7 @@ document.addEventListener("submit", async (e) => {
     if (form.id === "project-form") {
       await apply(
         (s) => {
-          const r = startProject(
-            s,
-            form.dataset.id,
-            form.elements.speed.value === "fast",
-          );
+          const r = startProject(s, form.dataset.id, form.elements.speed.value);
           markStep(s, "facility");
           return r;
         },
@@ -2978,6 +3140,22 @@ document.addEventListener("change", async (e) => {
       ui.clubLeague = e.target.value;
       ui.clubClub = null;
       render();
+      return;
+    }
+    // 0.47: الفروع — تغيير الدولة يحدّث بطاقة المعاينة فقط.
+    if (e.target.id === "branch-country") {
+      ui.branchCountry = e.target.value;
+      render();
+      return;
+    }
+    // 0.48: المعجل ⚡ — اختيار التنفيذ الفوري يبدّل شروط الدفع في النافذة.
+    if (e.target.name === "speed" && e.target.closest("#project-form")) {
+      const form = e.target.closest("#project-form");
+      const inst = e.target.value === "instant";
+      const std = form.querySelector("[data-speed-note-std]");
+      const fast = form.querySelector("[data-speed-note-inst]");
+      if (std) std.hidden = inst;
+      if (fast) fast.hidden = !inst;
       return;
     }
     if (

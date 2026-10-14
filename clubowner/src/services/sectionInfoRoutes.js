@@ -86,6 +86,16 @@ export const ROUTE_INFO = Object.freeze({
     en: ["Sponsorships: sponsor contracts and their returns.", "Sponsors pay according to the agreed duration and terms."],
     fr: ["Sponsors : contrats des partenaires et leurs revenus.", "Les sponsors paient selon la durée et les conditions convenues."],
   },
+  gifts: {
+    ar: ["الهدايا: منح وترقيات وهدايا للاعبيك، وخط أحمر للغرباء.", "العطاء يُكافأ والمنع لا يُعاقب — لا فحص بخل ولا لوم.", "هدية الغرباء تُحسب رشوة وترفع الشبهات بمقدار معلن قبل الدفع."],
+    en: ["Gifts: grants, promotions and gifts for your players, plus a red line for strangers.", "Giving is rewarded; withholding is never punished — no stinginess check, no blame.", "A stranger's gift counts as a bribe and raises suspicion by a stated amount before you pay."],
+    fr: ["Cadeaux : primes, promotions et cadeaux pour vos joueurs, et une ligne rouge pour les inconnus.", "Donner est récompensé ; ne pas donner n'est jamais puni — aucun contrôle d'avarice, aucun reproche.", "Le cadeau d'un inconnu compte comme un pot-de-vin et monte les soupçons d'un montant annoncé avant paiement."],
+  },
+  branches: {
+    ar: ["الفروع: فرع بدولة بتكلفة ومستوى 1-3 وميزة دولة معلنة.", "العوائد شهرية: ناشئون أو دخل أو شهرة أو كشافة حسب البلد.", "القرارات كلها إضافة: كل خيار تعزيز، والتجاهل بلا عقوبة."],
+    en: ["Branches: one branch per country with a cost, levels 1–3 and a stated edge.", "Monthly returns: youth, income, fame or scouting depending on the country.", "Every decision is additive: each option is a boost and ignoring them costs nothing."],
+    fr: ["Branches : une branche par pays avec un coût, des niveaux 1–3 et un atout annoncé.", "Revenus mensuels : jeunes, revenus, renommée ou recrutement selon le pays.", "Chaque décision est additive : toute option est un renfort, les ignorer ne coûte rien."],
+  },
   commerce: {
     ar: ["دخل النادي: التذاكر والمتجر والاشتراكات.", "الدخل يتغير مع النتائج والجماهير والسمعة."],
     en: ["Club income: tickets, shop and subscriptions.", "Income changes with results, fans and reputation."],

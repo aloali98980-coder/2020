@@ -17,6 +17,8 @@ import { POLITICS_PHRASES } from "./phrases-politics.js";
 import { DYNASTY_PHRASES } from "./phrases-dynasty.js";
 import { BETTING_PHRASES } from "./phrases-betting.js";
 import { AWARDS_PHRASES } from "./phrases-awards.js";
+import { GIFTS_PHRASES } from "./phrases-gifts.js";
+import { BRANCHES_PHRASES } from "./phrases-branches.js";
 import { STOCK_MARKET_PHRASES } from "../data/stockMarketTexts.js";
 import { STOCK_MARKET_EVENT_PHRASES } from "../data/stockMarketEvents.js";
 import {
@@ -76,6 +78,10 @@ for (const extra of [
   BETTING_PHRASES,
   // 0.42: جوائز الموسم — رسائل الحفل وخطافات العقود والتصويت الجماهيري.
   AWARDS_PHRASES,
+  // 0.46: الهدايا — رسائل الأخطاء والملاحظات المعروضة عبر القاموس.
+  GIFTS_PHRASES,
+  // 0.47: الفروع — رسائل الأخطاء والملاحظات المعروضة عبر القاموس.
+  BRANCHES_PHRASES,
   // 0.37: club exchange, trading, regulation and conditional market events.
   STOCK_MARKET_PHRASES,
   STOCK_MARKET_EVENT_PHRASES,

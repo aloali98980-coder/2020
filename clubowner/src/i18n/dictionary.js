@@ -33,6 +33,10 @@ export const DICTIONARY = {
   "سوق الانتقالات": ["Transfer market", "Marché des transferts"],
   "منشآت النادي": ["Club facilities", "Installations"],
   الرعايات: ["Sponsorships", "Sponsors"],
+  // 0.46: الهدايا — تسمية الرابط في الهيكل (الشاشة نفسها تستخدم tr).
+  الهدايا: ["Gifts", "Cadeaux"],
+  // 0.47: الفروع — تسمية الرابط في الهيكل.
+  الفروع: ["Branches", "Branches"],
   "الإدارة المالية": ["Finances", "Finances"],
   "عالم الكرة": ["Football world", "Monde du football"],
   "قاعة الأساطير": ["Hall of legends", "Panthéon"],

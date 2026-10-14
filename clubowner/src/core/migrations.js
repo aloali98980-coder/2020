@@ -27,6 +27,8 @@ import { ensureAudioPreferences } from "../services/audio.js";
 import { ensureCelebrations } from "../services/celebrations.js";
 import { ensureUltras } from "../services/ultras.js";
 import { ensureAwards } from "../services/awards.js";
+import { ensureGifts } from "../services/gifts.js";
+import { ensureBranches } from "../services/branches.js";
 import { stockText } from "../data/stockMarketTexts.js";
 import { backfillShirtNumbers } from "../services/presentation.js";
 import { empireText } from "../data/empireTexts.js";
@@ -667,6 +669,34 @@ function migrateSaveVersion(input) {
   return prior;
 }
 
+// 0.46 (save v39): الهدايا — سجل عطاء جديد فارغ. لا يُخصم شيء ولا تتغير أي مؤشرات،
+// ومن لا يُهدي لا يُعاقب: الحفظة المهاجرة تبدأ بلا رسائل ولا فحص بخل.
+function migrateSave39(input) {
+  if (!input || input.version === 39) return input;
+  const prior = input.version === 38 ? structuredClone(input) : migrateSaveVersion(input);
+  if (prior?.version !== 38) return prior;
+  prior.version = 39;
+  ensureGifts(prior);
+  prior.migrationNote =
+    (prior.migrationNote || "") +
+    " الهدايا 0.46: أُضيف سجل العطاء (منح فردية وجماعية، ترقيات بلقب وراتب، هدايا لاعبين، وخط غرباء معلن الكلفة) — سجل فارغ ولا عقوبة على عدم الإهداء.";
+  return prior;
+}
+
+// 0.47 (save v40): الفروع — قائمة فروع ومشاريع فارغة. لا يُخصم شيء ولا تتغير
+// أي مؤشرات، وكل الأسواق الخمسون متاحة للفتح من الحفظة المهاجرة.
+function migrateSave40(input) {
+  if (!input || input.version === 40) return input;
+  const prior = input.version === 39 ? structuredClone(input) : migrateSave39(input);
+  if (prior?.version !== 39) return prior;
+  prior.version = 40;
+  ensureBranches(prior);
+  prior.migrationNote =
+    (prior.migrationNote || "") +
+    " الفروع 0.47: أُضيف نظام الفروع الدولية (فتح بدولة بتكلفة ومستوى 1-3، ميزة دولة، عوائد شهرية، مدير كفاءة، وقرارات إضافة) — تبدأ الحفظة بلا فروع ولا مشاريع.";
+  return prior;
+}
+
 function migrateSave33(input) {
   if (!input || input.version === 33) return input;
   const prior = input.version === 32 ? structuredClone(input) : migrateSave32(input);
@@ -717,8 +747,9 @@ function migrateSaveToTwentyFour(input) {
 }
 
 // الدفعة 7 (بعد الإغلاق): أرقام القمصان للحفظات القديمة تُرحَّل عند كل تحميل دون رفع رقم الحفظ.
+// 0.46→0.47: الترحيل النهائي يمر عبر migrateSave40.
 export function migrateSave(input) {
-  const out = migrateSaveVersion(input);
+  const out = migrateSave40(input);
   if (out && typeof out === "object") backfillShirtNumbers(out);
   return out;
 }

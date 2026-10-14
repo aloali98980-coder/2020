@@ -330,8 +330,8 @@ test("v36 saves migrate with a generated group for every club and preserve audio
   const tableIds = old.table.map((row) => row.clubId);
   const migrated = migrateSave(old);
   assert.equal(old.version, 36, "migration does not mutate source save");
-  assert.equal(SAVE_VERSION, 38);
-  assert.equal(migrated.version, 38);
+  assert.equal(SAVE_VERSION, 40);
+  assert.equal(migrated.version, 40);
   assert.equal(migrated.finance.cash, cash);
   assert.equal(migrated.preferences.audio.enabled, true);
   for (const clubId of tableIds) assert(migrated.ultras.groups[clubId]);
