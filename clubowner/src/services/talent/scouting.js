@@ -5,6 +5,7 @@ import { extendedClub } from "../../data/expandedCatalog.js";
 import { POSITIONS } from "./state.js";
 import { post } from "../finance.js";
 import { message } from "../inbox.js";
+import { branchScoutFactor } from "../branches.js";
 export function requestMission(s, input) {
   assert(s.talent, "شبكة الكشف تحتاج العالم الموسع.");
   const q = s.talent.scouting;
@@ -61,11 +62,14 @@ export function requestMission(s, input) {
       ),
       "اللاعب غير متاح للمتابعة.",
     );
-  const fee =
-    (t.days === 7 ? 25000 : 60000) +
-    (t.country !== "all" && t.country !== extendedClub(s.clubId).country
-      ? 15000
-      : 0);
+  const fee = Math.round(
+    ((t.days === 7 ? 25000 : 60000) +
+      (t.country !== "all" && t.country !== extendedClub(s.clubId).country
+        ? 15000
+        : 0)) *
+      // 0.47: فرع بميزة كشافة من المستوى الثاني يخفض رسوم مهمة بلده 25%.
+      branchScoutFactor(s, t.country),
+  );
   assert(s.finance.cash >= fee, "السيولة لا تغطي المهمة.");
   const id = uid(s, "network");
   post(s, -fee, "scouting", "مهمة شبكة الكشافين", id);
