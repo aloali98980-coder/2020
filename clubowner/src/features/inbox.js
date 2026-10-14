@@ -65,6 +65,13 @@ export function messageDetail(s, m) {
       actions =
         button(boardTextFor("boardMailOpen", null, getLanguage()), "go-board", "", "primary") +
         button(boardTextFor("boardMailSeen", null, getLanguage()), "resolve", m.id, "ghost");
+    if (m.kind === "player-exchange")
+      actions = button(
+        tr("مراجعة التبادل واللاعبين", "Review exchange and players", "Examiner l’échange et les joueurs"),
+        "player-exchange-view",
+        m.ref,
+        "primary",
+      );
     if (m.kind === "academy-review")
       actions =
         button("مراجعة الأكاديمية", "go-talent", m.ref, "primary") +

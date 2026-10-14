@@ -97,13 +97,19 @@ export function aiTransferDay(s) {
     .filter((id) => id !== s.clubId);
   if (!aiClubs.length) return 0;
   const aiSet = new Set(aiClubs);
+  const exchangeLocked = new Set();
+  for (const exchange of s.transferMarket?.exchanges || [])
+    if (["open", "agreed"].includes(exchange.status))
+      for (const id of [...exchange.outgoingPlayerIds, ...exchange.incomingPlayerIds])
+        exchangeLocked.add(id);
   // One pre-filtered trade block per day keeps window days near normal cost.
   const tradeBlock = s.players.filter(
     (p) =>
       aiSet.has(p.clubId) &&
       p.status !== "retired" &&
       !p.loan &&
-      p.age < 33,
+      p.age < 33 &&
+      !exchangeLocked.has(p.id),
   );
   const squadSize = new Map();
   for (const p of s.players) {

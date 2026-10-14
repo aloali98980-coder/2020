@@ -68,6 +68,7 @@ export function ensureTransferMarket(s) {
   m.sales ??= [];
   m.auctions ??= [];
   m.clauses ??= [];
+  m.exchanges ??= [];
   m.aiBudgets ??= {};
   m.lastOfferDate ??= null;
   for (const id of s.expansion ? [] : transferClubIds(s)) {

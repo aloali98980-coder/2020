@@ -21,6 +21,7 @@ import { isDeadlineDay } from "../services/deadlineDay.js";
 import { baseRangeForRating, CLAUSE_LEVELS } from "../services/releaseClause.js";
 import { transferSalesPanel } from "./transferMarket.js";
 import { playerLoyalty, refusesSaleForLoyalty } from "../services/transferNegotiation.js";
+import { playerExchangePanel } from "./playerExchange.js";
 export function playersView(s, market = false, filters = {}) {
   let players = s.players.filter(
     (p) =>
@@ -62,7 +63,7 @@ export function playersView(s, market = false, filters = {}) {
       </div>`
     : "";
 
-  return `${heading(market ? "العين على الصفقة القادمة" : "قلب مشروعك", market ? "سوق الانتقالات" : "الفريق الأول", market ? "ابحث، فاوض، ووازن تكلفة الصفقة على المدى الطويل." : "كل لاعب له دور. وكل عقد له أثر على مستقبل النادي.", badge(market ? "قوائم 2026/27 — مراجعة أولية" : num(s.players.filter((p) => p.clubId === s.clubId).length) + " / " + num(s.squadLimit || 30) + " لاعبًا"))}${deadlineBanner}${market ? infoNote(windowStatus(s).label) + negotiationsPanel(s) : `<div class="squad-summary"><div>${icon("squad", 25)}<span>متوسط التقييم<strong>${num(Math.round(players.reduce((a, p) => a + p.rating, 0) / Math.max(players.length, 1)))}</strong></span></div><div>${icon("finance", 25)}<span>المرتبات الشهرية<strong>${money(wages(s))} <small>${cur()}</small></strong></span></div><div>${icon("shield", 25)}<span>متوسط الجاهزية<strong>${num(Math.round(players.reduce((a, p) => a + p.fitness, 0) / Math.max(players.length, 1)))}%</strong></span></div></div>${transferSalesPanel(s)}`}<section class="panel"><div class="player-filters"><label class="search-field">${icon("search", 19)}<input id="player-search" placeholder="ابحث باسم اللاعب…" value="${esc(search)}" aria-label="البحث عن لاعب"></label><select id="position-filter" aria-label="تصفية المركز">${[
+  return `${heading(market ? "العين على الصفقة القادمة" : "قلب مشروعك", market ? "سوق الانتقالات" : "الفريق الأول", market ? "ابحث، فاوض، ووازن تكلفة الصفقة على المدى الطويل." : "كل لاعب له دور. وكل عقد له أثر على مستقبل النادي.", badge(market ? "قوائم 2026/27 — مراجعة أولية" : num(s.players.filter((p) => p.clubId === s.clubId).length) + " / " + num(s.squadLimit || 30) + " لاعبًا"))}${deadlineBanner}${market ? infoNote(windowStatus(s).label) + negotiationsPanel(s) + playerExchangePanel(s) : `<div class="squad-summary"><div>${icon("squad", 25)}<span>متوسط التقييم<strong>${num(Math.round(players.reduce((a, p) => a + p.rating, 0) / Math.max(players.length, 1)))}</strong></span></div><div>${icon("finance", 25)}<span>المرتبات الشهرية<strong>${money(wages(s))} <small>${cur()}</small></strong></span></div><div>${icon("shield", 25)}<span>متوسط الجاهزية<strong>${num(Math.round(players.reduce((a, p) => a + p.fitness, 0) / Math.max(players.length, 1)))}%</strong></span></div></div>${transferSalesPanel(s)}${playerExchangePanel(s)}`}<section class="panel"><div class="player-filters"><label class="search-field">${icon("search", 19)}<input id="player-search" placeholder="ابحث باسم اللاعب…" value="${esc(search)}" aria-label="البحث عن لاعب"></label><select id="position-filter" aria-label="تصفية المركز">${[
     ["all", "كل المراكز"],
     ["GK", "حراسة المرمى"],
     ["DEF", "الدفاع"],

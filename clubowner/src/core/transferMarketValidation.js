@@ -40,6 +40,11 @@ export function validateTransferMarket(s) {
     market.auctions.length > 100 ||
     !Array.isArray(market.clauses) ||
     market.clauses.length > 1000 ||
+    (market.exchanges !== undefined &&
+      (!Array.isArray(market.exchanges) || market.exchanges.length > 500)) ||
+    (market.lastExchangeOfferDate !== undefined &&
+      market.lastExchangeOfferDate !== null &&
+      !isoDate(market.lastExchangeOfferDate)) ||
     !market.aiBudgets ||
     typeof market.aiBudgets !== "object" ||
     Array.isArray(market.aiBudgets) ||
@@ -128,5 +133,58 @@ export function validateTransferMarket(s) {
     )
       fail();
   }
-
+  const exchangeIds = new Set();
+  for (const deal of market.exchanges || []) {
+    const outgoing = deal?.outgoingPlayerIds;
+    const incoming = deal?.incomingPlayerIds;
+    const playerIds = [
+      ...(Array.isArray(outgoing) ? outgoing : []),
+      ...(Array.isArray(incoming) ? incoming : []),
+    ];
+    if (
+      !deal ||
+      !id(deal.id) ||
+      exchangeIds.has(deal.id) ||
+      !["user", "ai"].includes(deal.initiator) ||
+      !id(deal.opponentId) ||
+      !Array.isArray(outgoing) ||
+      outgoing.length < 1 ||
+      outgoing.length > 5 ||
+      !Array.isArray(incoming) ||
+      incoming.length < 1 ||
+      incoming.length > 5 ||
+      new Set(playerIds).size !== playerIds.length ||
+      playerIds.some((playerId) => !id(playerId) || !playerExists(playerId, s)) ||
+      !Number.isSafeInteger(deal.cash) ||
+      !deal.wageOffers ||
+      typeof deal.wageOffers !== "object" ||
+      Array.isArray(deal.wageOffers) ||
+      Object.entries(deal.wageOffers).some(
+        ([playerId, wage]) =>
+          !incoming.includes(playerId) || !amount(wage) || wage > 100_000_000,
+      ) ||
+      !id(deal.windowId) ||
+      !isoDate(deal.createdOn) ||
+      !isoDate(deal.expires) ||
+      !["open", "agreed", "completed", "rejected", "expired"].includes(deal.status) ||
+      (deal.completedOn !== undefined && !isoDate(deal.completedOn)) ||
+      (deal.reason !== undefined && typeof deal.reason !== "string") ||
+      (deal.reasonCode !== undefined &&
+        !["fair-value", "window", "roster", "wage-budget", "cash", "player", "wage", "club-level", "city"].includes(deal.reasonCode)) ||
+      (deal.rejectedPlayerId !== undefined && !playerIds.includes(deal.rejectedPlayerId)) ||
+      (deal.approvals !== undefined &&
+        (!Array.isArray(deal.approvals) ||
+          deal.approvals.length > 10 ||
+          deal.approvals.some(
+            (approval) =>
+              !approval ||
+              !playerIds.includes(approval.playerId) ||
+              !id(approval.destinationId) ||
+              typeof approval.approved !== "boolean" ||
+              (approval.reason !== null && typeof approval.reason !== "string"),
+          )))
+    )
+      fail();
+    exchangeIds.add(deal.id);
+  }
 }

@@ -111,6 +111,7 @@ import "./styles/awards.css";
 import "./styles/gifts.css";
 import "./styles/ultras.css";
 import "./styles/transferMarket.css";
+import "./styles/playerExchange.css";
 import { createGame } from "./core/game.js";
 import {
   getState,
@@ -200,6 +201,12 @@ import {
   requestPlayerTransfer,
   startPlayerAuction,
 } from "./services/transferNegotiation.js";
+import {
+  completePlayerExchange,
+  proposePlayerExchange,
+  rejectPlayerExchange,
+  suggestedExchangeCash,
+} from "./services/playerExchange.js";
 import { startProject, toggleFacilityStaff } from "./services/facilities.js";
 import {
   offersFor,
@@ -221,6 +228,11 @@ import {
   contractForm,
 } from "./features/players.js";
 import { saleAuctionView, saleNegotiationView } from "./features/transferMarket.js";
+import {
+  playerExchangeDealView,
+  playerExchangePanel,
+  playerExchangeView,
+} from "./features/playerExchange.js";
 import { facilitiesView, facilityDetail } from "./features/facilities.js";
 import {
   sponsorsView,
@@ -870,6 +882,29 @@ function openGiftStrangerConfirm(kind, amount, target) {
   openModal(giftStrangerConfirmModal(kind, amount, target), true);
 }
 
+function updateExchangeBuilder(form, forceAutoBalance = false) {
+  const selected = (side) => [
+    ...form.querySelectorAll(`[data-exchange-side="${side}"]:checked`),
+  ];
+  const outgoing = selected("outgoing");
+  const incoming = selected("incoming");
+  const outgoingIds = outgoing.map((input) => input.value);
+  const incomingIds = incoming.map((input) => input.value);
+  const cashInput = form.elements.cash;
+  if (forceAutoBalance || cashInput.dataset.manual !== "true") {
+    cashInput.value = String(suggestedExchangeCash(getState(), outgoingIds, incomingIds));
+    cashInput.dataset.manual = "false";
+  }
+  const outgoingValue = outgoing.reduce((sum, input) => sum + Number(input.dataset.value || 0), 0);
+  const incomingValue = incoming.reduce((sum, input) => sum + Number(input.dataset.value || 0), 0);
+  const cash = Number(cashInput.value || 0);
+  const sent = outgoingValue + Math.max(0, cash);
+  const received = incomingValue + Math.max(0, -cash);
+  const gap = Math.round((Math.abs(sent - received) / Math.max(1, sent, received)) * 100);
+  const summary = form.querySelector("[data-exchange-summary]");
+  if (summary)
+    summary.textContent = `${tr("القيمة الخارجة", "Value given", "Valeur donnée")}: ${money(outgoingValue)} ${cur()} · ${tr("القيمة الداخلة", "Value received", "Valeur reçue")}: ${money(incomingValue)} ${cur()} · ${tr("فرق القيمة", "Value gap", "Écart de valeur")}: ${num(gap)}%`;
+}
 const actions = {
   "market-tab": (el) => {
     ui.marketTab = el.dataset.id || "overview";
@@ -1874,6 +1909,31 @@ const actions = {
   },
   "sale-reject": async (el) => {
     await apply((s) => rejectSaleOffer(s, el.dataset.id));
+    closeModal();
+  },
+  "player-exchange-builder": async () => {
+    const opponentId = document.getElementById("player-exchange-opponent")?.value;
+    if (opponentId)
+      openModal(playerExchangeView(getState(), opponentId), true);
+  },
+  "exchange-auto-balance": (el) => {
+    const form = el.closest("#player-exchange-form");
+    if (form) updateExchangeBuilder(form, true);
+  },
+  "player-exchange-view": async (el) =>
+    openModal(playerExchangeDealView(getState(), el.dataset.id), true),
+  "player-exchange-accept": async (el) => {
+    const id = el.dataset.id;
+    const result = await apply((s) => completePlayerExchange(s, id));
+    if (result?.status === "completed") {
+      closeModal();
+      toast(tr("اكتمل تبادل اللاعبين بنجاح.", "The player exchange was completed.", "L’échange de joueurs est terminé."));
+    } else {
+      openModal(playerExchangeDealView(getState(), id), true);
+    }
+  },
+  "player-exchange-reject": async (el) => {
+    await apply((s) => rejectPlayerExchange(s, el.dataset.id));
     closeModal();
   },
   "accept-club": async (el) => {
@@ -2912,6 +2972,31 @@ document.addEventListener("submit", async (e) => {
         toast(tr("قبل النادي عرضك المضاد؛ أكّد البيع لإتمامه.", "The club accepted your counter; confirm the sale to complete it.", "Le club accepte votre contre-offre ; confirmez pour conclure."));
       return;
     }
+    if (form.id === "player-exchange-form") {
+      const outgoingPlayerIds = [
+        ...form.querySelectorAll('[data-exchange-side="outgoing"]:checked'),
+      ].map((input) => input.value);
+      const incomingPlayerIds = [
+        ...form.querySelectorAll('[data-exchange-side="incoming"]:checked'),
+      ].map((input) => input.value);
+      const wageOffers = Object.fromEntries(
+        [...form.querySelectorAll("[data-exchange-wage]")]
+          .filter((input) => incomingPlayerIds.includes(input.dataset.exchangeWage))
+          .map((input) => [input.dataset.exchangeWage, Number(input.value || 0)]),
+      );
+      const deal = await apply((s) =>
+        proposePlayerExchange(s, {
+          opponentId: form.dataset.opponentId,
+          outgoingPlayerIds,
+          incomingPlayerIds,
+          cash: Number(form.elements.cash.value || 0),
+          wageOffers,
+        }),
+      );
+      if (deal?.id)
+        openModal(playerExchangeDealView(getState(), deal.id), true);
+      return;
+    }
     if (form.id === "loan-offer-form") {
       const f = form.elements;
       const terms = {
@@ -3118,9 +3203,28 @@ document.addEventListener("keydown", (e) => {
     paletteActivate(ui.palette.sel);
   }
 });
+document.addEventListener("input", (e) => {
+  if (!e.target.matches("[data-exchange-cash]")) return;
+  e.target.dataset.manual = "true";
+  const form = e.target.closest("#player-exchange-form");
+  if (form) updateExchangeBuilder(form);
+});
 document.addEventListener("change", async (e) => {
   if (isSaving() || actionBusy) return;
   try {
+    if (e.target.dataset.exchangeSide) {
+      const form = e.target.closest("#player-exchange-form");
+      if (!form) return;
+      const selected = form.querySelectorAll(
+        `[data-exchange-side="${e.target.dataset.exchangeSide}"]:checked`,
+      );
+      if (selected.length > 5) {
+        e.target.checked = false;
+        toast(tr("الحد الأقصى 5 لاعبين من كل طرف.", "Choose no more than 5 players per side.", "Choisissez au maximum 5 joueurs par équipe."));
+      }
+      updateExchangeBuilder(form);
+      return;
+    }
     if (e.target.id === "audio-enabled") {
       const enabled = e.target.checked;
       await apply(

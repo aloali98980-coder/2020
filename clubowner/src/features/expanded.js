@@ -5,6 +5,7 @@ import { tr } from "../i18n/index.js";
 import { competitionCard } from "./competitions/cards.js";
 import { loansPanel } from "./management/loans.js";
 import { transferSalesPanel } from "./transferMarket.js";
+import { playerExchangePanel } from "./playerExchange.js";
 import { tacticsPanel } from "./management/tactics.js";
 import { europeanCard, calendarCard } from "./europe/cards.js";
 import { BUSINESSES, ticketForecast } from "../services/commerce.js";
@@ -85,7 +86,7 @@ export function managementView(s) {
     )
     .join(
       "",
-    )}</select><p>${num(m.lineup.length)} / 11 مختارين — التشكيل أقل من 11 يُستكمل آليًا.</p><div class="lineup-list">${own.map((p) => `<button class="lineup-player ${m.lineup.includes(p.id) ? "chosen" : ""}" data-action="toggle-lineup" data-id="${p.id}"><b>${esc(p.name)}</b><span>${esc(p.position)} · ${num(Math.round(p.rating))}${p.internationalUntil ? " · مع المنتخب" : ""}${p.injuryUntil >= s.date ? " · مصاب" : ""}</span></button>`).join("")}</div></section><section class="panel"><h3>${tr("عروض قديمة محفوظة", "Archived sale offers", "Anciennes offres archivées")}</h3>${
+    )}</select><p>${num(m.lineup.length)} / 11 مختارين — التشكيل أقل من 11 يُستكمل آليًا.</p><div class="lineup-list">${own.map((p) => `<button class="lineup-player ${m.lineup.includes(p.id) ? "chosen" : ""}" data-action="toggle-lineup" data-id="${p.id}"><b>${esc(p.name)}</b><span>${esc(p.position)} · ${num(Math.round(p.rating))}${p.internationalUntil ? " · مع المنتخب" : ""}${p.injuryUntil >= s.date ? " · مصاب" : ""}</span></button>`).join("")}</div></section>${transferSalesPanel(s)}${playerExchangePanel(s)}<section class="panel"><h3>${tr("عروض قديمة محفوظة", "Archived sale offers", "Anciennes offres archivées")}</h3>${
     m.outgoing
       .slice(-8)
       .reverse()

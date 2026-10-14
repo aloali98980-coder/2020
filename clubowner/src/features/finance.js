@@ -28,6 +28,7 @@ const cats = {
   "transfer-income": "قسط بيع لاعب",
   "player-sale": "بيع لاعب",
   "sell-on": "نسبة بيع مستقبلية",
+  "player-exchange": "تبادل لاعبين",
   broadcast: "بث تلفزيوني",
   "sponsor-bonus": "مكافأة رعاية",
   transfer: "انتقال",
@@ -49,6 +50,8 @@ const categoryLabel = (key) => {
   if (key === "player-sale") return tr("بيع لاعب", "Player sale", "Vente du joueur");
   if (key === "sell-on")
     return tr("نسبة بيع مستقبلية", "Sell-on payment", "Pourcentage à la revente");
+  if (key === "player-exchange")
+    return tr("تبادل لاعبين", "Player exchange", "Échange de joueurs");
   return cats[key] || key;
 };
 export function financeView(s, tab = "ledger") {
