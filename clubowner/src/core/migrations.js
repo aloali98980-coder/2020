@@ -697,6 +697,20 @@ function migrateSave40(input) {
   return prior;
 }
 
+// 0.50 (save v41): سجل التبرعات العلنية — عدّاد فارغ وسجلان فارغان. لا خصم ولا
+// تغيير على أي مؤشر، والتبرع يبقى خيارًا مفتوحًا دائمًا من أول يوم في الحفظة.
+function migrateSave41(input) {
+  if (!input || input.version === 41) return input;
+  const prior = input.version === 40 ? structuredClone(input) : migrateSave40(input);
+  if (prior?.version !== 40) return prior;
+  prior.version = 41;
+  initPolitics(prior);
+  prior.migrationNote =
+    (prior.migrationNote || "") +
+    " التبرعات 0.50: أُضيف سجل التبرعات العلنية للأندية (مبلغ حر من الثروة الشخصية، امتنان وأصوات، عدّاد حي وتغطية صحفية وسجل) — يبدأ فارغًا وبلا أي عقوبة أو التزام.";
+  return prior;
+}
+
 function migrateSave33(input) {
   if (!input || input.version === 33) return input;
   const prior = input.version === 32 ? structuredClone(input) : migrateSave32(input);
@@ -747,9 +761,9 @@ function migrateSaveToTwentyFour(input) {
 }
 
 // الدفعة 7 (بعد الإغلاق): أرقام القمصان للحفظات القديمة تُرحَّل عند كل تحميل دون رفع رقم الحفظ.
-// 0.46→0.47: الترحيل النهائي يمر عبر migrateSave40.
+// 0.46→0.47→0.50: الترحيل النهائي يمر عبر migrateSave41.
 export function migrateSave(input) {
-  const out = migrateSave40(input);
+  const out = migrateSave41(input);
   if (out && typeof out === "object") backfillShirtNumbers(out);
   return out;
 }

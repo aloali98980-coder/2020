@@ -28,7 +28,7 @@ import { initializeUltras } from "../services/ultras.js";
 import { ensureAwards } from "../services/awards.js";
 import { ensureGifts } from "../services/gifts.js";
 import { ensureBranches } from "../services/branches.js";
-export const SAVE_VERSION = 40;
+export const SAVE_VERSION = 41;
 export function createGame({
   clubId = "ahly",
   owner = "مالك النادي",

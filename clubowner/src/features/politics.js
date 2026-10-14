@@ -35,6 +35,12 @@ import {
   campaignStatus,
   isCampaignActive,
 } from "../services/politics/campaign.js";
+import {
+  clubDonationRecord,
+  donationAvailable,
+  donationSummary,
+  donationTierLabel,
+} from "../services/politics/donations.js";
 import { esc, money, num, date } from "../ui/format.js";
 
 const local = (value) => value?.[getLanguage()] || value?.en || value || "";
@@ -88,6 +94,55 @@ function clubName(clubId) {
   return extendedClub(clubId)?.name || clubId;
 }
 
+// ── التبرعات 0.50: عدّاد حي + سجل + تغطية صحفية، بلا أي عقوبة ────────────────
+function donationCounter(s) {
+  const c = donationSummary(s);
+  const enough = c.available >= 50_000;
+  return `<section class="panel politics-donations-panel">
+    <div class="panel-head"><h3>${icon("finance")} ${tr("التبرعات العلنية", "Public donations", "Dons publics")}</h3>${badge(tr("إضافة بلا أي عقوبة", "Additive, never punished", "Additif, jamais pénalisé"), "green")}</div>
+    <p>${tr("تبرع لأي نادٍ في الدوري بمبلغ حر من ثروتك الشخصية: النادي يشكرك علنًا، وامتنانه يرفع تأييده لك، والتأييد يظهر مباشرة في أصواته داخل الاقتراع. لا شبهات ولا حرارة ولا عقوبة على كثرة التبرع أو الامتناع عنه.", "Donate any amount to any league club from your personal fortune: the club thanks you publicly, its gratitude raises its support for you, and that support shows directly in its votes at the ballot. No suspicion, no heat, and no penalty for giving often or not at all.", "Offrez le montant que vous voulez à n’importe quel club du championnat depuis votre fortune personnelle : le club vous remercie publiquement, sa reconnaissance renforce son soutien et ce soutien apparaît directement dans ses votes. Aucun soupçon, aucune pression, aucune sanction.")}</p>
+    <div class="politics-donation-counter">
+      <div><small>${tr("إجمالي تبرعاتك", "Total donated", "Total donné")}</small><b>${money(c.total)} ${cur()}</b></div>
+      <div><small>${tr("عدد التبرعات", "Donations made", "Dons effectués")}</small><b>${num(c.count)}</b></div>
+      <div><small>${tr("أندية مستفيدة", "Clubs helped", "Clubs aidés")}</small><b>${num(c.clubs)}</b></div>
+      <div><small>${tr("نقاط الامتنان", "Gratitude points", "Points de reconnaissance")}</small><b>+${num(c.gratitude)}</b></div>
+      <div><small>${tr("أكبر تبرع", "Largest donation", "Don le plus élevé")}</small><b>${c.largest ? `${money(c.largest)} ${cur()}` : "—"}</b></div>
+      <div><small>${tr("تغطية صحفية", "Press coverage", "Couverture presse")}</small><b>${num(c.press)} ${tr("خبرًا", "stories", "articles")}</b></div>
+    </div>
+    <small class="muted">${tr("متاح من ثروتك الشخصية الآن", "Available from your personal fortune now", "Disponible de votre fortune personnelle")}: ${money(c.available)} ${cur()}${enough ? "" : ` · ${tr("أقل تبرع 50 ألف", "smallest donation is 50,000", "don minimal : 50 000")}`}</small>
+  </section>`;
+}
+
+function donationHistory(s) {
+  const d = s.politics.donations;
+  const rows = d.log
+    .slice(0, 12)
+    .map(
+      (entry) => `<div class="politics-donation-row">
+      <div><b>${esc(clubName(entry.clubId))}</b><small>${date(entry.date)} · ${esc(donationTierLabel(entry.tier))}</small></div>
+      <span>${money(entry.amount)} ${cur()}</span>
+      <span class="badge green">+${num(entry.gratitude)} ${tr("امتنان", "gratitude", "reconnaissance")}</span>
+      <span class="muted">${tr("التأييد", "Support", "Soutien")}: ${num(Math.round(entry.supportAfter))}%</span>
+    </div>`,
+    )
+    .join("");
+  const press = d.press
+    .slice(0, 8)
+    .map(
+      (entry) =>
+        `<article class="politics-press-row"><small>${date(entry.date)} · ${tr("صحافة السياسة", "Politics press", "Presse politique")}</small><b>${tr("تبرع علني", "Public donation", "Don public")} · ${esc(clubName(entry.clubId))}</b><span>${money(entry.amount)} ${cur()}</span></article>`,
+    )
+    .join("");
+  return `<section class="panel politics-donation-history">
+    <div class="panel-head"><h3>${icon("chart")} ${tr("سجل التبرعات", "Donation record", "Registre des dons")}</h3>${badge(`${num(d.count)} ${tr("تبرعًا", "donations", "dons")}`, "gold")}</div>
+    ${rows || empty(tr("لا تبرعات بعد", "No donations yet", "Aucun don"), tr("أول تبرع يظهر هنا فورًا مع امتنان النادي.", "Your first donation appears here at once with the club's gratitude.", "Votre premier don apparaît ici avec la reconnaissance du club."), "finance")}
+  </section>
+  <section class="panel politics-donation-press">
+    <div class="panel-head"><h3>${icon("bell")} ${tr("التغطية الصحفية", "Press coverage", "Couverture presse")}</h3></div>
+    ${press || empty(tr("لا تغطية صحفية بعد", "No press coverage yet", "Aucune couverture presse"), "", "bell")}
+  </section>`;
+}
+
 function mapView(s) {
   const p = s.politics;
   const clubs = [...p.clubs].sort(
@@ -103,13 +158,16 @@ function mapView(s) {
       const coalition = p.alliances.find(
         (alliance) => alliance.id === club.allianceId,
       );
+      const given = clubDonationRecord(s, club.clubId);
+      const free = donationAvailable(s) >= 50_000;
       return `<article class="politics-club-card">
       <div class="politics-club-title"><strong>${esc(clubName(club.clubId))}</strong><span class="badge ${sentiment === "supporter" ? "green" : sentiment === "opponent" ? "red" : "gold"}">${sentiment === "supporter" ? tr("مؤيد", "Supporter", "Soutien") : sentiment === "opponent" ? tr("معارض", "Opponent", "Opposition") : tr("محايد", "Neutral", "Neutre")}</span></div>
       <div class="politics-meter">${progress(Math.round(club.support))}<b>${num(Math.round(club.support))}%</b></div>
       <div class="politics-club-meta"><span>${esc(local(POLITICAL_BLOCS[club.bloc]))}</span><span>${num(club.voteWeight)} ${tr("أصوات", "votes", "voix")}</span></div>
       <small class="muted">${tr("المطلب الخاص", "Special demand", "Demande spéciale")}: ${esc(local(demand?.label || "—"))}</small>
       ${coalition ? `<small class="politics-alliance-label">${icon("users", 14)} ${esc(coalition.name)}</small>` : ""}
-      <div class="politics-club-actions">${button(`${icon("handshake", 15)} ${tr("زيارة النادي", "Visit club", "Visiter le club")}`, "politics-visit", club.clubId, "soft", !isCampaignActive(s) || !p.campaign.playerEligible || p.campaign.visits.some((visit) => visit.clubId === club.clubId))}${button(`${icon("scroll", 15)} ${tr("تسجيل وعد", "Make a promise", "Prendre un engagement")}`, "politics-promise", club.clubId, "ghost", !isCampaignActive(s) || !p.campaign.playerEligible || p.campaign.promises.some((promise) => promise.clubId === club.clubId && promise.demandId === club.demandId))}</div>
+      ${given.count ? `<small class="politics-donation-given">${icon("gift", 14)} ${tr("تبرعاتك لهذا النادي", "Your donations to this club", "Vos dons à ce club")}: ${money(given.amount)} ${cur()} · +${num(given.gratitude)} ${tr("امتنان", "gratitude", "reconnaissance")}</small>` : ""}
+      <div class="politics-club-actions">${button(`${icon("gift", 15)} ${tr("تبرع علني", "Public donation", "Don public")}`, "politics-donate", club.clubId, "primary", !free)}${button(`${icon("handshake", 15)} ${tr("زيارة النادي", "Visit club", "Visiter le club")}`, "politics-visit", club.clubId, "soft", !isCampaignActive(s) || !p.campaign.playerEligible || p.campaign.visits.some((visit) => visit.clubId === club.clubId))}${button(`${icon("scroll", 15)} ${tr("تسجيل وعد", "Make a promise", "Prendre un engagement")}`, "politics-promise", club.clubId, "ghost", !isCampaignActive(s) || !p.campaign.playerEligible || p.campaign.promises.some((promise) => promise.clubId === club.clubId && promise.demandId === club.demandId))}</div>
     </article>`;
     })
     .join("");
@@ -127,9 +185,11 @@ function mapView(s) {
       );
     })
     .join("");
-  return `${heading(tr("مواقف كل أندية الدوري", "Every league club's position", "Position de chaque club du championnat"), tr("خريطة الأصوات", "The vote map", "La carte des votes"), tr("الموقف 0–100، الوزن التصويتي، المطلب الخاص والتكتل. الزيارات والوعود والمفاوضات تغيّر الخريطة وتبقى محفوظة.", "Support from 0–100, voting weight, special demand, and bloc. Visits, promises, and negotiations change the map and are saved.", "Soutien de 0 à 100, poids du vote, demande spéciale et bloc. Visites, promesses et négociations modifient la carte et sont enregistrées."))}
+  return `${heading(tr("مواقف كل أندية الدوري", "Every league club's position", "Position de chaque club du championnat"), tr("خريطة الأصوات", "The vote map", "La carte des votes"), tr("الموقف 0–100، الوزن التصويتي، المطلب الخاص والتكتل. الزيارات والوعود والمفاوضات تغيّر الخريطة وتبقى محفوظة، والتبرع العلني يرفع امتنان أي نادٍ في أي وقت بلا أي عقوبة.", "Support from 0–100, voting weight, special demand, and bloc. Visits, promises, and negotiations change the map and are saved; a public donation raises any club's gratitude at any time with no penalty.", "Soutien de 0 à 100, poids du vote, demande spéciale et bloc. Visites, promesses et négociations modifient la carte et sont enregistrées ; un don public renforce à tout moment la reconnaissance d’un club, sans sanction."))}
     <section class="panel"><div class="panel-head"><h3>${icon("users")} ${tr("التكتلات الإقليمية", "Club blocs", "Blocs de clubs")}</h3></div><div class="politics-bloc-actions">${coalitionButtons}</div></section>
-    <div class="politics-club-grid">${lines || empty(tr("لا توجد أندية في الخريطة", "No clubs on the map", "Aucun club sur la carte"), "", "users")}</div>`;
+    ${donationCounter(s)}
+    <div class="politics-club-grid">${lines || empty(tr("لا توجد أندية في الخريطة", "No clubs on the map", "Aucun club sur la carte"), "", "users")}</div>
+    ${donationHistory(s)}`;
 }
 
 function candidateCard(s, candidate) {

@@ -517,6 +517,49 @@ export function validatePolitics(s) {
       monthPattern.test(eventState.lastMonth),
     "سجل الأحداث السياسية غير سليم.",
   );
+  const donations = p.donations;
+  check(
+    donations &&
+      safeInt(donations.total) &&
+      safeInt(donations.count) &&
+      finiteRange(donations.gratitude, 0, 10_000) &&
+      donations.clubs &&
+      typeof donations.clubs === "object" &&
+      !Array.isArray(donations.clubs) &&
+      Object.entries(donations.clubs).every(
+        ([clubId, row]) =>
+          validId(clubId) &&
+          p.clubs.some((club) => club.clubId === clubId) &&
+          safeInt(row?.amount) &&
+          safeInt(row?.count) &&
+          finiteRange(row?.gratitude, 0, 10_000) &&
+          (row?.lastDate === null || isoDate(row?.lastDate)),
+      ) &&
+      Array.isArray(donations.log) &&
+      donations.log.length <= 60 &&
+      donations.log.every(
+        (entry) =>
+          validId(entry.id) &&
+          isoDate(entry.date) &&
+          safeInt(entry.season) &&
+          p.clubs.some((club) => club.clubId === entry.clubId) &&
+          safeInt(entry.amount) &&
+          finiteRange(entry.gratitude, 0, 100) &&
+          finiteRange(entry.supportAfter, 0, 100) &&
+          shortText(entry.tier, 20),
+      ) &&
+      Array.isArray(donations.press) &&
+      donations.press.length <= 40 &&
+      donations.press.every(
+        (entry) =>
+          validId(entry.id) &&
+          isoDate(entry.date) &&
+          safeInt(entry.season) &&
+          p.clubs.some((club) => club.clubId === entry.clubId) &&
+          safeInt(entry.amount),
+      ),
+    "سجل التبرعات العلنية غير سليم.",
+  );
   const council = p.council;
   check(
     council &&

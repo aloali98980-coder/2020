@@ -753,3 +753,91 @@
     white-space: normal;
   }
 }
+
+/* ── التبرعات 0.50: عدّاد حي + سجل + تغطية صحفية ─────────────────────────── */
+.politics-donation-counter {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+  margin-block: 12px;
+}
+.politics-donation-counter > div {
+  display: grid;
+  gap: 4px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 10px 12px;
+  background: var(--panel-soft, var(--panel));
+}
+.politics-donation-counter small {
+  color: var(--muted);
+}
+.politics-donation-counter b {
+  font-size: 16px;
+}
+.politics-donation-given {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--gold);
+}
+.politics-donation-row {
+  display: grid;
+  grid-template-columns: minmax(140px, 1.4fr) auto auto auto;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid var(--line);
+  padding: 10px 0;
+  font-size: 12px;
+}
+.politics-donation-row > div {
+  display: grid;
+  gap: 3px;
+}
+.politics-donation-row small {
+  color: var(--muted);
+}
+.politics-press-row {
+  display: grid;
+  gap: 4px;
+  border-bottom: 1px solid var(--line);
+  padding: 10px 0;
+  font-size: 12px;
+}
+.politics-press-row small {
+  color: var(--muted);
+}
+.politics-press-row span {
+  color: var(--muted);
+}
+.politics-donation-quick {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-block: 8px;
+}
+.politics-donation-preview {
+  display: grid;
+  gap: 6px;
+  border: 1px solid color-mix(in srgb, var(--gold) 45%, var(--line));
+  border-radius: 12px;
+  padding: 10px 12px;
+  margin-block: 10px;
+  background: color-mix(in srgb, var(--gold) 6%, var(--panel));
+  font-size: 13px;
+}
+.politics-donation-preview > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+.politics-donation-preview small {
+  color: var(--muted);
+  line-height: 1.6;
+}
+@media (max-width: 760px) {
+  .politics-donation-row {
+    grid-template-columns: 1fr 1fr;
+    row-gap: 6px;
+  }
+}
