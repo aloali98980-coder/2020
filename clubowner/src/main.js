@@ -110,6 +110,7 @@ import "./styles/celebrations.css";
 import "./styles/awards.css";
 import "./styles/gifts.css";
 import "./styles/ultras.css";
+import "./styles/transferMarket.css";
 import { createGame } from "./core/game.js";
 import {
   getState,
@@ -192,6 +193,13 @@ import {
   signPlayer,
   renewPlayer,
 } from "./services/transfers.js";
+import {
+  acceptSaleOffer,
+  counterSaleOffer,
+  rejectSaleOffer,
+  requestPlayerTransfer,
+  startPlayerAuction,
+} from "./services/transferNegotiation.js";
 import { startProject, toggleFacilityStaff } from "./services/facilities.js";
 import {
   offersFor,
@@ -212,6 +220,7 @@ import {
   offerForm,
   contractForm,
 } from "./features/players.js";
+import { saleAuctionView, saleNegotiationView } from "./features/transferMarket.js";
 import { facilitiesView, facilityDetail } from "./features/facilities.js";
 import {
   sponsorsView,
@@ -1843,6 +1852,30 @@ const actions = {
     openModal(offerForm(s, p));
     updateCalculations();
   },
+  "request-player-transfer": async (el) => {
+    await apply((s) => requestPlayerTransfer(s, el.dataset.id));
+    const s = getState(),
+      p = s.players.find((item) => item.id === el.dataset.id);
+    if (p) openModal(playerDetail(s, p));
+  },
+  "start-player-auction": async (el) => {
+    const auction = await apply((s) => startPlayerAuction(s, el.dataset.id));
+    if (auction) openModal(saleAuctionView(getState(), auction.id), true);
+  },
+  "sale-auction-detail": async (el) =>
+    openModal(saleAuctionView(getState(), el.dataset.id), true),
+  "sale-negotiate": async (el) =>
+    openModal(saleNegotiationView(getState(), el.dataset.id), true),
+  "sale-accept": async (el) => {
+    const result = await apply((s) => acceptSaleOffer(s, el.dataset.id));
+    closeModal();
+    if (result?.status === "sold")
+      toast(tr("تمت الصفقة وفق الشروط المتفق عليها.", "Sale completed on the agreed terms.", "Vente conclue selon les conditions convenues."));
+  },
+  "sale-reject": async (el) => {
+    await apply((s) => rejectSaleOffer(s, el.dataset.id));
+    closeModal();
+  },
   "accept-club": async (el) => {
     // 0.46: قرار لا رجعة فيه (نجم أو ملايين) يحتاج تأكيدًا صريحًا قبل التنفيذ.
     const st = getState();
@@ -2859,6 +2892,25 @@ document.addEventListener("submit", async (e) => {
         "العرض اتبعت. مرّر يومًا عشان يوصلك الرد.",
       );
       closeModal();
+      return;
+    }
+    if (form.id === "sale-counter-form") {
+      const id = form.dataset.id;
+      const result = await apply((s) =>
+        counterSaleOffer(s, id, {
+          fee: Number(form.elements.fee.value),
+          upfrontPercent: Number(form.elements.upfrontPercent.value),
+          appearanceBonus: Number(form.elements.appearanceBonus.value || 0),
+          goalBonus: Number(form.elements.goalBonus.value || 0),
+          sellOnPercent: Number(form.elements.sellOnPercent.value || 0),
+        }),
+      );
+      openModal(saleNegotiationView(getState(), id), true);
+      if (result?.status === "withdrawn")
+        toast(tr("انسحب النادي بعد انتهاء جولات المساومة.", "The club withdrew after the bargaining rounds.", "Le club s’est retiré après les tours de négociation."));
+      else if (result?.status === "agreed")
+        toast(tr("قبل النادي عرضك المضاد؛ أكّد البيع لإتمامه.", "The club accepted your counter; confirm the sale to complete it.", "Le club accepte votre contre-offre ; confirmez pour conclure."));
+      return;
     }
     if (form.id === "loan-offer-form") {
       const f = form.elements;

@@ -56,6 +56,8 @@ export function messageDetail(s, m) {
     actions =
       button(tr("قبول العرض العاجل", "Accept Urgent Offer", "Accepter l'offre urgente"), "accept-deadline-bid", m.id, "primary") +
       button(tr("رفض العرض", "Decline Offer", "Refuser l'offre"), "decline-deadline-bid", m.id, "ghost");
+  if (m.kind === "sale-offer" && s.transferMarket?.sales?.some((deal) => deal.id === m.ref && ["open", "agreed"].includes(deal.status)))
+    actions = button(tr("افتح غرفة التفاوض", "Open negotiation room", "Ouvrir la salle de négociation"), "sale-negotiate", m.ref, "primary");
   if (m.required && m.status === "open") {
     if (m.kind === "ultras-event")
       actions = button(tr("افتح صفحة الجماهير واختر الرد", "Open supporters and choose a response", "Ouvrir la page des supporters et répondre"), "go-ultras", "", "primary");

@@ -1,0 +1,118 @@
+.transfer-room,
+.player-sale-actions {
+  margin-block: 18px;
+}
+.transfer-deal-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px 16px;
+  align-items: center;
+  padding: 14px 0;
+  border-top: 1px solid var(--line, rgba(255, 255, 255, 0.1));
+}
+.transfer-deal-card > div:first-child,
+.transfer-deal-price {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.transfer-deal-card > div:first-child {
+  flex-direction: column;
+  align-items: flex-start;
+}
+.transfer-deal-card small,
+.transfer-deal-card p {
+  color: var(--muted, #a3adbc);
+}
+.transfer-deal-card p {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: 0.88rem;
+}
+.transfer-deal-price {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.transfer-negotiation-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 16px 0;
+}
+.transfer-negotiation-summary > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.12));
+  border-radius: 12px;
+  background: var(--surface-2, rgba(255, 255, 255, 0.035));
+}
+.transfer-negotiation-summary small,
+.transfer-offer-history small {
+  color: var(--muted, #a3adbc);
+}
+.transfer-offer-history {
+  display: grid;
+  gap: 6px;
+  padding-inline-start: 22px;
+  margin: 14px 0;
+}
+.transfer-offer-history li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: var(--surface-2, rgba(255, 255, 255, 0.035));
+}
+.transfer-offer-history li > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.transfer-history {
+  margin-top: 12px;
+  color: var(--muted, #a3adbc);
+}
+.transfer-history summary {
+  cursor: pointer;
+  padding: 8px 0;
+}
+.transfer-history p {
+  margin: 6px 0;
+}
+.player-sale-actions {
+  display: grid;
+  justify-items: start;
+  gap: 8px;
+  padding: 14px;
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.12));
+  border-radius: 14px;
+  background: var(--surface-2, rgba(255, 255, 255, 0.035));
+}
+.player-sale-actions h3,
+.player-sale-actions p {
+  margin: 0;
+}
+.transfer-warning {
+  padding: 10px 12px;
+  border-inline-start: 3px solid var(--red, #e15a61);
+  border-radius: 8px;
+  background: rgba(225, 90, 97, 0.09);
+}
+@media (max-width: 600px) {
+  .transfer-negotiation-summary {
+    grid-template-columns: 1fr;
+  }
+  .transfer-offer-history li {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .transfer-offer-history small {
+    grid-column: 1 / -1;
+  }
+  .transfer-deal-card {
+    align-items: start;
+  }
+}

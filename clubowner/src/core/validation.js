@@ -5,6 +5,7 @@ import { validateLegends } from "./legendsValidation.js";
 import { validateDynasty } from "./dynastyValidation.js";
 import { extendedClub } from "../data/expandedCatalog.js";
 import { validateExpansion } from "./expansionValidation.js";
+import { validateTransferMarket } from "./transferMarketValidation.js";
 import { ALL_MARKETS } from "../data/worldMarkets.js";
 import { EVENT_CATALOG } from "../data/eventCatalog.js";
 import { CLUBS, FACILITIES, ASSETS } from "../data/catalog.js";
@@ -559,6 +560,7 @@ export function validateSave(s) {
     Array.isArray(city.eventsSeen) && city.eventsSeen.length <= 100 && Array.isArray(city.news) && city.news.length <= 40 &&
     (!city.broadcasts || (Array.isArray(city.broadcasts) && city.broadcasts.length <= 30)), "حالة المدينة الرياضية غير سليمة.");
   validateExpansion(s);
+  validateTransferMarket(s);
   validateTalent(s);
   validateLegends(s);
   validateDynasty(s);

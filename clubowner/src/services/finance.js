@@ -74,11 +74,19 @@ export const legendPayroll = (s) =>
     .reduce((n, c) => n + (c.salary || 0), 0);
 export const liabilities = (s) =>
   s.finance.obligations
-    .filter((o) => o.status === "pending" && o.category !== "sponsor-income")
+    .filter(
+      (o) =>
+        o.status === "pending" &&
+        !["sponsor-income", "transfer-income"].includes(o.category),
+    )
     .reduce((a, o) => a + o.amount, 0);
 export const futureIncome = (s) =>
   s.finance.obligations
-    .filter((o) => o.status === "pending" && o.category === "sponsor-income")
+    .filter(
+      (o) =>
+        o.status === "pending" &&
+        ["sponsor-income", "transfer-income"].includes(o.category),
+    )
     .reduce((a, o) => a + o.amount, 0);
 // 0.45 — حقوق البث: من BROADCAST_MIN (آخر الجدول) إلى BROADCAST_MAX (المتصدر)، مقرّبة لـ10,000.
 export const BROADCAST_MIN = 1_000_000;
@@ -101,15 +109,21 @@ export function broadcastMonthly(s) {
 export function financeDay(s) {
   for (const o of s.finance.obligations) {
     if (o.status !== "pending" || o.due > s.date) continue;
+    const incoming = ["sponsor-income", "transfer-income"].includes(o.category);
     const posted = post(
       s,
-      o.category === "sponsor-income" ? o.amount : -o.amount,
+      incoming ? o.amount : -o.amount,
       o.category,
       o.description,
       o.key,
     );
     if (posted && o.category === "transfer") {
       const seller = s.negotiations.find((n) => n.id === o.ref)?.seller;
+      if (Object.hasOwn(s.expansion?.budgets || {}, seller))
+        s.expansion.budgets[seller] += o.amount;
+    }
+    if (posted && o.category === "transfer-income") {
+      const seller = (s.transferMarket?.sales || []).find((sale) => sale.id === o.ref)?.seller;
       if (Object.hasOwn(s.expansion?.budgets || {}, seller))
         s.expansion.budgets[seller] += o.amount;
     }
@@ -177,11 +191,11 @@ export function forecast(s) {
   );
   return {
     income: obs
-      .filter((o) => o.category === "sponsor-income")
+      .filter((o) => ["sponsor-income", "transfer-income"].includes(o.category))
       .reduce((a, o) => a + o.amount, 0),
     out:
       obs
-        .filter((o) => o.category !== "sponsor-income")
+        .filter((o) => !["sponsor-income", "transfer-income"].includes(o.category))
         .reduce((a, o) => a + o.amount, 0) +
       wages(s) +
       operatingCosts(s) +
