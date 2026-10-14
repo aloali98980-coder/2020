@@ -5,13 +5,19 @@ import { validateSave } from "../core/validation.js";
 export { validateSave } from "../core/validation.js";
 const KEY = "clubowner.game.v1",
   BACKUP = "clubowner.backup.v1";
-export function saveGame(s) {
-  validateSave(s);
-  if (s.database === "world") return saveLarge(s);
+// 0.49 options (used by the background saver in core/store.js):
+// - validated: the caller already ran validateSave on this exact state (skip the second pass);
+// - onCaptured(): the snapshot is fully serialised — the live state may be mutated again;
+// - onCommitted(): fired synchronously at the commit point (pointer written), before cleanup.
+export function saveGame(s, { validated = false, onCaptured, onCommitted } = {}) {
+  if (!validated) validateSave(s);
+  if (s.database === "world") return saveLarge(s, { onCaptured, onCommitted });
   const encoded = JSON.stringify(s),
     old = localStorage.getItem(KEY);
+  onCaptured?.();
   if (old) localStorage.setItem(BACKUP, old);
   localStorage.setItem(KEY, encoded);
+  onCommitted?.();
 }
 export async function loadGame() {
   let firstError = null;
@@ -95,14 +101,14 @@ async function readLarge(key) {
 }
 // Immutable snapshots: the localStorage pointer is the commit point. A failed
 // pointer write cannot replace the last successful career in IndexedDB.
-async function saveLarge(s) {
+async function saveLarge(s, { onCaptured, onCommitted } = {}) {
   const previous = localStorage.getItem(KEY);
   const key =
     "snapshot-" +
     (globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random()}`);
   // Store small compressed binary batches, not a huge structured-clone object.
   // This also avoids WebKit Blob/File storage and reload memory failures.
-  const packed = await encodeLocalSave(s);
+  const packed = await encodeLocalSave(s, { onCaptured });
   const db = await database();
   try {
     await new Promise((resolve, reject) => {
@@ -130,6 +136,7 @@ async function saveLarge(s) {
       }),
     );
     lastPacked = packed;
+    onCommitted?.();
     // Best-effort cleanup AFTER committing. Keep both referenced snapshots.
     const keep = new Set([key]);
     try {

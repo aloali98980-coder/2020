@@ -789,6 +789,7 @@ export const SYSTEM_PHRASES = {
     "En-tête de sauvegarde locale invalide",
   ],
   "دفعة لاعبين غير سليمة": ["Invalid player batch", "Lot de joueurs invalide"],
+  "قسم حفظ غير سليم": ["Invalid save section", "Section de sauvegarde invalide"],
   "عدد لاعبي الحفظ غير متطابق": [
     "Save player count mismatch",
     "Nombre de joueurs de la sauvegarde incohérent",

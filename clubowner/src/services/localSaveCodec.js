@@ -1,4 +1,3 @@
-import { saveBlob } from "./saveEncoding.js";
 import { ageAt } from "../models/player.js";
 import { readBackup, MAX_SAVE_BYTES } from "./saveCompression.js";
 const FORMAT = "clubowner-json-parts-v1";
@@ -66,11 +65,6 @@ async function gzipBlob(raw) {
         ).blob();
   return new Uint8Array(await b.arrayBuffer());
 }
-async function binary(value, checkSize) {
-  const raw = saveBlob(value);
-  checkSize(raw.size);
-  return gzipBlob(raw);
-}
 async function mapLimit(items, limit, fn) {
   const out = new Array(items.length);
   let next = 0;
@@ -100,10 +94,74 @@ function batchText(players, a, b) {
     for (let i = a; i < b; i++) players[i].age = ages[i - a];
   }
 }
-// Read one small player batch at a time. Mobile reload must not allocate a
-// 110 MB JSON string AND every player object while the previous page is alive.
-// Typed arrays also avoid WebKit's IDB Blob/File preparation failure.
-export async function encodeLocalSave(s) {
+// 0.49 smart batching of the head. The non-player part of a world career (divisions, cups,
+// ultras groups, stock listings…) used to be one gzip part re-compressed on every save even when
+// one field changed. Large nodes (depth 1–2, >= SECTION_MIN of JSON) now become their own
+// "section": the node is replaced by null in the head and its entries are cut into chunks at
+// content-defined boundaries (key / element id hash, or CHUNK_MAX bytes), each chunk cached by
+// digest exactly like player batches. A ticket-price change therefore re-compresses ~2 KB instead
+// of the whole ~5 MB head. Small careers produce no sections and keep the v1 format unchanged.
+const FORMAT_V2 = "clubowner-json-parts-v2";
+const SECTION_MIN = 16 * 1024;
+const CHUNK_MAX = 32 * 1024;
+const CHUNK_MASK = 15;
+const MAX_DEPTH = 3;
+const plain = (v) =>
+  v !== null && typeof v === "object" && typeof v.toJSON !== "function";
+const boundaryKey = (v, k) =>
+  v && (typeof v.id === "string" || typeof v.id === "number") ? String(v.id) : String(k);
+// Serialises `value` to the exact JSON.stringify text, except that large nodes are moved to
+// `sections` and appear as null. Every byte is stringified once (children first, then joined).
+// Depth 0–1 nodes are walked asynchronously so the capture can yield between children
+// (`pause()`); deeper nodes are plain synchronous JSON.stringify calls of bounded size.
+async function nodeText(value, path, depth, sections, pause) {
+  if (depth >= MAX_DEPTH || !plain(value)) return JSON.stringify(value);
+  const array = Array.isArray(value);
+  const keys = array ? value.map((_, i) => i) : Object.keys(value);
+  const items = [];
+  let total = 2;
+  for (const k of keys) {
+    const child = value[k];
+    const text =
+      depth + 1 < MAX_DEPTH && plain(child)
+        ? await nodeText(child, [...path, k], depth + 1, sections, pause)
+        : JSON.stringify(child);
+    if (text === undefined && !array) continue; // JSON.stringify drops these object members
+    const item = array ? (text ?? "null") : JSON.stringify(k) + ":" + text;
+    items.push({ item, mark: boundaryKey(child, k) });
+    total += item.length + 1;
+    await pause();
+  }
+  const [open, close] = array ? ["[", "]"] : ["{", "}"];
+  if (depth === 0 || total < SECTION_MIN)
+    return open + items.map((x) => x.item).join(",") + close;
+  const chunks = [];
+  let cur = [],
+    size = 0;
+  for (const { item, mark } of items) {
+    cur.push(item);
+    size += item.length + 1;
+    if (size >= CHUNK_MAX || (idHash(mark) & CHUNK_MASK) === 0) {
+      chunks.push(open + cur.join(",") + close);
+      cur = [];
+      size = 0;
+    }
+  }
+  if (cur.length || !chunks.length) chunks.push(open + cur.join(",") + close);
+  sections.push({ path, kind: array ? "array" : "object", chunks });
+  return "null";
+}
+const nextTask = () =>
+  globalThis.scheduler?.yield
+    ? globalThis.scheduler.yield()
+    : new Promise((resolve) => setTimeout(resolve, 0));
+// Encoding has two phases. CAPTURE turns the state into digested byte copies (cache hits need
+// nothing more) in slices that yield to the event loop every `sliceMs` so the page keeps
+// painting and answering clicks. When capture ends the snapshot is complete and
+// independent of the live state: `onCaptured` fires and the caller may mutate the state again.
+// COMPRESS then gzips only the cache misses. Read one small batch at a time: mobile reload must
+// not allocate a 110 MB JSON string, and typed arrays avoid WebKit's IDB Blob/File failure.
+export async function encodeLocalSave(s, { onCaptured, sliceMs = 8 } = {}) {
   let bytes = 0;
   const checkSize = (n) => {
     bytes += n;
@@ -112,23 +170,73 @@ export async function encodeLocalSave(s) {
         "تجاوز الحفظ حد 160 MiB؛ احتفظ بالنسخة السابقة وقلل العالم في المشاوير الجديدة.",
       );
   };
-  const head = await binary({ ...s, players: [] }, checkSize);
   const next = new Map();
-  let reused = 0;
-  const parts = await mapLimit(playerBatches(s.players), CONCURRENCY, async ([a, b]) => {
-    const { key, bytes } = digest(batchText(s.players, a, b));
-    let entry = cache.get(key) || next.get(key);
-    if (!entry) {
-      // Blob copies the scratch bytes synchronously, before the first await below.
-      const raw = new Blob([bytes], { type: "application/json" });
-      entry = { size: raw.size, bytes: await gzipBlob(raw) };
-    } else reused++;
+  let reused = 0,
+    reusedSections = 0;
+  const take = (text) => {
+    const { key, bytes: utf8 } = digest(text);
+    let entry = next.get(key) || cache.get(key);
+    const hit = !!entry;
+    // Blob copies the scratch bytes synchronously; the scratch view is reused by the next digest.
+    if (!entry) entry = { size: utf8.length, raw: new Blob([utf8], { type: "application/json" }) };
     checkSize(entry.size);
     next.set(key, entry);
-    return entry.bytes;
-  });
+    return { entry, hit };
+  };
+  let slice = performance.now();
+  // Resolves immediately (no task switch) until the slice budget is spent.
+  const pause = () => {
+    if (!sliceMs || performance.now() - slice <= sliceMs) return;
+    return nextTask().then(() => {
+      slice = performance.now();
+    });
+  };
+  const sections = [];
+  const head = take(await nodeText({ ...s, players: [] }, [], 0, sections, pause)).entry;
+  const sectionEntries = sections.map(({ path, kind, chunks }) => ({
+    path,
+    kind,
+    entries: chunks.map((text) => {
+      const { entry, hit } = take(text);
+      if (hit) reusedSections++;
+      return entry;
+    }),
+  }));
+  const batches = playerBatches(s.players);
+  const partEntries = new Array(batches.length);
+  for (let i = 0; i < batches.length; i++) {
+    const { entry, hit } = take(batchText(s.players, ...batches[i]));
+    if (hit) reused++;
+    partEntries[i] = entry;
+    await pause();
+  }
+  onCaptured?.();
+  // An entry may be shared with a concurrent encode (slot write during a background save):
+  // compress it once and let both wait on the same promise.
+  const misses = [...new Set(next.values())].filter((e) => !e.bytes);
+  await mapLimit(misses, CONCURRENCY, (e) =>
+    (e.pending ||= gzipBlob(e.raw).then((b) => {
+      e.bytes = b;
+      e.raw = null;
+    })),
+  );
   cache = next;
-  return { format: FORMAT, head, parts, playerCount: s.players.length, reused };
+  const packed = {
+    format: sections.length ? FORMAT_V2 : FORMAT,
+    head: head.bytes,
+    parts: partEntries.map((e) => e.bytes),
+    playerCount: s.players.length,
+    reused,
+  };
+  if (sections.length) {
+    packed.sections = sectionEntries.map(({ path, kind, entries }) => ({
+      path,
+      kind,
+      parts: entries.map((e) => e.bytes),
+    }));
+    packed.reusedSections = reusedSections;
+  }
+  return packed;
 }
 export async function decodeLocalSave(stored) {
   if (stored?.format === "clubowner-json-blob-v1")
@@ -139,8 +247,12 @@ export async function decodeLocalSave(stored) {
           : new Blob([stored.payload]),
       ),
     );
-  if (stored?.format !== FORMAT) return stored; // Actual pre-0.8 object snapshots.
+  if (stored?.format !== FORMAT && stored?.format !== FORMAT_V2) return stored; // Actual pre-0.8 object snapshots.
+  const sections = stored.format === FORMAT_V2 ? stored.sections : [];
   if (
+    !Array.isArray(sections) ||
+    sections.reduce((n, x) => n + (Array.isArray(x?.parts) ? x.parts.length : MAX_PARTS), 0) >
+      MAX_PARTS ||
     !Array.isArray(stored.parts) ||
     stored.parts.length > MAX_PARTS ||
     !Number.isInteger(stored.playerCount) ||
@@ -159,6 +271,39 @@ export async function decodeLocalSave(stored) {
   const s = await read(stored.head);
   if (!Array.isArray(s.players) || s.players.length)
     throw Error("رأس الحفظ المحلي غير سليم.");
+  // Shallow sections first: a deeper section's path lives inside its parent's value.
+  for (const section of [...sections].sort((a, b) => a.path.length - b.path.length)) {
+    const { path, kind } = section;
+    if (
+      !Array.isArray(path) ||
+      !path.length ||
+      path.length >= MAX_DEPTH ||
+      (kind !== "array" && kind !== "object")
+    )
+      throw Error("قسم حفظ غير سليم.");
+    let parent = s;
+    for (const k of path.slice(0, -1)) parent = parent?.[k];
+    const last = path.at(-1);
+    if (!plain(parent) || parent[last] !== null) throw Error("قسم حفظ غير سليم.");
+    let value = kind === "array" ? [] : {};
+    for (const part of section.parts) {
+      const chunk = await read(part);
+      if (kind === "array") {
+        if (!Array.isArray(chunk)) throw Error("قسم حفظ غير سليم.");
+        for (const item of chunk) value.push(item);
+      } else {
+        if (!plain(chunk) || Array.isArray(chunk)) throw Error("قسم حفظ غير سليم.");
+        for (const k of Object.keys(chunk))
+          Object.defineProperty(value, k, {
+            value: chunk[k],
+            enumerable: true,
+            writable: true,
+            configurable: true,
+          });
+      }
+    }
+    parent[last] = value;
+  }
   for (const part of stored.parts) {
     const players = await read(part);
     if (!Array.isArray(players) || players.length > PART_MAX)

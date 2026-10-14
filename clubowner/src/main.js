@@ -111,8 +111,19 @@ import "./styles/awards.css";
 import "./styles/gifts.css";
 import "./styles/ultras.css";
 import { createGame } from "./core/game.js";
-import { getState, setState, commit, isSaving } from "./core/store.js";
-import { saveGame, loadGame, exportGame, importGame } from "./services/save.js";
+import {
+  getState,
+  setState,
+  commit,
+  isSaving,
+  saveStatus,
+  onSaveStatus,
+  flushSave,
+  hasUnsavedChanges,
+  replaceState,
+  discardPendingSave,
+} from "./core/store.js";
+import { loadGame, exportGame, importGame } from "./services/save.js";
 import {
   getSession,
   isAuthenticated,
@@ -498,6 +509,7 @@ function render() {
     app.querySelector("#main-content")?.classList.add("page-enter");
   lastRenderedRoute = ui.route;
   translateDOM(app);
+  paintSaveIndicator();
   document.title = navLabel(ui.route) + " | Empire FC";
   document.title = translateText(document.title);
 }
@@ -556,24 +568,46 @@ function paletteActivate(i) {
   if (item.type === "screen") navigate(item.id);
   else showPlayer(item.id);
 }
+// 0.49: the decision is applied and shown immediately; persisting runs in the background
+// (core/store.js) and only the topbar indicator reflects it — nothing is blocked or dimmed.
 async function apply(operation, text) {
-  document.body.classList.add("saving-game");
-  const indicator = document.querySelector(".save-indicator");
-  if (indicator)
-    indicator.textContent = tr("جارٍ الحفظ…", "Saving…", "Enregistrement…");
   let r;
   try {
     r = await commit(operation);
   } catch (e) {
     render();
     throw e;
-  } finally {
-    document.body.classList.remove("saving-game");
   }
   render();
   if (text) toast(text);
   return r;
 }
+function paintSaveIndicator(st = saveStatus()) {
+  const busy = st.status === "pending" || st.status === "saving";
+  document.body.classList.toggle("save-pending", busy);
+  document.body.classList.toggle("save-failed", st.status === "error");
+  const el = document.querySelector(".save-indicator");
+  if (!el) return;
+  const label = {
+    saved: tr("محفوظ محليًا", "Saved locally", "Sauvegarde locale"),
+    pending: tr("بانتظار الحفظ…", "Waiting to save…", "En attente d'enregistrement…"),
+    saving: tr("جارٍ الحفظ في الخلفية…", "Saving in the background…", "Enregistrement en arrière-plan…"),
+    error: tr("تعذر الحفظ — اضغط لإعادة المحاولة", "Save failed — tap to retry", "Échec de l'enregistrement — touchez pour réessayer"),
+  }[st.status];
+  el.dataset.state = st.status;
+  el.innerHTML = `<i></i> ${esc(label)}`;
+  el.title = st.error || "";
+  if (st.status === "error") {
+    el.dataset.action = "save-retry";
+    el.setAttribute("role", "button");
+    el.tabIndex = 0;
+  } else {
+    delete el.dataset.action;
+    el.setAttribute("role", "status");
+    el.removeAttribute("tabindex");
+  }
+}
+onSaveStatus(paintSaveIndicator);
 function showCelebrationQueue(records, onDone = () => {}) {
   if (!records.length) return onDone();
   const save = getState();
@@ -1637,8 +1671,7 @@ const actions = {
       language: getLanguage(),
       ownerStory: ui.setupConfig.ownerStory || "selfmade",
     });
-    await saveGame(s);
-    setState(s);
+    await replaceState(s);
     ui.route = "dashboard";
     render();
     window.scrollTo(0, 0);
@@ -1675,6 +1708,7 @@ const actions = {
   "wipe-data-confirm": async () => {
     document.body.classList.add("saving-game");
     try {
+      await discardPendingSave();
       const dbs = ["clubowner.world.saves", "clubowner.slots"];
       await Promise.all(
         dbs.map(
@@ -1698,6 +1732,14 @@ const actions = {
   "onboarding-dismiss": () => {
     hideOnboarding(getState());
     render();
+  },
+  "save-retry": async () => {
+    try {
+      await flushSave();
+      toast(tr("تم الحفظ.", "Saved.", "Enregistré."));
+    } catch (e) {
+      showError(e.message);
+    }
   },
   "slot-save": async () => {
     const s = getState();
@@ -1726,14 +1768,13 @@ const actions = {
     let state = null;
     try {
       state = await readSlot(el.dataset.id);
-      await saveGame(state);
+      await replaceState(state);
     } catch (e) {
       document.body.classList.remove("saving-game");
       showError(e.message);
       return;
     }
     document.body.classList.remove("saving-game");
-    setState(state);
     setLanguage(state.preferences?.language || getLanguage());
     closeModal();
     // ذاكرة الحفظات الكبيرة: إعادة تحميل نظيفة بعد استبدال الحفظة النشطة.
@@ -1956,8 +1997,7 @@ const actions = {
   "import-save": chooseImport,
   "confirm-import": async () => {
     if (!pendingImport) return;
-    await saveGame(pendingImport);
-    setState(pendingImport);
+    await replaceState(pendingImport);
     setLanguage(pendingImport.preferences.language);
     pendingImport = null;
     closeModal();
@@ -2355,8 +2395,7 @@ const actions = {
       closeModal();
       toast("جارٍ تنزيل واسترجاع الحفظة…");
       const { state } = await downloadCloudSave(saveId);
-      await saveGame(state);
-      setState(state);
+      await replaceState(state);
       setLanguage(state.preferences.language);
       ui.route = "dashboard";
       render();
@@ -3363,8 +3402,17 @@ bootstrap();
 registerOffline();
 
 window.addEventListener("beforeunload", (e) => {
-  if (isSaving() || actionBusy) {
+  if (isSaving() || actionBusy || hasUnsavedChanges()) {
+    flushSave().catch(() => {});
     e.preventDefault();
     e.returnValue = "";
   }
 });
+// Mobile browsers may freeze or discard a hidden tab without beforeunload: write right away.
+const flushOnHide = () => {
+  if (hasUnsavedChanges()) flushSave().catch(() => {});
+};
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "hidden") flushOnHide();
+});
+window.addEventListener("pagehide", flushOnHide);

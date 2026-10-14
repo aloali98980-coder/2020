@@ -1484,6 +1484,10 @@
   .save-indicator {
     display: none;
   }
+  /* 0.49: a failed background save must stay visible (tap to retry) even on tiny screens */
+  .save-indicator[data-state="error"] {
+    display: flex;
+  }
   .facility-grid {
     grid-template-columns: 1fr;
   }
