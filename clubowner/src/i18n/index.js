@@ -19,6 +19,8 @@ import { BETTING_PHRASES } from "./phrases-betting.js";
 import { AWARDS_PHRASES } from "./phrases-awards.js";
 import { GIFTS_PHRASES } from "./phrases-gifts.js";
 import { BRANCHES_PHRASES } from "./phrases-branches.js";
+import { DONATIONS_PHRASES } from "./phrases-donations.js";
+import { OWNER_OVERRIDE_PHRASES } from "./phrases-owner-override.js";
 import { STOCK_MARKET_PHRASES } from "../data/stockMarketTexts.js";
 import { STOCK_MARKET_EVENT_PHRASES } from "../data/stockMarketEvents.js";
 import {
@@ -82,6 +84,10 @@ for (const extra of [
   GIFTS_PHRASES,
   // 0.47: الفروع — رسائل الأخطاء والملاحظات المعروضة عبر القاموس.
   BRANCHES_PHRASES,
+  // 0.50: التبرعات العلنية — العبارات الثابتة للرسائل والخبر الصحفي.
+  DONATIONS_PHRASES,
+  // 0.52: تجاوز المالك — العبارات الثابتة لسجل الموافقات.
+  OWNER_OVERRIDE_PHRASES,
   // 0.37: club exchange, trading, regulation and conditional market events.
   STOCK_MARKET_PHRASES,
   STOCK_MARKET_EVENT_PHRASES,

@@ -288,6 +288,11 @@ import {
   offerCandidateAlliance,
 } from "./services/politics/campaign.js";
 import {
+  donateToClub,
+  donationAvailable,
+  donationPreview,
+} from "./services/politics/donations.js";
+import {
   bargainBill,
   proposeBill,
   resolveBill,
@@ -739,7 +744,22 @@ function chooseImport() {
 function updateCalculations() {
   const s = getState(),
     offer = document.querySelector("#offer-form"),
-    contract = document.querySelector("#contract-form");
+    contract = document.querySelector("#contract-form"),
+    donation = document.querySelector("#politics-donation-form");
+  if (donation) {
+    // معاينة حية: كم نقطة امتنان (أي كم صوتًا محتملًا) سيضيف هذا المبلغ الآن؟
+    const amount = Math.round(Number(donation.elements.amount.value) || 0);
+    const clubId = donation.dataset.club;
+    const line = document.getElementById("donation-summary");
+    if (line) {
+      try {
+        const p = donationPreview(s, clubId, amount);
+        line.innerHTML = `<div><span>${tr("الامتنان المتوقع", "Expected gratitude", "Reconnaissance attendue")}</span><strong>+${num(p.gratitude)}</strong></div><div><span>${tr("التأييد بعد التبرع", "Support after the donation", "Soutien après le don")}</span><strong>${num(Math.round(p.supportAfter))}%</strong></div><div><span>${tr("المتبقي من ثروتك", "Left of your fortune", "Reste de votre fortune")}</span><strong>${money(Math.max(0, donationAvailable(s) - amount))} ${cur()}</strong></div><small>${p.capped ? tr("التأييد قريب من سقفه، فالامتنان المتبقي محدود.", "Support is near its ceiling, so the remaining gratitude is limited.", "Le soutien approche de son plafond ; la reconnaissance restante est limitée.") : tr("التأييد يرتفع فورًا، والتبرع لا يُنتج أي شبهة أو عقوبة.", "Support rises at once, and the donation produces no suspicion or penalty.", "Le soutien monte aussitôt, sans soupçon ni sanction.")}</small>`;
+      } catch (err) {
+        line.innerHTML = `<small>${esc(err.message)}</small>`;
+      }
+    }
+  }
   if (offer) {
     const fee = Number(offer.elements.fee.value),
       percent = Number(offer.elements.upfront.value);
@@ -1394,6 +1414,36 @@ const actions = {
         "L’événement est tranché et ses effets sont ajoutés au registre politique.",
       ),
     ),
+  // التبرعات 0.50: نافذة بمبلغ حر + معاينة امتنان حية قبل الدفع، وبلا أي عقوبة.
+  "politics-donate": async (el) => {
+    const s = getState();
+    const clubId = el.dataset.id;
+    const club = s.politics.clubs.find((row) => row.clubId === clubId);
+    const available = donationAvailable(s);
+    openModal(
+      `<h2>${tr("تبرع علني", "Public donation", "Don public")} · ${esc(extendedClub(clubId)?.name || clubId)}</h2><p class="muted">${tr("المبلغ حر تمامًا ومن ثروتك الشخصية. النادي يشكرك علنًا، وامتنانه يرفع تأييده لك، والتأييد يظهر مباشرة في أصواته داخل الاقتراع — بلا شبهات ولا حرارة ولا أي عقوبة.", "The amount is entirely up to you and comes from your personal fortune. The club thanks you publicly, its gratitude raises its support for you, and that support shows directly in its votes at the ballot — with no suspicion, heat, or penalty.", "Le montant est totalement libre et provient de votre fortune personnelle. Le club vous remercie publiquement, sa reconnaissance renforce son soutien, et ce soutien apparaît directement dans ses votes — sans soupçon, pression ni sanction.")}</p>
+      <form id="politics-donation-form" data-club="${esc(clubId)}">
+        <label class="field"><span>${tr("المبلغ", "Amount", "Montant")} (${tr("متاح", "available", "disponible")}: ${money(available)} ${cur()})</span><input name="amount" type="number" min="50000" max="${Math.max(50_000, available)}" step="50000" value="${Math.min(1_000_000, Math.max(50_000, available))}" required></label>
+        <div class="politics-donation-quick">${[500_000, 2_000_000, 10_000_000]
+          .filter((value) => value <= available)
+          .map((value) => `<button type="button" class="btn ghost small" data-action="politics-donation-set" data-id="${value}">${money(value)} ${cur()}</button>`)
+          .join("")}</div>
+        <div id="donation-summary" class="politics-donation-preview"></div>
+        <div class="modal-actions">${button(tr("إلغاء", "Cancel", "Annuler"), "close-modal", "", "secondary")}<button type="submit" class="btn primary" ${available < 50_000 ? "disabled" : ""}>${tr("تبرع الآن", "Donate now", "Donner maintenant")}</button></div>
+      </form>
+      <small class="muted">${tr("أقل مبلغ 50 ألف، ولا يوجد سقف غير ما تملكه. التأييد الحالي", "The minimum is 50,000 and the only ceiling is what you own. Current support", "Le minimum est de 50 000 et le seul plafond est votre fortune. Soutien actuel")}: ${num(Math.round(club?.support ?? 0))}%</small>`,
+    );
+    updateCalculations();
+  },
+  "politics-donation-set": async (el) => {
+    const input = document
+      .getElementById("politics-donation-form")
+      ?.querySelector("input[name=amount]");
+    if (input) {
+      input.value = el.dataset.id;
+      updateCalculations();
+    }
+  },
   "politics-visit": async (el) =>
     apply(
       (s) => visitClub(s, el.dataset.id),
@@ -2083,6 +2133,18 @@ const actions = {
       `<h2>تسعير تذاكر المباريات</h2><p class="muted">السعر الأعلى يرفع العائد لكل مشجع، لكنه يقلل الطلب. المقصورة أقل تأثرًا بالغلاء من العادية. أصحاب الاشتراكات يشغلون مقاعد العادية أولًا ولا يُحصّلون مرتين.</p><form id="ticket-form"><div class="form-grid"><label class="field"><span>العادية (70% من السعة)</span><input type="number" name="price" value="${s.ticketPrice}" min="50" max="500" required></label><label class="field"><span>الأولى (20% · 40–2000)</span><input type="number" name="first" value="${prices.first}" min="40" max="2000" required></label><label class="field"><span>المقصورة (10% · 100–5000)</span><input type="number" name="vip" value="${prices.vip}" min="100" max="5000" required></label><label class="field"><span>علاوة المباراة البيتية القادمة</span><select name="premium"><option value="0">بدون علاوة</option><option value="25">+25% مباراة كبيرة</option><option value="50">+50% قمة</option><option value="100">+100% ديربي ناري</option></select></label></div><div class="modal-actions"><button type="submit" class="btn primary">حفظ أسعار التذاكر</button></div></form>`,
     );
   },
+  // 0.52 — «أوافق كمالك!»: تجاوز سقف الرواتب فورًا، إضافة بحتة بلا أي عقوبة.
+  "wage-override-approve": async () => {
+    const { approveOwnerWageOverride } = await import("./services/wageOverride.js");
+    await apply(
+      (s) => approveOwnerWageOverride(s),
+      tr(
+        "أوافق كمالك! سقف الرواتب ارتفع فورًا.",
+        "I approve as owner! The wage cap rose at once.",
+        "J’approuve en tant que propriétaire ! Le plafond a été relevé aussitôt.",
+      ),
+    );
+  },
   "export-save": async () => {
     await exportGame(getState());
     toast("تم تجهيز ملف الحفظ للتنزيل.");
@@ -2657,6 +2719,20 @@ document.addEventListener("submit", async (e) => {
       );
       return;
     }
+    if (form.id === "politics-donation-form") {
+      const amount = Math.round(Number(form.elements.amount.value));
+      const entry = await apply(
+        (s) => donateToClub(s, form.dataset.club, amount),
+        tr(
+          "سُجل التبرع العلني، وامتنان النادي سيظهر في أصواته.",
+          "The public donation was recorded; the club's gratitude will show in its votes.",
+          "Le don public est enregistré ; la reconnaissance du club apparaîtra dans ses votes.",
+        ),
+      );
+      closeModal();
+      void entry;
+      return;
+    }
     if (form.id === "politics-debate-form") {
       const candidateId = form.elements.candidateId.value;
       const strategy = form.elements.strategy.value;
@@ -3161,7 +3237,8 @@ document.addEventListener("input", (e) => {
     if (output) output.value = `${Math.round(Number(e.target.value))}%`;
     return;
   }
-  if (e.target.closest("#offer-form,#contract-form")) updateCalculations();
+  if (e.target.closest("#offer-form,#contract-form,#politics-donation-form"))
+    updateCalculations();
   if (e.target.id === "palette-input") {
     paletteQuery(e.target.value);
     return;
@@ -3523,7 +3600,8 @@ document.addEventListener("change", async (e) => {
         (s) => (s.preferences.reduceMotion = e.target.checked),
         tr("تم حفظ إعداد العرض.", "Display setting saved.", "Réglage d'affichage enregistré."),
       );
-    if (e.target.closest("#offer-form,#contract-form")) updateCalculations();
+    if (e.target.closest("#offer-form,#contract-form,#politics-donation-form"))
+      updateCalculations();
   } catch (err) {
     showError(err.message);
   }

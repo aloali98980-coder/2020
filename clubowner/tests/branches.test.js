@@ -64,7 +64,7 @@ const runTo = (s, date) => {
 };
 
 test("حفظة جديدة: فروع فارغة بالبنية v40، وكل الأسواق الخمسون لها ميزة واحدة", () => {
-  assert.equal(SAVE_VERSION, 40);
+  assert.equal(SAVE_VERSION, 42);
   const s = game();
   assert.equal(s.branches.schema, 1);
   assert.deepEqual(s.branches.list, []);
@@ -79,7 +79,7 @@ test("الترحيل v39→v40: قائمة فارغة ولا يُخصم ولا �
   delete s.branches;
   s.version = 39;
   const m = migrateSave(s);
-  assert.equal(m.version, 40);
+  assert.equal(m.version, 42);
   assert.deepEqual(m.branches.list, []);
   assert.equal(
     JSON.stringify({ cash: m.finance.cash, players: m.players.length }),

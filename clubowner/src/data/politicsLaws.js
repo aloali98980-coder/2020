@@ -14,6 +14,11 @@ export const POLITICAL_LAWS = Object.freeze({
       "Rebalances broadcast revenue toward a larger solidarity share for smaller clubs.",
       "Rééquilibre les droits TV en faveur d’une part solidaire plus importante pour les petits clubs.",
     ),
+    explain: P(
+      "بعد إقرارها تصبح معادلة توزيع البث 25% أداء و15% شعبية و60% تساوٍ: نصيب الأندية الصغيرة والإقليمية يرتفع في كل توزيع سنوي، ونصيب الكبار ينخفض. أثرها على ناديك يتبع حجمه لا اسمه.",
+      "Once passed, the broadcast formula becomes 25% performance, 15% popularity and 60% equality: smaller and regional clubs gain in every annual distribution while the biggest lose share. Its effect on your club follows its size, not its name.",
+      "Une fois adoptée, la formule devient 25 % performance, 15 % popularité et 60 % égalité : les petits clubs et les clubs régionaux gagnent à chaque répartition annuelle, les plus grands perdent. L’effet sur votre club suit sa taille, pas son nom.",
+    ),
     reaction: {
       passed: P(
         "ترحب الأندية الإقليمية والصغيرة بزيادة الحصة المتساوية، فيما تطالب بعض الأندية الكبرى بمراجعة أثرها التنافسي.",
@@ -43,6 +48,11 @@ export const POLITICAL_LAWS = Object.freeze({
       "يرصد منحة سنوية لتطوير الأكاديميات والبنية الأساسية للناشئين.",
       "Earmarks an annual grant for academies and youth infrastructure.",
       "Réserve une aide annuelle aux académies et aux infrastructures de formation.",
+    ),
+    explain: P(
+      "يُحجز 5 ملايين جنيه من عائدات البث كل موسم في منحة تطوير الناشئين، وتظهر في توزيعات الاتحاد. المبلغ جماعي من عائد البث لا من خزينة ناديك.",
+      "Five million pounds are earmarked from broadcast revenue every season as a youth-development grant, shown in the association's distributions. The money is pooled from broadcast income, not from your club's treasury.",
+      "Cinq millions sont réservés chaque saison sur les droits TV comme aide au développement des jeunes, visibles dans les répartitions. La somme vient des droits TV, pas de la caisse de votre club.",
     ),
     reaction: {
       passed: P(
@@ -74,6 +84,11 @@ export const POLITICAL_LAWS = Object.freeze({
       "Creates a ring-fenced fund for published, purpose-bound grants to lower-resource clubs.",
       "Crée un fonds dédié à des aides publiées et affectées aux clubs les moins dotés.",
     ),
+    explain: P(
+      "يُحجز 5 ملايين كل موسم لصندوق التضامن لدعم الأندية الأصغر. الأثر في سجل التوزيعات المعلن، ولا يُخصم شيء من أي نادٍ.",
+      "Five million are reserved each season for the solidarity fund supporting smaller clubs. The effect appears in the published distribution record, and nothing is deducted from any club.",
+      "Cinq millions sont réservés chaque saison au fonds de solidarité pour les petits clubs. L’effet figure dans le registre des répartitions, sans prélèvement sur aucun club.",
+    ),
     reaction: {
       passed: P(
         "ترحب الأندية الصغيرة بالصندوق، وتطالب برقابة واضحة على المنح.",
@@ -103,6 +118,11 @@ export const POLITICAL_LAWS = Object.freeze({
       "يفرض نشر الإيرادات والمنح والتوزيعات في سجل موحد قابل للمراجعة.",
       "Requires revenue, grants, and distributions to appear in one reviewable ledger.",
       "Impose la publication des revenus, aides et répartitions dans un registre vérifiable.",
+    ),
+    explain: P(
+      "تفتح الإفصاح العام: أرقام ميزانية الاتحاد والتوزيعات وأرصدة الأندية تصبح ظاهرة في واجهة المجلس لمن يريد التدقيق، بلا غرامات.",
+      "Opens public disclosure: the association budget, distributions and club balances become visible on the council screen for anyone to check, with no fines.",
+      "Ouvre la publication : le budget, les répartitions et les soldes des clubs deviennent visibles sur l’écran du conseil, sans amende.",
     ),
     reaction: {
       passed: P(
@@ -134,6 +154,11 @@ export const POLITICAL_LAWS = Object.freeze({
       "Mandates an independent annual review of association accounts, grants, and distributions.",
       "Impose un audit annuel indépendant des comptes, aides et répartitions de la fédération.",
     ),
+    explain: P(
+      "تصبح المراجعة المالية إلزامية تلقائيًا كل موسم، وتُسجَّل نتيجتها (مطابقة أو فرق) في سجل الاتحاد دون أن توقف اللعب.",
+      "Financial review becomes automatically mandatory every season, and its result (reconciled or a discrepancy) is recorded in the association register without pausing play.",
+      "L’audit devient obligatoire chaque saison ; son résultat (rapproché ou écart) est consigné au registre, sans interrompre la partie.",
+    ),
     reaction: {
       passed: P(
         "ترحب الأندية بالمراجعة، وتنتظر تقريرًا علنيًا عن الحساب الختامي.",
@@ -163,6 +188,11 @@ export const POLITICAL_LAWS = Object.freeze({
       "يوحد الإفصاح عن ملكية الأندية وتعارض المصالح وفق قواعد مشتركة.",
       "Standardises ownership and conflict-of-interest disclosures under shared rules.",
       "Harmonise les déclarations de propriété et de conflits d’intérêts selon des règles communes.",
+    ),
+    explain: P(
+      "يسجّل ملكية الأندية في سجل علني ويفتح الإفصاح العام مثل لائحة الإفصاح؛ أثرها في الشفافية لا في العقوبات.",
+      "Registers club ownership in a public record and opens public disclosure like the disclosure article; its effect is transparency, not penalties.",
+      "Inscrit la propriété des clubs dans un registre public et ouvre la publication, comme le texte sur la transparence ; l’effet est la clarté, pas les sanctions.",
     ),
     reaction: {
       passed: P(
@@ -194,6 +224,11 @@ export const POLITICAL_LAWS = Object.freeze({
       "Sets a consistent registration framework; sporting enforcement is handled by the competitions group.",
       "Établit un cadre d’inscription commun ; l’application sportive relève du groupe des compétitions.",
     ),
+    explain: P(
+      "مادة رياضية نافذة في كتالوج المجلس: لا تغيّر ميزانية الاتحاد ولا تخصم شيئًا، لكنها ترفع تأييد الأندية الكبرى (+7) وتُرضي مطالب توازن الأجانب.",
+      "A sporting article in the council catalogue: it changes no association budget and deducts nothing, but raises the biggest clubs' support (+7) and satisfies demands for foreign-player balance.",
+      "Un article sportif du catalogue : aucun budget modifié, mais le soutien des grands clubs progresse (+7) et les demandes d’équilibre des étrangers sont satisfaites.",
+    ),
     reaction: {
       passed: P(
         "تختلف الأندية بين الترحيب بالتوازن والتحذير من تقييد المنافسة.",
@@ -223,6 +258,11 @@ export const POLITICAL_LAWS = Object.freeze({
       "يعتمد إطارًا مستقرًا لمواعيد المسابقات، مع مراعاة الراحة ودخل الأندية.",
       "Sets a stable competition calendar that accounts for rest and club income.",
       "Établit un calendrier stable qui tient compte du repos et des revenus des clubs.",
+    ),
+    explain: P(
+      "مادة رياضية لتنظيم التقويم: أثرها في مواقف الأندية (الإقليمية +7 والصغيرة +9)، ولا تمس الميزانية أو الاقتراع.",
+      "A sporting article organising the calendar: its effect is on club positions (regional +7, small +9); it touches neither the budget nor the ballot.",
+      "Article sportif sur le calendrier : effet sur les positions (régionaux +7, petits +9), sans toucher au budget ni au vote.",
     ),
     reaction: {
       passed: P(
@@ -254,6 +294,11 @@ export const POLITICAL_LAWS = Object.freeze({
       "Separates referee appointments and reviews from clubs’ direct interests.",
       "Sépare les nominations et évaluations des arbitres des intérêts directs des clubs.",
     ),
+    explain: P(
+      "تفصل التحكيم عن الضغوط: ترفع تأييد الأندية الإقليمية والصغيرة (5 و7)، ويبقى ملف التعيينات في مساره الحالي داخل لجنة الحكام.",
+      "Separates refereeing from pressure: regional and small clubs gain support (5 and 7), while appointments stay in the existing referees committee path.",
+      "Sépare l’arbitrage des pressions : les clubs régionaux et modestes gagnent du soutien (5 et 7), les nominations restant à la commission des arbitres.",
+    ),
     reaction: {
       passed: P(
         "تتوقع الأندية قرارات أكثر اتساقًا وتطالب بآلية تظلم مستقلة.",
@@ -283,6 +328,11 @@ export const POLITICAL_LAWS = Object.freeze({
       "ينشر درجات العقوبة ويتيح مراجعة مستقلة للقرارات التأديبية.",
       "Publishes sanction ranges and allows independent review of disciplinary decisions.",
       "Publie les niveaux de sanction et autorise un réexamen indépendant des décisions disciplinaires.",
+    ),
+    explain: P(
+      "توحّد العقوبات وتنشر قرارات الانضباط: أثرها في مواقف الأندية (الصغيرة +5) ومسار الشكاوى القائم في لجنة الانضباط.",
+      "Standardises sanctions and publishes disciplinary rulings: the effect is on club positions (small +5) and on the existing appeals path in the discipline committee.",
+      "Uniformise les sanctions et publie les décisions : effet sur les positions (petits +5) et sur la voie de recours de la commission de discipline.",
     ),
     reaction: {
       passed: P(
@@ -314,6 +364,11 @@ export const POLITICAL_LAWS = Object.freeze({
       "Requires conflict disclosures and review of decisions affecting competitions.",
       "Impose la déclaration des conflits et l’examen des décisions influant sur les compétitions.",
     ),
+    explain: P(
+      "تجعل نزاهة المسابقات بندًا معلنًا: أثرها في مواقف الأندية (الإقليمية +4 والصغيرة +6) ودعم ملف النزاهة السياسي دون تحقيقات آلية.",
+      "Makes competition integrity a declared clause: its effect is on club positions (regional +4, small +6) and on the political integrity file, without automatic investigations.",
+      "Fait de l’intégrité une clause déclarée : effet sur les positions (régionaux +4, petits +6) et sur le dossier d’intégrité, sans enquête automatique.",
+    ),
     reaction: {
       passed: P(
         "تؤيد الأندية الفصل بين إدارة المسابقة ومصالح المتنافسين.",
@@ -343,6 +398,11 @@ export const POLITICAL_LAWS = Object.freeze({
       "يمنع الرئيس من الترشح بعد ولايتين ناجحتين؛ يحتاج التعديل إلى أغلبية دستورية موصوفة.",
       "Bars a president from standing after two successful terms; this amendment needs a constitutional supermajority.",
       "Interdit au président de se représenter après deux mandats réussis ; cet amendement exige une majorité constitutionnelle renforcée.",
+    ),
+    explain: P(
+      "تعديل دستوري: يمنع الترشح بعد ولايتين. إن كنت أكملت ولايتين فستُستبعد من الاقتراع القادم مثل أي مرشح آخر، ويبقى السجل محفوظًا.",
+      "A constitutional amendment: no candidacy after two terms. If you have served two, you are excluded from the coming ballot like any other candidate, and the record stays saved.",
+      "Amendement constitutionnel : plus de candidature après deux mandats. Si vous en avez accompli deux, vous êtes écarté du prochain vote comme tout autre candidat, le registre restant conservé.",
     ),
     reaction: {
       passed: P(

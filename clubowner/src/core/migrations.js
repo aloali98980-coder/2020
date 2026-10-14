@@ -29,6 +29,7 @@ import { ensureUltras } from "../services/ultras.js";
 import { ensureAwards } from "../services/awards.js";
 import { ensureGifts } from "../services/gifts.js";
 import { ensureBranches } from "../services/branches.js";
+import { ensureWageOverride } from "../services/wageOverride.js";
 import { stockText } from "../data/stockMarketTexts.js";
 import { backfillShirtNumbers } from "../services/presentation.js";
 import { empireText } from "../data/empireTexts.js";
@@ -697,6 +698,34 @@ function migrateSave40(input) {
   return prior;
 }
 
+// 0.50 (save v41): سجل التبرعات العلنية — عدّاد فارغ وسجلان فارغان. لا خصم ولا
+// تغيير على أي مؤشر، والتبرع يبقى خيارًا مفتوحًا دائمًا من أول يوم في الحفظة.
+function migrateSave41(input) {
+  if (!input || input.version === 41) return input;
+  const prior = input.version === 40 ? structuredClone(input) : migrateSave40(input);
+  if (prior?.version !== 40) return prior;
+  prior.version = 41;
+  initPolitics(prior);
+  prior.migrationNote =
+    (prior.migrationNote || "") +
+    " التبرعات 0.50: أُضيف سجل التبرعات العلنية للأندية (مبلغ حر من الثروة الشخصية، امتنان وأصوات، عدّاد حي وتغطية صحفية وسجل) — يبدأ فارغًا وبلا أي عقوبة أو التزام.";
+  return prior;
+}
+
+// 0.52 (save v42): سجل موافقات المالك على تجاوز سقف الرواتب — عدّاد فارغ وسجل
+// فارغان. لا خصم ولا تغيير على أي مؤشر، ورفع السقف يبقى قرار المالك وقت التجاوز.
+function migrateSave42(input) {
+  if (!input || input.version === 42) return input;
+  const prior = input.version === 41 ? structuredClone(input) : migrateSave41(input);
+  if (prior?.version !== 41) return prior;
+  prior.version = 42;
+  ensureWageOverride(prior);
+  prior.migrationNote =
+    (prior.migrationNote || "") +
+    " تجاوز المالك 0.52: أُضيف سجل موافقات المالك على تجاوز سقف الرواتب (زر «أوافق كمالك!» يرفع الحد المعتمد فورًا عند التجاوز) — يبدأ فارغًا وبلا أي غرامة أو خصم أو شبهة أو حرارة.";
+  return prior;
+}
+
 function migrateSave33(input) {
   if (!input || input.version === 33) return input;
   const prior = input.version === 32 ? structuredClone(input) : migrateSave32(input);
@@ -747,9 +776,9 @@ function migrateSaveToTwentyFour(input) {
 }
 
 // الدفعة 7 (بعد الإغلاق): أرقام القمصان للحفظات القديمة تُرحَّل عند كل تحميل دون رفع رقم الحفظ.
-// 0.46→0.47: الترحيل النهائي يمر عبر migrateSave40.
+// 0.46→0.47→0.50→0.52: الترحيل النهائي يمر عبر migrateSave42.
 export function migrateSave(input) {
-  const out = migrateSave40(input);
+  const out = migrateSave42(input);
   if (out && typeof out === "object") backfillShirtNumbers(out);
   return out;
 }

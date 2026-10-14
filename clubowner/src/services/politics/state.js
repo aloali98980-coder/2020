@@ -263,6 +263,15 @@ function initialPolitics(s, legacy) {
       cooldowns: {},
       lastMonth: "",
     },
+    // 0.50: التبرعات العلنية — عدّاد حي وسجل ومغطى صحفيًا، بلا أي عقوبة.
+    donations: {
+      total: 0,
+      count: 0,
+      gratitude: 0,
+      clubs: {},
+      log: [],
+      press: [],
+    },
     history: [],
     migration: legacy ? "legacy-neutral" : "new-career",
   };
@@ -318,6 +327,11 @@ function upgradePoliticsContainers(s) {
     p.eventState.cooldowns = {};
   p.eventState.pending ??= null;
   p.eventState.lastMonth ||= "";
+  p.donations = { ...defaults.donations, ...(p.donations || {}) };
+  if (!p.donations.clubs || typeof p.donations.clubs !== "object")
+    p.donations.clubs = {};
+  for (const key of ["log", "press"])
+    if (!Array.isArray(p.donations[key])) p.donations[key] = [];
   p.committees = { ...defaults.committees, ...(p.committees || {}) };
   for (const committeeId of ["referees", "discipline", "competitions"])
     p.committees[committeeId] = {

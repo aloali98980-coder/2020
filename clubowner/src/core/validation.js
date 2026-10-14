@@ -144,6 +144,35 @@ export function validateSave(s) {
     f.initialCash + f.ledger.reduce((n, e) => n + e.amount, 0) === f.cash,
     "كشف الحساب لا يطابق الرصيد.",
   );
+  // تجاوز المالك 0.52: سجل موافقات اختياري — لا يغيّر أي قاعدة أخرى، ولو وُجد فهو مُدقّق بالكامل.
+  const override = f.ownerOverride;
+  check(
+    override === undefined ||
+      (override !== null &&
+        typeof override === "object" &&
+        Number.isSafeInteger(override.count) &&
+        override.count >= 0 &&
+        Number.isSafeInteger(override.totalAdded) &&
+        override.totalAdded >= 0 &&
+        (override.lastDate === null || isoDate(override.lastDate)) &&
+        Array.isArray(override.log) &&
+        override.log.length <= 40 &&
+        override.log.every(
+          (r) =>
+            id(r.id) &&
+            isoDate(r.date) &&
+            Number.isSafeInteger(r.season) &&
+            Number.isSafeInteger(r.budgetBefore) &&
+            r.budgetBefore >= 0 &&
+            Number.isSafeInteger(r.budgetAfter) &&
+            r.budgetAfter >= 0 &&
+            Number.isSafeInteger(r.gap) &&
+            r.gap >= 0 &&
+            Number.isSafeInteger(r.payroll) &&
+            r.payroll >= 0,
+        )),
+    "سجل تجاوز المالك غير سليم.",
+  );
   check(
     new Set(f.ledger.map((e) => e.key)).size === f.ledger.length,
     "حركات مالية مكررة.",
