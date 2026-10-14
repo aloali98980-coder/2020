@@ -172,6 +172,22 @@ body.saving-game::after {
 body.saving-game .save-indicator i {
   animation: pulse-dot 0.9s var(--ease-in-out) infinite;
 }
+/* 0.49 — حفظ في الخلفية: المؤشر وحده يتغير، بلا طبقة معتمة ولا تعطيل للنقر */
+.save-indicator[data-state="pending"] i,
+.save-indicator[data-state="saving"] i {
+  background: var(--gold);
+}
+body.save-pending .save-indicator i {
+  animation: pulse-dot 0.9s var(--ease-in-out) infinite;
+}
+.save-indicator[data-state="error"] {
+  color: var(--red);
+  cursor: pointer;
+  text-decoration: underline dotted;
+}
+.save-indicator[data-state="error"] i {
+  background: var(--red);
+}
 @keyframes pulse-dot {
   0%,
   100% {
@@ -253,7 +269,8 @@ body.saving-game .save-indicator i {
   #toast.visible,
   .skeleton::after,
   body.saving-game::after,
-  body.saving-game .save-indicator i {
+  body.saving-game .save-indicator i,
+  body.save-pending .save-indicator i {
     animation: none !important;
   }
   .btn,

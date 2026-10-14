@@ -27,7 +27,7 @@ docs/FEATURES-0.43.md.
 
 ## Boundaries
 
-The engine uses plain serializable objects and has no DOM or SwiftUI dependencies. Services modify a supplied state; they never import a global UI store. Views return presentation markup and dispatch commands through the application layer. The store clones the state, applies the command, validates and persists the draft, and only then commits it.
+The engine uses plain serializable objects and has no DOM or SwiftUI dependencies. Services modify a supplied state; they never import a global UI store. Views return presentation markup and dispatch commands through the application layer. The store applies the command (on a clone for small careers, in place for world careers), validates the result and publishes it; persistence then runs in the background — debounced, coalesced into one write of the newest state, with a consistent snapshot captured before compression and IndexedDB. A failed world command restores the last durable snapshot and replays the decisions committed after it (0.49, docs/FEATURES-0.49.md).
 
 The original demo catalog remains available for classic careers. Separate current/world snapshots and the expanded club catalog seed larger careers, with explicit coverage and provenance caveats. Saved instances own their evolving contracts, identities and facilities; catalogs do not overwrite them each tick. Expanded careers include lightweight global leagues, modeled lower divisions and versioned European formats, not complete official regulations for every country.
 

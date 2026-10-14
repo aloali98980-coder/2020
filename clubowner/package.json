@@ -1,6 +1,6 @@
 {
   "name": "club-owner",
-  "version": "0.48.0",
+  "version": "0.49.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -27,6 +27,7 @@
     "test:talent:browser": "node tests/talent-browser.mjs",
     "test:v07:seasons": "node tests/full-world-v07.mjs",
     "i18n:coverage": "node scripts/i18n-coverage.mjs",
+    "perf:save": "node --max-old-space-size=4096 tests/save-perf.mjs",
     "test:i18n": "node tests/i18n-browser.mjs",
     "test:i18n:runtime": "node tests/i18n-runtime.mjs"
   },
