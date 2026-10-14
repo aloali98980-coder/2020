@@ -40,6 +40,43 @@ export function donationGratitude(amount, support = 50) {
 export const donationAvailable = (s) =>
   Math.max(0, Math.floor(Number(s.empire?.personal) || 0));
 
+/** معكوس الامتنان: أصغر تبرع يعطي هذه النقاط عند هذا التأييد (يُقرّب لأعلى 50 ألفًا). */
+export function donationForGratitude(points, support = 50) {
+  const target = Math.max(0, Number(points) || 0);
+  const scale = clamp(1 - Number(support || 0) / 130, 0.25, 1);
+  const raw = clamp(target / scale, 1, 12);
+  if (raw <= 1) return DONATION_MIN;
+  const amount =
+    Math.ceil((250_000 * (raw - 1) ** 2) / DONATION_MIN) * DONATION_MIN;
+  return clamp(amount, DONATION_MIN, DONATION_MAX);
+}
+
+/** أقل عدد تبرعات وأقل مبلغ لرفع تأييد نادٍ بمقدار نقاط معيّن (كل تبرع بسقف 12 نقطة). */
+export function donationPlanForSupport(support, points) {
+  const room = clamp(100 - Number(support || 0), 0, 100);
+  const target = Math.min(Math.max(0, Number(points) || 0), room);
+  let current = Number(support || 0);
+  let left = target;
+  let amount = 0;
+  let count = 0;
+  while (left > 0.05 && count < 20) {
+    const chunk = Math.min(left, 12);
+    const chunkAmount = donationForGratitude(chunk, current);
+    const gained = donationGratitude(chunkAmount, current);
+    amount += chunkAmount;
+    count += 1;
+    current = clamp(Math.round((current + gained) * 10) / 10, 0, 100);
+    left = Math.round((left - gained) * 10) / 10;
+  }
+  return {
+    amount,
+    count,
+    reached: target > 0 && left <= 0.05,
+    target,
+    supportAfter: current,
+  };
+}
+
 export function donationsState(s) {
   const p = ensurePolitics(s);
   p.donations ||= {

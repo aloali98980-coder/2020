@@ -17,6 +17,8 @@ import {
 } from "./state.js";
 
 const VISIT_COST = 180_000;
+// وزن نقطة التأييد في نتيجة النادي داخل الاقتراع — مصدر واحد للمحرك والمعالج.
+export const SUPPORT_SCORE_WEIGHT = 0.47;
 const CONFERENCE_COST = 650_000;
 const clampScore = (value) => clamp(Math.round(value * 10) / 10, 0, 100);
 const monthKey = (date) => date.slice(0, 7);
@@ -131,7 +133,7 @@ export function voteScores(s, clubId) {
   const player = Math.max(
     1,
     13 +
-      club.support * 0.47 +
+      club.support * SUPPORT_SCORE_WEIGHT +
       clubCampaignBonus(p, clubId) +
       funding +
       reputation +
@@ -717,6 +719,78 @@ export function campaignTick(s) {
   if (p.campaign.lastPollMonth !== monthKey(s.date))
     return campaignMonthlyTick(s);
   return null;
+}
+
+/** توقع انتخابي حي على النموذج نفسه: من يتقدم الآن، وكم صوتًا موزونًا يفصلك عن الأغلبية، وأقرب الأندية للتحول. */
+export function electionForecast(s) {
+  const p = ensurePolitics(s);
+  const totals = Object.fromEntries([
+    ["player", 0],
+    ...p.candidates.map((candidate) => [candidate.id, 0]),
+  ]);
+  const perClub = [];
+  let totalWeight = 0;
+  for (const club of p.clubs) {
+    const scores = voteScores(s, club.clubId);
+    const ranked = [...scores].sort(
+      (a, b) => b.score - a.score || a.candidateId.localeCompare(b.candidateId),
+    );
+    const leader = ranked[0];
+    const playerRow =
+      scores.find((row) => row.candidateId === "player") || null;
+    totals[leader.candidateId] += club.voteWeight;
+    totalWeight += club.voteWeight;
+    perClub.push({
+      clubId: club.clubId,
+      bloc: club.bloc,
+      weight: club.voteWeight,
+      support: club.support,
+      playerScore: playerRow ? Math.round(playerRow.score * 10) / 10 : 0,
+      leaderId: leader.candidateId,
+      leaderScore: Math.round(leader.score * 10) / 10,
+      runnerUpScore: Math.round((ranked[1]?.score || 0) * 10) / 10,
+    });
+  }
+  const ranked = Object.entries(totals).sort(
+    (a, b) => b[1] - a[1] || a[0].localeCompare(b[0]),
+  );
+  const playerVotes = totals.player || 0;
+  const playerShare = totalWeight
+    ? Math.round((playerVotes / totalWeight) * 1000) / 10
+    : 0;
+  const majorityWeight = Math.floor(totalWeight / 2) + 1;
+  const swing = perClub
+    .filter((row) => row.leaderId !== "player" && row.playerScore > 0)
+    .map((row) => {
+      const neededScore =
+        Math.round((row.leaderScore - row.playerScore + 0.1) * 10) / 10;
+      return {
+        ...row,
+        neededScore,
+        neededPoints: neededScore,
+        neededSupport:
+          Math.ceil((neededScore / SUPPORT_SCORE_WEIGHT) * 10) / 10,
+      };
+    })
+    .sort(
+      (a, b) =>
+        b.weight - a.weight ||
+        a.neededPoints - b.neededPoints ||
+        a.clubId.localeCompare(b.clubId),
+    );
+  return {
+    season: p.election.season,
+    status: p.election.status,
+    totalWeight,
+    majorityWeight,
+    playerVotes,
+    playerShare,
+    rank: ranked.findIndex(([id]) => id === "player") + 1 || ranked.length + 1,
+    leaderId: ranked[0]?.[0] || "player",
+    neededWeight: Math.max(0, majorityWeight - playerVotes),
+    perClub,
+    swing,
+  };
 }
 
 export function campaignStatus(s) {

@@ -41,7 +41,11 @@ import {
   donationSummary,
   donationTierLabel,
 } from "../services/politics/donations.js";
-import { esc, money, num, date } from "../ui/format.js";
+import {
+  presidencySteps,
+  presidencyWizard,
+} from "../services/politics/wizard.js";
+import { esc, money, num, date, cur } from "../ui/format.js";
 
 const local = (value) => value?.[getLanguage()] || value?.en || value || "";
 const tabs = [
@@ -205,9 +209,200 @@ function candidateCard(s, candidate) {
   </article>`;
 }
 
+// ── تظبيط الرئاسة 0.51: الطريق المبسّط + بطاقة التعريف + معالج الانتخابات ──
+const STEP_WORDS = {
+  run: () => tr("ترشح", "Run", "Candidature"),
+  campaign: () => tr("حملة", "Campaign", "Campagne"),
+  vote: () => tr("تصويت", "Vote", "Vote"),
+  win: () => tr("فوز", "Win", "Victoire"),
+};
+const STEP_NOTE = {
+  run: {
+    eligible: () => tr("مؤهل للترشح", "Eligible to run", "Éligible"),
+    contested: () =>
+      tr(
+        "خضت انتخابات سابقة",
+        "You have contested an election",
+        "Déjà candidat",
+      ),
+    "term-limit": () =>
+      tr("حد الولايات يمنعك", "Term limit bars you", "Limite de mandats"),
+  },
+  campaign: {
+    active: () =>
+      tr("الحملة جارية الآن", "The campaign is under way", "Campagne en cours"),
+    waiting: () =>
+      tr(
+        "تبدأ مع موسم الانتخابات",
+        "Starts in the election season",
+        "Débute à la saison électorale",
+      ),
+    archived: () => tr("حملة مؤرشفة", "Campaign archived", "Campagne archivée"),
+  },
+  vote: {
+    soon: () =>
+      tr(
+        "الاقتراع خلال 30 يومًا",
+        "The ballot is within 30 days",
+        "Le vote dans 30 jours",
+      ),
+    scheduled: () =>
+      tr(
+        "في نهاية موسم الانتخابات",
+        "At the election season's end",
+        "En fin de saison électorale",
+      ),
+    won: () => tr("فزت بالاقتراع", "You won the ballot", "Vous avez gagné"),
+    lost: () => tr("خسرت الاقتراع", "You lost the ballot", "Vous avez perdu"),
+  },
+  win: {
+    "in-office": () =>
+      tr("أنت رئيس الاتحاد", "You are president", "Vous présidez"),
+    "not-yet": () => tr("الهدف النهائي", "The final goal", "L’objectif final"),
+  },
+};
+
+function presidencyRoadmap(s) {
+  const steps = presidencySteps(s);
+  const cards = steps
+    .map((step, index) => {
+      const note = STEP_NOTE[step.id][step.detail]();
+      const tone =
+        step.state === "current"
+          ? "current"
+          : step.state === "done"
+            ? "done"
+            : step.state === "blocked"
+              ? "blocked"
+              : "next";
+      return `<article class="politics-step ${tone}">
+        <span class="politics-step-index">${num(index + 1)}</span>
+        <div><b>${STEP_WORDS[step.id]()}</b><small>${note}</small></div>
+        ${step.state === "current" ? `<span class="badge green">${tr("الآن", "Now", "Maintenant")}</span>` : step.state === "done" ? `<span class="badge outline">${icon("check", 14)}</span>` : step.state === "blocked" ? `<span class="badge red">${tr("موقوف", "Blocked", "Bloqué")}</span>` : ""}
+      </article>`;
+    })
+    .join('<span class="politics-step-arrow">›</span>');
+  return `<section class="panel politics-roadmap-panel"><div class="panel-head"><h3>${icon("flag")} ${tr("طريق الرئاسة", "The presidential path", "Le chemin présidentiel")}</h3>${badge(tr("أربع خطوات مبسّطة", "Four simple steps", "Quatre étapes simples"), "gold")}</div>
+    <div class="politics-roadmap">${cards}</div>
+  </section>`;
+}
+
+function presidencyIdCard(s, w) {
+  const p = s.politics;
+  const club = extendedClub(s.clubId);
+  const alliances = p.alliances.filter(
+    (alliance) => alliance.playerAligned,
+  ).length;
+  const contested = p.history.filter(
+    (entry) => entry.type === "election",
+  ).length;
+  const won = p.history.filter(
+    (entry) => entry.type === "election" && entry.won,
+  ).length;
+  const donations = w.donations;
+  return `<section class="panel politics-id-card">
+    <div class="politics-id-top"><span class="politics-id-avatar">${esc(String(s.owner || "?").slice(0, 1))}</span>
+      <div class="politics-id-names"><small>${tr("بطاقة تعريف سياسية", "Political ID card", "Carte d’identité politique")}</small><strong data-no-translate>${esc(s.owner || "")}</strong><span>${esc(club?.name || s.clubId)} · ${esc(club?.city || "")}</span></div>
+      ${badge(p.office.held ? tr("رئيس الاتحاد", "Association president", "Président") : p.campaign.active ? tr("مرشح في حملة", "Campaigning candidate", "Candidat en campagne") : tr("مالك نادٍ", "Club owner", "Propriétaire"), p.office.held ? "green" : "gold")}
+    </div>
+    <div class="politics-id-grid">
+      <div><small>${tr("الولايات", "Terms", "Mandats")}</small><b>${num(w.termsServed)}${w.termLimit ? ` / ${num(w.termLimit)}` : ""}</b></div>
+      <div><small>${tr("انتخابات خاضها", "Elections contested", "Élections disputées")}</small><b>${num(contested)} · ${tr("فاز", "won", "gagnées")} ${num(won)}</b></div>
+      <div><small>${tr("الشرعية", "Legitimacy", "Légitimité")}</small><b>${num(Math.round(p.legitimacy))}%</b></div>
+      <div><small>${tr("النزاهة", "Integrity", "Intégrité")}</small><b>${num(Math.round(p.integrity.score))}%</b></div>
+      <div><small>${tr("التأييد الموزون", "Weighted support", "Soutien pondéré")}</small><b>${num(w.forecast.playerShare)}%</b></div>
+      <div><small>${tr("تكتلاتك", "Your blocs", "Vos blocs")}</small><b>${num(alliances)}</b></div>
+      <div><small>${tr("تبرعاتك العلنية", "Your public donations", "Vos dons publics")}</small><b>${donations.count ? `${money(donations.total)} ${cur()}` : "—"}</b></div>
+      <div><small>${tr("أندية استفادت", "Clubs helped", "Clubs aidés")}</small><b>${num(donations.clubs)}</b></div>
+      <div><small>${tr("الانتخابات القادمة", "Next election", "Prochaine élection")}</small><b>${tr("الموسم", "Season", "Saison")} ${num(w.season)}${w.active ? ` · ${num(w.daysToElection ?? 0)} ${tr("يومًا", "days", "jours")}` : ""}</b></div>
+    </div>
+  </section>`;
+}
+
+function wizardClubRow(row) {
+  const actions = [
+    row.visit ? tr("زيارة", "Visit", "Visite") : null,
+    row.promise ? tr("وعد", "Promise", "Engagement") : null,
+    row.conferences
+      ? `${num(row.conferences)} ${tr("مؤتمر", "conference(s)", "conférence(s)")}`
+      : null,
+  ]
+    .filter(Boolean)
+    .join(" + ");
+  return `<article class="politics-wizard-row ${row.reachable ? "" : "unreachable"}">
+    <div><b>${esc(clubName(row.clubId))}</b><small>${esc(local(POLITICAL_BLOCS[row.bloc]))} · ${num(row.weight)} ${tr("أصوات", "votes", "voix")}</small></div>
+    <span>${tr("التأييد", "Support", "Soutien")} ${num(Math.round(row.support))}%</span>
+    <span>${tr("المطلوب", "Needed", "Requis")} +${num(row.neededSupport)}</span>
+    <span class="muted">${actions || tr("لا أدوات", "No tools", "Aucun outil")}</span>
+    <span>${row.donation ? `${tr("تبرع", "Donation", "Don")} ${money(row.donation)} ${cur()}` : tr("بلا تبرع", "No donation", "Sans don")}</span>
+    <span class="badge ${row.reachable ? "green" : "gold"}">${row.reachable ? `${tr("بعد الخطة", "After the plan", "Après le plan")} ${num(Math.round(row.supportAfter))}%` : tr("لا يكفي وحده", "Not enough alone", "Insuffisant seul")}</span>
+  </article>`;
+}
+
+function electionWizardView(s, w) {
+  const f = w.forecast;
+  const plan = w.plan;
+  const rows = plan.clubs.slice(0, 8).map(wizardClubRow).join("");
+  const check = (ok, label) =>
+    `<span class="politics-check ${ok ? "ok" : ""}">${icon(ok ? "check" : "info", 14)} ${label}</span>`;
+  const checklist = [
+    check(
+      w.checklist.eligible,
+      tr("أهلية الترشح", "Eligibility to run", "Éligibilité"),
+    ),
+    check(
+      w.checklist.visits.done > 0,
+      `${tr("الزيارات", "Visits", "Visites")} ${num(w.checklist.visits.done)} / ${num(w.checklist.visits.total)}`,
+    ),
+    check(
+      w.checklist.conferences.done > 0,
+      `${tr("المؤتمرات", "Conferences", "Conférences")} ${num(w.checklist.conferences.done)} / ${num(w.checklist.conferences.total)}`,
+    ),
+    check(
+      w.checklist.promises > 0,
+      `${tr("الوعود", "Promises", "Engagements")} ${num(w.checklist.promises)}`,
+    ),
+    check(
+      w.checklist.funding > 0,
+      `${tr("تمويل الحملة", "Campaign funding", "Financement")} ${money(w.checklist.funding)} ${cur()}`,
+    ),
+    check(
+      w.checklist.debate,
+      tr("المناظرة العلنية", "The public debate", "Débat public"),
+    ),
+  ].join("");
+  return `<section class="panel politics-wizard-panel">
+    <div class="panel-head"><h3>${icon("bolt")} ${tr("معالج الانتخابات", "Election wizard", "Assistant électoral")} 🧙</h3>${badge(tr("تقدير معلن من النموذج نفسه", "Declared estimate from the same model", "Estimation du même modèle"), "gold")}</div>
+    <div class="politics-wizard-question"><h4>${tr("محتاج كام؟", "How much do you need?", "De combien avez-vous besoin ?")}</h4>
+      <p>${tr("تتقدم الآن بـ", "You currently lead with", "Vous êtes actuellement à")} <b>${num(f.playerShare)}%</b> ${tr("من الأصوات الموزونة (الترتيب", "of the weighted votes (rank", "des voix pondérées (rang")} ${num(f.rank)}) ${tr("وتحتاج أغلبية", "and you need a majority of", "et il vous faut la majorité de")} <b>${num(f.majorityWeight)}</b> ${tr("من", "out of", "sur")} ${num(f.totalWeight)} — ${tr("أي", "that is", "soit")} <b>${num(w.neededWeight)}</b> ${tr("صوتًا موزونًا إضافيًا", "extra weighted votes", "voix pondérées de plus")}.</p>
+      <div class="politics-wizard-plan">
+        <div><small>${tr("أدوات الحملة أولًا (الأرخص)", "Campaign tools first (cheapest)", "D’abord les outils de campagne")}</small><b>${money(plan.campaignCost)} ${cur()}</b><span class="muted">${num(w.costs.visitingClubs)} ${tr("زيارة", "visits", "visites")} · ${num(w.costs.conferencesPlanned)} ${tr("مؤتمرًا", "conferences", "conférences")}</span></div>
+        <div><small>${tr("التبرعات العلنية تغطي الفرق", "Public donations close the gap", "Les dons publics comblent l’écart")}</small><b>${money(plan.donationCost)} ${cur()}</b><span class="muted">${num(plan.donationCount)} ${tr("تبرعًا", "donations", "dons")} ${tr("في", "across", "sur")} ${num(plan.clubs.length)} ${tr("ناديًا", "clubs", "clubs")}</span></div>
+        <div><small>${tr("الإجمالي المطلوب", "Total required", "Total requis")}</small><b>${money(w.required)} ${cur()}</b><span class="muted">${tr("يشمل تمويل حملة مستحسنًا", "Includes recommended campaign funding", "Financement conseillé inclus")}: ${money(w.costs.recommendedFunding)} ${cur()}</span></div>
+      </div>
+      <p class="muted">${w.shortfall > 0 ? `${tr("ينقصك", "You are short", "Il vous manque")} ${money(w.shortfall)} ${cur()} ${tr("لإكمال الخطة — ابدأ بالزيارات والمؤتمرات فهي الأرخص، ثم تبرع للأندية الأقرب أولوية.", "to complete the full plan — start with visits and conferences (the cheapest), then donate to the closest clubs first.", "pour compléter le plan — commencez par les visites et conférences, puis donnez aux clubs les plus proches.")}` : `${tr("لديك ما يكفي، والفائض", "You have enough, with", "Vous avez assez, avec")} ${money(w.surplus)} ${cur()} ${tr("فوق الخطة. وكلها من ثروتك الشخصية ولا تمس شيئًا داخل النادي.", "to spare over the plan. It all comes from your personal fortune and touches nothing inside the club.", "d’avance sur le plan. Tout vient de votre fortune personnelle.")}`}</p>
+    </div>
+    <div class="politics-wizard-question"><h4>${tr("منين؟", "From where?", "D’où vient l’argent ?")}</h4>
+      <div class="politics-wizard-sources">
+        <div><small>${tr("ثروتك الشخصية", "Your personal fortune", "Votre fortune personnelle")}</small><b>${money(w.sources.personal)} ${cur()}</b></div>
+        <div><small>${tr("صندوق الحملة المعلن", "Declared campaign fund", "Fonds de campagne déclaré")}</small><b>${money(w.sources.campaignFunds)} ${cur()}</b><span class="muted">${tr("من أصل سقف", "of the", "sur un plafond de")} ${money(100000000)} ${cur()}</span></div>
+        <div><small>${tr("تبرعاتك العلنية حتى الآن", "Your public donations so far", "Vos dons publics à ce jour")}</small><b>${money(w.donations.total)} ${cur()}</b><span class="muted">${num(w.donations.clubs)} ${tr("ناديًا مستفيدًا", "clubs helped", "clubs aidés")}</span></div>
+      </div>
+      <p class="muted">${tr("كل المصادر من مالك الشخصي وحده: الزيارات والمؤتمرات والتمويل تُخصم من ثروتك، والتبرع العلني يرفع الامتنان فورًا ثم يظهر في الأصوات بلا أي عقوبة ولا شبهة.", "Every source draws on your personal wealth alone: visits, conferences, and funding come from your fortune, while a public donation raises gratitude at once and then shows in the votes with no penalty or suspicion.", "Toutes les sources viennent de votre fortune personnelle : visites, conférences et financement, tandis qu’un don public renforce aussitôt la reconnaissance puis apparaît dans les votes, sans sanction.")}</p>
+    </div>
+    <div class="politics-wizard-checks">${checklist}</div>
+    ${rows ? `<div class="politics-wizard-table">${rows}</div><small class="muted">${tr("الخطة مبنية على الأندية الأعلى وزنًا أولًا، ولذلك تُظهر فقط ما يلزم لبلوغ الأغلبية. القيم تقديرية من نفس نموذج التصويت.", "The plan takes the heaviest clubs first, so it lists only what a majority needs. Values are estimates from the same voting model.", "Le plan prend d’abord les clubs les plus lourds ; les valeurs sont des estimations du même modèle de vote.")}</small>` : `<p class="muted">${tr("أنت متقدم بالفعل؛ لا خطة قلب أصوات مطلوبة الآن.", "You are already ahead; no vote-flipping plan is needed now.", "Vous êtes déjà en tête ; aucun plan de bascule n’est nécessaire.")}</p>`}
+    <div class="politics-wizard-actions">${button(`${icon("gift", 15)} ${tr("افتح خريطة الأصوات والتبرعات", "Open the votes and donations map", "Ouvrir la carte des votes et des dons")}`, "politics-tab", "map", "primary")}${button(`${icon("users", 15)} ${tr("اقتراح تحالف", "Propose an alliance", "Proposer une alliance")}`, "politics-tab", "campaign", "secondary")}</div>
+  </section>`;
+}
+
 function campaignView(s) {
   const p = s.politics;
   const status = campaignStatus(s);
+  const wizard = {
+    ...presidencyWizard(s),
+    daysToElection: status.daysToElection,
+  };
   const poll = p.campaign.polls.at(-1);
   const campaignControls =
     status.active && !p.campaign.playerEligible
@@ -248,6 +443,8 @@ function campaignView(s) {
     ? `<section class="panel"><div class="panel-head"><h3>${icon("scroll")} ${tr("سجل الوعود", "Promise register", "Registre des engagements")}</h3><span class="badge outline">${num(p.campaign.promises.length)}</span></div><div class="politics-promise-list">${p.campaign.promises.map((promise) => `<div><b>${esc(clubName(promise.clubId))}</b><span>${esc(local(CLUB_DEMANDS[promise.demandId]?.label))}</span>${badge(promise.status === "fulfilled" ? tr("منفذ", "Fulfilled", "Tenu") : promise.status === "broken" ? tr("مكسور", "Broken", "Non tenu") : tr("قيد المحاسبة", "Pending review", "À vérifier"), promise.status === "fulfilled" ? "green" : promise.status === "broken" ? "red" : "gold")}</div>`).join("")}</div></section>`
     : "";
   return `${heading(tr("موسم الحملة", "Campaign season", "Saison de campagne"), tr("انتخابات رئاسة الاتحاد", "Association presidency election", "Élection à la présidence de la fédération"), tr("ثلاث شخصيات سياسية ثابتة، زيارات، مؤتمرات، تعهدات، مناظرة واستطلاعات شهرية. التصويت سريّ؟ لا: تُنشر بطاقة الاقتراع بأسماء الأندية وأوزانها.", "Three persistent political rivals, club visits, conferences, promises, a public debate, and monthly polls. The vote is not secret: every club and its weight appear on the public ballot.", "Trois adversaires politiques récurrents, visites, conférences, engagements, débat public et sondages mensuels. Le vote est nominatif : chaque club et son poids sont publiés."))}
+    ${presidencyRoadmap(s)}
+    <div class="politics-presidency-columns">${presidencyIdCard(s, wizard)}${electionWizardView(s, wizard)}</div>
     ${campaignControls}<section class="politics-candidates-grid">${p.candidates.map((candidate) => candidateCard(s, candidate)).join("")}</section>${pollCard}${promises}`;
 }
 
@@ -281,7 +478,7 @@ function councilView(s) {
         : history?.passed === false
           ? badge(tr("مرفوضة", "Rejected", "Rejetée"), "red")
           : badge(tr("مقترحة", "Available", "Disponible"), "outline");
-    return `<article class="politics-law-card"><div class="politics-law-title"><div><small>${esc(categoryName(law.category))}</small><h4>${esc(local(law.title))}</h4></div>${state}</div><p>${esc(local(law.summary))}</p><small class="muted">${tr("الأثر المتوقع", "Expected reaction", "Réaction attendue")}: ${esc(local(law.reaction.passed))}</small>${button(`${icon("scroll", 15)} ${tr("تقديم للمجلس", "Introduce bill", "Présenter le texte")}`, "politics-propose-law", law.id, "secondary", !p.office.held || Boolean(openForDebate) || Boolean(enacted))}</article>`;
+    return `<article class="politics-law-card"><div class="politics-law-title"><div><small>${esc(categoryName(law.category))}</small><h4>${esc(local(law.title))}</h4></div>${state}</div><p>${esc(local(law.summary))}</p><small class="muted">${tr("الأثر المتوقع", "Expected reaction", "Réaction attendue")}: ${esc(local(law.reaction.passed))}</small>${law.explain ? `<details class="politics-law-explain"><summary>${tr("ماذا يعني لي؟", "What it means for you", "Ce que cela signifie pour vous")}</summary><p>${esc(local(law.explain))}</p></details>` : ""}${button(`${icon("scroll", 15)} ${tr("تقديم للمجلس", "Introduce bill", "Présenter le texte")}`, "politics-propose-law", law.id, "secondary", !p.office.held || Boolean(openForDebate) || Boolean(enacted))}</article>`;
   }).join("");
   const currentBillPanel = activeBill
     ? `<section class="panel politics-bill-panel"><div class="panel-head"><div><small>${tr("مشروع اللائحة", "Bill before the council", "Texte soumis au conseil")}</small><h3>${esc(local(activeLaw?.title))}</h3></div>${badge(activeBill.status === "debate" ? tr("مداولة", "Debate", "Débat") : activeBill.status === "passed" ? tr("مُقرة", "Passed", "Adoptée") : activeBill.status === "rejected" ? tr("مرفوضة", "Rejected", "Rejetée") : tr("تصويت", "Voting", "Vote"), activeBill.status === "passed" ? "green" : activeBill.status === "rejected" ? "red" : "gold")}</div><p>${esc(local(activeLaw?.summary))}</p>${openForDebate ? `<form id="politics-bargain-form" class="politics-bargain-form"><input type="hidden" name="billId" value="${esc(activeBill.id)}"><label class="field"><span>${tr("النادي للتفاوض", "Negotiate with club", "Négocier avec le club")}</span><select name="clubId" required>${p.clubs.map((club) => `<option value="${esc(club.clubId)}" ${activeBill.lobby.some((item) => item.clubId === club.clubId) ? "disabled" : ""}>${esc(clubName(club.clubId))} · ${esc(local(POLITICAL_BLOCS[club.bloc]))}</option>`).join("")}</select></label><label class="field"><span>${tr("عرض المجلس", "Council offer", "Proposition du conseil")}</span><select name="offer"><option value="policy-concession">${tr("تبنّي مطلب النادي", "Adopt the club's demand", "Adopter la demande du club")}</option><option value="public-case">${tr("شرح علني لأثر اللائحة", "Public policy case", "Argumentaire public sur la loi")}</option><option value="development-grant">${tr("منحة تطوير معلنة", "Declared development grant", "Aide au développement déclarée")}</option></select></label><label class="field"><span>${tr("مبلغ المنحة عند اختيارها", "Grant amount, if selected", "Montant de l’aide, si sélectionnée")}</span><input name="amount" type="number" min="100000" max="10000000" step="100000" value="1000000"></label><button class="btn soft" type="submit">${tr("تسجيل التفاوض", "Record negotiation", "Enregistrer la négociation")}</button></form><div class="politics-bill-actions">${button(`${icon("check", 15)} ${tr("إجراء اقتراع علني", "Hold public vote", "Organiser le vote public")}`, "politics-vote-bill", activeBill.id, "primary")}</div>` : activeBill.outcome ? `<div class="politics-vote-result"><div><b>${num(activeBill.outcome.yesWeight)} / ${num(activeBill.outcome.totalWeight)}</b><span>${tr("أصوات مؤيدة", "weighted votes in favour", "voix pondérées pour")}</span></div><div><b>${num(activeBill.outcome.noWeight)}</b><span>${tr("أصوات معارضة", "weighted votes against", "voix pondérées contre")}</span></div><div><b>${num(activeBill.outcome.threshold)}%</b><span>${tr("نصاب الإقرار", "pass threshold", "seuil d’adoption")}</span></div></div><div class="politics-dissent-list"><b>${tr("الأندية التي صوّتت ضدك", "Clubs that voted against you", "Clubs ayant voté contre vous")}</b><div>${activeBill.outcome.dissentIds.map((id) => `<span>${esc(clubName(id))}</span>`).join("") || `<span>${tr("لم يسجل المجلس أصواتًا معارضة.", "No opposing votes were recorded.", "Aucun vote contre n’a été enregistré.")}</span>`}</div></div><p class="muted">${esc(local(activeLaw?.reaction[activeBill.outcome.passed ? "passed" : "rejected"]))}</p>` : ""}</section>`
