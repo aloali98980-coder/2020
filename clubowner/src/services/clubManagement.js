@@ -1,4 +1,4 @@
-import { marketOpen, assertMarket, buyerNeed, teamPower } from "./market.js";
+import { assertMarket, buyerNeed, marketOpen, teamPower } from "./market.js";
 import { TACTICAL_DEFAULTS } from "./tactics.js";
 import { ownFixtures } from "./calendar.js";
 import { post } from "./finance.js";
@@ -275,7 +275,13 @@ export function managementDay(s) {
         category: "club",
       });
   }
-  // Honest offers: buyer is another simulated club; sale requires owner acceptance.
+  // Keep the established quick-bid inbox flow; the transfer market adds a separate
+  // negotiation panel without invalidating bids already in older saves.
+  const exchangeLocked = new Set();
+  for (const exchange of s.transferMarket?.exchanges || [])
+    if (["open", "agreed"].includes(exchange.status))
+      for (const id of [...exchange.outgoingPlayerIds, ...exchange.incomingPlayerIds])
+        exchangeLocked.add(id);
   if (
     marketOpen(s) &&
     s.date.endsWith("-15") &&
@@ -287,7 +293,8 @@ export function managementDay(s) {
         x.clubId === s.clubId &&
         x.status !== "retired" &&
         x.age < 34 &&
-        !x.loan,
+        !x.loan &&
+        !exchangeLocked.has(x.id),
     );
     const player = candidates[Math.floor(random(s) * candidates.length)];
     const buyer = s.expansion?.divisions

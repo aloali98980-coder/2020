@@ -1,0 +1,196 @@
+.player-exchange-panel,
+.exchange-builder-grid {
+  margin-block: 16px;
+}
+.exchange-builder-launch {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) auto;
+  align-items: end;
+  gap: 12px;
+  margin: 16px 0;
+}
+.exchange-deal-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+.exchange-deal-card {
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.12));
+  border-radius: 14px;
+  background: var(--surface-2, rgba(255, 255, 255, 0.035));
+}
+.exchange-deal-card > div:first-child {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.exchange-deal-card > p {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+.exchange-deal-card > small {
+  color: var(--muted, #a3adbc);
+}
+.exchange-deal-card > p > span {
+  overflow-wrap: anywhere;
+}
+.exchange-deal-card > p > b {
+  color: var(--accent, #e0bb72);
+}
+.exchange-builder-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+.exchange-builder-grid > section {
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.12));
+  border-radius: 14px;
+  background: var(--surface-2, rgba(255, 255, 255, 0.025));
+}
+.exchange-builder-grid h3 {
+  margin: 0 0 10px;
+}
+.exchange-player-list {
+  display: grid;
+  gap: 8px;
+  max-height: min(46vh, 420px);
+  overflow: auto;
+  padding-inline-end: 4px;
+}
+.exchange-player-choice {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+  padding: 9px;
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.1));
+  border-radius: 10px;
+}
+.exchange-player-choice > label:first-child {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  min-width: 0;
+  cursor: pointer;
+}
+.exchange-player-choice input[type="checkbox"] {
+  flex: 0 0 auto;
+  width: 17px;
+  height: 17px;
+  margin-top: 3px;
+  accent-color: var(--accent, #d0a85c);
+}
+.exchange-player-choice > label:first-child > span {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+}
+.exchange-player-choice strong {
+  overflow-wrap: anywhere;
+}
+.exchange-player-choice small,
+.exchange-wage-input span {
+  color: var(--muted, #a3adbc);
+  font-size: 0.82rem;
+}
+.exchange-wage-input {
+  display: grid;
+  grid-template-columns: 1fr minmax(90px, 130px);
+  align-items: center;
+  gap: 8px;
+  padding-inline-start: 25px;
+}
+.exchange-wage-input input {
+  width: 100%;
+  min-width: 0;
+}
+.exchange-balance {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) auto;
+  align-items: end;
+  gap: 10px;
+  margin-top: 16px;
+}
+.exchange-balance p {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: var(--muted, #a3adbc);
+}
+.exchange-value-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 16px 0;
+}
+.exchange-value-summary > div {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+  padding: 11px;
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.12));
+  border-radius: 11px;
+}
+.exchange-value-summary small {
+  color: var(--muted, #a3adbc);
+}
+.exchange-approvals {
+  display: grid;
+  gap: 8px;
+  padding-inline-start: 20px;
+}
+.exchange-approvals li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 4px 10px;
+  padding: 9px 11px;
+  border-radius: 10px;
+  background: var(--surface-2, rgba(255, 255, 255, 0.04));
+}
+.exchange-approvals li small {
+  grid-column: 1 / -1;
+}
+.exchange-approvals .approved b {
+  color: var(--green, #5fcb91);
+}
+.exchange-approvals .refused b {
+  color: var(--red, #e15a61);
+}
+.exchange-warning {
+  margin: 8px 0;
+  padding: 10px 12px;
+  border-inline-start: 3px solid var(--red, #e15a61);
+  border-radius: 8px;
+  background: rgba(225, 90, 97, 0.09);
+}
+.exchange-history {
+  margin-top: 12px;
+  color: var(--muted, #a3adbc);
+}
+.exchange-history summary {
+  cursor: pointer;
+  padding: 8px 0;
+}
+.exchange-history p {
+  margin: 6px 0;
+}
+@media (max-width: 700px) {
+  .exchange-builder-grid,
+  .exchange-value-summary {
+    grid-template-columns: 1fr;
+  }
+  .exchange-builder-launch,
+  .exchange-balance {
+    grid-template-columns: 1fr;
+  }
+  .exchange-balance p {
+    grid-column: auto;
+  }
+}

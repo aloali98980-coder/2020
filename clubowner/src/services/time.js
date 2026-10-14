@@ -31,6 +31,8 @@ import { transferReply } from "./transfers.js";
 import { matchDay } from "./matches.js";
 import { developmentDay } from "./development.js";
 import { deadlineDayTick } from "./deadlineDay.js";
+import { transferMarketDay } from "./transferNegotiation.js";
+import { playerExchangeDay } from "./playerExchange.js";
 import { youthIntakeTick } from "./youthIntake.js";
 import { academyJourneyDay, dynastyGrowthDay, dynastyLifeDay } from "./dynasty.js";
 import { dynastyEventDay } from "./dynastyEvents.js";
@@ -140,7 +142,9 @@ export function advanceTime(s, days = null) {
     commerceDay(s);
     managementDay(s);
     legendDay(s);
+    transferMarketDay(s);
     aiTransferDay(s);
+    playerExchangeDay(s);
     deadlineDayTick(s);
     youthIntakeTick(s);
     eventsDay(s);

@@ -1,7 +1,7 @@
 // يوم قفل القيد (Deadline Day) 0.27
 // في آخر يوم من نافذة الانتقالات (30 سبتمبر و31 يناير):
 // عد تنازلي ظاهر + تسارع عروض AI (شراء وبيع) + رسائل عاجلة + إغلاق السوق في الموعد بدقة. أطول ليلة في الموسم.
-import { aiTransferDay, marketOpen, teamPower } from "./market.js";
+import { aiTransferDay, marketOpen } from "./market.js";
 import { extendedClub } from "../data/expandedCatalog.js";
 import { post } from "./finance.js";
 import { message, closeThread } from "./inbox.js";
@@ -92,41 +92,32 @@ export function deadlineDayTick(s) {
  * توليد عرض شراء عاجل من أحد أندية الذكاء الاصطناعي للاعب من ناديك
  */
 function generateUrgentAiBid(s) {
-  if (!s.players || !s.players.length) return;
-  // التحقق من عدم وجود عرض عاجل قائم اليوم
-  if (s.inbox?.some((m) => m.kind === "deadline-bid" && !m.done && m.date === s.date)) {
+  if (!s.players?.length || !marketOpen(s)) return;
+  if (s.inbox?.some((m) => m.kind === "deadline-bid" && !m.done && m.date === s.date))
     return;
-  }
-
-  // اختيار لاعب مؤهل للبيع من لاعبي ناديك
-  const candidates = s.players.filter(
-    (p) =>
-      p.clubId === s.clubId &&
-      p.status !== "retired" &&
-      !p.loan &&
-      p.value >= 150000 &&
-      p.rating >= 60,
-  );
+  const candidates = s.players
+    .filter(
+      (p) =>
+        p.clubId === s.clubId &&
+        p.status !== "retired" &&
+        !p.loan &&
+        Number(p.loyalty ?? 50) < 85 &&
+        p.value >= 150_000 &&
+        p.rating >= 60 &&
+        (p.transferRequested || p.rating >= 70 || p.value >= 5_000_000),
+    )
+    .sort((a, b) => Number(b.transferRequested) - Number(a.transferRequested) || b.rating - a.rating);
   if (!candidates.length) return;
+  const targetPlayer = candidates[Math.floor(random(s) * Math.min(5, candidates.length))];
 
-  const targetPlayer = candidates[Math.floor(random(s) * candidates.length)];
-
-  // اختيار نادٍ مشترٍ من المنافسين
-  let buyerClub = null;
-  if (s.expansion?.divisions) {
-    const clubs = s.expansion.divisions.flatMap((d) => d.clubs).filter((id) => id !== s.clubId);
-    if (clubs.length) {
-      const buyerId = clubs[Math.floor(random(s) * clubs.length)];
-      buyerClub = extendedClub(buyerId);
-    }
-  }
-  if (!buyerClub) {
-    buyerClub = { id: "zamalek", name: "الزمالك" };
-  }
-
-  // عرض مالي مغرٍ (1.15 إلى 1.35 من القيمة السوقية)
+  const clubs = s.expansion?.divisions?.flatMap((division) => division.clubs) || [];
+  const buyerIds = clubs.filter((id) => id !== s.clubId);
+  if (!buyerIds.length && s.clubId !== "zamalek") buyerIds.push("zamalek");
+  if (!buyerIds.length) return;
+  const buyerId = buyerIds[Math.floor(random(s) * buyerIds.length)];
+  const buyerClub = extendedClub(buyerId) || { id: buyerId, name: buyerId };
   const premium = 1.15 + random(s) * 0.2;
-  const fee = Math.round(targetPlayer.value * premium / 10000) * 10000;
+  const fee = Math.round((targetPlayer.value * premium * 1.5) / 10_000) * 10_000;
 
   message(s, {
     title: `🚨 عرض اللحظات الأخيرة: ${buyerClub.name} يطلب ضم ${targetPlayer.name}`,
