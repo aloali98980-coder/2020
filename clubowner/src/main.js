@@ -2133,6 +2133,18 @@ const actions = {
       `<h2>تسعير تذاكر المباريات</h2><p class="muted">السعر الأعلى يرفع العائد لكل مشجع، لكنه يقلل الطلب. المقصورة أقل تأثرًا بالغلاء من العادية. أصحاب الاشتراكات يشغلون مقاعد العادية أولًا ولا يُحصّلون مرتين.</p><form id="ticket-form"><div class="form-grid"><label class="field"><span>العادية (70% من السعة)</span><input type="number" name="price" value="${s.ticketPrice}" min="50" max="500" required></label><label class="field"><span>الأولى (20% · 40–2000)</span><input type="number" name="first" value="${prices.first}" min="40" max="2000" required></label><label class="field"><span>المقصورة (10% · 100–5000)</span><input type="number" name="vip" value="${prices.vip}" min="100" max="5000" required></label><label class="field"><span>علاوة المباراة البيتية القادمة</span><select name="premium"><option value="0">بدون علاوة</option><option value="25">+25% مباراة كبيرة</option><option value="50">+50% قمة</option><option value="100">+100% ديربي ناري</option></select></label></div><div class="modal-actions"><button type="submit" class="btn primary">حفظ أسعار التذاكر</button></div></form>`,
     );
   },
+  // 0.52 — «أوافق كمالك!»: تجاوز سقف الرواتب فورًا، إضافة بحتة بلا أي عقوبة.
+  "wage-override-approve": async () => {
+    const { approveOwnerWageOverride } = await import("./services/wageOverride.js");
+    await apply(
+      (s) => approveOwnerWageOverride(s),
+      tr(
+        "أوافق كمالك! سقف الرواتب ارتفع فورًا.",
+        "I approve as owner! The wage cap rose at once.",
+        "J’approuve en tant que propriétaire ! Le plafond a été relevé aussitôt.",
+      ),
+    );
+  },
   "export-save": async () => {
     await exportGame(getState());
     toast("تم تجهيز ملف الحفظ للتنزيل.");

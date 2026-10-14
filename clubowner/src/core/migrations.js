@@ -29,6 +29,7 @@ import { ensureUltras } from "../services/ultras.js";
 import { ensureAwards } from "../services/awards.js";
 import { ensureGifts } from "../services/gifts.js";
 import { ensureBranches } from "../services/branches.js";
+import { ensureWageOverride } from "../services/wageOverride.js";
 import { stockText } from "../data/stockMarketTexts.js";
 import { backfillShirtNumbers } from "../services/presentation.js";
 import { empireText } from "../data/empireTexts.js";
@@ -711,6 +712,20 @@ function migrateSave41(input) {
   return prior;
 }
 
+// 0.52 (save v42): سجل موافقات المالك على تجاوز سقف الرواتب — عدّاد فارغ وسجل
+// فارغان. لا خصم ولا تغيير على أي مؤشر، ورفع السقف يبقى قرار المالك وقت التجاوز.
+function migrateSave42(input) {
+  if (!input || input.version === 42) return input;
+  const prior = input.version === 41 ? structuredClone(input) : migrateSave41(input);
+  if (prior?.version !== 41) return prior;
+  prior.version = 42;
+  ensureWageOverride(prior);
+  prior.migrationNote =
+    (prior.migrationNote || "") +
+    " تجاوز المالك 0.52: أُضيف سجل موافقات المالك على تجاوز سقف الرواتب (زر «أوافق كمالك!» يرفع الحد المعتمد فورًا عند التجاوز) — يبدأ فارغًا وبلا أي غرامة أو خصم أو شبهة أو حرارة.";
+  return prior;
+}
+
 function migrateSave33(input) {
   if (!input || input.version === 33) return input;
   const prior = input.version === 32 ? structuredClone(input) : migrateSave32(input);
@@ -761,9 +776,9 @@ function migrateSaveToTwentyFour(input) {
 }
 
 // الدفعة 7 (بعد الإغلاق): أرقام القمصان للحفظات القديمة تُرحَّل عند كل تحميل دون رفع رقم الحفظ.
-// 0.46→0.47→0.50: الترحيل النهائي يمر عبر migrateSave41.
+// 0.46→0.47→0.50→0.52: الترحيل النهائي يمر عبر migrateSave42.
 export function migrateSave(input) {
-  const out = migrateSave41(input);
+  const out = migrateSave42(input);
   if (out && typeof out === "object") backfillShirtNumbers(out);
   return out;
 }

@@ -919,6 +919,64 @@
   color: var(--muted);
   margin-top: 5px;
 }
+/* 0.52 — «أوافق كمالك!»: صندوق تجاوز سقف الرواتب داخل لوحة الميزانية. */
+.wage-override {
+  border-top: 1px solid var(--line);
+  margin-top: 22px;
+  padding-top: 19px;
+}
+.wage-override-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 9px;
+  font-size: 12.5px;
+}
+.wage-override-head svg {
+  color: var(--gold, #d8a13a);
+}
+.wage-override-head strong {
+  font-size: 12.5px;
+}
+.wage-override-head .muted {
+  font-size: 11.5px;
+}
+.wage-override-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 13px;
+}
+.wage-override-actions .muted {
+  flex: 1 1 220px;
+  font-size: 10.5px;
+  line-height: 1.6;
+}
+.wage-override-log {
+  margin-top: 13px;
+  font-size: 11.5px;
+}
+.wage-override-log summary {
+  cursor: pointer;
+  color: var(--muted);
+}
+.wage-override-log ul {
+  list-style: none;
+  margin: 9px 0 0;
+  padding: 0;
+}
+.wage-override-log li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 0;
+  border-bottom: 1px dashed var(--line);
+}
+.wage-override-log small {
+  display: block;
+  margin-top: 9px;
+}
 .league-cards {
   display: grid;
   grid-template-columns: repeat(3, 1fr);

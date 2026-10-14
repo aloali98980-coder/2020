@@ -31,7 +31,7 @@ const game = (opts = {}) => {
 const myPlayer = (s, i = 0) => s.players.filter((p) => p.clubId === s.clubId && p.status !== "retired")[i];
 
 test("حفظة جديدة تبدأ بسجل هدايا فارغ بالبنية v39", () => {
-  assert.equal(SAVE_VERSION, 41);
+  assert.equal(SAVE_VERSION, 42);
   const s = game();
   assert.equal(s.gifts.schema, 1);
   assert.deepEqual(s.gifts.log, []);
@@ -45,7 +45,7 @@ test("الترحيل v38→v39: سجل فارغ ولا يُخصم ولا يُغ�
   delete s.gifts;
   s.version = 38;
   const m = migrateSave(s);
-  assert.equal(m.version, 41);
+  assert.equal(m.version, 42);
   assert.ok(m.gifts, "سجل الهدايا أُنشئ");
   assert.deepEqual(m.gifts.log, []);
   assert.equal(

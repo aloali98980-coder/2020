@@ -159,7 +159,7 @@ test("عبارة التبرع في ملف الصحافة مترجمة إلى ا�
 
 test("الترحيل v40→v41: سجل تبرعات فارغ بلا خصم ولا تغيير في أي مؤشر", () => {
   const s = game();
-  assert.equal(SAVE_VERSION, 41);
+  assert.equal(SAVE_VERSION, 42);
   const snapshot = JSON.stringify({
     cash: s.finance.cash,
     personal: s.empire.personal,
@@ -170,7 +170,7 @@ test("الترحيل v40→v41: سجل تبرعات فارغ بلا خصم ول�
   s.version = 40;
   const migrated = migrateSave(s);
   assert.equal(s.version, 40, "الترحيل لا يغيّر الحفظة الأصلية");
-  assert.equal(migrated.version, 41);
+  assert.equal(migrated.version, 42);
   assert.deepEqual(migrated.politics.donations, {
     total: 0,
     count: 0,

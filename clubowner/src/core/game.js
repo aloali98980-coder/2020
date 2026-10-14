@@ -28,7 +28,7 @@ import { initializeUltras } from "../services/ultras.js";
 import { ensureAwards } from "../services/awards.js";
 import { ensureGifts } from "../services/gifts.js";
 import { ensureBranches } from "../services/branches.js";
-export const SAVE_VERSION = 41;
+export const SAVE_VERSION = 42;
 export function createGame({
   clubId = "ahly",
   owner = "مالك النادي",
@@ -106,6 +106,8 @@ export function createGame({
       obligations: [],
       loans: [],
       wageBudget: Math.round(6500000 * settings.cash),
+      // 0.52 — سجل موافقات المالك على تجاوز سقف الرواتب (فارغ حتى أول موافقة).
+      ownerOverride: { count: 0, totalAdded: 0, lastDate: null, log: [] },
       liquidityWarning: false,
     },
     facilities: FACILITIES.map((f) => ({
