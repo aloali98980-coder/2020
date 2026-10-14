@@ -19,6 +19,10 @@ const SKIP = [
   /src\/data\/worldMarkets\.js/,
   // Political catalog records store explicit {ar,en,fr} objects and are rendered by locale.
   /src\/data\/politicsCatalog\.js/,
+  // Gift catalog records store explicit {ar,en,fr} objects and are rendered by locale (0.46).
+  /src\/data\/giftCatalog\.js/,
+  // Branch catalog records store explicit {ar,en,fr} objects and are rendered by locale (0.47).
+  /src\/data\/branchCatalog\.js/,
   /src\/data\/politicsLaws\.js/,
   /src\/data\/politicsCommittees\.js/,
   /src\/data\/politicsGovernance\.js/,

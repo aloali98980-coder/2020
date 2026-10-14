@@ -19,6 +19,8 @@ import { CASE_KINDS, CASE_STAGES } from "../data/staffCatalog.js";
 import { validatePolitics } from "./politicsValidation.js";
 import { validateStockMarket } from "./stockMarketValidation.js";
 import { validateUltras } from "./ultrasValidation.js";
+import { PLAYER_TITLES } from "../data/giftCatalog.js";
+import { MARKETS } from "../data/worldMarkets.js";
 
 // A save is untrusted input. Validate structure and relationships before replacing it.
 const id = (value) =>
@@ -561,6 +563,64 @@ export function validateSave(s) {
   validateLegends(s);
   validateDynasty(s);
   validateUltras(s);
+  // 0.46: الهدايا — سجل محدود وألقاب فريدة لكل لاعب وموجودة في القائمة.
+  check(
+    s.gifts &&
+      s.gifts.schema === 1 &&
+      Array.isArray(s.gifts.log) &&
+      s.gifts.log.length <= 60 &&
+      s.gifts.log.every(
+        (x) => id(x.id) && isoDate(x.date) && text(x.label) && amount(x.amount || 0),
+      ) &&
+      typeof s.gifts.lastGrantPlayer === "object" &&
+      typeof s.gifts.lastGiftPlayer === "object" &&
+      typeof s.gifts.lastStranger === "object" &&
+      (!s.gifts.lastSquadGrant || isoDate(s.gifts.lastSquadGrant)) &&
+      Array.isArray(s.gifts.birthdays) &&
+      s.gifts.birthdays.length <= 200 &&
+      Object.values(s.gifts.titles || {}).every(
+        (t) => PLAYER_TITLES.some((x) => x.id === t) && new Set(Object.values(s.gifts.titles)).size === Object.keys(s.gifts.titles).length,
+      ),
+    "سجل الهدايا غير سليم.",
+  );
+  // 0.47: الفروع — أسواق معروفة ومستويات 1-3 وسجل محدود وقرارات بتواريخ سليمة.
+  check(
+    s.branches &&
+      s.branches.schema === 1 &&
+      Array.isArray(s.branches.list) &&
+      s.branches.list.length <= 6 &&
+      s.branches.list.every(
+        (x) =>
+          id(x.id) &&
+          MARKETS.some((m) => m.id === x.country) &&
+          Number.isInteger(x.level) &&
+          x.level >= 1 &&
+          x.level <= 3 &&
+          isoDate(x.openedOn) &&
+          (!x.manager || (text(x.manager.name) && Number.isFinite(x.manager.skill) && Number.isSafeInteger(x.manager.wage))) &&
+          new Set(s.branches.list.map((y) => y.country)).size === s.branches.list.length,
+      ) &&
+      Array.isArray(s.branches.projects) &&
+      s.branches.projects.length <= 6 &&
+      s.branches.projects.every(
+        (p) =>
+          id(p.id) &&
+          MARKETS.some((m) => m.id === p.country) &&
+          [1, 2, 3].includes(p.targetLevel) &&
+          isoDate(p.start) &&
+          isoDate(p.end) &&
+          amount(p.cost),
+      ) &&
+      Array.isArray(s.branches.candidates) &&
+      s.branches.candidates.length <= 24 &&
+      s.branches.candidates.every((c) => id(c.id) && c.player && text(c.player.name)) &&
+      Array.isArray(s.branches.decisions) &&
+      s.branches.decisions.length <= 12 &&
+      s.branches.decisions.every((d) => id(d.id) && isoDate(d.expires) && amount(d.cost)) &&
+      Array.isArray(s.branches.log) &&
+      s.branches.log.length <= 60,
+    "سجل الفروع غير سليم.",
+  );
   return s;
 }
 

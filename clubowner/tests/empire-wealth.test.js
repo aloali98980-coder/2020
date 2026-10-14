@@ -152,7 +152,7 @@ test("الترحيل: حفظة قديمة (نسخة 22) تحصل على إمبر
     delete old.empire;
     old.version = 22;
     const migrated = migrateSave(old);
-    assert.equal(migrated.version, 38);
+    assert.equal(migrated.version, 39);
     assert.equal(migrated.empire.story, story, `difficulty=${difficulty}`);
     assert.equal(
       migrated.empire.personal,

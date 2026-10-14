@@ -24,6 +24,8 @@ const LINKS = [
   { id: "ultras", name: "الجماهير والألتراس", icon: "stadium" },
   { id: "facilities", name: "منشآت النادي", icon: "stadium" },
   { id: "sponsors", name: "الرعايات", icon: "sponsor" },
+  { id: "branches", name: "الفروع", icon: "world" },
+  { id: "gifts", name: "الهدايا", icon: "gift" },
   { id: "commerce", name: "دخل النادي", icon: "finance" },
   { id: "finance", name: "الإدارة المالية", icon: "finance" },
   { id: "market", name: "بورصة الأندية", icon: "finance" },
@@ -66,7 +68,7 @@ export const NAV_GROUPS = [
   },
   {
     caption: "الأعمال والمال",
-    items: ["market", "facilities", "sponsors", "commerce", "finance"],
+    items: ["market", "facilities", "sponsors", "branches", "gifts", "commerce", "finance"],
   },
   { caption: "عالم الكرة", items: ["world", "legends", "awards", "harvest", "achievements"] },
   { caption: "العائلة والإرث", items: ["dynasty", "legacy"] },

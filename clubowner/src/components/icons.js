@@ -43,6 +43,7 @@ const paths = {
   play: '<path d="m8 4 12 8-12 8Z"/>',
   bolt: '<path d="m13 2-9 12h7l-1 8 10-13h-8z"/>',
   flag: '<path d="M5 22V3h14l-3 5 3 5H5"/>',
+  gift: '<rect x="3" y="9" width="18" height="4" rx="1"/><path d="M5 13v8h14v-8M12 9v12M12 9c-2 0-4.5-.6-4.5-3A2.5 2.5 0 0 1 12 5a2.5 2.5 0 0 1 4.5 1c0 2.4-2.5 3-4.5 3Z"/>',
   chart: '<path d="M3 3v18h18M7 16v-4m5 4V6m5 10v-7"/>',
 };
 export function icon(name, size = 20) {
