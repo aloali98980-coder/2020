@@ -121,5 +121,20 @@ export function messageDetail(s, m) {
         button("راجع التمويل", "go-finance", m.id, "primary") +
         button("اطلعت وسأراجع المصروفات", "resolve", m.id, "ghost");
   }
+  // 0.53.1 hotfix: «الخيارات دائمًا + بديل افتراضي».
+  // القرار المطلوب (required) يوقف الوقت حتى يُحسم، فلو خرج بلا أزرار (نوع بلا معالج خيارات،
+  // مثل انكشاف الرهان الداخلي kind: "betting-exposed"، أو معالج يشترط مرجعًا لم يعد موجودًا)
+  // علّق الوقت للأبد. البديل الافتراضي يضمن أن لكل قرار خيارًا واحدًا على الأقل.
+  if (m.required && m.status === "open" && !actions)
+    actions = button(
+      tr(
+        "تنفيذ البديل الافتراضي — تقبّل النتيجة والمتابعة",
+        "Apply the default alternative — accept the outcome and continue",
+        "Appliquer l'alternative par défaut — accepter le résultat et continuer",
+      ),
+      "resolve",
+      m.id,
+      "primary",
+    );
   return `<div class="message-detail-header"><span class="sender-avatar">${icon(m.category === "transfers" ? "transfer" : m.category === "sponsors" ? "sponsor" : "building", 23)}</span><div><strong>إدارة ${category(m.category)}</strong><small>إلى: <span data-no-translate>${esc(s.owner)}</span> · ${date(m.date)}</small></div>${badge(m.status === "resolved" ? "تم التعامل" : m.required ? "قرار مطلوب" : "للعلم", m.status === "resolved" ? "green" : m.required ? "gold" : "")}</div><h2>${esc(m.title)}</h2><p class="message-body">${esc(m.body)}</p>${m.deadline ? `<div class="deadline">${icon("clock", 18)} آخر موعد: ${date(m.deadline)}${m.required && m.status === "open" ? " · تقدم الوقت متوقف حتى قرارك" : ""}</div>` : ""}${actions ? `<div class="message-actions">${actions}</div>` : ""}<div class="message-signature">مع تحيات فريق الإدارة،<br><strong>مكتب ${category(m.category)}</strong></div>`;
 }
