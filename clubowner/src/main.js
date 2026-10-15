@@ -288,6 +288,7 @@ import {
   fundCampaign,
   debate as politicalDebate,
   offerCandidateAlliance,
+  triggerElectionCampaign,
 } from "./services/politics/campaign.js";
 import {
   donateToClub,
@@ -1461,6 +1462,15 @@ const actions = {
       updateCalculations();
     }
   },
+  "politics-start-campaign": async () =>
+    apply(
+      (s) => triggerElectionCampaign(s),
+      tr(
+        "انطلقت حملتك الانتخابية لرئاسة الاتحاد.",
+        "Your football association presidential campaign has begun.",
+        "Votre campagne pour la présidence de la fédération est lancée.",
+      ),
+    ),
   "politics-visit": async (el) =>
     apply(
       (s) => visitClub(s, el.dataset.id),

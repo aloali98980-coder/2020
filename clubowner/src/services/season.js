@@ -3,7 +3,7 @@ import { CLUBS } from "../data/catalog.js";
 import { message } from "./inbox.js";
 import { SEASON_STAT_KEYS, initSeasonStats } from "./seasonStats.js";
 import { endSeasonBoardReview, startSeasonMandate } from "./boardMandate.js";
-import { politicalSeasonEnd } from "./politics/campaign.js";
+import { campaignTick, politicalSeasonEnd } from "./politics/campaign.js";
 import { associationSeasonEnd } from "./politics/associationFinance.js";
 import { runSeasonAwards } from "./awards.js";
 
@@ -68,6 +68,7 @@ export function seasonDay(s) {
     id: `season${s.seasonNumber}-${f.id}`,
   }));
   s.nextSeasonDate = `${Number(s.date.slice(0, 4)) + 1}-07-01`;
+  campaignTick(s);
   message(s, {
     title: "بداية موسم جديد",
     body: "تم أرشفة الترتيب السابق وإنشاء 14 جولة جديدة للدوري التجريبي. اللاعبون والعقود والمنشآت يستمرون؛ لا يوجد صعود أو هبوط في هذه النسخة.",

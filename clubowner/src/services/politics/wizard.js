@@ -6,7 +6,9 @@ import {
   CONFERENCE_COST,
   VISIT_COST,
   campaignStatus,
+  electionFeedback,
   electionForecast,
+  presidencyEligibility,
 } from "./campaign.js";
 import {
   donationAvailable,
@@ -27,7 +29,8 @@ export const CONFERENCE_MAX_PER_BLOC = 3;
 export function presidencySteps(s) {
   const p = ensurePolitics(s);
   const status = campaignStatus(s);
-  const eligible = p.campaign.playerEligible !== false;
+  const eligible =
+    p.campaign.playerEligible !== false && presidencyEligibility(s).eligible;
   const active = Boolean(p.campaign.active);
   const held = Boolean(p.office.held);
   const lastResult = p.election.lastResult;
@@ -160,11 +163,17 @@ export function presidencyWizard(s) {
   const conferencesDone = new Set(
     p.campaign.conferences.map((item) => item.bloc),
   ).size;
+  const conditions = presidencyEligibility(s);
+  const feedback = electionFeedback(s);
+  const eligible =
+    p.campaign.playerEligible !== false && conditions.eligible;
   return {
     forecast,
     plan,
+    conditions,
+    feedback,
     season: p.election.season,
-    eligible: p.campaign.playerEligible !== false,
+    eligible,
     active: Boolean(p.campaign.active),
     office: Boolean(p.office.held),
     termsServed: p.office.termsServed,
@@ -195,7 +204,7 @@ export function presidencyWizard(s) {
       donationClubs: donations.clubs,
     },
     checklist: {
-      eligible: p.campaign.playerEligible !== false,
+      eligible,
       visits: { done: p.campaign.visits.length, total: p.clubs.length },
       conferences: { done: conferencesDone, total: blocs },
       promises: p.campaign.promises.length,

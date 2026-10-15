@@ -20,6 +20,7 @@ const VISIT_COST = 180_000;
 // وزن نقطة التأييد في نتيجة النادي داخل الاقتراع — مصدر واحد للمحرك والمعالج.
 export const SUPPORT_SCORE_WEIGHT = 0.47;
 const CONFERENCE_COST = 650_000;
+export const MIN_CANDIDATE_INTEGRITY = 20;
 const clampScore = (value) => clamp(Math.round(value * 10) / 10, 0, 100);
 const monthKey = (date) => date.slice(0, 7);
 const fnv = (value) => {
@@ -28,6 +29,72 @@ const fnv = (value) => {
     hash = Math.imul(hash ^ value.charCodeAt(i), 16777619);
   return hash >>> 0;
 };
+
+/** شروط الترشح لانتخابات رئاسة الاتحاد (حد الولايات + النزاهة + خريطة الأندية + الملاءة). */
+export function presidencyEligibility(s) {
+  const p = ensurePolitics(s);
+  const termLimit = p.council?.constitution?.termLimit ?? null;
+  const termLimitOk =
+    termLimit === null ||
+    termLimit === undefined ||
+    p.office.termsServed < termLimit;
+  const integrityScore = Number(p.integrity?.score ?? 100);
+  const integrityOk = integrityScore >= MIN_CANDIDATE_INTEGRITY;
+  const clubMapOk = Boolean(
+    s.clubId && Array.isArray(p.clubs) && p.clubs.length >= 2,
+  );
+  const solvencyOk = (s.finance?.cash ?? 0) >= 0;
+  const reasons = [];
+  if (!termLimitOk) {
+    reasons.push(
+      tr(
+        "يمنعك التعديل الدستوري من الترشح لهذه الانتخابات.",
+        "A constitutional term limit bars you from this election.",
+        "Une limite constitutionnelle de mandats vous interdit cette élection.",
+      ),
+    );
+  }
+  if (!integrityOk) {
+    reasons.push(
+      tr(
+        "مؤشر النزاهة دون الحد الأدنى للترشح (20%).",
+        "Your integrity score is below the minimum candidacy threshold (20%).",
+        "Votre indice d’intégrité est inférieur au seuil minimal de candidature (20 %).",
+      ),
+    );
+  }
+  if (!clubMapOk) {
+    reasons.push(
+      tr(
+        "خريطة أندية الاتحاد غير مكتملة للترشح.",
+        "The association club map is incomplete for candidacy.",
+        "La carte des clubs de la fédération est incomplète pour la candidature.",
+      ),
+    );
+  }
+  if (!solvencyOk) {
+    reasons.push(
+      tr(
+        "لا يمكن الترشح وناديك في حالة عجز مالي.",
+        "You cannot run while your club treasury is in deficit.",
+        "Vous ne pouvez pas être candidat tant que votre club est en déficit.",
+      ),
+    );
+  }
+  const eligible = termLimitOk && integrityOk && clubMapOk && solvencyOk;
+  return {
+    eligible,
+    termLimitOk,
+    integrityOk,
+    clubMapOk,
+    solvencyOk,
+    termsServed: p.office.termsServed,
+    termLimit,
+    integrity: Math.round(integrityScore),
+    reasons,
+    reason: reasons[0] || "",
+  };
+}
 
 export function isCampaignActive(s) {
   return Boolean(ensurePolitics(s).campaign.active);
@@ -207,12 +274,13 @@ export function startElectionCampaign(s) {
   if (p.election.status !== "scheduled" || s.seasonNumber < p.election.season)
     return false;
   if (p.election.season < s.seasonNumber) p.election.season = s.seasonNumber;
+  const termPromises = (p.campaign.promises || []).filter(
+    (pr) => pr.termMandate,
+  );
   p.election.status = "campaigning";
   p.campaign.active = true;
   p.campaign.completed = false;
-  const termLimit = p.council.constitution.termLimit;
-  p.campaign.playerEligible =
-    termLimit === null || p.office.termsServed < termLimit;
+  p.campaign.playerEligible = presidencyEligibility(s).eligible;
   p.campaign.season = p.election.season;
   p.campaign.startDate = s.date;
   p.campaign.endDate = s.nextSeasonDate;
@@ -220,7 +288,7 @@ export function startElectionCampaign(s) {
   p.campaign.lastActionMonth = "";
   p.campaign.visits = [];
   p.campaign.conferences = [];
-  p.campaign.promises = [];
+  p.campaign.promises = termPromises;
   p.campaign.polls = [];
   p.campaign.financing = [];
   p.campaign.funds = 0;
@@ -248,6 +316,21 @@ export function startElectionCampaign(s) {
   recordMonthlyPoll(s);
   return true;
 }
+
+/** محفز الحملة الانتخابية: يتحقق من الشروط ويفتح الحملة في الموسم الحالي أو المجدول. */
+export function triggerElectionCampaign(s, { immediate = true } = {}) {
+  const p = ensurePolitics(s);
+  const elig = presidencyEligibility(s);
+  if (!elig.eligible) throw new Error(elig.reason);
+  if (p.campaign.active && !p.campaign.completed) return campaignStatus(s);
+  if (immediate && p.election.status === "scheduled") {
+    p.election.season = s.seasonNumber;
+  }
+  startElectionCampaign(s);
+  return campaignStatus(s);
+}
+
+export const declareCandidacy = triggerElectionCampaign;
 
 export function visitClub(s, clubId) {
   const p = requireCampaign(s);
@@ -547,17 +630,10 @@ export function campaignMonthlyTick(s) {
 }
 
 function ballotWinner(s, club, scores) {
-  const total = scores.reduce((sum, item) => sum + item.score, 0) || 1;
-  let pick =
-    ((fnv(`${s.seed}:${s.politics.election.season}:${club.clubId}`) %
-      1_000_000) /
-      1_000_000) *
-    total;
-  for (const item of scores) {
-    pick -= item.score;
-    if (pick < 0) return item.candidateId;
-  }
-  return scores.at(-1)?.candidateId || "player";
+  const ranked = [...scores].sort(
+    (a, b) => b.score - a.score || a.candidateId.localeCompare(b.candidateId),
+  );
+  return ranked[0]?.candidateId || "player";
 }
 
 export function conductElection(s) {
@@ -667,12 +743,21 @@ export function conductElection(s) {
       kind: "election-result",
     });
   }
+  const carriedPromises = result.won
+    ? (p.campaign.promises || [])
+        .filter((pr) => pr.status === "pending")
+        .map((pr) => ({
+          ...pr,
+          dueSeason: p.office.termEndSeason,
+          termMandate: true,
+        }))
+    : [];
   p.election.season += p.election.cycleSeasons || POLITICAL_CYCLE_SEASONS;
   p.election.status = "scheduled";
   p.election.publicBallot = publicBallot;
   p.campaign = {
     active: false,
-    playerEligible: true,
+    playerEligible: presidencyEligibility(s).eligible,
     season: null,
     startDate: null,
     endDate: null,
@@ -680,7 +765,7 @@ export function conductElection(s) {
     lastActionMonth: "",
     visits: [],
     conferences: [],
-    promises: [],
+    promises: carriedPromises,
     polls: [],
     financing: [],
     funds: 0,
@@ -691,24 +776,79 @@ export function conductElection(s) {
   return result;
 }
 
-/** Called at the end of the election season before the season counter advances. */
+/** Called at the end of the season before the season counter advances. */
 export function politicalSeasonEnd(s) {
   const p = ensurePolitics(s);
+  if (p.election.season === s.seasonNumber && p.election.status === "scheduled") {
+    startElectionCampaign(s);
+  }
+  let brokenCount = 0;
+  for (const promise of p.campaign.promises || []) {
+    if (
+      promise.status === "pending" &&
+      (promise.termMandate || promise.dueSeason < s.seasonNumber) &&
+      s.seasonNumber >= promise.dueSeason
+    ) {
+      promise.status = "broken";
+      promise.consequence = "unfulfilled-at-election";
+      brokenCount += 1;
+      const club = p.clubs.find((row) => row.clubId === promise.clubId);
+      if (club)
+        adjustClubSupport(s, club.clubId, -10, "broken-campaign-promise");
+      p.legitimacy = clamp(p.legitimacy - 5, 0, 100);
+    }
+  }
+  if (brokenCount > 0) {
+    message(s, {
+      title: tr(
+        "محاسبة الوعود الرئاسية",
+        "Presidential promise accountability",
+        "Bilan des engagements présidentiels",
+      ),
+      body: tr(
+        "انتهت الولاية دون الوفاء ببعض الوعود التشريعية، فتراجع تأييد الأندية المعنية وشرعية الرئاسة.",
+        "The term ended with unfulfilled legislative promises; affected clubs lowered their support and presidential legitimacy fell.",
+        "Le mandat s’achève avec des engagements législatifs non tenus ; le soutien des clubs concernés et la légitimité présidentielle reculent.",
+      ),
+      category: "politics",
+    });
+  }
   if (
     p.election.status !== "campaigning" ||
     p.election.season !== s.seasonNumber
   )
     return null;
-  for (const promise of p.campaign.promises) {
-    if (promise.status === "pending") {
-      promise.status = "broken";
-      promise.consequence = "unfulfilled-at-election";
-      const club = p.clubs.find((row) => row.clubId === promise.clubId);
-      if (club)
-        adjustClubSupport(s, club.clubId, -10, "broken-campaign-promise");
-    }
-  }
   return conductElection(s);
+}
+
+/** التغذية الراجعة للانتخابات والوعود والشروط والمحفز. */
+export function electionFeedback(s) {
+  const p = ensurePolitics(s);
+  const conditions = presidencyEligibility(s);
+  const allPromises = [
+    ...(p.campaignArchive || []).flatMap((a) => a.promises || []),
+    ...(p.campaign.promises || []),
+  ];
+  const uniquePromises = Array.from(
+    new Map(allPromises.map((pr) => [pr.id, pr])).values(),
+  );
+  return {
+    eligible: conditions.eligible,
+    conditions,
+    trigger: {
+      canTrigger: conditions.eligible && !p.campaign.active,
+      active: Boolean(p.campaign.active),
+      season: p.election.season,
+      status: p.election.status,
+    },
+    promises: {
+      pending: uniquePromises.filter((pr) => pr.status === "pending").length,
+      fulfilled: uniquePromises.filter((pr) => pr.status === "fulfilled").length,
+      broken: uniquePromises.filter((pr) => pr.status === "broken").length,
+      items: uniquePromises,
+    },
+    lastElection: p.election.lastResult || null,
+  };
 }
 
 export function campaignTick(s) {
