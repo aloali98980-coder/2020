@@ -15,9 +15,11 @@ import {
   WAGE_RAISE_LOG_LIMIT,
   WAGE_RAISE_MAX,
   WAGE_RAISE_MIN,
+  WAGE_RAISE_STEP,
   ensureWageRaises,
   normalizeWageRaise,
   raiseWageBudget,
+  roundWageRaise,
   wageRaisePreview,
   wageRaisesStatus,
   wageOverrideStatus,
@@ -35,6 +37,111 @@ const forceOverrun = (s) => {
   return s;
 };
 const arabicDigits = /[\u0660-\u0669\u06f0-\u06f9]/;
+
+// ——— 0.53 hotfix «خانة المليار»: تحقق المتصفح من الخانة ————————————————
+// قاعدة HTML5 للخانة (min/max/step) مكررة هنا حرفيًا: هي التي كانت ترفض 4200000
+// في المتصفح قبل أن يصل الطلب إلى الخدمة (step=50000 ومبدأ 1).
+const fieldAttrs = (html, name = "amount") => {
+  const tag = html.match(new RegExp(`<input[^>]*name="${name}"[^>]*>`))?.[0];
+  const attr = (key) =>
+    tag?.match(new RegExp(`(?:^|\\s)${key}="([^"]*)"`))?.[1] ?? null;
+  return {
+    tag,
+    min: attr("min"),
+    max: attr("max"),
+    step: attr("step"),
+    value: attr("value"),
+  };
+};
+const stepValid = (value, { min = null, step = null } = {}) => {
+  if (step === null || step === "any") return true;
+  const s = Number(step),
+    base = min === null ? 0 : Number(min);
+  return s > 0 && Math.abs((value - base) % s) < 1e-9;
+};
+const fieldAccepts = (value, attrs) =>
+  Number.isFinite(value) &&
+  value >= Number(attrs.min) &&
+  value <= Number(attrs.max) &&
+  stepValid(value, attrs);
+
+test("خانة المبلغ تقبل أي رقم صحيح داخل الحدود — 4200000 يعمل", () => {
+  const s = game();
+  const html = wageRaiseModal(s);
+  const attrs = fieldAttrs(html);
+  assert.ok(attrs.tag, "خانة المبلغ موجودة");
+  assert.equal(attrs.min, String(WAGE_RAISE_MIN));
+  assert.equal(attrs.max, String(WAGE_RAISE_MAX));
+  assert.equal(attrs.step, WAGE_RAISE_STEP, "الخطوة المعلنة هي خطوة الخدمة");
+  assert.notEqual(attrs.step, "50000", "خطوة الاختصارات القديمة سقطت");
+  // الرقم المدوَّر الذي كان يُرفض في المتصفح — والخطوة القديمة تُثبت الفرق.
+  assert.equal(
+    stepValid(4_200_000, { min: "1", step: "50000" }),
+    false,
+    "الخطوة القديمة كانت ترفض 4200000",
+  );
+  for (const value of [
+    1,
+    2,
+    999,
+    4_200_000,
+    4_199_999,
+    5_000_050,
+    50_000_000,
+    999_999_999,
+    WAGE_RAISE_MAX,
+  ])
+    assert.ok(
+      fieldAccepts(value, attrs),
+      `المتصفح يجب أن يقبل ${value.toLocaleString("en-US")}`,
+    );
+  // الاختصارات والقيمة الافتراضية تمرّ من نفس البوابة (كانت كلها مرفوضة قبل الإصلاح).
+  assert.ok(
+    fieldAccepts(Number(attrs.value), attrs),
+    "القيمة الافتراضية مقبولة",
+  );
+  for (const value of WAGE_RAISE_CHIPS)
+    assert.ok(fieldAccepts(value, attrs), `اختصار مقبول: ${value}`);
+  // الحدود تبقى مفروضة على المتصفح كما في الخدمة.
+  assert.equal(fieldAccepts(0, attrs), false);
+  assert.equal(fieldAccepts(WAGE_RAISE_MAX + 1, attrs), false);
+});
+
+test("إدخال 4200000: يُضاف فورًا كما هو بلا رفض ولا تغيير في الرقم", () => {
+  const s = game();
+  const before = s.finance.wageBudget;
+  const preview = wageRaisePreview(s, 4_200_000);
+  assert.equal(preview.amount, 4_200_000, "المعاينة تعرض 4200000 كما هي");
+  assert.equal(preview.budgetAfter, before + 4_200_000);
+  const record = raiseWageBudget(s, 4_200_000);
+  assert.equal(record.amount, 4_200_000);
+  assert.equal(s.finance.wageBudget, before + 4_200_000, "السقف ارتفع فورًا");
+  assert.equal(record.budgetAfter - record.budgetBefore, 4_200_000);
+  assert.equal(ensureWageRaises(s).totalAdded, 4_200_000);
+  // نص الخانة كما يكتبه اللاعب في المتصفح.
+  assert.equal(roundWageRaise("4200000"), 4_200_000);
+  assert.equal(raiseWageBudget(s, "4200000").amount, 4_200_000);
+  validateSave(s);
+});
+
+test("التقريب: الكسور تُقرَّب لعدد صحيح، وغير الرقمي يُرفض برسالته", () => {
+  assert.equal(roundWageRaise(4_200_000.4), 4_200_000);
+  assert.equal(roundWageRaise(4_199_999.6), 4_200_000);
+  assert.equal(roundWageRaise("4200000.49"), 4_200_000);
+  assert.equal(
+    roundWageRaise(""),
+    0,
+    "الخانة الفارغة تُقرأ صفرًا فترفضها الحدود",
+  );
+  assert.equal(roundWageRaise("abc"), null);
+  assert.equal(normalizeWageRaise(4_199_999.6), 4_200_000);
+  const s = game();
+  const before = s.finance.wageBudget;
+  // كسر عشري داخل الحدود: يُقرَّب ويُضاف — لا يوقف الإرسال.
+  s.finance.wageBudget += raiseWageBudget(s, 4_200_000.4).amount;
+  assert.equal(s.finance.wageBudget, before + 4_200_000);
+  validateSave(s);
+});
 
 test("السجل يبدأ فارغًا والسقف كما هو واللقطة تمرّ التحقق", () => {
   const s = game();

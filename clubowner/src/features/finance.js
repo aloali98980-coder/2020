@@ -26,6 +26,7 @@ import {
   WAGE_RAISE_CHIPS,
   WAGE_RAISE_MIN,
   WAGE_RAISE_MAX,
+  WAGE_RAISE_STEP,
   OWNER_HEADROOM_RATE,
 } from "../services/wageOverride.js";
 const cats = {
@@ -98,7 +99,7 @@ export function wageRaiseModal(s) {
     "مليار",
     "one billion",
     "un milliard",
-  )})</span><input name="amount" type="number" min="${WAGE_RAISE_MIN}" max="${WAGE_RAISE_MAX}" step="50000" value="1000000" required /></label><div class="wage-raise-quick">${WAGE_RAISE_CHIPS.map(
+  )})</span><input name="amount" type="number" min="${WAGE_RAISE_MIN}" max="${WAGE_RAISE_MAX}" step="${WAGE_RAISE_STEP}" inputmode="numeric" value="1000000" required /></label><div class="wage-raise-quick">${WAGE_RAISE_CHIPS.map(
     (value) =>
       `<button type="button" class="btn ghost small" data-action="wage-raise-quick" data-id="${value}">${wageRaiseChipLabel(value)}</button>`,
   ).join("")}</div><div id="wage-raise-summary" class="wage-raise-preview"></div><div class="modal-actions">${button(

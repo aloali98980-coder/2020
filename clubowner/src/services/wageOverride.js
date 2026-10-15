@@ -139,6 +139,12 @@ export function approveOwnerWageOverride(s) {
 export const WAGE_RAISE_MIN = 1;
 // سقف المبلغ الواحد: مليار جنيه. الرفع متاح دائمًا وبأي عدد من المرات.
 export const WAGE_RAISE_MAX = 1_000_000_000;
+// 0.53 hotfix «خانة المليار»: خطوة الخانة «any» لأن المبلغ حر فعلًا (أي رقم صحيح
+// من 1 حتى مليار) — الخطوة الرقمية القديمة (50000 بمبدأ 1) كانت تجعل المتصفح
+// يرفض الأرقام المدورة كلها قبل وصول الطلب للخدمة (4200000 و1000000 وحتى
+// اختصار المليار). التقريب إلى عدد صحيح صار في roundWageRaise، والحدود تُفرض
+// بـmin/max هنا وبـnormalizeWageRaise في الخدمة معًا.
+export const WAGE_RAISE_STEP = "any";
 export const WAGE_RAISE_LOG_LIMIT = 40;
 // اختصارات المبلغ المعروضة في النافذة: من 100 ألف إلى المليار.
 export const WAGE_RAISE_CHIPS = [
@@ -161,9 +167,15 @@ export function ensureWageRaises(s) {
   return t;
 }
 
+/** 0.53 hotfix «خانة المليار»: تقريب مبلغ الخانة لعدد صحيح — غير الرقمي يُعاد null. */
+export function roundWageRaise(amount) {
+  const value = Math.round(Number(amount));
+  return Number.isFinite(value) ? value : null;
+}
+
 /** تدقيق مبلغ الرفع: عدد صحيح من 1 حتى مليار — وما خرج عن ذلك يُرفض برسالة صريحة. */
 export function normalizeWageRaise(amount) {
-  const value = Math.round(Number(amount));
+  const value = roundWageRaise(amount);
   assert(
     Number.isSafeInteger(value) &&
       value >= WAGE_RAISE_MIN &&
