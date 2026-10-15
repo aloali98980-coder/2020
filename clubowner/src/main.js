@@ -216,6 +216,8 @@ import {
   answerSponsorDeal,
 } from "./services/sponsors.js";
 import { takeLoan, wages } from "./services/finance.js";
+// 0.53 hotfix «زرار المليار»: رفع سقف الرواتب بمبلغ حر + معاينة قبل/بعد.
+import { raiseWageBudget, wageRaisePreview } from "./services/wageOverride.js";
 import { vaultMove, VAULT_AMOUNTS, VAULT_TAPS, VAULT_TAP_WINDOW_MS, ensureVault } from "./services/vault.js";
 import { setupView } from "./features/setup.js";
 import { shell, NAV_GROUPS, NAV_BY_ID, navLabel, toggleNavGroup } from "./components/shell.js";
@@ -241,7 +243,7 @@ import {
   sponsorNegotiate,
   sponsorDealResult,
 } from "./features/sponsors.js";
-import { financeView } from "./features/finance.js";
+import { financeView, wageRaiseModal } from "./features/finance.js";
 import { stockMarketView } from "./features/stockMarket.js";
 import { boardView } from "./features/board.js";
 import { staffView } from "./features/staff.js";
@@ -745,7 +747,21 @@ function updateCalculations() {
   const s = getState(),
     offer = document.querySelector("#offer-form"),
     contract = document.querySelector("#contract-form"),
-    donation = document.querySelector("#politics-donation-form");
+    donation = document.querySelector("#politics-donation-form"),
+    raiseForm = document.querySelector("#wage-raise-form");
+  // 0.53 hotfix «زرار المليار»: معاينة حية «قبل → بعد» قبل اعتماد الرفعة.
+  if (raiseForm) {
+    const amount = Math.round(Number(raiseForm.elements.amount.value) || 0);
+    const line = document.getElementById("wage-raise-summary");
+    if (line) {
+      try {
+        const p = wageRaisePreview(s, amount);
+        line.innerHTML = `<div><span>${tr("السقف قبل الرفعة", "Ceiling before the raise", "Plafond avant le relèvement")}</span><strong>${money(p.budgetBefore)} ${cur()}</strong></div><div><span>${tr("بعد الرفعة فورًا", "After the raise, at once", "Après le relèvement, aussitôt")}</span><strong class="green">${money(p.budgetAfter)} ${cur()}</strong></div><div><span>${tr("المبلغ المضاف", "Amount added", "Montant ajouté")}</span><b>+ ${money(p.amount)} ${cur()}</b></div><small>${p.over ? `${tr("الفجوة المتبقية", "Remaining shortfall", "Écart restant")}: ${money(p.gap)} ${cur()} — ${tr("الرفعة إضافة بحتة بلا غرامة ولا خصم.", "the raise is a pure addition with no fine and no deduction.", "le relèvement est un ajout pur, sans amende ni retenue.")}` : tr("الفاتورة الحالية تحت السقف بعد الرفعة، وكل رفعة تُسجَّل قبل/بعد بلا أي عقوبة.", "The current bill sits under the ceiling after the raise, and every raise is logged before/after with no penalty at all.", "La masse actuelle reste sous le plafond après le relèvement, et chaque relèvement est consigné avant/après, sans sanction.")}</small>`;
+      } catch (err) {
+        line.innerHTML = `<small>${esc(err.message)}</small>`;
+      }
+    }
+  }
   if (donation) {
     // معاينة حية: كم نقطة امتنان (أي كم صوتًا محتملًا) سيضيف هذا المبلغ الآن؟
     const amount = Math.round(Number(donation.elements.amount.value) || 0);
@@ -2133,6 +2149,20 @@ const actions = {
       `<h2>تسعير تذاكر المباريات</h2><p class="muted">السعر الأعلى يرفع العائد لكل مشجع، لكنه يقلل الطلب. المقصورة أقل تأثرًا بالغلاء من العادية. أصحاب الاشتراكات يشغلون مقاعد العادية أولًا ولا يُحصّلون مرتين.</p><form id="ticket-form"><div class="form-grid"><label class="field"><span>العادية (70% من السعة)</span><input type="number" name="price" value="${s.ticketPrice}" min="50" max="500" required></label><label class="field"><span>الأولى (20% · 40–2000)</span><input type="number" name="first" value="${prices.first}" min="40" max="2000" required></label><label class="field"><span>المقصورة (10% · 100–5000)</span><input type="number" name="vip" value="${prices.vip}" min="100" max="5000" required></label><label class="field"><span>علاوة المباراة البيتية القادمة</span><select name="premium"><option value="0">بدون علاوة</option><option value="25">+25% مباراة كبيرة</option><option value="50">+50% قمة</option><option value="100">+100% ديربي ناري</option></select></label></div><div class="modal-actions"><button type="submit" class="btn primary">حفظ أسعار التذاكر</button></div></form>`,
     );
   },
+  // 0.53 hotfix «زرار المليار»: نافذة مبلغ حر (من 1 حتى مليار) ترفع السقف فورًا.
+  "wage-budget-raise": async () => {
+    openModal(wageRaiseModal(getState()));
+    updateCalculations();
+  },
+  "wage-raise-quick": async (el) => {
+    const input = document
+      .getElementById("wage-raise-form")
+      ?.querySelector("input[name=amount]");
+    if (input) {
+      input.value = el.dataset.id;
+      updateCalculations();
+    }
+  },
   // 0.52 — «أوافق كمالك!»: تجاوز سقف الرواتب فورًا، إضافة بحتة بلا أي عقوبة.
   "wage-override-approve": async () => {
     const { approveOwnerWageOverride } = await import("./services/wageOverride.js");
@@ -2719,6 +2749,21 @@ document.addEventListener("submit", async (e) => {
       );
       return;
     }
+    if (form.id === "wage-raise-form") {
+      // 0.53 hotfix «زرار المليار»: المبلغ يُضاف إلى السقف فورًا ويُسجَّل قبل/بعد.
+      const amount = Math.round(Number(form.elements.amount.value));
+      const record = await apply(
+        (s) => raiseWageBudget(s, amount),
+        tr(
+          "ارتفع سقف الرواتب فورًا — بلا غرامة ولا خصم.",
+          "The wage ceiling rose at once — no fine and no deduction.",
+          "Le plafond salarial a été relevé aussitôt — sans amende ni retenue.",
+        ),
+      );
+      closeModal();
+      void record;
+      return;
+    }
     if (form.id === "politics-donation-form") {
       const amount = Math.round(Number(form.elements.amount.value));
       const entry = await apply(
@@ -3237,7 +3282,11 @@ document.addEventListener("input", (e) => {
     if (output) output.value = `${Math.round(Number(e.target.value))}%`;
     return;
   }
-  if (e.target.closest("#offer-form,#contract-form,#politics-donation-form"))
+  if (
+    e.target.closest(
+      "#offer-form,#contract-form,#politics-donation-form,#wage-raise-form",
+    )
+  )
     updateCalculations();
   if (e.target.id === "palette-input") {
     paletteQuery(e.target.value);
@@ -3600,7 +3649,11 @@ document.addEventListener("change", async (e) => {
         (s) => (s.preferences.reduceMotion = e.target.checked),
         tr("تم حفظ إعداد العرض.", "Display setting saved.", "Réglage d'affichage enregistré."),
       );
-    if (e.target.closest("#offer-form,#contract-form,#politics-donation-form"))
+    if (
+      e.target.closest(
+        "#offer-form,#contract-form,#politics-donation-form,#wage-raise-form",
+      )
+    )
       updateCalculations();
   } catch (err) {
     showError(err.message);

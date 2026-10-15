@@ -29,7 +29,7 @@ import { ensureUltras } from "../services/ultras.js";
 import { ensureAwards } from "../services/awards.js";
 import { ensureGifts } from "../services/gifts.js";
 import { ensureBranches } from "../services/branches.js";
-import { ensureWageOverride } from "../services/wageOverride.js";
+import { ensureWageOverride, ensureWageRaises } from "../services/wageOverride.js";
 import { stockText } from "../data/stockMarketTexts.js";
 import { backfillShirtNumbers } from "../services/presentation.js";
 import { empireText } from "../data/empireTexts.js";
@@ -777,8 +777,13 @@ function migrateSaveToTwentyFour(input) {
 
 // الدفعة 7 (بعد الإغلاق): أرقام القمصان للحفظات القديمة تُرحَّل عند كل تحميل دون رفع رقم الحفظ.
 // 0.46→0.47→0.50→0.52: الترحيل النهائي يمر عبر migrateSave42.
+// 0.53 hotfix «زرار المليار»: سجل رفعات الميزانية إضافة اختيارية تُبنى فارغة عند
+// كل تحميل (تمامًا كأرقام القمصان) — بلا رفع رقم الحفظ وبلا أي تغيير في الأرقام.
 export function migrateSave(input) {
   const out = migrateSave42(input);
-  if (out && typeof out === "object") backfillShirtNumbers(out);
+  if (out && typeof out === "object") {
+    backfillShirtNumbers(out);
+    ensureWageRaises(out);
+  }
   return out;
 }

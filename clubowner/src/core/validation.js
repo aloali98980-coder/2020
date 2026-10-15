@@ -173,6 +173,35 @@ export function validateSave(s) {
         )),
     "سجل تجاوز المالك غير سليم.",
   );
+  // 0.53 hotfix «زرار المليار»: سجل رفعات الميزانية اختياري — لا يغيّر أي قاعدة
+  // أخرى، ولو وُجد فهو مُدقّق بالكامل (مبلغ الرفعة من 1 حتى مليار وحد قبل/بعد).
+  const raises = f.wageRaises;
+  check(
+    raises === undefined ||
+      (raises !== null &&
+        typeof raises === "object" &&
+        Number.isSafeInteger(raises.count) &&
+        raises.count >= 0 &&
+        Number.isSafeInteger(raises.totalAdded) &&
+        raises.totalAdded >= 0 &&
+        (raises.lastDate === null || isoDate(raises.lastDate)) &&
+        Array.isArray(raises.log) &&
+        raises.log.length <= 40 &&
+        raises.log.every(
+          (r) =>
+            id(r.id) &&
+            isoDate(r.date) &&
+            Number.isSafeInteger(r.season) &&
+            Number.isSafeInteger(r.amount) &&
+            r.amount >= 1 &&
+            r.amount <= 1_000_000_000 &&
+            Number.isSafeInteger(r.budgetBefore) &&
+            r.budgetBefore >= 0 &&
+            Number.isSafeInteger(r.budgetAfter) &&
+            r.budgetAfter === r.budgetBefore + r.amount,
+        )),
+    "سجل رفعات الميزانية غير سليم.",
+  );
   check(
     new Set(f.ledger.map((e) => e.key)).size === f.ledger.length,
     "حركات مالية مكررة.",

@@ -10,5 +10,10 @@ export const OWNER_OVERRIDE_PHRASES = {
     "Invalid owner-override log.",
     "Journal de dépassement du propriétaire invalide.",
   ],
+  // 0.53 hotfix: رسالة تحقق سجل الرفعات (تُترجم عبر القاموس لا عبر tr مباشرة).
+  "سجل رفعات الميزانية غير سليم": [
+    "Invalid budget-raise log.",
+    "Journal de relèvement du budget invalide.",
+  ],
 };
 export default OWNER_OVERRIDE_PHRASES;
