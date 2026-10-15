@@ -126,7 +126,7 @@ function wealthTab(s) {
         <h4>💼 → 💎 ${tr("سحب شخصي", "Personal draw", "Prélèvement personnel")}</h4>
         <small>${tr("السقف الحالي", "Current cap", "Plafond actuel")}: ${money(draw.cap)} ${cur()}</small>
         <small>${draw.remainingDays > 0 ? `${tr("التحويل التالي بعد", "Next draw in", "Prochain prélèvement dans")} ${num(draw.remainingDays)} ${tr("يومًا", "days", "jours")}` : tr("الفاصل مكتمل: التحويل متاح", "Gap complete: draw available", "Intervalle écoulé : prélèvement disponible")}</small>
-        <input type="number" name="amount" min="1" step="100000" placeholder="1000000">
+        <input type="number" name="amount" min="1" step="any" placeholder="1000000">
         ${
           projects.length
             ? `<select name="project"><option value="">${tr("بسقف الثقة", "Within trust cap", "Dans le plafond de confiance")}</option>${projects.map((p) => `<option value="${esc(p.id)}">${esc(p.title)} · ${money(p.amount)} ${cur()}</option>`).join("")}</select>`
@@ -137,14 +137,14 @@ function wealthTab(s) {
       <form id="empire-support-form" class="transfer-box">
         <h4>💎 → 💼 ${tr("دعم النادي", "Support the club", "Soutenir le club")}</h4>
         <small>${tr("بلا سقف", "No cap", "Sans plafond")}</small>
-        <input type="number" name="amount" min="1" step="100000" placeholder="1000000">
+        <input type="number" name="amount" min="1" step="any" placeholder="1000000">
         <button class="btn secondary" type="submit">${tr("تحويل إلى النادي", "Move to club", "Vers le club")}</button>
       </form>
       <form id="empire-project-form" class="transfer-box">
         <h4>🗳️ ${tr("مشروع للتصويت", "Project for a vote", "Projet à voter")}</h4>
         <small>${tr("قبول المجلس يتيح سحبًا بمبلغه دون السقف", "Board approval allows a draw of its amount beyond the cap", "L’approbation du conseil permet un prélèvement de son montant hors plafond")}</small>
         <input type="text" name="title" maxlength="60" placeholder="${tr("اسم المشروع", "Project name", "Nom du projet")}">
-        <input type="number" name="amount" min="1" step="100000" placeholder="50000000">
+        <input type="number" name="amount" min="1" max="1000000000" step="any" placeholder="50000000">
         <button class="btn secondary" type="submit">${tr("عرض على التصويت", "Put to a vote", "Soumettre au vote")}</button>
       </form>
     </div>
@@ -156,7 +156,7 @@ function wealthTab(s) {
       ? `<section class="panel debt-panel">
     <div class="panel-head"><h3>${icon("flag")} ${t("empireDebt")}: ${money(e.debt)}</h3></div>
     <form id="empire-repay-form">
-      <input type="number" name="amount" min="1" max="${Math.min(e.debt, e.personal)}" step="100000" placeholder="1000000">
+      <input type="number" name="amount" min="1" max="${Math.min(e.debt, e.personal)}" step="any" placeholder="1000000">
       <button class="btn primary" type="submit">${t("repayDebt")}</button>
     </form>
   </section>`
@@ -340,7 +340,7 @@ function investTab(s) {
           <small class="muted">${lang(v.desc)}</small>
           <div class="vehicle-balance">${t("investedLabel")}: <b>${money(bal)}</b></div>
           <div class="vehicle-actions">
-            <input type="number" min="${v.min}" step="10000" placeholder="${v.min}" id="inv-amt-${k}">
+            <input type="number" min="${v.min}" step="any" placeholder="${v.min}" id="inv-amt-${k}">
             <button class="btn primary" data-action="empire-invest" data-id="${k}">${t("investLabel")}</button>
             <button class="btn secondary" data-action="empire-withdraw" data-id="${k}" ${bal > 0 ? "" : "disabled"}>${t("withdrawLabel")}</button>
           </div>
@@ -415,7 +415,7 @@ function charityTab(s) {
     <div class="panel-head"><h3>🤲 ${t("charityTotalLabel")}</h3></div>
     <p><b>${money(e.charity.personalTotal)}</b> · ${t("suspicionLabel")}: <b>${num(suspicion)}%</b></p>
     <div class="charity-donate">
-      <input id="charity-amt" type="number" min="500000" max="20000000" step="100000" placeholder="2000000" />
+      <input id="charity-amt" type="number" min="500000" max="20000000" step="any" placeholder="2000000" />
       <button class="btn primary" data-action="empire-donate">${t("donateLabel")}</button>
     </div>
   </section>
