@@ -5,7 +5,11 @@ import { aiTransferDay, marketOpen } from "./market.js";
 import { extendedClub } from "../data/expandedCatalog.js";
 import { post } from "./finance.js";
 import { message, closeThread } from "./inbox.js";
-import { random } from "../core/utils.js";
+import {
+  canTransferByClauseOnly,
+  hasReleaseClause,
+} from "./releaseClause.js";
+import { assert, random } from "../core/utils.js";
 import { money, cur } from "../ui/format.js";
 
 /**
@@ -101,6 +105,7 @@ function generateUrgentAiBid(s) {
         p.clubId === s.clubId &&
         p.status !== "retired" &&
         !p.loan &&
+        !hasReleaseClause(p) &&
         Number(p.loyalty ?? 50) < 85 &&
         p.value >= 150_000 &&
         p.rating >= 60 &&
@@ -163,6 +168,10 @@ export function acceptDeadlineBid(s, messageId) {
   }
 
   const fee = m.fee || Math.round(player.value * 1.2);
+  assert(
+    canTransferByClauseOnly(player, fee),
+    "اللاعب محمي بشرط جزائي — لا انتقال إلا بالشرط الجزائي.",
+  );
   const buyerId = m.buyerId || "ai-buyer";
   const buyerName = m.buyerName || extendedClub(buyerId)?.name || "النادي المشتري";
 

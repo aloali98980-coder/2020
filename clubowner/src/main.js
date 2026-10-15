@@ -288,6 +288,7 @@ import {
   fundCampaign,
   debate as politicalDebate,
   offerCandidateAlliance,
+  triggerElectionCampaign,
 } from "./services/politics/campaign.js";
 import {
   donateToClub,
@@ -1440,7 +1441,7 @@ const actions = {
     openModal(
       `<h2>${tr("تبرع علني", "Public donation", "Don public")} · ${esc(extendedClub(clubId)?.name || clubId)}</h2><p class="muted">${tr("المبلغ حر تمامًا ومن ثروتك الشخصية. النادي يشكرك علنًا، وامتنانه يرفع تأييده لك، والتأييد يظهر مباشرة في أصواته داخل الاقتراع — بلا شبهات ولا حرارة ولا أي عقوبة.", "The amount is entirely up to you and comes from your personal fortune. The club thanks you publicly, its gratitude raises its support for you, and that support shows directly in its votes at the ballot — with no suspicion, heat, or penalty.", "Le montant est totalement libre et provient de votre fortune personnelle. Le club vous remercie publiquement, sa reconnaissance renforce son soutien, et ce soutien apparaît directement dans ses votes — sans soupçon, pression ni sanction.")}</p>
       <form id="politics-donation-form" data-club="${esc(clubId)}">
-        <label class="field"><span>${tr("المبلغ", "Amount", "Montant")} (${tr("متاح", "available", "disponible")}: ${money(available)} ${cur()})</span><input name="amount" type="number" min="50000" max="${Math.max(50_000, available)}" step="50000" value="${Math.min(1_000_000, Math.max(50_000, available))}" required></label>
+        <label class="field"><span>${tr("المبلغ", "Amount", "Montant")} (${tr("متاح", "available", "disponible")}: ${money(available)} ${cur()})</span><input name="amount" type="number" min="50000" max="${Math.max(50_000, available)}" step="any" value="${Math.min(1_000_000, Math.max(50_000, available))}" required></label>
         <div class="politics-donation-quick">${[500_000, 2_000_000, 10_000_000]
           .filter((value) => value <= available)
           .map((value) => `<button type="button" class="btn ghost small" data-action="politics-donation-set" data-id="${value}">${money(value)} ${cur()}</button>`)
@@ -1461,6 +1462,15 @@ const actions = {
       updateCalculations();
     }
   },
+  "politics-start-campaign": async () =>
+    apply(
+      (s) => triggerElectionCampaign(s),
+      tr(
+        "انطلقت حملتك الانتخابية لرئاسة الاتحاد.",
+        "Your football association presidential campaign has begun.",
+        "Votre campagne pour la présidence de la fédération est lancée.",
+      ),
+    ),
   "politics-visit": async (el) =>
     apply(
       (s) => visitClub(s, el.dataset.id),
@@ -2039,6 +2049,36 @@ const actions = {
   },
   "player-contract": async (el) => showContract(el.dataset.id),
   "renew-player": async (el) => showContract(el.dataset.id, true),
+  "release-break-salary": async (el) => {
+    await apply(
+      (s) => BlackService.counterReleaseClauseBreak(s, el.dataset.id, "salary"),
+      tr(
+        "تم رفع الراتب وتحصين اللاعب من كسر الشرط الجزائي 🛡️",
+        "Salary raised and player protected from the release clause break 🛡️",
+        "Salaire augmenté et joueur protégé contre l'activation de la clause 🛡️",
+      ),
+    );
+  },
+  "release-break-renew": async (el) => {
+    await apply(
+      (s) => BlackService.counterReleaseClauseBreak(s, el.dataset.id, "renew"),
+      tr(
+        "تم تجديد العقد وتحصين اللاعب من كسر الشرط الجزائي 🛡️",
+        "Contract renewed and player protected from the release clause break 🛡️",
+        "Contrat prolongé et joueur protégé contre l'activation de la clause 🛡️",
+      ),
+    );
+  },
+  "release-break-clause": async (el) => {
+    await apply(
+      (s) => BlackService.counterReleaseClauseBreak(s, el.dataset.id, "clause"),
+      tr(
+        "تم رفع الشرط الجزائي وإحباط محاولة الكسر 🛡️",
+        "Release clause raised and break attempt foiled 🛡️",
+        "Clause libératoire relevée et tentative d'activation déjouée 🛡️",
+      ),
+    );
+  },
   "facility-detail": async (el) =>
     openModal(facilityDetail(getState(), el.dataset.id)),
   "toggle-staff": async (el) => {
@@ -3135,16 +3175,7 @@ document.addEventListener("submit", async (e) => {
       closeModal();
     }
     if (form.id === "contract-form") {
-      let releaseClause = Number(form.elements.releaseClause.value);
-      const clauseLevel = form.elements.clauseLevel?.value;
-      if (clauseLevel) {
-        const baseInput = document.getElementById("release-clause-input");
-        // إذا اختار مستوى، نستخدم القيمة المحسوبة من المستوى إن لم يعدلها يدويًا بشكل كبير
-        const selectedOption = form.elements.clauseLevel.selectedOptions[0];
-        const levelClause = Number(selectedOption?.dataset?.clause || 0);
-        if (levelClause === 0) releaseClause = 0;
-        else if (Math.abs(releaseClause - levelClause) < levelClause * 0.5) releaseClause = levelClause;
-      }
+      const releaseClause = form.elements.releaseClause.value;
       const terms = {
         salary: Number(form.elements.salary.value),
         years: Number(form.elements.years.value),
@@ -3651,6 +3682,13 @@ document.addEventListener("change", async (e) => {
         (s) => (s.preferences.reduceMotion = e.target.checked),
         tr("تم حفظ إعداد العرض.", "Display setting saved.", "Réglage d'affichage enregistré."),
       );
+    if (e.target.id === "clause-level") {
+      const selectedOption = e.target.selectedOptions?.[0];
+      const baseInput = document.getElementById("release-clause-input");
+      if (baseInput && selectedOption?.dataset?.clause !== undefined) {
+        baseInput.value = selectedOption.dataset.clause;
+      }
+    }
     if (
       e.target.closest(
         "#offer-form,#contract-form,#politics-donation-form,#wage-raise-form",

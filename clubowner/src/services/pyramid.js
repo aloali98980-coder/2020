@@ -41,7 +41,7 @@ import { message } from "./inbox.js";
 import { initCommerce } from "./commerce.js";
 import { initManagement } from "./clubManagement.js";
 import { endSeasonBoardReview, startSeasonMandate } from "./boardMandate.js";
-import { politicalSeasonEnd } from "./politics/campaign.js";
+import { campaignTick, politicalSeasonEnd } from "./politics/campaign.js";
 import { associationSeasonEnd } from "./politics/associationFinance.js";
 import { runSeasonAwards } from "./awards.js";
 import { reconcilePoliticalMap } from "./politics/state.js";
@@ -598,6 +598,7 @@ function rollover(s) {
   s.fixtures = next.fixtures;
   reconcilePoliticalMap(s);
   s.nextSeasonDate = addDays(s.date, 365);
+  campaignTick(s);
   // لائحة الموسم الجديد بعد بناء الجداول الجديدة (تاريخ المنتصف يُحسب منها).
   startSeasonMandate(s);
   s.commerce.seasonTickets = 0;

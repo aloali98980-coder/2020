@@ -169,7 +169,12 @@ export function ensureWageRaises(s) {
 
 /** 0.53 hotfix «خانة المليار»: تقريب مبلغ الخانة لعدد صحيح — غير الرقمي يُعاد null. */
 export function roundWageRaise(amount) {
-  const value = Math.round(Number(amount));
+  const cleaned =
+    typeof amount === "string" &&
+    /^\s*[+-]?\d[\d,_\s]*(\.\d+)?\s*$/.test(amount)
+      ? amount.replace(/[,_\s]/g, "")
+      : amount;
+  const value = Math.round(Number(cleaned));
   return Number.isFinite(value) ? value : null;
 }
 

@@ -3,7 +3,45 @@
 // المضاعفات: تحت 21 سنة ×1.5 / عقد 3+ سنين ×1.3 / نادٍ إسباني ×2 / عقد أقل من سنة ×0.5 أو بلا شرط / فوق 30 سنة ×0.7 / ~25% بلا شرط
 // النتيجة: سوبرستار صغير بعقد طويل في نادٍ غني يصل 150-300M+
 
-import { addDays, daysBetween, random } from "../core/utils.js";
+import { addDays, assert, daysBetween, random } from "../core/utils.js";
+
+export const RELEASE_BREAK_DEADLINE_DAYS = 3;
+// سقف الشرط الجزائي لحماية النجوم: 9e15 بالظبط (عدد صحيح فقط، أقل من Number.MAX_SAFE_INTEGER).
+export const RELEASE_CLAUSE_MAX = 9_000_000_000_000_000;
+
+export function normalizeReleaseClause(value) {
+  if (value === undefined || value === null || value === "") return 0;
+  if (typeof value === "boolean" || typeof value === "object") {
+    assert(false, "الشرط الجزائي يجب أن يكون عددًا صحيحًا بين 0 و 9000000000000000.");
+  }
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    if (!trimmed) return 0;
+    assert(
+      !trimmed.includes(".") && /^[+]?\d+(?:[eE]\+?\d+)?$/.test(trimmed),
+      "الشرط الجزائي يجب أن يكون عددًا صحيحًا بين 0 و 9000000000000000.",
+    );
+  }
+  const num = Number(value);
+  assert(
+    typeof num === "number" &&
+      Number.isSafeInteger(num) &&
+      num >= 0 &&
+      num <= RELEASE_CLAUSE_MAX,
+    "الشرط الجزائي يجب أن يكون عددًا صحيحًا بين 0 و 9000000000000000.",
+  );
+  return num;
+}
+
+export const releaseClauseOf = (player) =>
+  Math.max(0, Number(player?.contractTerms?.releaseClause || 0));
+
+export const hasReleaseClause = (player) => releaseClauseOf(player) > 0;
+
+export const canTransferByClauseOnly = (player, fee = 0) => {
+  const clause = releaseClauseOf(player);
+  return clause <= 0 || (Number.isSafeInteger(fee) && fee >= clause);
+};
 
 export const RELEASE_RANGES = {
   low: { maxRating: 69, min: 2000000, max: 5000000 },
@@ -214,9 +252,13 @@ export function aiBreakReleaseClauses(s) {
   const ownPlayers = s.players.filter((p) => p.clubId === s.clubId && p.status !== "retired" && (p.contractTerms?.releaseClause||0) > 0);
   if (!ownPlayers.length) return 0;
   const aiClubs = s.expansion.divisions.flatMap((d) => d.clubs).filter((id) => id !== s.clubId);
+  s.blackFiles = s.blackFiles || {};
+  s.blackFiles.pendingAiBreaks = s.blackFiles.pendingAiBreaks || [];
   let broken = 0;
   for (const p of ownPlayers) {
     if (broken >= 1) break;
+    if (s.blackFiles.pendingAiBreaks.some((item) => item.playerId === p.id))
+      continue;
     const clause = p.contractTerms.releaseClause;
     const buyer = aiClubs.find((id) => (s.expansion.budgets[id]||0) >= clause * 1.2 && p.rating >= 72);
     if (!buyer) continue;
@@ -224,9 +266,15 @@ export function aiBreakReleaseClauses(s) {
     if (rnd > 0.02) continue;
     s.expansion.budgets[buyer] -= clause;
     broken++;
-    s.blackFiles = s.blackFiles || {};
-    s.blackFiles.pendingAiBreaks = s.blackFiles.pendingAiBreaks || [];
-    s.blackFiles.pendingAiBreaks.push({ playerId: p.id, buyer, clause, date: s.date });
+    s.blackFiles.pendingAiBreaks.push({
+      playerId: p.id,
+      buyer,
+      clause,
+      date: s.date,
+      deadline: addDays(s.date, RELEASE_BREAK_DEADLINE_DAYS),
+      budgetDeducted: true,
+      warned: false,
+    });
   }
   return broken;
 }

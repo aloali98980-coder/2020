@@ -3,6 +3,11 @@
 import { assert, clamp, addDays, uid } from "../../core/utils.js";
 import { message } from "../inbox.js";
 import { post } from "../finance.js";
+import {
+  canTransferByClauseOnly,
+  hasReleaseClause,
+  releaseClauseOf,
+} from "../releaseClause.js";
 import { squad } from "../../models/player.js";
 import { L, SPORTING_PHILOSOPHIES } from "../../data/staffCatalog.js";
 import { ensureStaffCorp, corpEmployees, corpSkill, srng } from "./staffCorp.js";
@@ -56,14 +61,23 @@ const marketPool = (s) => {
 // خصم التفاوض بمهارة المدير: حتى ~28% من القيمة.
 export const negotiatedFee = (s, player) => {
   const skill = corpSkill(s, "sporting");
-  return Math.max(Math.round(player.value * 0.5), Math.round(player.value * (1 - skill * 0.003)));
+  const base = Math.max(
+    Math.round(player.value * 0.5),
+    Math.round(player.value * (1 - skill * 0.003)),
+  );
+  return Math.max(base, releaseClauseOf(player));
 };
 export const negotiatedWage = (s, player) => {
   const skill = corpSkill(s, "sporting");
   return Math.max(Math.round(player.salary * 0.7), Math.round(player.salary * (1 - skill * 0.002)));
 };
 const pickTarget = (s, phil) => {
-  const pool = marketPool(s).filter((p) => p.value > 0 && p.value < 400_000_000);
+  const pool = marketPool(s).filter(
+    (p) =>
+      p.value > 0 &&
+      p.value < 400_000_000 &&
+      releaseClauseOf(p) <= 400_000_000,
+  );
   if (!pool.length) return null;
   const scored = pool.map((p) => {
     let score = 0;
@@ -86,7 +100,13 @@ const pickTarget = (s, phil) => {
 // فائض للبيع: أجر مرتفع لقيمة متواضعة، أو نجم كبير في فلسفة الشباب.
 const pickSale = (s, phil) => {
   const pending = pendingPlayerIds(s);
-  const own = squad(s).filter((p) => p.value > 500_000 && !pending.has(p.id) && (!p.injuryUntil || p.injuryUntil < s.date));
+  const own = squad(s).filter(
+    (p) =>
+      p.value > 500_000 &&
+      !hasReleaseClause(p) &&
+      !pending.has(p.id) &&
+      (!p.injuryUntil || p.injuryUntil < s.date),
+  );
   if (own.length <= 16) return null;
   const scored = own.map((p) => {
     let score = (p.salary / Math.max(1, p.value)) * 1_000_000 + Math.max(0, p.age - 30) * 4;
@@ -120,6 +140,10 @@ export const autoCap = (s) => {
 
 function executeBuy(s, player, fee, wage, auto) {
   const st = seasonStats(s);
+  assert(
+    canTransferByClauseOnly(player, fee),
+    "اللاعب محمي بشرط جزائي — لا انتقال إلا بالشرط الجزائي.",
+  );
   assert(s.finance.cash >= fee, "السيولة لا تغطي الصفقة.");
   assert(squad(s).length < (s.squadLimit || 30), "القائمة ممتلئة.");
   assert((s.finance.wageBudget || 0) >= wage, "الراتب يتجاوز ميزانية المرتبات.");
@@ -142,6 +166,10 @@ function executeBuy(s, player, fee, wage, auto) {
 }
 function executeSale(s, player, fee, buyer, auto) {
   const st = seasonStats(s);
+  assert(
+    canTransferByClauseOnly(player, fee),
+    "اللاعب محمي بشرط جزائي — لا انتقال إلا بالشرط الجزائي.",
+  );
   post(s, fee, "transfer", `بيع ${player.name} إلى ${buyer} (المدير الرياضي)`, uid(s, "sp-sell"));
   player.clubId = buyer;
   st.earned += fee;

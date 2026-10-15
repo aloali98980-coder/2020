@@ -58,6 +58,41 @@ export function messageDetail(s, m) {
       button(tr("رفض العرض", "Decline Offer", "Refuser l'offre"), "decline-deadline-bid", m.id, "ghost");
   if (m.kind === "sale-offer" && s.transferMarket?.sales?.some((deal) => deal.id === m.ref && ["open", "agreed"].includes(deal.status)))
     actions = button(tr("افتح غرفة التفاوض", "Open negotiation room", "Ouvrir la salle de négociation"), "sale-negotiate", m.ref, "primary");
+  if (
+    m.kind === "release-clause-alert" &&
+    s.blackFiles?.pendingAiBreaks?.some((b) => b.playerId === m.ref)
+  )
+    actions =
+      button(
+        tr(
+          "رفع الراتب 🛡️",
+          "Raise salary 🛡️",
+          "Augmenter le salaire 🛡️",
+        ),
+        "release-break-salary",
+        m.ref,
+        "primary",
+      ) +
+      button(
+        tr(
+          "تجديد العقد 🛡️",
+          "Renew contract 🛡️",
+          "Prolonger le contrat 🛡️",
+        ),
+        "release-break-renew",
+        m.ref,
+        "secondary",
+      ) +
+      button(
+        tr(
+          "رفع الشرط الجزائي 🛡️",
+          "Raise release clause 🛡️",
+          "Augmenter la clause 🛡️",
+        ),
+        "release-break-clause",
+        m.ref,
+        "secondary",
+      );
   if (m.required && m.status === "open") {
     if (m.kind === "ultras-event")
       actions = button(tr("افتح صفحة الجماهير واختر الرد", "Open supporters and choose a response", "Ouvrir la page des supporters et répondre"), "go-ultras", "", "primary");

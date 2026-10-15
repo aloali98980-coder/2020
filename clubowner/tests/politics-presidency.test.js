@@ -276,3 +276,198 @@ test("الواجهة: الطريق والبطاقة والمعالج في الح
     );
   validateSave(s);
 });
+
+test("انتخابات الرئاسة 🗳️ (محفز + شروط): التحقق من الأهلية وإطلاق الحملة", async () => {
+  const {
+    presidencyEligibility,
+    triggerElectionCampaign,
+    declareCandidacy,
+  } = await import("../src/services/politics/campaign.js");
+  const { politicsView } = await import("../src/features/politics.js");
+
+  const s = game();
+  const elig = presidencyEligibility(s);
+  assert.equal(elig.eligible, true);
+  assert.equal(elig.termLimitOk, true);
+  assert.equal(elig.integrityOk, true);
+  assert.equal(elig.clubMapOk, true);
+  assert.equal(elig.solvencyOk, true);
+
+  // زر المحفز يظهر في الواجهة قبل انطلاق الحملة
+  const beforeHtml = politicsView(s, "campaign");
+  assert.ok(beforeHtml.includes('data-action="politics-start-campaign"'));
+
+  // رفض الترشح عند اختلال أي شرط (نزاهة < 20، عجز مالي، حد الولايات)
+  s.politics.integrity.score = 15;
+  assert.equal(presidencyEligibility(s).eligible, false);
+  assert.throws(() => triggerElectionCampaign(s), /النزاهة/);
+  s.politics.integrity.score = 82;
+
+  s.finance.cash = -500;
+  assert.equal(presidencyEligibility(s).eligible, false);
+  assert.throws(() => triggerElectionCampaign(s), /عجز/);
+  s.finance.cash = 75_000_000;
+
+  s.politics.council.constitution.termLimit = 2;
+  s.politics.office.termsServed = 2;
+  assert.equal(presidencyEligibility(s).eligible, false);
+  assert.throws(() => declareCandidacy(s), /الدستوري/);
+  s.politics.council.constitution.termLimit = null;
+  s.politics.office.termsServed = 0;
+
+  // إطلاق الحملة عبر المحفز عند استيفاء الشروط
+  const status = triggerElectionCampaign(s);
+  assert.equal(status.active, true);
+  assert.equal(s.politics.election.status, "campaigning");
+  assert.equal(s.politics.campaign.active, true);
+  validateSave(s);
+});
+
+test("انتخابات الرئاسة 🗳️ (راجعة): الوعود تدعم التصويت وتنتقل للولاية وتُحاسب عند الوفاء أو الكسر", async () => {
+  const {
+    electionFeedback,
+    makeCampaignPromise,
+    politicalSeasonEnd,
+    triggerElectionCampaign,
+    voteScores,
+  } = await import("../src/services/politics/campaign.js");
+  const { bargainBill, proposeBill, resolveBill } = await import(
+    "../src/services/politics/council.js"
+  );
+
+  const s = game();
+  triggerElectionCampaign(s);
+  const [clubA, clubB] = s.politics.clubs;
+
+  const scoreBefore = voteScores(s, clubA.clubId).find(
+    (r) => r.candidateId === "player",
+  ).score;
+  const prA = makeCampaignPromise(s, clubA.clubId, clubA.demandId);
+  const prB = makeCampaignPromise(s, clubB.clubId, clubB.demandId);
+  const scoreAfter = voteScores(s, clubA.clubId).find(
+    (r) => r.candidateId === "player",
+  ).score;
+  assert.ok(scoreAfter > scoreBefore, "الوعد يرفع نقاط التصويت للنادي");
+
+  // تأمين الفوز في الانتخابات والتحقق من أن الوعود لا تُكسر قبل التصويت بل تنتقل للولاية
+  for (const club of s.politics.clubs) club.support = 95;
+  const result = politicalSeasonEnd(s);
+  assert.equal(result.won, true);
+  assert.equal(s.politics.office.held, true);
+  assert.equal(
+    s.politics.campaign.promises.length,
+    2,
+    "الوعود الانتخابية تنتقل إلى الولاية الرئاسية للمحاسبة",
+  );
+  assert.ok(
+    s.politics.campaign.promises.every(
+      (p) => p.status === "pending" && p.termMandate === true,
+    ),
+  );
+
+  // تمرير اللائحة المرتبطة بمطلب النادي الأول يفي بالوعد الأول ويرفع التأييد
+  const lawForA = POLITICAL_LAW_LIST.find((l) => l.demandId === prA.demandId);
+  const bill = proposeBill(s, lawForA.id);
+  for (const club of s.politics.clubs)
+    bargainBill(s, bill.id, club.clubId, "public-case");
+  const billRes = resolveBill(s, bill.id);
+  assert.equal(billRes.passed, true);
+
+  const fbMid = electionFeedback(s);
+  assert.equal(fbMid.promises.fulfilled, 1);
+  assert.equal(fbMid.promises.pending, 1);
+
+  // عند نهاية الولاية، الوعد الثاني غير المنفذ يُحاسب كمكسور ويخصم التأييد والشرعية
+  s.seasonNumber = s.politics.office.termEndSeason;
+  const supportBeforeBreak = clubB.support;
+  const legBeforeBreak = s.politics.legitimacy;
+  politicalSeasonEnd(s);
+  const fbEnd = electionFeedback(s);
+  assert.equal(fbEnd.promises.broken, 1);
+  const brokenRecord = fbEnd.promises.items.find((p) => p.id === prB.id);
+  assert.equal(brokenRecord.status, "broken");
+  assert.ok(
+    clubB.support <= supportBeforeBreak - 10 ||
+      s.politics.legitimacy !== legBeforeBreak,
+  );
+  assert.ok(
+    s.inbox.some((m) => m.title.includes("محاسبة الوعود الرئاسية")),
+    "رسالة راجعة لمحاسبة الوعود",
+  );
+  validateSave(s);
+});
+
+test("انتخابات الرئاسة 🗳️: محاكاة كاملة حتى الانتخابات والفوز بالرئاسة", async () => {
+  const { advanceTime } = await import("../src/services/time.js");
+  const {
+    debate,
+    electionFeedback,
+    fundCampaign,
+    holdConference,
+    isCampaignActive,
+    makeCampaignPromise,
+    visitClub,
+  } = await import("../src/services/politics/campaign.js");
+
+  const s = createGame({ clubId: "ahly", database: "demo" });
+  s.preferences.pauseMatches = false;
+  s.empire.personal = 200_000_000;
+  const targetElectionSeason = s.politics.election.season;
+
+  let campaignTriggered = false;
+  let campaigned = false;
+
+  // محاكاة يومية من الموسم 1 عبر موسم الانتخابات حتى حسم الاقتراع وبداية الولاية
+  for (
+    let day = 0;
+    day < 2000 && s.seasonNumber <= targetElectionSeason;
+    day++
+  ) {
+    for (const m of s.inbox) {
+      if (m.required && m.status === "open") m.status = "resolved";
+    }
+    advanceTime(s, 1);
+
+    if (s.seasonNumber === targetElectionSeason && isCampaignActive(s)) {
+      campaignTriggered = true;
+      if (!campaigned) {
+        campaigned = true;
+        s.empire.personal = Math.max(s.empire.personal, 150_000_000);
+        for (const club of s.politics.clubs) {
+          visitClub(s, club.clubId);
+          makeCampaignPromise(s, club.clubId, club.demandId);
+          donateToClub(s, club.clubId, 2_000_000);
+        }
+        for (const bloc of ["big", "regional", "small"]) {
+          holdConference(s, bloc);
+        }
+        fundCampaign(s, 20_000_000);
+        debate(s, s.politics.candidates[0].id, "policy");
+      }
+    }
+  }
+
+  assert.equal(campaignTriggered, true, "الحملة انطلقت تلقائيًا في موسم الانتخابات");
+  assert.equal(
+    s.seasonNumber,
+    targetElectionSeason + 1,
+    "وصلت المحاكاة إلى ما بعد موسم الانتخابات",
+  );
+  assert.equal(s.politics.office.held, true, "فاز المالك برئاسة الاتحاد");
+  assert.equal(s.politics.office.termsServed, 1);
+  assert.equal(
+    s.politics.election.season,
+    targetElectionSeason + 4,
+    "جدولت الانتخابات القادمة بعد 4 مواسم",
+  );
+  assert.ok(s.politics.election.lastResult?.won);
+
+  const fb = electionFeedback(s);
+  assert.equal(fb.lastElection.won, true);
+  assert.ok(
+    fb.promises.pending > 0,
+    "وعود الحملة انتقلت إلى الولاية الرئاسية دون كسر مبكر",
+  );
+  validateSave(s);
+});
+

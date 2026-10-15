@@ -243,6 +243,26 @@ export const BLACK_TEXTS = {
     en: "Release clause: {money}",
     fr: "Clause libératoire : {money}",
   },
+  releaseClauseAlertTitle: {
+    ar: "نادي {c} سيكسر شرط {v}!",
+    en: "{c} will trigger {v}'s release clause!",
+    fr: "{c} va activer la clause libératoire de {v} !",
+  },
+  releaseClauseAlertBody: {
+    ar: "إنذار عاجل: نادي {c} أعلن نيته كسر الشرط الجزائي {money} لضم {v}. أمامك مهلة رد حتى {d} لتحصين اللاعب عبر رفع الراتب أو تجديد العقد أو تعديل الشرط الجزائي.",
+    en: "Urgent alert: {c} announced its intent to trigger the release clause {money} to sign {v}. You have a response deadline until {d} to protect the player by raising salary, renewing the contract, or updating the release clause.",
+    fr: "Alerte urgente : {c} a annoncé son intention d'activer la clause libératoire {money} pour recruter {v}. Vous disposez d'un délai de réponse jusqu'au {d} pour protéger le joueur en augmentant le salaire, en prolongeant le contrat ou en modifiant la clause libératoire.",
+  },
+  releaseClauseProtectedTitle: {
+    ar: "تحصين {v} وإحباط كسر الشرط 🛡️",
+    en: "{v} protected — release clause break foiled 🛡️",
+    fr: "{v} protégé — activation de clause déjouée 🛡️",
+  },
+  releaseClauseProtectedBody: {
+    ar: "نجحت في تحصين {v} خلال مهلة الرد، فتوقف تحرك نادي {c} لكسر الشرط الجزائي وبقي اللاعب في ناديك.",
+    en: "You succeeded in protecting {v} within the response deadline, halting {c} from triggering the release clause and the player stayed at your club.",
+    fr: "Vous avez réussi à protéger {v} dans le délai de réponse, stoppant la tentative de {c} d'activer la clause libératoire et le joueur est resté dans votre club.",
+  },
   releaseClauseBrokenTitle: {
     ar: "كُسر الشرط الجزائي — {v} غادر",
     en: "Release clause triggered — {v} left",

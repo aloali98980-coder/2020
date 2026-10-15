@@ -4,6 +4,10 @@ import { ownFixtures } from "./calendar.js";
 import { post } from "./finance.js";
 import { assert, clamp, addDays, random } from "../core/utils.js";
 import { message } from "./inbox.js";
+import {
+  canTransferByClauseOnly,
+  hasReleaseClause,
+} from "./releaseClause.js";
 import { recordSupporterSale } from "./ultras.js";
 // 0.16: expanded fictional coach market (8 profiles). Skill shapes match
 // impact and development; salary is monthly; contracts run 1-3 years.
@@ -294,6 +298,7 @@ export function managementDay(s) {
         x.status !== "retired" &&
         x.age < 34 &&
         !x.loan &&
+        !hasReleaseClause(x) &&
         !exchangeLocked.has(x.id),
     );
     const player = candidates[Math.floor(random(s) * candidates.length)];
@@ -357,6 +362,10 @@ export function answerBid(s, id, accept) {
     return;
   }
   assert(!p.loan, "لا تملك حق بيع لاعب مُعار.");
+  assert(
+    canTransferByClauseOnly(p, o.fee),
+    "اللاعب محمي بشرط جزائي — لا انتقال إلا بالشرط الجزائي.",
+  );
   assert(
     s.players.filter((p) => p.clubId === o.buyer && p.status !== "retired")
       .length < 45,

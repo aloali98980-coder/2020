@@ -444,3 +444,53 @@ test("الربط في الإجراءات: زر اللوحة والنموذج و�
   ])
     assert.ok(main.includes(needle), `ربط مفقود: ${needle}`);
 });
+
+test("خانة المليار 🔢: تقبل الأرقام المدوّرة (4200000 ✅) في الميزانية وحياة الملياردير والسياسة", async () => {
+  const { empireView } = await import("../src/features/empire.js");
+  const { politicsView } = await import("../src/features/politics.js");
+  const { proposeProject, takeFromClub, transferToClub } = await import(
+    "../src/services/empire/transfers.js"
+  );
+  const { donatePersonal } = await import("../src/services/empire/charity.js");
+  const { fundCampaign } = await import("../src/services/politics/campaign.js");
+
+  const s = game();
+
+  // قبول 4200000 بصيغ الرقم والنص والفواصل
+  assert.equal(roundWageRaise(4_200_000), 4_200_000);
+  assert.equal(roundWageRaise("4200000"), 4_200_000);
+  assert.equal(roundWageRaise("4,200,000"), 4_200_000);
+  assert.equal(roundWageRaise("4_200_000"), 4_200_000);
+  assert.equal(normalizeWageRaise("4,200,000"), 4_200_000);
+
+  const before = s.finance.wageBudget;
+  const rec = raiseWageBudget(s, "4,200,000");
+  assert.equal(rec.amount, 4_200_000);
+  assert.equal(s.finance.wageBudget, before + 4_200_000);
+
+  // قبول 4200000 في تحويلات ومشاريع وتبرعات الملياردير وتمويل الحملة
+  const proj = proposeProject(s, { title: "توسعة المدرجات", amount: 4_200_000 });
+  assert.equal(proj.amount, 4_200_000);
+  transferToClub(s, 4_200_000);
+  takeFromClub(s, 4_200_000);
+  donatePersonal(s, 4_200_000);
+
+  s.politics.election.season = s.seasonNumber;
+  s.politics.election.status = "campaigning";
+  s.politics.campaign.active = true;
+  s.politics.campaign.season = s.seasonNumber;
+  fundCampaign(s, 4_200_000);
+  assert.equal(s.politics.campaign.funds, 4_200_000);
+
+  // جميع خانات الأرقام المالية تستخدم step="any" فلا يحجب المتصفح 4200000
+  const wealthHtml = empireView(s, "wealth");
+  const charityHtml = empireView(s, "charity");
+  const campHtml = politicsView(s, "campaign");
+  const councilHtml = politicsView(s, "council");
+  assert.ok(!/step="100000"|step="1000000"/.test(wealthHtml));
+  assert.ok(!/step="100000"|step="1000000"/.test(charityHtml));
+  assert.ok(!/step="100000"|step="1000000"/.test(campHtml));
+  assert.ok(!/step="100000"|step="1000000"/.test(councilHtml));
+  validateSave(s);
+});
+

@@ -494,6 +494,7 @@ export function validateSave(s) {
           "annualRaisePct",
           "releaseClause",
         ].every((k) => amount(p.contractTerms[k])) &&
+        p.contractTerms.releaseClause <= 9_000_000_000_000_000 &&
         p.contractTerms.annualRaisePct <= 15 &&
         isoDate(p.contractTerms.signedOn),
     ),
