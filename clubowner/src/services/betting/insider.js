@@ -141,14 +141,34 @@ function exposeInsider(s, bet, wouldWin) {
     s.politics.office.lastDeparture = s.date;
     s.politics.office.termEndSeason = s.seasonNumber;
     s.politics.integrity.score = clamp(s.politics.integrity.score - 28, 0, 100);
-    s.politics.legacy.trial.status = "pending";
-    s.politics.legacy.trial.charges = ["betting-insider", ...(bet.hasBribe ? ["bribery"] : [])];
-    s.politics.legacy.trial.openedDate = s.date;
+    // 0.53.1 hotfix: ملف الإرث يُفتح بالشكل النظامي (status "open" + بنود {code, sourceId, severity}).
+    // الشكل القديم (status "pending" وبنود نصية) كان يخالف تحقق الحفظة، فيفشل commit يوم الانكشاف
+    // كله برسالة «سجل الإرث والملف القضائي غير سليم» ولا يمرّ الوقت أصلًا.
+    const charges = [
+      { code: "betting-insider", sourceId: bet.id, severity: 60 },
+      ...(bet.hasBribe
+        ? [{ code: "betting-bribery", sourceId: bet.id, severity: 25 }]
+        : []),
+    ];
+    s.politics.legacy.trial = {
+      status: "open",
+      charges,
+      verdict: null,
+      recordId: null,
+      openedDate: s.date,
+      evidenceScore: clamp(
+        charges.reduce((sum, charge) => sum + charge.severity, 0),
+        0,
+        100,
+      ),
+      response: null,
+    };
     message(s, {
       title: "عزل من رئاسة الاتحاد ⛔",
       body: "قضية الرهان الداخلي أسقطت رئاستك للاتحاد. لجنة النزاهة فتحت تحقيقًا فوريًا.",
       category: "board",
       required: true,
+      kind: "betting-ousted",
       priority: "high",
     });
   }
