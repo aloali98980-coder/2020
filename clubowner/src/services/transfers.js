@@ -10,6 +10,7 @@ import {
   isTransferBanned,
   resolvePendingReleaseBreakIfProtected,
 } from "./blackFiles.js";
+import { canTransferByClauseOnly } from "./releaseClause.js";
 import { recordSupporterSigning } from "./ultras.js";
 import { addInsideInformation } from "./stockMarket/insider.js";
 import { assertVacationAllows } from "./protection.js";
@@ -39,6 +40,10 @@ export function submitOffer(s, playerId, terms) {
       terms.fee >= 0 &&
       [40, 60, 100].includes(terms.upfrontPercent),
     "راجع قيمة العرض ونسبة المقدم.",
+  );
+  assert(
+    canTransferByClauseOnly(p, terms.fee),
+    "اللاعب محمي بشرط جزائي — لا انتقال إلا بدفع الشرط الجزائي كاملًا.",
   );
   assert(
     s.finance.cash >= Math.round((terms.fee * terms.upfrontPercent) / 100),
@@ -151,6 +156,10 @@ export function signPlayer(s, id, terms) {
   assert(n && n.stage === "personal", "ابدأ باتفاق مع النادي أولًا.");
   const p = s.players.find((x) => x.id === n.playerId);
   assertMarket(s, p);
+  assert(
+    canTransferByClauseOnly(p, n.fee || 0),
+    "اللاعب محمي بشرط جزائي — لا انتقال إلا بدفع الشرط الجزائي كاملًا.",
+  );
   assertVacationAllows(s, { player: p, fee: n.fee || 0 });
   assert(!p.loan, "اللاعب معار الآن.");
   assert(

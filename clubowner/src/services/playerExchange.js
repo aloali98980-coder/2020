@@ -1,6 +1,7 @@
 import { addDays, assert, clamp, random, uid } from "../core/utils.js";
 import { getLanguage, tr, translateText } from "../i18n/index.js";
 import { closeThread, message } from "./inbox.js";
+import { hasReleaseClause } from "./releaseClause.js";
 import { aiClubBudget, clubInfo, ensureTransferMarket, transferClubIds } from "./transferNegotiation.js";
 import { marketOpen } from "./market.js";
 import { post, wages } from "./finance.js";
@@ -55,8 +56,23 @@ function activeRosterPlayer(s, playerId, clubId, blocked) {
     player &&
       player.clubId === clubId &&
       player.status !== "retired" &&
-      !player.loan &&
-      !blocked.has(player.id),
+      !player.loan,
+    tr(
+      "أحد اللاعبين غير متاح أو مرتبط بصفقة أخرى.",
+      "A selected player is unavailable or already involved in another deal.",
+      "Un joueur sélectionné est indisponible ou déjà engagé dans un autre transfert.",
+    ),
+  );
+  assert(
+    !hasReleaseClause(player),
+    tr(
+      "اللاعب محمي بشرط جزائي — لا انتقال إلا بالشرط الجزائي.",
+      "The player is protected by a release clause — no transfer except by the release clause.",
+      "Le joueur est protégé par une clause libératoire — aucun transfert hors clause.",
+    ),
+  );
+  assert(
+    !blocked.has(player.id),
     tr(
       "أحد اللاعبين غير متاح أو مرتبط بصفقة أخرى.",
       "A selected player is unavailable or already involved in another deal.",
@@ -468,6 +484,7 @@ export function createAiPlayerExchangeOffer(s) {
         player.clubId === s.clubId &&
         player.status !== "retired" &&
         !player.loan &&
+        !hasReleaseClause(player) &&
         player.value > 0 &&
         !blocked.has(player.id),
     )
@@ -479,6 +496,7 @@ export function createAiPlayerExchangeOffer(s) {
       player.clubId !== s.clubId &&
       player.status !== "retired" &&
       !player.loan &&
+      !hasReleaseClause(player) &&
       player.value > 0 &&
       !blocked.has(player.id),
   );

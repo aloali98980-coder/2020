@@ -5,6 +5,10 @@ import { addDays, assert, daysBetween, random, uid } from "../core/utils.js";
 import { marketOpen, teamPower, settleSellOnClause } from "./market.js";
 import { obligation, post } from "./finance.js";
 import { message, closeThread } from "./inbox.js";
+import {
+  canTransferByClauseOnly,
+  hasReleaseClause,
+} from "./releaseClause.js";
 import { recordSupporterSale } from "./ultras.js";
 
 export const SALE_ROUNDS = 3;
@@ -166,6 +170,14 @@ function ownedPlayer(s, playerId) {
     tr("يجب الاحتفاظ بـ16 لاعبًا على الأقل.", "Keep at least 16 players in the squad.", "Conservez au moins 16 joueurs dans l’effectif."),
   );
   assert(!refusesSaleForLoyalty(p), tr("ولاء اللاعب مرتفع؛ يرفض كل عروض الرحيل.", "The player is loyal and refuses every move.", "Le joueur est fidèle et refuse tout départ."));
+  assert(
+    !hasReleaseClause(p),
+    tr(
+      "اللاعب محمي بشرط جزائي — لا انتقال إلا بكسر الشرط الجزائي.",
+      "The player is protected by a release clause — no transfer except by triggering the release clause.",
+      "Le joueur est protégé par une clause libératoire — aucun transfert hors activation de la clause.",
+    ),
+  );
   return p;
 }
 
@@ -428,6 +440,14 @@ function executeSale(s, deal, buyerId, fee, rawTerms, id = deal.id) {
     tr("قائمة النادي المشتري مكتملة.", "The buyer’s squad is full.", "L’effectif de l’acheteur est complet."),
   );
   const terms = validateSaleTerms(rawTerms, player.value);
+  assert(
+    canTransferByClauseOnly(player, fee),
+    tr(
+      "اللاعب محمي بشرط جزائي — لا انتقال إلا بكسر الشرط الجزائي.",
+      "The player is protected by a release clause — no transfer except by triggering the release clause.",
+      "Le joueur est protégé par une clause libératoire — aucun transfert hors activation de la clause.",
+    ),
+  );
   assert(terms.fee === fee, tr("قيمة المزاد أو الاتفاق تغيرت؛ راجع العرض.", "The auction or agreed fee changed; review the offer.", "Le montant de l’enchère ou de l’accord a changé ; vérifiez l’offre."));
   assert(aiClubBudget(s, buyerId) >= fee, tr("لم تعد ميزانية المشتري تكفي.", "The buyer no longer has enough budget.", "Le budget de l’acheteur est désormais insuffisant."));
   settleSellOnClause(s, player, fee);
@@ -726,6 +746,7 @@ function startScheduledAiOffer(s) {
         p.clubId === s.clubId &&
         p.status !== "retired" &&
         !p.loan &&
+        !hasReleaseClause(p) &&
         !refusesSaleForLoyalty(p) &&
         (p.rating >= 74 || p.value >= 10_000_000) &&
         !market.sales.some((sale) => sale.playerId === p.id && ACTIVE_SALE_STATES.has(sale.status)) &&

@@ -10,12 +10,14 @@ import { boardTextAr } from "../data/boardTexts.js";
 import { ensureBoard } from "./boardMandate.js";
 import {
   aiBreakReleaseClauses,
+  normalizeReleaseClause,
   RELEASE_BREAK_DEADLINE_DAYS,
+  RELEASE_CLAUSE_MAX,
 } from "./releaseClause.js";
 import { addNoise, SCANDAL_NOISE } from "./noiseMeter.js";
 import { fileLegalCase } from "./staff/legal.js";
 
-export { RELEASE_BREAK_DEADLINE_DAYS };
+export { RELEASE_BREAK_DEADLINE_DAYS, RELEASE_CLAUSE_MAX };
 
 export const SUSPICION_THRESHOLDS = {
   whispers: 30,
@@ -709,19 +711,16 @@ export function counterReleaseClauseBreak(
       lastRaiseYear: s.date.slice(0, 4),
     };
     if (options.releaseClause !== undefined) {
-      const nextClause = Number(options.releaseClause);
-      assert(
-        Number.isSafeInteger(nextClause) && nextClause >= 0,
-        "شرط جزائي غير صالح.",
+      p.contractTerms.releaseClause = normalizeReleaseClause(
+        options.releaseClause,
       );
-      p.contractTerms.releaseClause = nextClause;
     }
     p.morale = clamp((p.morale || 70) + 8, 0, 100);
   } else if (method === "clause") {
     const nextClause =
       options.releaseClause !== undefined
-        ? Number(options.releaseClause)
-        : item.clause * 2;
+        ? normalizeReleaseClause(options.releaseClause)
+        : Math.min(RELEASE_CLAUSE_MAX, item.clause * 2);
     assert(
       Number.isSafeInteger(nextClause) &&
         (nextClause === 0 || nextClause > item.clause),

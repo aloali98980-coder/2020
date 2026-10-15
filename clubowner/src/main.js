@@ -3165,16 +3165,7 @@ document.addEventListener("submit", async (e) => {
       closeModal();
     }
     if (form.id === "contract-form") {
-      let releaseClause = Number(form.elements.releaseClause.value);
-      const clauseLevel = form.elements.clauseLevel?.value;
-      if (clauseLevel) {
-        const baseInput = document.getElementById("release-clause-input");
-        // إذا اختار مستوى، نستخدم القيمة المحسوبة من المستوى إن لم يعدلها يدويًا بشكل كبير
-        const selectedOption = form.elements.clauseLevel.selectedOptions[0];
-        const levelClause = Number(selectedOption?.dataset?.clause || 0);
-        if (levelClause === 0) releaseClause = 0;
-        else if (Math.abs(releaseClause - levelClause) < levelClause * 0.5) releaseClause = levelClause;
-      }
+      const releaseClause = form.elements.releaseClause.value;
       const terms = {
         salary: Number(form.elements.salary.value),
         years: Number(form.elements.years.value),
@@ -3681,6 +3672,13 @@ document.addEventListener("change", async (e) => {
         (s) => (s.preferences.reduceMotion = e.target.checked),
         tr("تم حفظ إعداد العرض.", "Display setting saved.", "Réglage d'affichage enregistré."),
       );
+    if (e.target.id === "clause-level") {
+      const selectedOption = e.target.selectedOptions?.[0];
+      const baseInput = document.getElementById("release-clause-input");
+      if (baseInput && selectedOption?.dataset?.clause !== undefined) {
+        baseInput.value = selectedOption.dataset.clause;
+      }
+    }
     if (
       e.target.closest(
         "#offer-form,#contract-form,#politics-donation-form,#wage-raise-form",

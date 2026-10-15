@@ -2,19 +2,27 @@ import { ownFixtures } from "./calendar.js";
 import { assert, addDays } from "../core/utils.js";
 import { difficulty } from "../models/difficulty.js";
 import { message } from "./inbox.js";
-export function normalizeClauses(t) {
+import {
+  RELEASE_CLAUSE_MAX,
+  normalizeReleaseClause,
+} from "./releaseClause.js";
+
+export { RELEASE_CLAUSE_MAX, normalizeReleaseClause };
+
+export function normalizeClauses(t = {}) {
   const c = {
     appearanceBonus: Number(t.appearanceBonus || 0),
     goalBonus: Number(t.goalBonus || 0),
     annualRaisePct: Number(t.annualRaisePct || 0),
-    releaseClause: Number(t.releaseClause || 0),
+    releaseClause: normalizeReleaseClause(t.releaseClause),
   };
   for (const [k, v] of Object.entries(c))
     assert(Number.isSafeInteger(v) && v >= 0, "شروط إضافية غير صالحة.");
   assert(
     c.annualRaisePct <= 15 &&
       c.appearanceBonus <= 500000 &&
-      c.goalBonus <= 1000000,
+      c.goalBonus <= 1000000 &&
+      c.releaseClause <= RELEASE_CLAUSE_MAX,
     "المكافآت أو الزيادة خارج حدود النسخة.",
   );
   return c;

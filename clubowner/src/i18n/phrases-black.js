@@ -62,6 +62,18 @@ export const BLACK_PHRASES = (() => {
       "Invalid protection method",
       "Méthode de protection invalide",
     ],
+    "الشرط الجزائي يجب أن يكون عددًا صحيحًا بين 0 و 9000000000000000": [
+      "The release clause must be an integer between 0 and 9000000000000000",
+      "La clause libératoire doit être un entier compris entre 0 et 9000000000000000",
+    ],
+    "اللاعب محمي بشرط جزائي — لا انتقال إلا بدفع الشرط الجزائي كاملًا": [
+      "The player is protected by a release clause — no transfer except by paying the release clause in full",
+      "Le joueur est protégé par une clause libératoire — aucun transfert sans le paiement intégral de la clause",
+    ],
+    "اللاعب محمي بشرط جزائي — لا انتقال إلا بالشرط الجزائي": [
+      "The player is protected by a release clause — no transfer except by the release clause",
+      "Le joueur est protégé par une clause libératoire — aucun transfert hors clause libératoire",
+    ],
   };
   for (const entry of Object.values(BLACK_TEXTS)) {
     out[entry.ar] = [entry.en, entry.fr];

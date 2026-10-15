@@ -167,3 +167,159 @@ test("ترجمة رسائل إنذار الكسر والتحصين للإنجل�
   }
   setLanguage("ar");
 });
+
+test("حماية النجوم 🛡️: سقف 9e15 بالظبط (عدد صحيح فقط وأقل من MAX_SAFE_INTEGER)", async () => {
+  const { RELEASE_CLAUSE_MAX, normalizeReleaseClause } = await import(
+    "../src/services/releaseClause.js"
+  );
+  const { normalizeClauses } = await import(
+    "../src/services/contractClauses.js"
+  );
+  const { contractForm } = await import("../src/features/players.js");
+
+  assert.equal(RELEASE_CLAUSE_MAX, 9_000_000_000_000_000);
+  assert.ok(
+    RELEASE_CLAUSE_MAX < Number.MAX_SAFE_INTEGER,
+    "السقف أقل من MAX_SAFE_INTEGER",
+  );
+
+  // قيم صحيحة مقبولة حتى 9e15 بالظبط
+  assert.equal(normalizeReleaseClause(0), 0);
+  assert.equal(normalizeReleaseClause(1), 1);
+  assert.equal(normalizeReleaseClause(9_000_000_000_000_000), 9e15);
+  assert.equal(normalizeReleaseClause("9000000000000000"), 9e15);
+  assert.equal(
+    normalizeClauses({ releaseClause: 9_000_000_000_000_000 }).releaseClause,
+    9e15,
+  );
+
+  // رفض الكسور العشرية، السالب، وما فوق 9e15 (بما في ذلك MAX_SAFE_INTEGER)
+  for (const invalid of [
+    -1,
+    1.5,
+    "100.5",
+    9_000_000_000_000_001,
+    Number.MAX_SAFE_INTEGER,
+    Infinity,
+    NaN,
+    "abc",
+  ]) {
+    assert.throws(
+      () => normalizeReleaseClause(invalid),
+      /الشرط الجزائي/,
+      `يجب رفض القيمة غير الصالحة: ${invalid}`,
+    );
+  }
+
+  // تجديد عقد النجم بشرط 9e15 وحفظه والتحقق منه
+  const s = createGame({ clubId: "ahly", database: "demo" });
+  s.finance.wageBudget = 50_000_000;
+  const star = s.players.find(
+    (p) => p.clubId === s.clubId && p.status !== "retired",
+  );
+  renewPlayer(s, star.id, {
+    salary: star.salary,
+    bonus: 0,
+    years: 4,
+    role: star.role,
+    releaseClause: RELEASE_CLAUSE_MAX,
+  });
+  assert.equal(star.contractTerms.releaseClause, RELEASE_CLAUSE_MAX);
+  validateSave(s);
+
+  const html = contractForm(s, star.id, true);
+  assert.ok(
+    html.includes(`max="${RELEASE_CLAUSE_MAX}"`),
+    "خانة الشرط الجزائي في الواجهة تقبل حتى 9e15",
+  );
+});
+
+test("حماية النجوم 🛡️: لا انتقال إلا بالشرط في كل مسارات البيع والشراء والتبادل", async () => {
+  const { RELEASE_CLAUSE_MAX, breakReleaseClause } = await import(
+    "../src/services/releaseClause.js"
+  );
+  const { createAiSaleOffer, startPlayerAuction } = await import(
+    "../src/services/transferNegotiation.js"
+  );
+  const { answerBid } = await import("../src/services/clubManagement.js");
+  const { acceptDeadlineBid } = await import(
+    "../src/services/deadlineDay.js"
+  );
+  const { proposePlayerExchange } = await import(
+    "../src/services/playerExchange.js"
+  );
+  const { submitOffer } = await import("../src/services/transfers.js");
+
+  const s = createGame({ clubId: "ahly", database: "world", expanded: true });
+  s.date = "2026-09-24";
+  s.finance.initialCash += 500_000_000 - s.finance.cash;
+  s.finance.cash = 500_000_000;
+  s.finance.wageBudget = 100_000_000;
+  const ownPlayers = s.players.filter(
+    (p) => p.clubId === s.clubId && p.status !== "retired" && !p.loan,
+  );
+  const star = ownPlayers[0];
+  star.contractTerms.releaseClause = RELEASE_CLAUSE_MAX;
+
+  // 1) منع عروض البيع التفاوضية والمزادات على النجم المحمي بالشرط
+  assert.throws(() => createAiSaleOffer(s, star.id), /شرط جزائي/);
+  assert.throws(() => startPlayerAuction(s, star.id), /شرط جزائي/);
+
+  // 2) منع بيع النجم عبر عروض الإدارة بأقل من الشرط
+  const buyer = "zamalek";
+  s.management.outgoing.push({
+    id: "bid-test",
+    playerId: star.id,
+    buyer,
+    fee: 20_000_000,
+    expires: addDays(s.date, 5),
+    status: "open",
+  });
+  assert.throws(() => answerBid(s, "bid-test", true), /شرط جزائي/);
+  assert.equal(star.clubId, s.clubId);
+
+  // 3) منع إدراج النجم المحمي في صفقات التبادل
+  const oppPlayer = s.players.find(
+    (p) => p.clubId === buyer && p.status !== "retired" && !p.loan,
+  );
+  assert.throws(
+    () =>
+      proposePlayerExchange(s, {
+        opponentId: buyer,
+        outgoingPlayerIds: [star.id],
+        incomingPlayerIds: [oppPlayer.id],
+        cash: 0,
+      }),
+    /شرط جزائي/,
+  );
+
+  // 4) منع قبول عرض يوم قفل القيد بأقل من الشرط الجزائي
+  s.inbox.push({
+    id: "deadline-msg-1",
+    title: "عرض قفل القيد",
+    body: "تفاصيل العرض",
+    kind: "deadline-bid",
+    ref: star.id,
+    buyerId: buyer,
+    buyerName: "Buyer",
+    fee: 25_000_000,
+    date: s.date,
+    status: "open",
+    required: false,
+    done: false,
+  });
+  assert.throws(() => acceptDeadlineBid(s, "deadline-msg-1"), /شرط جزائي/);
+  assert.equal(star.clubId, s.clubId);
+
+  // 5) لاعب في السوق عليه شرط جزائي: لا يُقبل عرض أقل من الشرط، ويُقبل بكسر الشرط
+  oppPlayer.clubId = "market";
+  oppPlayer.contractTerms.releaseClause = 50_000_000;
+  assert.throws(
+    () => submitOffer(s, oppPlayer.id, { fee: 10_000_000, upfrontPercent: 100 }),
+    /شرط جزائي/,
+  );
+  const neg = breakReleaseClause(s, oppPlayer.id);
+  assert.equal(neg.fee, 50_000_000);
+  assert.equal(neg.kind, "release-clause");
+  validateSave(s);
+});
