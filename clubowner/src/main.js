@@ -217,7 +217,7 @@ import {
 } from "./services/sponsors.js";
 import { takeLoan, wages } from "./services/finance.js";
 // 0.53 hotfix «زرار المليار»: رفع سقف الرواتب بمبلغ حر + معاينة قبل/بعد.
-import { raiseWageBudget, wageRaisePreview } from "./services/wageOverride.js";
+import { raiseWageBudget, roundWageRaise, wageRaisePreview } from "./services/wageOverride.js";
 import { vaultMove, VAULT_AMOUNTS, VAULT_TAPS, VAULT_TAP_WINDOW_MS, ensureVault } from "./services/vault.js";
 import { setupView } from "./features/setup.js";
 import { shell, NAV_GROUPS, NAV_BY_ID, navLabel, toggleNavGroup } from "./components/shell.js";
@@ -751,7 +751,8 @@ function updateCalculations() {
     raiseForm = document.querySelector("#wage-raise-form");
   // 0.53 hotfix «زرار المليار»: معاينة حية «قبل → بعد» قبل اعتماد الرفعة.
   if (raiseForm) {
-    const amount = Math.round(Number(raiseForm.elements.amount.value) || 0);
+    // 0.53 hotfix «خانة المليار»: نفس تقريب الخدمة — المعاينة تعرض المبلغ المعتمد.
+    const amount = roundWageRaise(raiseForm.elements.amount.value) ?? 0;
     const line = document.getElementById("wage-raise-summary");
     if (line) {
       try {
@@ -2751,7 +2752,8 @@ document.addEventListener("submit", async (e) => {
     }
     if (form.id === "wage-raise-form") {
       // 0.53 hotfix «زرار المليار»: المبلغ يُضاف إلى السقف فورًا ويُسجَّل قبل/بعد.
-      const amount = Math.round(Number(form.elements.amount.value));
+      // «خانة المليار»: التقريب في roundWageRaise فلا يُرفض رقم مدوَّر مثل 4200000.
+      const amount = roundWageRaise(form.elements.amount.value);
       const record = await apply(
         (s) => raiseWageBudget(s, amount),
         tr(
@@ -3655,6 +3657,14 @@ document.addEventListener("change", async (e) => {
       )
     )
       updateCalculations();
+    // 0.53 hotfix «خانة المليار»: المبلغ يُقرَّب لعدد صحيح عند تأكيد الخانة، فلا
+    // تبقى كسور عشريّة توقف الإرسال، والمعاينة تعرض بالضبط ما سيُضاف للسقف.
+    if (e.target.matches?.('#wage-raise-form input[name="amount"]')) {
+      const rounded = roundWageRaise(e.target.value);
+      if (rounded !== null && String(rounded) !== e.target.value)
+        e.target.value = String(rounded);
+      updateCalculations();
+    }
   } catch (err) {
     showError(err.message);
   }
