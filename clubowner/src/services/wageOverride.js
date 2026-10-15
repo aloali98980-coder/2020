@@ -3,6 +3,10 @@
 // الحد المعتمد إلى فاتورة المرتبات الحالية + هامش موحّد (15% بحد أدنى 100 ألف،
 // نفس هامش ميزانيات الأندية في السوق) — **إضافة بحتة**: لا غرامة، لا خصم،
 // لا شبهة، لا حرارة، ولا أثر على الشرعية أو الجاهزية أو الحالة المعنوية.
+// 0.53 (hotfix «زرار المليار») — زر «ارفع الميزانية»: يظهر دائمًا في لوحة
+// الميزانية، ويقبل مبلغًا حرًا (من 1 حتى مليار) يُضاف فورًا إلى سقف الرواتب
+// المعتمد، بنفس قواعد الإضافة البحتة: لا غرامة، لا خصم، ولا شبهة — مع تسجيل
+// كامل قبل/بعد لكل رفعة.
 import { assert, uid } from "../core/utils.js";
 import { tr } from "../i18n/index.js";
 import { message } from "./inbox.js";
@@ -126,6 +130,148 @@ export function approveOwnerWageOverride(s) {
     ),
     category: "finance",
     kind: "wage-override",
+    ref: record.id,
+  });
+  return record;
+}
+
+// ——— 0.53 hotfix «زرار المليار»: ارفع الميزانية ————————————————————————
+export const WAGE_RAISE_MIN = 1;
+// سقف المبلغ الواحد: مليار جنيه. الرفع متاح دائمًا وبأي عدد من المرات.
+export const WAGE_RAISE_MAX = 1_000_000_000;
+export const WAGE_RAISE_LOG_LIMIT = 40;
+// اختصارات المبلغ المعروضة في النافذة: من 100 ألف إلى المليار.
+export const WAGE_RAISE_CHIPS = [
+  100_000,
+  1_000_000,
+  10_000_000,
+  100_000_000,
+  WAGE_RAISE_MAX,
+];
+
+/** سجل الرفعات: عدّاد، إجمالي ما أُضيف، وتاريخ آخر رفعة — يُبنى تلقائيًا إن غاب. */
+export function ensureWageRaises(s) {
+  if (!s?.finance) return null;
+  s.finance.wageRaises ||= { count: 0, totalAdded: 0, lastDate: null, log: [] };
+  const t = s.finance.wageRaises;
+  for (const key of ["count", "totalAdded"])
+    if (!Number.isFinite(t[key])) t[key] = 0;
+  if (t.lastDate === undefined) t.lastDate = null;
+  if (!Array.isArray(t.log)) t.log = [];
+  return t;
+}
+
+/** تدقيق مبلغ الرفع: عدد صحيح من 1 حتى مليار — وما خرج عن ذلك يُرفض برسالة صريحة. */
+export function normalizeWageRaise(amount) {
+  const value = Math.round(Number(amount));
+  assert(
+    Number.isSafeInteger(value) &&
+      value >= WAGE_RAISE_MIN &&
+      value <= WAGE_RAISE_MAX,
+    tr(
+      "المبلغ لازم يكون عددًا صحيحًا من 1 حتى مليار جنيه.",
+      "The amount must be a whole number from 1 up to one billion pounds.",
+      "Le montant doit être un nombre entier de 1 à un milliard de livres.",
+    ),
+  );
+  return value;
+}
+
+/** معاينة صرفة بلا تعديل على الحفظة: الحد قبل، وبعد، والفجوة المتبقية. */
+export function wageRaisePreview(s, amount) {
+  const value = normalizeWageRaise(amount);
+  const before = s?.finance?.wageBudget || 0;
+  const payroll = s?.finance ? wages(s) : 0;
+  const after = before + value;
+  return {
+    amount: value,
+    budgetBefore: before,
+    budgetAfter: after,
+    payroll,
+    gap: Math.max(0, Math.ceil(payroll - after)),
+    over: payroll > after,
+    max: WAGE_RAISE_MAX,
+  };
+}
+
+/** حالة معلنة للواجهة: الحد الحالي، السجل، وإجمالي ما أُضيف بالرفعات. */
+export function wageRaisesStatus(s) {
+  const base = {
+    budget: 0,
+    payroll: 0,
+    count: 0,
+    totalAdded: 0,
+    lastDate: null,
+    raises: [],
+    min: WAGE_RAISE_MIN,
+    max: WAGE_RAISE_MAX,
+    chips: WAGE_RAISE_CHIPS,
+  };
+  if (!s?.finance) return base;
+  const t = ensureWageRaises(s);
+  return {
+    ...base,
+    budget: s.finance.wageBudget || 0,
+    payroll: wages(s),
+    count: t.count,
+    totalAdded: t.totalAdded,
+    lastDate: t.lastDate,
+    raises: t.log,
+  };
+}
+
+/**
+ * «ارفع الميزانية»: يضيف المبلغ فورًا إلى سقف الرواتب المعتمد ويسجّل السطر
+ * كاملًا (قبل/بعد). الزر ظاهر دائمًا، والقرار إضافة بحتة: لا غرامة، ولا خصم
+ * من خزينة النادي أو الثروة الشخصية، ولا شبهة ولا حرارة ولا أي قيد مالي.
+ */
+export function raiseWageBudget(s, amount) {
+  assert(
+    s?.finance,
+    tr(
+      "لا كتلة مالية في هذه الحفظة.",
+      "This save has no finance block.",
+      "Cette sauvegarde n’a pas de bloc financier.",
+    ),
+  );
+  const value = normalizeWageRaise(amount);
+  const t = ensureWageRaises(s);
+  const before = s.finance.wageBudget || 0;
+  assert(
+    Number.isSafeInteger(before + value),
+    tr(
+      "الحد المعتمد وصل سقفه الأقصى.",
+      "The approved ceiling has reached its maximum.",
+      "Le plafond approuvé a atteint son maximum.",
+    ),
+  );
+  s.finance.wageBudget = before + value;
+  const record = {
+    id: uid(s, "wage-raise"),
+    date: s.date,
+    season: s.seasonNumber,
+    amount: value,
+    budgetBefore: before,
+    budgetAfter: s.finance.wageBudget,
+  };
+  t.count += 1;
+  t.totalAdded += value;
+  t.lastDate = s.date;
+  t.log.unshift(record);
+  t.log.length = Math.min(t.log.length, WAGE_RAISE_LOG_LIMIT);
+  message(s, {
+    title: tr(
+      "رفعت ميزانية الرواتب فورًا",
+      "You raised the wage budget at once",
+      "Vous avez relevé aussitôt le budget des salaires",
+    ),
+    body: tr(
+      `أضفت كمالك ${value.toLocaleString("en-US")} شهريًا إلى سقف الرواتب، فارتفع من ${before.toLocaleString("en-US")} إلى ${s.finance.wageBudget.toLocaleString("en-US")} — إضافة بحتة: لا غرامة ولا خصم من خزينة النادي أو ثروتك الشخصية ولا شبهة ولا حرارة، وباقي القواعد تُحسب بعد الرفع كما هي.`,
+      `As owner you added ${value.toLocaleString("en-US")} per month to the wage ceiling, raising it from ${before.toLocaleString("en-US")} to ${s.finance.wageBudget.toLocaleString("en-US")} — a pure addition: no fine, no charge to the club treasury or your personal fortune, no suspicion and no heat, and every other rule is applied after the raise unchanged.`,
+      `En tant que propriétaire, vous avez ajouté ${value.toLocaleString("en-US")} par mois au plafond salarial, le portant de ${before.toLocaleString("en-US")} à ${s.finance.wageBudget.toLocaleString("en-US")} — un ajout pur : aucune amende, aucun prélèvement sur la caisse du club ni sur votre fortune personnelle, aucune suspicion ni pression, et toutes les autres règles restent appliquées après le relèvement.`,
+    ),
+    category: "finance",
+    kind: "wage-raise",
     ref: record.id,
   });
   return record;

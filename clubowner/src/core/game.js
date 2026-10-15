@@ -108,6 +108,8 @@ export function createGame({
       wageBudget: Math.round(6500000 * settings.cash),
       // 0.52 — سجل موافقات المالك على تجاوز سقف الرواتب (فارغ حتى أول موافقة).
       ownerOverride: { count: 0, totalAdded: 0, lastDate: null, log: [] },
+      // 0.53 hotfix — سجل رفعات الميزانية بمبلغ حر (فارغ حتى أول رفعة).
+      wageRaises: { count: 0, totalAdded: 0, lastDate: null, log: [] },
       liquidityWarning: false,
     },
     facilities: FACILITIES.map((f) => ({

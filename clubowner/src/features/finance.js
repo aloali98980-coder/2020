@@ -21,6 +21,11 @@ import { getLanguage, tr } from "../i18n/index.js";
 import { boardTextFor } from "../data/boardTexts.js";
 import {
   wageOverrideStatus,
+  wageRaisesStatus,
+  wageRaisePreview,
+  WAGE_RAISE_CHIPS,
+  WAGE_RAISE_MIN,
+  WAGE_RAISE_MAX,
   OWNER_HEADROOM_RATE,
 } from "../services/wageOverride.js";
 const cats = {
@@ -58,10 +63,126 @@ const categoryLabel = (key) => {
     return tr("تبادل لاعبين", "Player exchange", "Échange de joueurs");
   return cats[key] || key;
 };
+// 0.53 hotfix «زرار المليار»: اسم مختصر لكل اختصار مبلغ في نافذة الرفع.
+const wageRaiseChipLabel = (value) =>
+  value >= WAGE_RAISE_MAX
+    ? tr("مليار", "one billion", "un milliard")
+    : value >= 100_000_000
+      ? tr("100 مليون", "100m", "100 M")
+      : value >= 10_000_000
+        ? tr("10 ملايين", "10m", "10 M")
+        : value >= 1_000_000
+          ? tr("مليون", "one million", "un million")
+          : tr("100 ألف", "100k", "100 k");
+// 0.53 hotfix «زرار المليار»: نافذة المبلغ الحر — رقم صحيح من 1 حتى مليار،
+// مع معاينة حية «قبل → بعد» تُحدَّث من updateCalculations في main.js.
+export function wageRaiseModal(s) {
+  const raise = wageRaisesStatus(s);
+  return `<span class="eyebrow">${tr(
+    "قرار المالك",
+    "Owner decision",
+    "Décision du propriétaire",
+  )}</span><h2>${tr(
+    "ارفع ميزانية الرواتب",
+    "Raise the wage budget",
+    "Relever le budget des salaires",
+  )}</h2><p class="muted">${tr(
+    "المبلغ حر تمامًا: أي رقم صحيح من 1 حتى مليار، ويُضاف فورًا إلى سقف الرواتب المعتمد. القرار إضافة بحتة — لا غرامة، ولا خصم من خزينة النادي أو ثروتك الشخصية، ولا شبهة ولا حرارة — وكل رفعة تُسجَّل قبل/بعد.",
+    "The amount is entirely up to you: any whole number from 1 up to one billion, added at once to the approved wage ceiling. It is a pure addition — no fine, no charge to the club treasury or your personal fortune, no suspicion and no heat — and every raise is logged before/after.",
+    "Le montant est totalement libre : tout nombre entier de 1 à un milliard, ajouté aussitôt au plafond approuvé. Un ajout pur — aucune amende, aucun prélèvement sur la caisse du club ni sur votre fortune, aucune suspicion ni pression — et chaque relèvement est consigné avant/après.",
+  )}</p><form id="wage-raise-form"><label class="field"><span>${tr(
+    "المبلغ المضاف شهريًا",
+    "Monthly amount to add",
+    "Montant mensuel à ajouter",
+  )} (${num(WAGE_RAISE_MIN)} – ${tr(
+    "مليار",
+    "one billion",
+    "un milliard",
+  )})</span><input name="amount" type="number" min="${WAGE_RAISE_MIN}" max="${WAGE_RAISE_MAX}" step="50000" value="1000000" required /></label><div class="wage-raise-quick">${WAGE_RAISE_CHIPS.map(
+    (value) =>
+      `<button type="button" class="btn ghost small" data-action="wage-raise-quick" data-id="${value}">${wageRaiseChipLabel(value)}</button>`,
+  ).join("")}</div><div id="wage-raise-summary" class="wage-raise-preview"></div><div class="modal-actions">${button(
+    tr("إلغاء", "Cancel", "Annuler"),
+    "close-modal",
+    "",
+    "secondary",
+  )}<button type="submit" class="btn primary">${tr(
+    "ارفع فورًا",
+    "Raise now",
+    "Relever maintenant",
+  )} ${icon("arrow", 17)}</button></div></form><small class="muted">${tr(
+    "الحد المعتمد الآن",
+    "Approved ceiling now",
+    "Plafond approuvé actuel",
+  )}: ${money(raise.budget)} ${cur()} ${tr(
+    "مقابل فاتورة",
+    "against a bill of",
+    "contre une masse de",
+  )} ${money(raise.payroll)} ${cur()} · ${tr(
+    "عدد الرفعات",
+    "raises so far",
+    "relèvements à ce jour",
+  )}: ${num(raise.count)}</small>`;
+}
 // 0.52 — «أوافق كمالك!»: تظهر عند تجاوز سقف الرواتب فقط، وتختفي بعده.
+// 0.53 hotfix — «ارفع الميزانية»: يظهر دائمًا، بمبلغ حر يُضاف فورًا ولأي عدد من المرات.
 function wageOverrideView(s) {
   const st = wageOverrideStatus(s),
+    raise = wageRaisesStatus(s),
     pct = OWNER_HEADROOM_RATE * 100;
+  // سجل الرفعات: مبلغ الرفعة والحد قبل/بعد لكل سطر، وأحدثها في الأعلى.
+  const raiseLog = raise.count
+    ? `<details class="wage-override-log"><summary>${tr(
+        "سجل رفع الميزانية",
+        "Budget-raise log",
+        "Journal des relèvements du budget",
+      )} (${num(raise.count)})</summary><ul>${raise.raises
+        .slice(0, 5)
+        .map(
+          (r) =>
+            `<li><span>${date(r.date)} · ${tr("الموسم", "Season", "Saison")} ${num(r.season)}</span><span class="muted">${tr("أُضيف", "added", "ajouté")} +${money(r.amount)} · ${money(r.budgetBefore)} → <strong>${money(r.budgetAfter)}</strong> ${cur()}</span></li>`,
+        )
+        .join("")}</ul><small class="muted">${tr(
+        "كل سطر يقرأ الحد قبل الرفعة ثم بعده. لا غرامة ولا خصم من الرصيد أو الثروة الشخصية.",
+        "Every line reads the ceiling before the raise then after it. No fine and no charge to club or personal cash.",
+        "Chaque ligne donne le plafond avant puis après le relèvement. Aucune amende ni prélèvement.",
+      )}${
+        raise.totalAdded
+          ? ` ${tr("إجمالي ما أُضيف", "Total added", "Total ajouté")}: ${money(raise.totalAdded)} ${cur()}.`
+          : ""
+      }</small></details>`
+    : "";
+  const raiseBlock = `<div class="wage-raise"><div class="wage-override-head">${icon(
+    "crown",
+    16,
+  )}<strong>${tr(
+    "سقف الرواتب المعتمد",
+    "Approved wage ceiling",
+    "Plafond salarial approuvé",
+  )}</strong><span class="muted">${money(raise.budget)} ${cur()} ${tr(
+    "مقابل فاتورة",
+    "against a bill of",
+    "contre une masse de",
+  )} ${money(raise.payroll)} ${cur()}${
+    st.over
+      ? ` — ${tr("الفجوة", "shortfall", "écart de")} ${money(st.gap)} ${cur()}`
+      : ""
+  }</span></div><div class="wage-override-actions">${button(
+    icon("crown", 16) +
+      " " +
+      tr("ارفع الميزانية", "Raise the budget", "Relever le budget"),
+    "wage-budget-raise",
+    "",
+    "primary",
+  )}<small class="muted">${tr(
+    "مبلغ حر من 1 حتى مليار، يُضاف فورًا إلى السقف المعتمد بلا غرامة ولا خصم ولا شبهة ولا حرارة — وكل رفعة تُسجَّل قبل/بعد.",
+    "A free amount from 1 up to one billion, added at once to the approved ceiling with no fine, deduction, suspicion, or heat — and every raise is logged before/after.",
+    "Un montant libre de 1 à un milliard, ajouté aussitôt au plafond approuvé sans amende, retenue, suspicion ni pression — et chaque relèvement est consigné avant/après.",
+  )}</small></div>${raiseLog}${wageOverrideState(st, pct)}</div>`;
+  return raiseBlock;
+}
+// حالة 0.52 داخل اللوحة: تجاوز يحتاج موافقة، أو موافقات سابقة بلا تجاوز.
+function wageOverrideState(st, pct) {
   const log = st.count
     ? `<details class="wage-override-log"><summary>${tr(
         "سجل موافقات المالك",
@@ -84,7 +205,7 @@ function wageOverrideView(s) {
       )}</small></details>`
     : "";
   if (st.over)
-    return `<div class="wage-override"><div class="wage-override-head">${icon("bell", 16)}<strong>${tr(
+    return `<div class="wage-override-state"><div class="wage-override-head">${icon("bell", 16)}<strong>${tr(
       "سقف الرواتب متجاوز",
       "Wage cap exceeded",
       "Plafond salarial dépassé",
@@ -113,7 +234,7 @@ function wageOverrideView(s) {
       "(minimum 100 k) sans amende, retenue, suspicion ni pression, toutes les autres règles restant inchangées.",
     )}</small></div>${log}</div>`;
   if (st.count)
-    return `<div class="wage-override ok"><div class="wage-override-head">${icon("crown", 16)}<strong>${tr(
+    return `<div class="wage-override-state ok"><div class="wage-override-head">${icon("crown", 16)}<strong>${tr(
       "موافقاتك كمالك",
       "Your owner approvals",
       "Vos approbations de propriétaire",

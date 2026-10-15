@@ -977,6 +977,37 @@
   display: block;
   margin-top: 9px;
 }
+/* ── 0.53 hotfix «زرار المليار»: زر ارفع الميزانية + نافذة المبلغ الحر ────── */
+.wage-override-state {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px dashed var(--line);
+}
+.wage-raise-quick {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-block: 8px;
+}
+.wage-raise-preview {
+  display: grid;
+  gap: 6px;
+  border: 1px solid color-mix(in srgb, var(--gold) 45%, var(--line));
+  border-radius: 12px;
+  padding: 10px 12px;
+  margin-block: 10px;
+  background: color-mix(in srgb, var(--gold) 6%, var(--panel));
+  font-size: 13px;
+}
+.wage-raise-preview > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+.wage-raise-preview small {
+  color: var(--muted);
+  line-height: 1.6;
+}
 .league-cards {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
