@@ -6,7 +6,10 @@ import { assert, uid, addDays, clamp } from "../core/utils.js";
 import { message, closeThread } from "./inbox.js";
 import { post, obligation, wages } from "./finance.js";
 import { assertTransfersAllowed } from "./boardMandate.js";
-import { isTransferBanned } from "./blackFiles.js";
+import {
+  isTransferBanned,
+  resolvePendingReleaseBreakIfProtected,
+} from "./blackFiles.js";
 import { recordSupporterSigning } from "./ultras.js";
 import { addInsideInformation } from "./stockMarket/insider.js";
 import { assertVacationAllows } from "./protection.js";
@@ -305,6 +308,7 @@ export function renewPlayer(s, playerId, terms) {
     m.status = "resolved";
     m.read = true;
   }
+  resolvePendingReleaseBreakIfProtected(s, p.id);
   message(s, {
     title: `تجديد عقد ${p.name}`,
     body: "تم تحديث العقد والمرتب والدور داخل الفريق.",

@@ -2,14 +2,20 @@
 // مؤشر الشبهات 0-100% مع مستويات، عمليات عبر الوسيط، عواقب الفضيحة الكبرى، وطرق خفض الشبهات.
 
 import { addDays, daysBetween, clamp, random, uid, assert } from "../core/utils.js";
+import { extendedClub } from "../data/expandedCatalog.js";
 import { post, obligation } from "./finance.js";
 import { message, closeThread } from "./inbox.js";
 import { blackTextAr } from "../data/blackTexts.js";
 import { boardTextAr } from "../data/boardTexts.js";
 import { ensureBoard } from "./boardMandate.js";
-import { aiBreakReleaseClauses } from "./releaseClause.js";
+import {
+  aiBreakReleaseClauses,
+  RELEASE_BREAK_DEADLINE_DAYS,
+} from "./releaseClause.js";
 import { addNoise, SCANDAL_NOISE } from "./noiseMeter.js";
 import { fileLegalCase } from "./staff/legal.js";
+
+export { RELEASE_BREAK_DEADLINE_DAYS };
 
 export const SUSPICION_THRESHOLDS = {
   whispers: 30,
@@ -474,34 +480,269 @@ export function blackFilesDay(s) {
     bf.active.mediaWar = null;
   }
 
-  // معالجة كسر AI للشرط الجزائي المعلق
+  // معالجة كسر AI للشرط الجزائي المعلق: إنذار مسبق + مهلة رد (راتب/تجديد/شرط) قبل التنفيذ
   if (bf.pendingAiBreaks?.length) {
     const remaining = [];
     for (const item of bf.pendingAiBreaks) {
       const p = s.players.find((x) => x.id === item.playerId);
-      if (!p || p.clubId !== s.clubId) continue;
-      // نقل فوري
+      if (!p || p.clubId !== s.clubId || p.status === "retired") continue;
+      if (item.warned && isReleaseBreakProtected(p, item)) {
+        finalizeReleaseBreakProtection(s, p, item);
+        continue;
+      }
+      if (!item.warned) {
+        item.warned = true;
+        item.warnedOn = s.date;
+        item.deadline =
+          item.deadline || addDays(s.date, RELEASE_BREAK_DEADLINE_DAYS);
+        item.salaryAtWarning = p.salary;
+        item.contractEndAtWarning = p.contractEnd;
+        item.clauseAtWarning = p.contractTerms?.releaseClause ?? item.clause;
+        const buyerName = extendedClub(item.buyer)?.name || item.buyer;
+        const alertTitle = blackTextAr("releaseClauseAlertTitle", {
+          c: buyerName,
+          v: p.name,
+        });
+        if (s.press && Array.isArray(s.press.news)) {
+          s.press.news.unshift({
+            date: s.date,
+            title: alertTitle,
+            text: alertTitle,
+            type: "انتقالات",
+          });
+          s.press.news = s.press.news.slice(0, 60);
+        }
+        message(s, {
+          title: alertTitle,
+          body: blackTextAr("releaseClauseAlertBody", {
+            c: buyerName,
+            v: p.name,
+            money: item.clause.toLocaleString("en-US"),
+            d: item.deadline,
+          }),
+          category: "transfers",
+          kind: "release-clause-alert",
+          ref: p.id,
+          deadline: item.deadline,
+          priority: "high",
+        });
+        remaining.push(item);
+        continue;
+      }
+      if (s.date < item.deadline) {
+        remaining.push(item);
+        continue;
+      }
+      // انتهت مهلة الرد دون تحصين — تنفيذ كسر الشرط الجزائي
+      const buyerName = extendedClub(item.buyer)?.name || item.buyer;
       p.clubId = item.buyer;
-      p.careerHistory.push({ date: s.date, type: "release-broken-ai", clubId: item.buyer, fee: item.clause });
-      post(s, item.clause, "player-sale", `كسر شرط جزائي: ${p.name}`, uid(s, "release-ai"));
+      p.careerHistory.push({
+        date: s.date,
+        type: "release-broken-ai",
+        clubId: item.buyer,
+        fee: item.clause,
+      });
+      post(
+        s,
+        item.clause,
+        "player-sale",
+        `كسر شرط جزائي: ${p.name}`,
+        uid(s, "release-ai"),
+      );
       s.fanSupport = clamp(s.fanSupport - 8, 0, 100);
       addNoise(s, "transfer", 10, "كسر شرط جزائي يثير الجدل");
-      // إشعار صاخب: خبر في الصحافة (إن وُجد ملفها) ليظهر أيضًا في عناوين الصباح.
+      for (const m of (s.inbox || []).filter(
+        (m) => m.kind === "release-clause-alert" && m.ref === p.id,
+      )) {
+        m.status = "resolved";
+        m.read = true;
+      }
       if (s.press && Array.isArray(s.press.news)) {
-        s.press.news.unshift({ date: s.date, title: blackTextAr("releaseClauseBrokenTitle", { v: p.name }), type: "انتقالات" });
+        const brokenTitle = blackTextAr("releaseClauseBrokenTitle", {
+          v: p.name,
+        });
+        s.press.news.unshift({
+          date: s.date,
+          title: brokenTitle,
+          text: brokenTitle,
+          type: "انتقالات",
+        });
         s.press.news = s.press.news.slice(0, 60);
       }
       message(s, {
         title: blackTextAr("releaseClauseBrokenTitle", { v: p.name }),
-        body: blackTextAr("releaseClauseBrokenBody", { v: item.buyer, money: item.clause }),
+        body: blackTextAr("releaseClauseBrokenBody", {
+          v: buyerName,
+          money: item.clause.toLocaleString("en-US"),
+        }),
         category: "transfers",
         priority: "high",
       });
-      // لا نعيد إضافته للباقي
     }
     bf.pendingAiBreaks = remaining;
   }
 }
+
+export function isReleaseBreakProtected(p, item) {
+  if (!p || !item) return false;
+  if (item.protected) return true;
+  const currentClause = p.contractTerms?.releaseClause ?? 0;
+  if (currentClause <= 0 || currentClause > item.clause) return true;
+  if (
+    item.salaryAtWarning !== undefined &&
+    p.salary > item.salaryAtWarning
+  )
+    return true;
+  if (
+    item.contractEndAtWarning &&
+    p.contractEnd &&
+    p.contractEnd > item.contractEndAtWarning
+  )
+    return true;
+  if (
+    item.warnedOn &&
+    p.contractTerms?.signedOn &&
+    p.contractTerms.signedOn > item.warnedOn
+  )
+    return true;
+  return false;
+}
+
+function finalizeReleaseBreakProtection(s, p, item) {
+  if (
+    item.budgetDeducted &&
+    s.expansion?.budgets &&
+    Object.hasOwn(s.expansion.budgets, item.buyer)
+  ) {
+    s.expansion.budgets[item.buyer] += item.clause;
+    item.budgetDeducted = false;
+  }
+  for (const m of (s.inbox || []).filter(
+    (m) => m.kind === "release-clause-alert" && m.ref === p.id,
+  )) {
+    m.status = "resolved";
+    m.read = true;
+  }
+  const buyerName = extendedClub(item.buyer)?.name || item.buyer;
+  const title = blackTextAr("releaseClauseProtectedTitle", { v: p.name });
+  if (s.press && Array.isArray(s.press.news)) {
+    s.press.news.unshift({
+      date: s.date,
+      title,
+      text: title,
+      type: "انتقالات",
+    });
+    s.press.news = s.press.news.slice(0, 60);
+  }
+  message(s, {
+    title,
+    body: blackTextAr("releaseClauseProtectedBody", {
+      v: p.name,
+      c: buyerName,
+    }),
+    category: "transfers",
+    kind: "release-clause-protected",
+    ref: p.id,
+  });
+}
+
+export function resolvePendingReleaseBreakIfProtected(s, playerId) {
+  const bf = s.blackFiles;
+  if (!bf?.pendingAiBreaks?.length) return false;
+  const idx = bf.pendingAiBreaks.findIndex((x) => x.playerId === playerId);
+  if (idx === -1) return false;
+  const item = bf.pendingAiBreaks[idx];
+  const p = s.players.find((x) => x.id === playerId);
+  if (!p || p.clubId !== s.clubId) return false;
+  if (!isReleaseBreakProtected(p, item)) return false;
+  bf.pendingAiBreaks.splice(idx, 1);
+  finalizeReleaseBreakProtection(s, p, item);
+  return true;
+}
+
+export function counterReleaseClauseBreak(
+  s,
+  playerId,
+  method = "salary",
+  options = {},
+) {
+  const bf = ensureBlackFiles(s);
+  const p = s.players.find((x) => x.id === playerId);
+  assert(p && p.clubId === s.clubId, "اللاعب ليس في النادي.");
+  const idx = (bf.pendingAiBreaks || []).findIndex(
+    (x) => x.playerId === playerId,
+  );
+  assert(idx !== -1, "لا يوجد إنذار كسر شرط جزائي معلق لهذا اللاعب.");
+  const item = bf.pendingAiBreaks[idx];
+  assert(
+    !item.warned || !item.deadline || s.date < item.deadline,
+    "انتهت مهلة الرد على كسر الشرط الجزائي.",
+  );
+  if (method === "salary") {
+    const nextSalary =
+      options.salary !== undefined
+        ? Number(options.salary)
+        : Math.max(p.salary + 1, Math.round(p.salary * 1.2));
+    assert(
+      Number.isSafeInteger(nextSalary) && nextSalary > p.salary,
+      "الراتب الجديد يجب أن يكون أعلى من الراتب الحالي.",
+    );
+    p.salary = nextSalary;
+    p.morale = clamp((p.morale || 70) + 6, 0, 100);
+  } else if (method === "renew") {
+    const years = [1, 2, 3, 4].includes(options.years) ? options.years : 3;
+    const nextSalary =
+      options.salary !== undefined
+        ? Number(options.salary)
+        : Math.max(p.salary + 1, Math.round(p.salary * 1.15));
+    assert(
+      Number.isSafeInteger(nextSalary) && nextSalary >= p.salary,
+      "اللاعب يطلب الحفاظ على مرتبه على الأقل.",
+    );
+    const baseEnd =
+      p.contractEnd && p.contractEnd > s.date ? p.contractEnd : s.date;
+    p.salary = nextSalary;
+    p.contractEnd = addDays(baseEnd, 365 * years);
+    p.contractTerms = {
+      ...(p.contractTerms || {}),
+      signedOn: s.date,
+      lastRaiseYear: s.date.slice(0, 4),
+    };
+    if (options.releaseClause !== undefined) {
+      const nextClause = Number(options.releaseClause);
+      assert(
+        Number.isSafeInteger(nextClause) && nextClause >= 0,
+        "شرط جزائي غير صالح.",
+      );
+      p.contractTerms.releaseClause = nextClause;
+    }
+    p.morale = clamp((p.morale || 70) + 8, 0, 100);
+  } else if (method === "clause") {
+    const nextClause =
+      options.releaseClause !== undefined
+        ? Number(options.releaseClause)
+        : item.clause * 2;
+    assert(
+      Number.isSafeInteger(nextClause) &&
+        (nextClause === 0 || nextClause > item.clause),
+      "الشرط الجديد يجب أن يكون أعلى من الشرط الحالي أو صفرًا لإلغائه.",
+    );
+    p.contractTerms = {
+      ...(p.contractTerms || {}),
+      releaseClause: nextClause,
+    };
+    if (nextClause > item.clause)
+      p.salary = Math.max(p.salary, Math.round(p.salary * 1.1));
+  } else {
+    assert(false, "طريقة التحصين غير صالحة.");
+  }
+  item.protected = true;
+  bf.pendingAiBreaks.splice(idx, 1);
+  finalizeReleaseBreakProtection(s, p, item);
+  return { protected: true, method, playerId: p.id, buyer: item.buyer };
+}
+
+export const protectFromReleaseBreak = counterReleaseClauseBreak;
 
 export function isTransferBanned(s) {
   const bf = ensureBlackFiles(s);

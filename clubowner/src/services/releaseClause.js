@@ -5,6 +5,8 @@
 
 import { addDays, daysBetween, random } from "../core/utils.js";
 
+export const RELEASE_BREAK_DEADLINE_DAYS = 3;
+
 export const RELEASE_RANGES = {
   low: { maxRating: 69, min: 2000000, max: 5000000 },
   midLow: { maxRating: 74, min: 5000000, max: 12000000 },
@@ -214,9 +216,13 @@ export function aiBreakReleaseClauses(s) {
   const ownPlayers = s.players.filter((p) => p.clubId === s.clubId && p.status !== "retired" && (p.contractTerms?.releaseClause||0) > 0);
   if (!ownPlayers.length) return 0;
   const aiClubs = s.expansion.divisions.flatMap((d) => d.clubs).filter((id) => id !== s.clubId);
+  s.blackFiles = s.blackFiles || {};
+  s.blackFiles.pendingAiBreaks = s.blackFiles.pendingAiBreaks || [];
   let broken = 0;
   for (const p of ownPlayers) {
     if (broken >= 1) break;
+    if (s.blackFiles.pendingAiBreaks.some((item) => item.playerId === p.id))
+      continue;
     const clause = p.contractTerms.releaseClause;
     const buyer = aiClubs.find((id) => (s.expansion.budgets[id]||0) >= clause * 1.2 && p.rating >= 72);
     if (!buyer) continue;
@@ -224,9 +230,15 @@ export function aiBreakReleaseClauses(s) {
     if (rnd > 0.02) continue;
     s.expansion.budgets[buyer] -= clause;
     broken++;
-    s.blackFiles = s.blackFiles || {};
-    s.blackFiles.pendingAiBreaks = s.blackFiles.pendingAiBreaks || [];
-    s.blackFiles.pendingAiBreaks.push({ playerId: p.id, buyer, clause, date: s.date });
+    s.blackFiles.pendingAiBreaks.push({
+      playerId: p.id,
+      buyer,
+      clause,
+      date: s.date,
+      deadline: addDays(s.date, RELEASE_BREAK_DEADLINE_DAYS),
+      budgetDeducted: true,
+      warned: false,
+    });
   }
   return broken;
 }

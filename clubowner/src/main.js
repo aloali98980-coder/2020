@@ -2039,6 +2039,36 @@ const actions = {
   },
   "player-contract": async (el) => showContract(el.dataset.id),
   "renew-player": async (el) => showContract(el.dataset.id, true),
+  "release-break-salary": async (el) => {
+    await apply(
+      (s) => BlackService.counterReleaseClauseBreak(s, el.dataset.id, "salary"),
+      tr(
+        "تم رفع الراتب وتحصين اللاعب من كسر الشرط الجزائي 🛡️",
+        "Salary raised and player protected from the release clause break 🛡️",
+        "Salaire augmenté et joueur protégé contre l'activation de la clause 🛡️",
+      ),
+    );
+  },
+  "release-break-renew": async (el) => {
+    await apply(
+      (s) => BlackService.counterReleaseClauseBreak(s, el.dataset.id, "renew"),
+      tr(
+        "تم تجديد العقد وتحصين اللاعب من كسر الشرط الجزائي 🛡️",
+        "Contract renewed and player protected from the release clause break 🛡️",
+        "Contrat prolongé et joueur protégé contre l'activation de la clause 🛡️",
+      ),
+    );
+  },
+  "release-break-clause": async (el) => {
+    await apply(
+      (s) => BlackService.counterReleaseClauseBreak(s, el.dataset.id, "clause"),
+      tr(
+        "تم رفع الشرط الجزائي وإحباط محاولة الكسر 🛡️",
+        "Release clause raised and break attempt foiled 🛡️",
+        "Clause libératoire relevée et tentative d'activation déjouée 🛡️",
+      ),
+    );
+  },
   "facility-detail": async (el) =>
     openModal(facilityDetail(getState(), el.dataset.id)),
   "toggle-staff": async (el) => {
